@@ -1,0 +1,42 @@
+{
+  "name": "luxcart-ecommerce",
+  "version": "1.0.0",
+  "description": "Luxury car and accessories e-commerce platform with admin dashboard and user website, built using Node.js, Express, HBS, and MongoDB.",
+  "main": "app.js",
+  "scripts": {
+    "start": "nodemon src/app.js"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/sreelal46/luxcart-ecommerce.git"
+  },
+  "keywords": [
+    "luxcar",
+    "ecommerce",
+    "admin-dashboard",
+    "user-website",
+    "luxury-cars",
+    "car-accessories",
+    "nodejs",
+    "expressjs",
+    "hbs",
+    "handlebars",
+    "mongodb",
+    "fullstack",
+    "web-development",
+    "online-store",
+    "dashboard",
+    "uiux"
+  ],
+  "author": "Sreelal pv",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/sreelal46/luxcart-ecommerce/issues"
+  },
+  "homepage": "https://github.com/sreelal46/luxcart-ecommerce#readme",
+  "dependencies": {
+    "dotenv": "^17.2.3",
+    "express": "^5.1.0",
+    "express-handlebars": "^8.0.3"
+  }
+}
