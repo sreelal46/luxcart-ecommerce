@@ -35,8 +35,15 @@
   },
   "homepage": "https://github.com/sreelal46/luxcart-ecommerce#readme",
   "dependencies": {
+    "bcrypt": "^6.0.0",
+    "bootstrap": "^5.3.8",
     "dotenv": "^17.2.3",
     "express": "^5.1.0",
-    "express-handlebars": "^8.0.3"
+    "express-handlebars": "^8.0.3",
+    "express-session": "^1.18.2",
+    "jsonwebtoken": "^9.0.2",
+    "mongoose": "^8.19.1",
+    "passport": "^0.7.0",
+    "passport-google-oauth20": "^2.0.0"
   }
 }

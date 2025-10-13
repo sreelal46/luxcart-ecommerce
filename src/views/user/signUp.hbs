@@ -1,0 +1,78 @@
+<div class="bg-light min-vh-100 d-flex align-items-center justify-content-center py-5 " style="margin-top: 50px;">
+  <div class="bg-white rounded-3 shadow p-5" style="max-width: 600px; width: 100%;">
+
+    <!-- Header -->
+    <div class="text-center mb-4">
+      <a href="index.html" class="h2 fw-bold text-dark text-decoration-none">LuxCart</a>
+      <h1 class="h4 fw-bold mt-3 mb-1">Create Account</h1>
+      <p class="text-muted mb-0">Join our exclusive community</p>
+    </div>
+
+    <!-- Form -->
+    <form class="mt-4" action="/signup" method="post">
+      <div class="row g-3">
+        <div class="col-md-12">
+          <label for="firstName" class="form-label fw-medium small">First Name</label>
+          <input type="text" class="form-control" id="firstName" name="name" placeholder="John">
+        </div>
+      </div>
+
+      <div class="mb-3 mt-3">
+        <label for="email" class="form-label fw-medium small">Email Address</label>
+        <input type="email" class="form-control" id="email" name="email" placeholder="your.email@example.com">
+      </div>
+
+      <div class="mb-3">
+        <label for="password" class="form-label fw-medium small">Password</label>
+        <input type="password" class="form-control" id="password" name="password"
+          placeholder="Create a strong password">
+      </div>
+
+      <div class="mb-3">
+        <label for="confirmPassword" class="form-label fw-medium small">Confirm Password</label>
+        <input type="password" class="form-control" id="confirmPassword" name="confirmPassword"
+          placeholder="Confirm your password">
+      </div>
+
+      <div class="mb-3">
+        <label for="confirmPassword" class="form-label fw-medium small">Referral code (Optional)</label>
+        <input type="password" class="form-control" id="confirmPassword" name="referralCode"
+          placeholder=" Enter your referral code">
+      </div>
+
+      <div class="form-check mb-3">
+        <input class="form-check-input" type="checkbox" id="terms">
+        <label class="form-check-label small text-muted" for="terms">
+          I agree to the
+          <a href="#" class="text-dark text-decoration-none">Terms of Service</a> and
+          <a href="#" class="text-dark text-decoration-none">Privacy Policy</a>
+        </label>
+      </div>
+
+      <button type="submit" class="btn btn-dark w-100 fw-medium">Create Account</button>
+    </form>
+
+    <!-- Sign in link -->
+    <div class="text-center mt-3">
+      <p class="small text-muted mb-0">
+        Already have an account?
+        <a href="/login" class="text-dark fw-medium text-decoration-none">Sign in</a>
+      </p>
+    </div>
+
+    <!-- Google Sign Up Button -->
+    <div class="d-grid mb-3">
+      <a href="/auth/google" class="btn btn-outline-dark fw-medium d-flex align-items-center justify-content-center">
+        <img src="https://www.svgrepo.com/show/475656/google-color.svg" alt="Google" style="width:20px; height:20px;"
+          class="me-2">
+        Sign up with Google
+      </a>
+    </div>
+    <!-- Back to home -->
+    <div class="text-center mt-4">
+      <a href="/" class="small text-muted text-decoration-none">&larr; Back to Home</a>
+    </div>
+
+
+  </div>
+</div>

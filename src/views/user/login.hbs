@@ -1,43 +1,57 @@
-<div class="bg-[#f7f7f7] w-full min-w-[1520.8px] min-h-screen flex items-center justify-center">
-  <div class="bg-white rounded-lg shadow-2xl p-12 w-[500px]">
-    <div class="text-center mb-8">
-      <a href="index.html" class="[font-family:'Inter',Helvetica] font-bold text-3xl">LuxCart</a>
-      <h1 class="[font-family:'Inter',Helvetica] font-bold text-2xl mt-6 mb-2">Welcome Back</h1>
-      <p class="[font-family:'Inter',Helvetica] text-gray-600">Sign in to your account</p>
+<div class="bg-light min-vh-100 d-flex align-items-center justify-content-center">
+  <div class="bg-white rounded-3 shadow p-5" style="max-width: 500px; width: 100%;">
+
+    <!-- Header -->
+    <div class="text-center mb-4">
+      <a href="index.html" class="h2 fw-bold text-dark text-decoration-none">LuxCart</a>
+      <h1 class="h4 fw-bold mt-3 mb-1">Welcome Back</h1>
+      <p class="text-muted mb-0">Sign in to your account</p>
     </div>
-    <form class="space-y-6">
-      <div>
-        <label class="[font-family:'Inter',Helvetica] font-medium text-sm mb-2 block">Email Address</label>
-        <input type="email"
-          class="w-full px-4 py-3 border border-gray-300 rounded-md [font-family:'Inter',Helvetica] focus:outline-none focus:ring-2 focus:ring-black"
-          placeholder="your.email@example.com" />
+
+    <!-- Form -->
+    <form class="mt-4">
+      <div class="mb-3">
+        <label for="email" class="form-label fw-medium small">Email Address</label>
+        <input type="email" class="form-control" id="email" placeholder="your.email@example.com">
       </div>
-      <div>
-        <label class="[font-family:'Inter',Helvetica] font-medium text-sm mb-2 block">Password</label>
-        <input type="password"
-          class="w-full px-4 py-3 border border-gray-300 rounded-md [font-family:'Inter',Helvetica] focus:outline-none focus:ring-2 focus:ring-black"
-          placeholder="Enter your password" />
+
+      <div class="mb-3">
+        <label for="password" class="form-label fw-medium small">Password</label>
+        <input type="password" class="form-control" id="password" placeholder="Enter your password">
       </div>
-      <div class="flex items-center justify-between">
-        <label class="flex items-center">
-          <input type="checkbox" class="mr-2" />
-          <span class="[font-family:'Inter',Helvetica] text-sm text-gray-600">Remember me</span>
-        </label>
-        <a href="#" class="[font-family:'Inter',Helvetica] text-sm text-black hover:underline">Forgot password?</a>
+
+      <div class="d-flex justify-content-between align-items-center mb-3">
+        <div class="form-check">
+          <input class="form-check-input" type="checkbox" id="rememberMe">
+          <label class="form-check-label small text-muted" for="rememberMe">
+            Remember me
+          </label>
+        </div>
+        <a href="#" class="small text-dark text-decoration-none">Forgot password?</a>
       </div>
-      <button type="submit"
-        class="w-full bg-black text-white py-3 rounded-md [font-family:'Inter',Helvetica] font-medium hover:bg-gray-800 transition-colors">
-        Sign In
-      </button>
+
+      <button type="submit" class="btn btn-dark w-100 fw-medium">Sign In</button>
     </form>
-    <div class="mt-6 text-center">
-      <p class="[font-family:'Inter',Helvetica] text-sm text-gray-600">
-        Don't have an account? <a href="signup.html" class="text-black font-medium hover:underline">Sign up</a>
+
+    <!-- Signup link -->
+    <div class="text-center mt-3">
+      <p class="small text-muted mb-0">
+        Don't have an account?
+        <a href="/signup" class="text-dark fw-medium text-decoration-none">Sign up</a>
       </p>
     </div>
-    <div class="mt-8 text-center">
-      <a href="index.html" class="[font-family:'Inter',Helvetica] text-sm text-gray-600 hover:text-black">← Back to
-        Home</a>
+    <!-- Google Sign Up Button -->
+    <div class="d-grid mb-3">
+      <a href="/auth/google" class="btn btn-outline-dark fw-medium d-flex align-items-center justify-content-center">
+        <img src="https://www.svgrepo.com/show/475656/google-color.svg" alt="Google" style="width:20px; height:20px;"
+          class="me-2">
+        Sign up with Google
+      </a>
     </div>
+    <!-- Back to Home -->
+    <div class="text-center mt-4">
+      <a href="/" class="small text-muted text-decoration-none">&larr; Back to Home</a>
+    </div>
+
   </div>
 </div>
