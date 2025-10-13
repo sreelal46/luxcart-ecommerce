@@ -1,0 +1,290 @@
+/* Hero Section */
+.hero-section {
+  position: relative;
+  height: 100vh; /* full viewport */
+  overflow: visible; /* button fully visible */
+}
+
+/* Video fills the section */
+.hero-video {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  z-index: 0;
+}
+
+/* Dark overlay */
+.hero-overlay {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background: rgba(0, 0, 0, 0.5);
+  z-index: 1;
+}
+
+/* Hero Content */
+.hero-content {
+  position: absolute; /* overlay on top of video */
+  top: 70%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  z-index: 10;
+  text-align: center;
+  max-width: 900px;
+  padding: 0 1rem;
+}
+
+/* Hero Title */
+.hero-title {
+  font-family: "Montserrat", sans-serif;
+  font-size: 5rem;
+  font-weight: 700;
+  letter-spacing: 4px;
+  text-transform: uppercase;
+  text-shadow: 0 6px 20px rgba(0, 0, 0, 0.6);
+  margin-bottom: 1rem;
+  color: #fff;
+}
+
+/* Hero Subtitle */
+.hero-subtitle {
+  font-family: "Montserrat", sans-serif;
+  font-size: 1.6rem;
+  font-weight: 300;
+  margin-bottom: 2rem;
+  text-shadow: 0 4px 15px rgba(0, 0, 0, 0.5);
+  color: #fff;
+  opacity: 0.9;
+}
+
+/* Hero Button */
+.hero-btn {
+  font-family: "Montserrat", sans-serif;
+  font-weight: 500;
+  font-size: 1.1rem;
+  padding: 0.8rem 2.5rem;
+  border: 2px solid #fff;
+  color: #fff;
+  background: transparent;
+  text-transform: uppercase;
+}
+
+.hero-btn:hover {
+  background: #fff;
+  color: #000;
+  transform: scale(1.08);
+  box-shadow: 0 10px 25px rgba(0, 0, 0, 0.4);
+}
+
+/* Responsive */
+@media (max-width: 768px) {
+  .hero-content {
+    position: absolute; /* overlay on top of video */
+    top: 60%;
+    left: 50%;
+  }
+
+  .hero-title {
+    font-size: 3rem;
+  }
+  .hero-subtitle {
+    font-size: 1.2rem;
+  }
+  .hero-btn {
+    padding: 0.6rem 2rem;
+    font-size: 1rem;
+  }
+}
+
+/* infinite brand logo carousel */
+* {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+}
+
+@keyframes slide {
+  from {
+    transform: translateX(0);
+  }
+  to {
+    transform: translateX(-50%);
+  }
+}
+
+.logos {
+  overflow: hidden;
+  padding: 60px 0;
+  background: #fff;
+  white-space: nowrap;
+  position: relative;
+}
+
+/* Fade on edges for smooth visual cut */
+.logos:before,
+.logos:after {
+  position: absolute;
+  top: 0;
+  width: 200px;
+  height: 100%;
+  content: "";
+  z-index: 2;
+}
+
+.logos:before {
+  left: 0;
+  background: linear-gradient(to left, rgba(255, 255, 255, 0), white);
+}
+
+.logos:after {
+  right: 0;
+  background: linear-gradient(to right, rgba(255, 255, 255, 0), white);
+}
+
+/* Main sliding container */
+.logos-slide {
+  display: inline-flex;
+  align-items: center;
+  animation: 8s slide infinite linear;
+}
+
+/* Pause when hover */
+.logos:hover .logos-slide {
+  animation-play-state: paused;
+}
+
+/* Logo image style */
+.logos-slide img {
+  height: 80px;
+  margin: 0 40px;
+  transition: transform 0.3s ease, opacity 0.3s ease;
+  opacity: 0.9;
+}
+
+.logos-slide img:hover {
+  transform: scale(1.05);
+  opacity: 1;
+}
+
+/* premiume cars */
+
+.category-card {
+  border-radius: 20px;
+  overflow: hidden;
+  position: relative;
+  transition: transform 0.5s ease, box-shadow 0.4s ease;
+}
+
+.category-card img {
+  width: 100%;
+  height: 420px;
+  object-fit: cover;
+  transition: transform 0.6s ease;
+}
+
+.category-card:hover img {
+  transform: scale(1.08);
+}
+
+.category-card .overlay {
+  background: linear-gradient(0deg, rgba(0, 0, 0, 0.75), transparent 70%);
+  transition: background 0.4s ease;
+}
+
+.category-card:hover .overlay {
+  background: linear-gradient(0deg, rgba(0, 0, 0, 0.85), transparent 70%);
+}
+
+.category-card h5 {
+  font-size: 1.8rem;
+  margin-bottom: 6px;
+}
+
+.category-card p {
+  font-size: 1rem;
+  color: #f8f9fa;
+}
+
+.category-card:hover {
+  transform: translateY(-8px);
+  box-shadow: 0 20px 40px rgba(0, 0, 0, 0.25);
+}
+
+/* Make sure row takes full width, reduce white space */
+#featured-categories .row {
+  margin: 0; /* remove Bootstrap side margin */
+}
+
+#featured-categories .col-lg-4 {
+  padding: 0 8px; /* tighter spacing between cards */
+}
+
+/* accessories */
+
+/* Premium Accessories Styling */
+#premium-accessories {
+  background-color: #f8f9fa;
+}
+
+#premium-accessories .accessory-card {
+  transition: transform 0.4s ease, box-shadow 0.4s ease;
+  border-radius: 18px;
+  overflow: hidden;
+}
+
+#premium-accessories .accessory-card img {
+  height: 270px;
+  width: 100%;
+  object-fit: cover;
+  transition: transform 0.5s ease;
+}
+
+#premium-accessories .accessory-card:hover img {
+  transform: scale(1.05);
+}
+
+#premium-accessories .accessory-card:hover {
+  transform: translateY(-8px);
+  box-shadow: 0 20px 40px rgba(0, 0, 0, 0.1);
+}
+
+/* Hover link animation */
+.hover-link img {
+  transition: transform 0.3s ease;
+}
+
+.hover-link:hover img {
+  transform: translateX(5px);
+}
+
+/* Make layout truly full width on large screens */
+#premium-accessories .container-fluid {
+  max-width: 95%;
+}
+
+/* Responsive text adjustments */
+@media (max-width: 768px) {
+  #premium-accessories h2 {
+    font-size: 1rem;
+  }
+  #premium-accessories .card-body h6 {
+    font-size: 0.95rem;
+  }
+  #premium-accessories .accessory-card img {
+    height: 240px;
+  }
+}
+
+@media (max-width: 576px) {
+  #premium-accessories .container-fluid {
+    padding: 0 1rem;
+  }
+  #premium-accessories .accessory-card img {
+    height: 220px;
+  }
+}
