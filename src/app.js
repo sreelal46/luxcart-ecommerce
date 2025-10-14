@@ -12,7 +12,7 @@ require("dotenv").config();
 const userRoutes = require("./routers/userRoutes");
 
 //env export
-const PORT = process.env.PORT || 8080;
+const PORT = parseInt(process.env.PORT) || 8080;
 
 //view engine setup
 app.engine(

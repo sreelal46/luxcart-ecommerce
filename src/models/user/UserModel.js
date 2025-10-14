@@ -24,16 +24,20 @@ const userSchema = new mongoose.Schema(
     googleId: {
       type: String, // <-- add this field
     },
-    image_url: {
+    profileImage_url: {
       type: String,
     },
-    isBlocked: {
-      type: Boolean,
-      default: false,
-    },
-    createdAt: {
+    isDeleted: { type: Boolean, default: false },
+    isBlocked: { type: Boolean, default: false },
+    isActive: { type: Boolean, default: false },
+    isReferred: { type: Boolean, default: false },
+    referralCode: { type: String, unique: true, sparse: true },
+    referredUsers: [{ type: mongoose.Schema.Types.ObjectId, ref: "User" }],
+    createdAt: { type: Date, default: Date.now },
+    expireAt: {
       type: Date,
-      default: Date.now,
+      default: () => new Date(Date.now() + 30 * 60 * 1000), // 30 min later
+      index: { expireAfterSeconds: 0 },
     },
   },
   {

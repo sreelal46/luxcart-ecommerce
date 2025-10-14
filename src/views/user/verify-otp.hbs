@@ -1,0 +1,53 @@
+<div class="bg-light min-vh-100 d-flex align-items-center justify-content-center py-5">
+  <div class="bg-white rounded-3 shadow p-5" style="max-width: 500px; width: 100%;">
+    <div class="text-center mb-4">
+      <a href="/" class="h2 fw-bold text-dark text-decoration-none">LuxCart</a>
+      <h1 class="h5 fw-bold mt-3 mb-2">Enter Verification Code</h1>
+      <p class="text-muted small mb-0">We’ve sent a 6-digit code to your email</p>
+    </div>
+
+    <form action="/verify-otp" method="post" class="mt-4">
+      <div class="mb-4 text-center">
+        <div class="d-flex justify-content-center gap-2">
+          <input type="text" maxlength="1" class="form-control text-center" name="otp1"
+            style="width: 50px; font-size: 20px;">
+          <input type="text" maxlength="1" class="form-control text-center" name="otp2"
+            style="width: 50px; font-size: 20px;">
+          <input type="text" maxlength="1" class="form-control text-center" name="otp3"
+            style="width: 50px; font-size: 20px;">
+          <input type="text" maxlength="1" class="form-control text-center" name="otp4"
+            style="width: 50px; font-size: 20px;">
+          <input type="text" maxlength="1" class="form-control text-center" name="otp5"
+            style="width: 50px; font-size: 20px;">
+          <input type="text" maxlength="1" class="form-control text-center" name="otp6"
+            style="width: 50px; font-size: 20px;">
+        </div>
+      </div>
+
+      <button type="submit" class="btn btn-dark w-100 fw-medium">Verify</button>
+
+      <div class="text-center mt-3">
+        <p class="small text-muted mb-0">
+          Didn’t receive the code?
+          <a href="/resend-otp" class="text-dark text-decoration-none fw-medium">Resend</a>
+        </p>
+      </div>
+    </form>
+
+    <div class="text-center mt-4">
+      <a href="/signup" class="small text-muted text-decoration-none">&larr; Change Email</a>
+    </div>
+  </div>
+</div>
+
+<script>
+  // Auto focus next input after typing
+  const inputs = document.querySelectorAll('input[type="text"]');
+  inputs.forEach((input, index) => {
+    input.addEventListener('input', () => {
+      if (input.value && index < inputs.length - 1) {
+        inputs[index + 1].focus();
+      }
+    });
+  });
+</script>
