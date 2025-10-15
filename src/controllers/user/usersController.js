@@ -16,7 +16,7 @@ const emailSending = require("../../services/sendEmail");
 const OTP = require("../../models/common/OTPModal");
 
 //creating new user and verifying existingn that user and sending OTP
-const createUser = async (req, res) => {
+const createUser = async (req, res, next) => {
   try {
     const { name, email, password, confirmPassword, referralCode } = req.body;
 
@@ -27,8 +27,23 @@ const createUser = async (req, res) => {
         .status(CONFLICT)
         .render("user/signUp", { alert: "Email id alrady taken" });
 
+    //comparing password
+    if (password !== confirmPassword)
+      return res
+        .status(CONFLICT)
+        .render("user/signUp", { alert: "Password miss match" });
+
+    //hashing password
+    const salt = await bcrypt.genSalt(parseInt(process.env.BCRYPT_SALT_ROUNDS));
+    const hashPassword = await bcrypt.hash(password, salt);
+
     //creating new user
-    const newUser = new User({ name, email, password, referralCode });
+    const newUser = new User({
+      name,
+      email,
+      password: hashPassword,
+      referralCode,
+    });
     await newUser.save();
 
     //Email sending with OTP
@@ -41,16 +56,49 @@ const createUser = async (req, res) => {
     //sending response status code 201
     res.status(CREATED).redirect("/verify-otp");
   } catch (error) {
-    //if any error
-    console.log(error);
-    res
-      .status(INTERNAL_SERVER_ERROR)
-      .render("user/signUp", { alert: "Server error" });
+    next(error);
+  }
+};
+
+//user verification
+const verifyUser = async (req, res, next) => {
+  try {
+    //finding user
+    const { email, password } = req.body;
+    console.log(req.body);
+    const user = await User.findOne({ email });
+    // console.log(user);
+
+    //if user not found
+    if (!user)
+      return res
+        .status(NOT_FOUND)
+        .render("user/login", { alert: "Email not exissting" });
+
+    //compaire password
+    const compaire = await bcrypt.compare(password, user.password);
+
+    if (!compaire)
+      return res
+        .status(UNAUTHORIZED)
+        .render("user/login", { alert: "Invalid credentials" });
+
+    //storing user data to session
+    req.session.user = {
+      id: user.id,
+      name: user.name,
+      email: user.email,
+    };
+    console.log("Verify user controller :", req.session.user);
+
+    res.status(OK).redirect("/homepage");
+  } catch (error) {
+    next(error);
   }
 };
 
 //sending OTP for forgott password
-const sendOTP = async (req, res) => {
+const sendOTP = async (req, res, next) => {
   try {
     //finding user
     const email = req.body.email;
@@ -65,25 +113,27 @@ const sendOTP = async (req, res) => {
     //send OTP to user
     await emailSending(email, user.id, "ForgotPassword");
 
-    //OTP sended userID and veryfication type
+    //OTP reciver userID and veryfication type
     req.session.userId = user.id;
     req.session.verifyType = "ForgotPassword";
 
     res.status(CREATED).redirect("/verify-otp");
   } catch (error) {
-    console.log(error);
-    res.status(INTERNAL_SERVER_ERROR).redirect("/verify-otp");
+    next(error);
   }
 };
 
 //verifing otp for creating user and forgott password OTP
-const verifyOTP = async (req, res) => {
+const verifyOTP = async (req, res, next) => {
   try {
     //object to string OTP
     const otp = Object.values(req.body).join("");
 
     //finding OTP sender
     const userId = req.session.userId;
+    const verifyType = req.session.verifyType;
+    console.log("user id:", userId);
+    console.log("type of verification :", req.session.verifyType);
     const findUserOTP = await OTP.findOne({ userId }).sort({ createdAt: -1 });
 
     //OTP is expired or not
@@ -103,7 +153,7 @@ const verifyOTP = async (req, res) => {
         .render("user/verify-otp", { alert: "Invalid OTP.Please try again." });
 
     //activating user and delete the expireAt field
-    if (req.session.verifyType === "verification") {
+    if (verifyType === "verification") {
       await User.updateOne(
         { _id: userId },
         { $set: { isActive: true }, $unset: { expireAt: "" } }
@@ -111,31 +161,61 @@ const verifyOTP = async (req, res) => {
     }
 
     //success message
-    if (req.session.verifyType === "verification") {
+    if (verifyType === "verification") {
       req.session.signSuccess = "Account created successfully!";
     }
 
     //redirect to correct route
-    if (req.session.verifyType === "verification") {
-      res.status(CREATED).redirect("/login");
-    } else {
-      res.status(OK).redirect("/forgot-password");
+    if (verifyType === "verification") {
+      return res.status(CREATED).redirect("/login");
+    }
+    if (verifyType === "ForgotPassword") {
+      return res.status(OK).redirect("/forgot-password");
     }
   } catch (error) {
-    console.log(error);
-    res.status(INTERNAL_SERVER_ERROR).redirect("/login");
+    next(error);
   }
 };
 
-const forgotPassword = async (req, res) => {
+//setting new password
+const forgotPassword = async (req, res, next) => {
   try {
+    //finding user
+    const userId = req.session.userId;
+    const user = await User.findById({ _id: userId });
+    console.log(user);
+
+    //if user not found
+    if (!user)
+      return res
+        .status(UNAUTHORIZED)
+        .render("user/forgot-password", { alert: "User not found" });
+
+    const { newPassword, confirmPassword } = req.body;
+
+    //cpmparing password
+    if (newPassword !== confirmPassword)
+      return res
+        .status(BAD_REQUEST)
+        .render("user/forgot-password", { alert: "Password miss match" });
+
+    //hashing new password
+    const salt = await bcrypt.genSalt(parseInt(process.env.BCRYPT_SALT_ROUNDS));
+    const NewHashPassword = await bcrypt.hash(newPassword, salt);
+
+    //updating new password
+    await User.updateOne(
+      { _id: user.id },
+      { $set: { password: NewHashPassword } }
+    );
+
+    //saving success message
     req.session.forgotSuccess = "Password changed successfully";
-    console.log(req.session.userId);
-    console.log(req.body);
-    res.redirect("/login");
+
+    res.status(OK).redirect("/login");
   } catch (error) {
-    console.log(error);
+    next(error);
   }
 };
 
-module.exports = { createUser, sendOTP, verifyOTP, forgotPassword };
+module.exports = { createUser, sendOTP, verifyOTP, forgotPassword, verifyUser };

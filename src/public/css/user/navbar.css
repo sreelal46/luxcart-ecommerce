@@ -1,0 +1,9 @@
+/* Dropdown hover black */
+.dropdown-menu .dropdown-item:hover {
+  background-color: rgb(160, 160, 160); /* change hover bg to black */
+  color: rgb(0, 0, 0); /* optional: text stays white */
+}
+
+.dropdown-menu .dropdown-item {
+  transition: background-color 0.2s ease;
+}

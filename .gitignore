@@ -3,4 +3,8 @@ node_modules/
 # Environment variables
 .env
 
+# just text
 TEST.txt.env
+
+# session storage
+sessions/
