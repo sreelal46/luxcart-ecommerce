@@ -5,6 +5,7 @@ node_modules/
 
 # just text
 TEST.txt.env
+test.html
 
 # session storage
 sessions/

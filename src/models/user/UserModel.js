@@ -7,6 +7,7 @@ const userSchema = new mongoose.Schema(
       required: [true, "Please enter your name"],
       trim: true,
     },
+
     email: {
       type: String,
       required: [true, "Please enter your email"],
@@ -14,31 +15,37 @@ const userSchema = new mongoose.Schema(
       lowercase: true,
       trim: true,
     },
+
     password: {
       type: String,
       required: function () {
-        // Only require password if googleId is not present
         return !this.googleId;
       },
     },
+
     googleId: {
-      type: String, // <-- add this field
+      type: String,
     },
+
     profileImage_url: {
       type: String,
     },
+
+    authProvider: {
+      type: String,
+      enum: ["local", "google"],
+      default: "local",
+    },
+
+    // Optional fields for your project
     isDeleted: { type: Boolean, default: false },
     isBlocked: { type: Boolean, default: false },
-    isActive: { type: Boolean, default: false },
+    isActive: { type: Boolean, default: true },
+    isVerified: { type: Boolean, default: false },
     isReferred: { type: Boolean, default: false },
     referralCode: { type: String, unique: true, sparse: true },
     referredUsers: [{ type: mongoose.Schema.Types.ObjectId, ref: "User" }],
     createdAt: { type: Date, default: Date.now },
-    expireAt: {
-      type: Date,
-      default: () => new Date(Date.now() + 30 * 60 * 1000), // 30 min later
-      index: { expireAfterSeconds: 0 },
-    },
   },
   {
     timestamps: true,

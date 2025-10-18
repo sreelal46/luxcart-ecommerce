@@ -1,61 +1,59 @@
-const {
-  OK,
-  CREATED,
-  BAD_REQUEST,
-  UNAUTHORIZED,
-  FORBIDDEN,
-  NOT_FOUND,
-  CONFLICT,
-  GONE,
-  INTERNAL_SERVER_ERROR,
-} = require("../../constant/statusCode");
-
 const User = require("../../models/user/UserModel");
+const { OK, UNAUTHORIZED, FORBIDDEN } = require("../../constant/statusCode");
 
 const checkSession = async (req, res, next) => {
   try {
-    if (!req.session.user) return res.status(UNAUTHORIZED).redirect("/login");
-    //finding user
-    const user = await User.findById(req.session.user.id).lean();
-    console.log(user);
-    //if user not found
-    if (!user) return res.status(UNAUTHORIZED).redirect("/login");
+    if (!req.session.user) {
+      //No session — redirect to login
+      console.log("From user checkSession", req.session.user);
+      return res.status(UNAUTHORIZED).redirect("/login");
+    }
+    const userId = req.session.user._id;
+    const user = await User.findById(userId).lean();
 
-    //if user is blocked
-    if (user.isBlocked) return res.status(FORBIDDEN).redirect("/login");
+    if (!user) {
+      req.session.destroy(() => res.redirect("/login"));
+      return;
+    }
 
-    //assigning user to request object
-    req.user = user;
+    // req.user = user;
+    // console.log("From checkSession:", req.user);
     next();
   } catch (error) {
-    //if any error
-    console.log("check session error:", error);
     next(error);
   }
 };
 
 const isLogin = async (req, res, next) => {
   try {
-    //cheking session
-    if (!req.session.user) return res.status(UNAUTHORIZED).redirect("/login");
+    if (req.session.user) {
+      const userId = req.session.user._id; // 🆕 unified id key
+      const user = await User.findById(userId).lean();
 
-    //finding user
-    const user = await User.findById(req.session.user.id).lean();
+      //if user not found
+      if (!user) {
+        req.session.destroy(() => res.redirect("/login"));
+        return;
+      }
 
-    //if user not found
-    if (!user) return res.status(UNAUTHORIZED).redirect("/login");
-
-    //if user is blocked
-    if (user.isBlocked) return res.status(FORBIDDEN).redirect("/login");
-
-    //assigning user to request object
-    req.user = user;
+      //if user found
+      if (user) {
+        req.user = user;
+        console.log("From isLogin:", req.user);
+        return res.redirect("/homepage");
+      }
+    }
     next();
   } catch (error) {
-    //if any error
-    console.log("is login error:", error);
     next(error);
   }
 };
 
-module.exports = { checkSession, isLogin };
+const isPasswordChange = (req, res, next) => {
+  if (req.session.userPasswordChanged) {
+    return res.status(FORBIDDEN).redirect("/login");
+  }
+  next();
+};
+
+module.exports = { checkSession, isLogin, isPasswordChange };

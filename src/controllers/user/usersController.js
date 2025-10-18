@@ -51,6 +51,7 @@ const createUser = async (req, res, next) => {
 
     //OTP sended userID and veryfication type
     req.session.userId = newUser.id;
+    req.session.email = email;
     req.session.verifyType = "verification";
 
     //sending response status code 201
@@ -65,36 +66,56 @@ const verifyUser = async (req, res, next) => {
   try {
     //finding user
     const { email, password } = req.body;
-    console.log(req.body);
+    console.log("Long email and password:", req.body);
     const user = await User.findOne({ email });
-    // console.log(user);
+    console.log("from user verification", user);
 
     //if user not found
     if (!user)
       return res
         .status(NOT_FOUND)
-        .render("user/login", { alert: "Email not exissting" });
+        .render("user/login", { alert: "Email not found" });
+
+    if (user.authProvider === "google")
+      return res.status(FORBIDDEN).render("user/login", {
+        alert: `This email is registered with Google. Please use 'Sign in with Google'.`,
+      });
 
     //compaire password
-    const compaire = await bcrypt.compare(password, user.password);
+    const compare = await bcrypt.compare(password, user.password);
 
-    if (!compaire)
+    if (!compare)
       return res
         .status(UNAUTHORIZED)
-        .render("user/login", { alert: "Invalid credentials" });
+        .render("user/login", { alert: "Invalid email or password" });
 
     //storing user data to session
     req.session.user = {
-      id: user.id,
+      _id: user._id,
       name: user.name,
       email: user.email,
+      authProvider: user.authProvider,
     };
     console.log("Verify user controller :", req.session.user);
-
-    res.status(OK).redirect("/homepage");
+    req.session.save(() => res.status(OK).redirect("/homepage"));
   } catch (error) {
     next(error);
   }
+};
+
+//logout destroying session
+const logoutPage = (req, res) => {
+  //session destroying
+  req.session.destroy((error) => {
+    if (error) {
+      console.log("Error session destroying:", error);
+      next();
+    } else {
+      res.clearCookie("luxcart.sid");
+      console.log("From logout controller session destroy successfully");
+      return res.status(OK).redirect("/");
+    }
+  });
 };
 
 //sending OTP for forgott password
@@ -115,6 +136,7 @@ const sendOTP = async (req, res, next) => {
 
     //OTP reciver userID and veryfication type
     req.session.userId = user.id;
+    req.session.email = email;
     req.session.verifyType = "ForgotPassword";
 
     res.status(CREATED).redirect("/verify-otp");
@@ -152,23 +174,17 @@ const verifyOTP = async (req, res, next) => {
         .status(UNAUTHORIZED)
         .render("user/verify-otp", { alert: "Invalid OTP.Please try again." });
 
-    //activating user and delete the expireAt field
+    // verifying user
     if (verifyType === "verification") {
-      await User.updateOne(
-        { _id: userId },
-        { $set: { isActive: true }, $unset: { expireAt: "" } }
-      );
+      await User.updateOne({ _id: userId }, { $set: { isVerified: true } });
     }
 
-    //success message
+    //success message redirect to correct route
     if (verifyType === "verification") {
       req.session.signSuccess = "Account created successfully!";
-    }
-
-    //redirect to correct route
-    if (verifyType === "verification") {
       return res.status(CREATED).redirect("/login");
     }
+
     if (verifyType === "ForgotPassword") {
       return res.status(OK).redirect("/forgot-password");
     }
@@ -210,12 +226,45 @@ const forgotPassword = async (req, res, next) => {
     );
 
     //saving success message
+    req.session.userPasswordChanged = true;
     req.session.forgotSuccess = "Password changed successfully";
 
-    res.status(OK).redirect("/login");
+    req.session.save(() => res.status(OK).redirect("/login"));
   } catch (error) {
     next(error);
   }
 };
 
-module.exports = { createUser, sendOTP, verifyOTP, forgotPassword, verifyUser };
+//resend OTP
+const resendOTP = async (req, res, next) => {
+  try {
+    //if the user not found
+    if (!req.session.email) {
+      req.session.resendOTP = "Somthing wrog";
+      return res.status(NOT_FOUND).redirect("/forgot-password-otp");
+    }
+
+    //geting user data
+    const { userId, email, verifyType } = req.session;
+
+    //resending otp
+    await emailSending(email, userId, verifyType);
+
+    //success message
+    req.session.resendOTP = "Your OTP has been resent successfully.";
+    res.status(OK).redirect("/forgot-password-otp");
+  } catch (error) {
+    console.log("Error fom resend OTP");
+    next(error);
+  }
+};
+
+module.exports = {
+  createUser,
+  sendOTP,
+  verifyOTP,
+  logoutPage,
+  forgotPassword,
+  verifyUser,
+  resendOTP,
+};

@@ -1,10 +1,4 @@
-const bcrypt = require("bcrypt");
+const path = require("path");
 
-try {
-  const salt = await bcrypt.genSalt();
-  const hashedOTP = await bcrypt.hash(otp, salt);
-  console.log(salt);
-  console.log(hashedOTP);
-} catch (error) {
-  console.log(error);
-}
+console.log(__dirname);
+console.log(path.join(__filename, "../sessions"));

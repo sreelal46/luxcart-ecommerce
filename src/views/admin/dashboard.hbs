@@ -1,0 +1,82 @@
+{{!-- Use this for your main dashboard page --}}
+<h2 class="pt-4 pb-2">Dashboard</h2>
+<span class="text-muted">Welcome back, {{username}}</span>
+<div class="row g-4 mb-4">
+  <div class="col-md-3">
+    <div class="card text-center">
+      <div class="card-body">
+        <h5>Today's Sales</h5>
+        <h3 class="fw-bold">{{todaysSales}}</h3>
+        <span class="text-success">+{{salesGrowth}}%</span>
+      </div>
+    </div>
+  </div>
+  <div class="col-md-3">
+    <div class="card text-center">
+      <div class="card-body">
+        <h5>Monthly Revenue</h5>
+        <h3 class="fw-bold">{{monthlyRevenue}}</h3>
+        <span class="text-success">+{{revenueGrowth}}%</span>
+      </div>
+    </div>
+  </div>
+  <div class="col-md-3">
+    <div class="card text-center">
+      <div class="card-body">
+        <h5>Total Orders</h5>
+        <h3 class="fw-bold">{{totalOrders}}</h3>
+        <span class="text-success">+{{ordersGrowth}}%</span>
+      </div>
+    </div>
+  </div>
+  <div class="col-md-3">
+    <div class="card text-center">
+      <div class="card-body">
+        <h5>Total Users</h5>
+        <h3 class="fw-bold">{{totalUsers}}</h3>
+        <span class="text-success">+{{usersGrowth}}%</span>
+      </div>
+    </div>
+  </div>
+</div>
+<div class="card mb-4">
+  <div class="card-body">
+    <h5>Recent Orders</h5>
+    <table class="table table-hover mb-0">
+      <thead>
+        <tr>
+          <th>Order ID</th>
+          <th>Customer</th>
+          <th>Product</th>
+          <th>Date</th>
+          <th>Amount</th>
+          <th>Status</th>
+        </tr>
+      </thead>
+      <tbody>
+        {{#each orders}}
+        <tr>
+          <td>{{orderId}}</td>
+          <td>{{customer}}</td>
+          <td>{{product}}</td>
+          <td>{{date}}</td>
+          <td>{{amount}}</td>
+          <td>
+            {{#if (eq status "Completed")}}
+            <span class="badge bg-success">Completed</span>
+            {{else if (eq status "Processing")}}
+            <span class="badge bg-primary">Processing</span>
+            {{else if (eq status "Pending")}}
+            <span class="badge bg-warning text-dark">Pending</span>
+            {{else}}
+            <span class="badge bg-info text-dark">{{status}}</span>
+            {{/if}}
+          </td>
+        </tr>
+        {{/each}}
+      </tbody>
+    </table>
+  </div>
+</div>
+
+<a href="/admin/logout" class="btn btn-outline-secondary w-100">Lgout</a>

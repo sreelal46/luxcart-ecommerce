@@ -20,7 +20,7 @@ const adminSchema = new mongoose.Schema(
       required: [true, "Please enter a password"],
       minlength: 8,
     },
-    reatedAt: {
+    createdAt: {
       type: Date,
       default: Date.now,
     },

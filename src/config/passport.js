@@ -1,4 +1,4 @@
-const passport = require("passport");
+require("dotenv").config();
 const GoogleStrategy = require("passport-google-oauth20").Strategy;
 const User = require("../models/user/UserModel");
 
@@ -8,63 +8,61 @@ module.exports = function (passport) {
       {
         clientID: process.env.GOOGLE_CLIENT_ID,
         clientSecret: process.env.GOOGLE_CLIENT_SECRET,
-        callbackURL: "/auth/google/callback",
+        callbackURL: process.env.GOOGLE_CALLBACK_URL,
       },
       async (accessToken, refreshToken, profile, done) => {
         try {
           const email = profile.emails[0].value;
 
-          // First, try to find the user by Google ID
+          // Try to find user by Google ID first
           let user = await User.findOne({ googleId: profile.id });
 
-          // If user exists with Google ID, return it
           if (user) return done(null, user);
 
-          // If user doesn't exist by Google ID, check if the email exists in the DB
+          // If not found, check email
           user = await User.findOne({ email });
 
           if (user) {
-            if (user.authProvider === "google") {
-              // If somehow Google user exists without googleId, update it
-              if (!user.googleId) {
-                user.googleId = profile.id;
-                await user.save();
-              }
-              return done(null, user);
-            }
-
             if (user.authProvider === "local") {
-              // Email is registered locally, deny Google login
+              // Deny Google login if email is registered via password
               return done(null, false, {
                 message:
-                  "This email is already registered with password. Please login using email & password.",
+                  "This email is registered using password. Please login manually.",
               });
             }
+
+            //Link googleId if not already linked
+            if (!user.googleId) {
+              user.googleId = profile.id;
+              await user.save();
+            }
+
+            return done(null, user);
           }
 
-          // If user does not exist, create a new one
-          const newUser = {
+          // New Google user creation
+          const newUser = await User.create({
             googleId: profile.id,
             name: profile.displayName,
             email,
-            image_url: profile.photos[0].value,
+            image_url: profile.photos?.[0]?.value || null,
             authProvider: "google",
-          };
+          });
 
-          user = await User.create(newUser);
-          done(null, user);
+          return done(null, newUser);
         } catch (err) {
-          console.error(err);
+          console.error("Passport Google Error:", err);
           done(err, null);
         }
       }
     )
   );
 
-  passport.serializeUser((user, done) => done(null, user.id));
+  // Serialize/Deserialize
+  passport.serializeUser((user, done) => done(null, user._id));
   passport.deserializeUser(async (id, done) => {
     try {
-      const user = await User.findById(id);
+      const user = await User.findById(id).lean();
       done(null, user);
     } catch (err) {
       done(err, null);

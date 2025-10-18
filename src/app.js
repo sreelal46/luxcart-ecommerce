@@ -6,86 +6,91 @@ const session = require("express-session");
 const noCache = require("nocache");
 const FileStore = require("session-file-store")(session);
 const { engine } = require("express-handlebars");
+require("dotenv").config();
+
 const connectDB = require("./config/db");
-const googleAuthRoutes = require("./routers/googleAuthRoutes");
+const googleAuthRoutes = require("./routers/googleAuth.routes");
+const userRoutes = require("./routers/user.routes");
+const adminRoutes = require("./routers/admin.routes");
 const {
   errorHandling500,
   errorHandling404,
 } = require("./middlewares/errors/errorHandling");
-require("dotenv").config();
 
-//route importing
-const userRoutes = require("./routers/userRoutes");
-
-//env export
+// PORT
 const PORT = parseInt(process.env.PORT) || 8080;
 
-//view engine setup
+// View Engine Setup
 app.engine(
   "hbs",
   engine({
     extname: "hbs",
-    defaultLayout: "index",
-    layoutsDir: __dirname + "/views/layouts/",
-    partialsDir: path.join(__dirname, "views", "partial"),
+    defaultLayout: "userLayout",
+    layoutsDir: path.join(__dirname, "views", "layouts"),
+    partialsDir: path.join(__dirname, "views", "partials"),
   })
 );
 app.set("view engine", "hbs");
-app.set("views", __dirname + "/views");
+app.set("views", path.join(__dirname, "views"));
 
-// Serve public folder
+// Static Folder
 app.use(express.static(path.join(__dirname, "public")));
 
-// Serve bootstrap-icons from node_modules
+// Bootstrap Icons
 app.use(
   "/bootstrap-icons",
-  express.static(
-    path.join(__dirname, "../node_modules", "bootstrap-icons", "font")
-  )
+  express.static(path.join(__dirname, "../node_modules/bootstrap-icons/font"))
 );
 
-//Middileware
+// Middleware
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 app.use(noCache());
 
-//session
+// SESSION SETUP
 app.use(
   session({
-    name: "luxcart.sid", //cookie name
+    name: "luxcart.sid",
     secret: process.env.SESSION_SECRET || "mysecretkey",
     resave: false,
     saveUninitialized: false,
-    store: new FileStore(), //  for production use MongoStore or redis
+    store: new FileStore({
+      path: path.join(__dirname, "../sessions"),
+      retries: 1,
+    }),
     cookie: {
-      maxAge: 1000 * 60 * 60 * 24, // 1 day
+      maxAge: 1000 * 60 * 60 * 24,
       httpOnly: true,
       secure: false,
     },
   })
 );
 
-// Passport js middleware
-require("./config/passport")(passport);
+// Passport Middleware
 app.use(passport.initialize());
 app.use(passport.session());
 
-//Google auth route
+// Database Connect
+connectDB();
+
+// Make admin available in all views
+app.use((req, res, next) => {
+  res.locals.admin = req.session.admin || null;
+  res.locals.user = req.session.user || null;
+  next();
+});
+
+// Routes
 app.use("/auth", googleAuthRoutes);
-
-// User route setup
 app.use("/", userRoutes);
+app.use("/admin", adminRoutes);
 
-//Admin route setup
-// app.use("/admin", adminRoutes);
-
-//error handling middlewares
+// Error Handling
 app.use(errorHandling404);
 app.use(errorHandling500);
 
-//conneting Database
-connectDB();
-
-//server
+//server connection
 console.log("======================================");
-app.listen(PORT, () => console.log(`Working on : http://localhost:${PORT}/`));
+app.listen(PORT, () =>
+  console.log(`Working on : http://localhost:${PORT}/admin/login`)
+);
