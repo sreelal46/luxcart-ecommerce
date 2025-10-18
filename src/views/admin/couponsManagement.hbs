@@ -1,0 +1,190 @@
+<div class="container py-5">
+  <!-- Header -->
+  <div class="d-flex justify-content-between align-items-center mb-4">
+    <h2 class="fw-bold">Coupons Management</h2>
+    <button class="btn btn-primary btn-md  shadow-sm" data-bs-toggle="modal" data-bs-target="#addCouponModal">
+      <i class="bi bi-plus-circle me-2"></i> Add Coupon
+    </button>
+  </div>
+
+  <!-- Coupons Table Card -->
+  <div class="card shadow-sm rounded-4 p-4">
+    <div class="table-responsive">
+      <table class="table table-hover align-middle text-center">
+        <thead class="table-light">
+          <tr>
+            <th>#</th>
+            <th>Coupon Code</th>
+            <th>Discount</th>
+            <th>Valid Period</th>
+            <th>Status</th>
+            <th>Action</th>
+          </tr>
+        </thead>
+        <tbody id="couponsTableBody">
+          <!-- Coupon 1 -->
+          <tr class="align-middle">
+            <td>1</td>
+            <td class="fw-bold">WELCOME50</td>
+            <td><span class="badge bg-success fs-6">50%</span></td>
+            <td>2025-10-01 - 2025-12-31</td>
+            <td><span class="badge bg-primary">Active</span></td>
+            <td>
+              <button class="btn btn-sm btn-warning me-2 " data-bs-toggle="modal" data-bs-target="#editCouponModal"
+                data-code="WELCOME50" data-discounttype="percentage" data-discount="50" data-validfrom="2025-10-01"
+                data-validto="2025-12-31" data-usagelimit="100">
+                <i class="bi bi-pencil-fill"></i>
+              </button>
+              <button class="btn btn-sm btn-danger" data-bs-toggle="modal" data-bs-target="#deleteCouponModal"
+                data-code="WELCOME50">
+                <i class="bi bi-trash-fill"></i>
+              </button>
+            </td>
+          </tr>
+          <!-- Coupon 2 -->
+          <tr>
+            <td>2</td>
+            <td class="fw-bold">FLAT200</td>
+            <td><span class="badge bg-info fs-6">₹200</span></td>
+            <td>2025-10-15 - 2025-11-30</td>
+            <td><span class="badge bg-primary">Active</span></td>
+            <td>
+              <button class="btn btn-sm btn-warning me-2 " data-bs-toggle="modal" data-bs-target="#editCouponModal"
+                data-code="FLAT200" data-discounttype="fixed" data-discount="200" data-validfrom="2025-10-15"
+                data-validto="2025-11-30" data-usagelimit="50">
+                <i class="bi bi-pencil-fill"></i>
+              </button>
+              <button class="btn btn-sm btn-danger" data-bs-toggle="modal" data-bs-target="#deleteCouponModal"
+                data-code="WELCOME50">
+                <i class="bi bi-trash-fill"></i>
+              </button>
+            </td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+  </div>
+</div>
+
+<!-- Add Coupon Modal -->
+<div class="modal fade" id="addCouponModal" tabindex="-1" aria-labelledby="addCouponModalLabel" aria-hidden="true">
+  <div class="modal-dialog modal-dialog-centered modal-lg">
+    <div class="modal-content rounded-4 shadow-lg">
+      <div class="modal-header bg-primary text-white">
+        <h5 class="modal-title fw-bold" id="addCouponModalLabel"><i class="bi bi-plus-circle me-2"></i> Add New Coupon
+        </h5>
+        <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+      </div>
+      <div class="modal-body">
+        <form id="addCouponForm">
+          <div class="row g-3">
+            <div class="col-md-6">
+              <label class="form-label fw-semibold">Coupon Code</label>
+              <input type="text" class="form-control form-control-lg" name="code" required>
+            </div>
+            <div class="col-md-6">
+              <label class="form-label fw-semibold">Discount Type</label>
+              <select class="form-select form-select-lg" name="discountType" required>
+                <option value="">Select Type</option>
+                <option value="percentage">Percentage</option>
+                <option value="fixed">Fixed Amount</option>
+              </select>
+            </div>
+            <div class="col-md-6">
+              <label class="form-label fw-semibold">Discount</label>
+              <input type="number" class="form-control form-control-lg" name="discount" required min="0">
+            </div>
+            <div class="col-md-6">
+              <label class="form-label fw-semibold">Usage Limit</label>
+              <input type="number" class="form-control form-control-lg" name="usageLimit" required min="1">
+            </div>
+            <div class="col-md-6">
+              <label class="form-label fw-semibold">Valid From</label>
+              <input type="date" class="form-control form-control-lg" name="validFrom" required>
+            </div>
+            <div class="col-md-6">
+              <label class="form-label fw-semibold">Valid To</label>
+              <input type="date" class="form-control form-control-lg" name="validTo" required>
+            </div>
+          </div>
+          <div class="text-end mt-4">
+            <button type="button" class="btn btn-secondary btn-lg me-2" data-bs-dismiss="modal">Close</button>
+            <button type="submit" class="btn btn-primary btn-lg ">Add Coupon</button>
+          </div>
+        </form>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- Edit Coupon Modal (similar layout) -->
+<div class="modal fade" id="editCouponModal" tabindex="-1" aria-labelledby="editCouponModalLabel" aria-hidden="true">
+  <div class="modal-dialog modal-dialog-centered modal-lg">
+    <div class="modal-content rounded-4 shadow-lg">
+      <div class="modal-header bg-warning text-dark">
+        <h5 class="modal-title fw-bold" id="editCouponModalLabel"><i class="bi bi-pencil-square me-2"></i> Edit Coupon
+        </h5>
+        <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+      </div>
+      <div class="modal-body">
+        <form id="editCouponForm">
+          <div class="row g-3">
+            <div class="col-md-6">
+              <label class="form-label fw-semibold">Coupon Code</label>
+              <input type="text" class="form-control form-control-lg" name="code" required>
+            </div>
+            <div class="col-md-6">
+              <label class="form-label fw-semibold">Discount Type</label>
+              <select class="form-select form-select-lg" name="discountType" required>
+                <option value="percentage">Percentage</option>
+                <option value="fixed">Fixed Amount</option>
+              </select>
+            </div>
+            <div class="col-md-6">
+              <label class="form-label fw-semibold">Discount</label>
+              <input type="number" class="form-control form-control-lg" name="discount" min="0" required>
+            </div>
+            <div class="col-md-6">
+              <label class="form-label fw-semibold">Usage Limit</label>
+              <input type="number" class="form-control form-control-lg" name="usageLimit" min="1" required>
+            </div>
+            <div class="col-md-6">
+              <label class="form-label fw-semibold">Valid From</label>
+              <input type="date" class="form-control form-control-lg" name="validFrom" required>
+            </div>
+            <div class="col-md-6">
+              <label class="form-label fw-semibold">Valid To</label>
+              <input type="date" class="form-control form-control-lg" name="validTo" required>
+            </div>
+          </div>
+          <div class="text-end mt-4">
+            <button type="button" class="btn btn-secondary btn-lg  me-2" data-bs-dismiss="modal">Close</button>
+            <button type="submit" class="btn btn-warning btn-lg ">Update Coupon</button>
+          </div>
+        </form>
+      </div>
+    </div>
+  </div>
+</div>
+
+
+<!-- Delete Confirmation Modal -->
+<div class="modal fade" id="deleteCouponModal" tabindex="-1" aria-labelledby="deleteCouponModalLabel"
+  aria-hidden="true">
+  <div class="modal-dialog modal-dialog-centered">
+    <div class="modal-content rounded-4 shadow-lg">
+      <div class="modal-header bg-danger text-white">
+        <h5 class="modal-title fw-bold" id="deleteCouponModalLabel"><i class="bi bi-exclamation-triangle-fill me-2"></i>
+          Delete Coupon</h5>
+        <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+      </div>
+      <div class="modal-body">
+        <p class="fs-6">Are you sure you want to delete the coupon <strong id="deleteCouponName"></strong>?</p>
+      </div>
+      <div class="modal-footer">
+        <button type="button" class="btn btn-secondary rounded-pill" data-bs-dismiss="modal">Cancel</button>
+        <button type="button" class="btn btn-danger rounded-pill" id="confirmDeleteCoupon">Delete</button>
+      </div>
+    </div>
+  </div>
+</div>

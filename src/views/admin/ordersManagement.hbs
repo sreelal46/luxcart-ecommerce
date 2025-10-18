@@ -1,0 +1,129 @@
+<div class="container py-5">
+  <!-- Header -->
+  <div class="d-flex justify-content-between align-items-center mb-4">
+    <h2 class="fw-bold">Orders Management</h2>
+    <div class="d-flex">
+      <a href="/admin/orders-management/return-request-management"><button
+          class="btn btn-warning btn-md me-2 shadow-sm">
+          <i class="bi bi-arrow-counterclockwise me-2"></i> Return Request
+        </button>
+      </a>
+      <button class="btn btn-success btn-md shadow-sm">
+        <i class="bi bi-download me-2"></i> Export Orders
+      </button>
+    </div>
+  </div>
+
+  <!-- Search & Filter -->
+  <div class="d-flex justify-content-between mb-3">
+    <input type="text" id="searchOrderInput" class="form-control w-50"
+      placeholder="Search by Order ID, Customer, Product">
+    <button class="btn btn-primary ms-2" data-bs-toggle="modal" data-bs-target="#filterOrderModal">
+      <i class="bi bi-funnel"></i> Filter
+    </button>
+  </div>
+
+  <!-- Orders Table Card -->
+  <div class="card shadow-sm rounded-4 p-4">
+    <div class="table-responsive">
+      <table class="table table-hover align-middle text-center">
+        <thead class="table-light">
+          <tr>
+            <th>#</th>
+            <th>Order ID</th>
+            <th>Customer</th>
+            <th>Product</th>
+            <th>Date</th>
+            <th>Amount (₹)</th>
+            <th>Status</th>
+            <th>Action</th>
+          </tr>
+        </thead>
+        <tbody id="ordersTableBody">
+          <!-- Example Order 1 -->
+          <tr>
+            <td>1</td>
+            <td class="fw-bold">ORD1001</td>
+            <td>John Doe</td>
+            <td>Car Accessories Kit</td>
+            <td>2025-10-15</td>
+            <td>₹4500</td>
+            <td><span class="badge bg-success">Shipped</span></td>
+            <td>
+              <button class="btn btn-sm btn-info">
+                <i class="bi bi-eye-fill"></i> View
+              </button>
+            </td>
+          </tr>
+          <!-- Example Order 2 -->
+          <tr>
+            <td>2</td>
+            <td class="fw-bold">ORD1002</td>
+            <td>Jane Smith</td>
+            <td>Car Seat Cover</td>
+            <td>2025-10-16</td>
+            <td>₹1200</td>
+            <td><span class="badge bg-warning text-dark">Processing</span></td>
+            <td>
+              <button class="btn btn-sm btn-info">
+                <i class="bi bi-eye-fill"></i> View
+              </button>
+            </td>
+          </tr>
+          <!-- Example Order 3 -->
+          <tr>
+            <td>3</td>
+            <td class="fw-bold">ORD1003</td>
+            <td>Mark Wilson</td>
+            <td>Car Cleaning Kit</td>
+            <td>2025-10-17</td>
+            <td>₹800</td>
+            <td><span class="badge bg-secondary">Pending</span></td>
+            <td>
+              <button class="btn btn-sm btn-info">
+                <i class="bi bi-eye-fill"></i> View
+              </button>
+            </td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+  </div>
+</div>
+
+<!-- Filter Modal -->
+<div class="modal fade" id="filterOrderModal" tabindex="-1" aria-labelledby="filterOrderModalLabel" aria-hidden="true">
+  <div class="modal-dialog modal-dialog-centered">
+    <div class="modal-content rounded-4 shadow-lg">
+      <div class="modal-header bg-primary text-white">
+        <h5 class="modal-title fw-bold" id="filterOrderModalLabel"><i class="bi bi-funnel me-2"></i> Filter Orders</h5>
+        <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+      </div>
+      <div class="modal-body">
+        <form id="filterOrderForm">
+          <div class="mb-3">
+            <label class="form-label fw-semibold">Status</label>
+            <select class="form-select" name="status">
+              <option value="">All</option>
+              <option value="Shipped">Shipped</option>
+              <option value="Processing">Processing</option>
+              <option value="Pending">Pending</option>
+            </select>
+          </div>
+          <div class="mb-3">
+            <label class="form-label fw-semibold">Date From</label>
+            <input type="date" class="form-control" name="dateFrom">
+          </div>
+          <div class="mb-3">
+            <label class="form-label fw-semibold">Date To</label>
+            <input type="date" class="form-control" name="dateTo">
+          </div>
+          <div class="text-end mt-3">
+            <button type="button" class="btn btn-secondary me-2" data-bs-dismiss="modal">Close</button>
+            <button type="submit" class="btn btn-primary">Apply Filter</button>
+          </div>
+        </form>
+      </div>
+    </div>
+  </div>
+</div>

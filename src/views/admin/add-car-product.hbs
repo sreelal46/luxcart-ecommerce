@@ -1,0 +1,210 @@
+<div class="container py-4">
+  <h3 class="fw-bold mb-4">Add Car Product</h3>
+
+  <form id="carProductForm" enctype="multipart/form-data">
+    <!-- Basic Info -->
+    <div class="card mb-4 shadow-sm">
+      <div class="card-header bg-light fw-semibold">Basic Information</div>
+      <div class="card-body row g-3">
+        <div class="col-md-12">
+          <label class="form-label">Product Name</label>
+          <input type="text" class="form-control" name="price" placeholder="Enter Product Name" required />
+        </div>
+        <div class="col-md-4">
+          <label class="form-label">Brand</label>
+          <select class="form-select" name="brand" required>
+            <option selected disabled>Select brand</option>
+            <option value="BMW">BMW</option>
+            <option value="Audi">Audi</option>
+            <option value="Mercedes">Mercedes</option>
+          </select>
+        </div>
+
+        <div class="col-md-4">
+          <label class="form-label">Category</label>
+          <select class="form-select" name="category" required>
+            <option selected disabled>Select category</option>
+            <option value="SUV">SUV</option>
+            <option value="Sedan">Sedan</option>
+            <option value="Hatchback">Hatchback</option>
+          </select>
+        </div>
+
+        <div class="col-md-4">
+          <label class="form-label">Product Type</label>
+          <select class="form-select" name="product_type" required>
+            <option selected disabled>Select type</option>
+            <option value="Luxury">Luxury</option>
+            <option value="Premium">Premium</option>
+          </select>
+        </div>
+
+        <div class="col-md-12">
+          <label class="form-label">Description</label>
+          <textarea class="form-control" rows="3" name="description" placeholder="Enter description"></textarea>
+        </div>
+
+
+
+        <!-- <div class="col-md-6">
+          <label class="form-label">Offer Price (Optional)</label>
+          <input type="number" class="form-control" name="offer_price" placeholder="Enter offer price" />
+        </div> -->
+      </div>
+    </div>
+
+    <!-- Quick Info -->
+    <div class="card mb-4 shadow-sm">
+      <div class="card-header bg-light fw-semibold">Quick Info</div>
+      <div class="card-body row g-3">
+        <div class="col-md-3"><label class="form-label">Year</label><input type="number" class="form-control"
+            name="year" /></div>
+        <div class="col-md-3"><label class="form-label">Mileage (km/l)</label><input type="number" class="form-control"
+            name="mileage" /></div>
+        <div class="col-md-3"><label class="form-label">Warranty</label><input type="text" class="form-control"
+            name="warranty" /></div>
+        <div class="col-md-3"><label class="form-label">Region</label><input type="text" class="form-control"
+            name="region" /></div>
+      </div>
+    </div>
+
+    <!-- Performance -->
+    <div class="card mb-4 shadow-sm">
+      <div class="card-header bg-light fw-semibold">Performance</div>
+      <div class="card-body row g-3">
+        <div class="col-md-3"><label class="form-label">Top Speed (km/h)</label><input type="number"
+            class="form-control" name="top_speed" /></div>
+        <div class="col-md-3"><label class="form-label">Power (hp)</label><input type="number" class="form-control"
+            name="power_hp" /></div>
+        <div class="col-md-3"><label class="form-label">Engine</label><input type="text" class="form-control"
+            name="engine" /></div>
+        <div class="col-md-3"><label class="form-label">Transmission</label><input type="text" class="form-control"
+            name="transmission" /></div>
+        <div class="col-md-3"><label class="form-label">Drive Type</label><input type="text" class="form-control"
+            name="drive_type" /></div>
+        <div class="col-md-3"><label class="form-label">Torque</label><input type="text" class="form-control"
+            name="torque" /></div>
+        <div class="col-md-3"><label class="form-label">Acceleration (0–100 km/h)</label><input type="text"
+            class="form-control" name="acceleration_0_100" /></div>
+      </div>
+    </div>
+
+    <!-- Exterior & Interior -->
+    <div class="card mb-4 shadow-sm">
+      <div class="card-header bg-light fw-semibold">Exterior & Interior</div>
+      <div class="card-body row g-3">
+        <div class="col-md-3"><label class="form-label">Colors</label><input type="text" class="form-control"
+            name="colors" /></div>
+        <div class="col-md-3"><label class="form-label">Wheels</label><input type="text" class="form-control"
+            name="wheels" /></div>
+        <div class="col-md-3"><label class="form-label">Upholstery</label><input type="text" class="form-control"
+            name="upholstery" /></div>
+        <div class="col-md-3"><label class="form-label">Design</label><input type="text" class="form-control"
+            name="design" /></div>
+      </div>
+    </div>
+
+    <!-- Tech & Assistance -->
+    <div class="card mb-4 shadow-sm">
+      <div class="card-header bg-light fw-semibold">Tech & Assistance</div>
+      <div class="card-body row g-3">
+        <div class="col-md-3"><label class="form-label">Cameras</label><input type="text" class="form-control"
+            name="cameras" /></div>
+        <div class="col-md-3">
+          <label class="form-label">Lane Assist</label>
+          <select class="form-select" name="lane_assist">
+            <option value="true">Yes</option>
+            <option value="false">No</option>
+          </select>
+        </div>
+        <div class="col-md-3"><label class="form-label">Sound System</label><input type="text" class="form-control"
+            name="sound_system" /></div>
+        <div class="col-md-3">
+          <label class="form-label">Keyless Go</label>
+          <select class="form-select" name="keyless_go">
+            <option value="true">Yes</option>
+            <option value="false">No</option>
+          </select>
+        </div>
+      </div>
+    </div>
+
+    <!-- Variants Section -->
+    <div id="variantSectionContainer">
+      <div class="variant-section card mb-4 shadow-sm">
+        <div class="card-header bg-light fw-semibold d-flex justify-content-between align-items-center">
+          <span>Variant #1</span>
+          <button type="button" class="btn btn-sm btn-danger remove-variant d-none">Remove</button>
+        </div>
+        <div class="card-body row g-3">
+          <div class="col-md-4"><label class="form-label">Color</label><input type="text" class="form-control"
+              name="variant_name[]" placeholder="Color" /></div>
+          <div class="col-md-4"><label class="form-label">Price</label><input type="number" class="form-control"
+              name="variant_price[]" /></div>
+          <div class="col-md-4"><label class="form-label">Stock</label><input type="number" class="form-control"
+              name="variant_stock[]" /></div>
+
+          <label class="form-label h5 fw-bold">Images</label>
+          <div class="col-md-4">
+            <div class="upload-box" onclick="this.querySelector('input').click()">
+              <i class="bi bi-cloud-arrow-up"></i>
+              <p class="mt-2 mb-1">Click to upload images</p>
+              <small>PNG, JPG or JPEG (max. 5MB)</small>
+              <input type="file" name="variant_images[]" multiple hidden accept="image/*" />
+            </div>
+          </div>
+          <div class="col-md-4">
+            <div class="upload-box" onclick="this.querySelector('input').click()">
+              <i class="bi bi-cloud-arrow-up"></i>
+              <p class="mt-2 mb-1">Click to upload images</p>
+              <small>PNG, JPG or JPEG (max. 5MB)</small>
+              <input type="file" name="variant_images[]" multiple hidden accept="image/*" />
+            </div>
+          </div>
+          <div class="col-md-4">
+            <div class="upload-box" onclick="this.querySelector('input').click()">
+              <i class="bi bi-cloud-arrow-up"></i>
+              <p class="mt-2 mb-1">Click to upload images</p>
+              <small>PNG, JPG or JPEG (max. 5MB)</small>
+              <input type="file" name="variant_images[]" multiple hidden accept="image/*" />
+            </div>
+          </div>
+          <div class="col-md-4">
+            <div class="upload-box" onclick="this.querySelector('input').click()">
+              <i class="bi bi-cloud-arrow-up"></i>
+              <p class="mt-2 mb-1">Click to upload images</p>
+              <small>PNG, JPG or JPEG (max. 5MB)</small>
+              <input type="file" name="variant_images[]" multiple hidden accept="image/*" />
+            </div>
+          </div>
+          <div class="col-md-4">
+            <div class="upload-box" onclick="this.querySelector('input').click()">
+              <i class="bi bi-cloud-arrow-up"></i>
+              <p class="mt-2 mb-1">Click to upload images</p>
+              <small>PNG, JPG or JPEG (max. 5MB)</small>
+              <input type="file" name="variant_images[]" multiple hidden accept="image/*" />
+            </div>
+          </div>
+          <div class="col-md-4">
+            <div class="upload-box" onclick="this.querySelector('input').click()">
+              <i class="bi bi-cloud-arrow-up"></i>
+              <p class="mt-2 mb-1">Click to upload images</p>
+              <small>PNG, JPG or JPEG (max. 5MB)</small>
+              <input type="file" name="variant_images[]" multiple hidden accept="image/*" />
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Add Variant Button -->
+    <button type="button" id="addVariantBtn" class="btn btn-outline-primary mb-4">
+      <i class="bi bi-plus-circle me-1"></i> Add Variant
+    </button>
+
+    <!-- Submit -->
+    <div class="text-end">
+      <button type="submit" class="btn btn-primary px-4">Save Product</button>
+    </div>
+  </form>
+</div>

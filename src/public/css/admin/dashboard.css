@@ -1,0 +1,60 @@
+/* Dashboard Page Styling */
+body {
+  background-color: #f0f4fa;
+  font-family: "Poppins", sans-serif;
+  color: #5a5a5a;
+}
+
+/* Stat cards */
+.stat-card {
+  border-radius: 16px;
+  transition: all 0.3s ease;
+  background-color: #fff;
+}
+
+.stat-card:hover {
+  transform: translateY(-5px);
+  box-shadow: 0 8px 18px rgba(51, 90, 163, 0.15);
+}
+
+/* Circle icons */
+.icon-circle {
+  width: 50px;
+  height: 50px;
+  border-radius: 50%;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  color: #fff;
+}
+
+/* Table */
+.table {
+  border-radius: 12px;
+  overflow: hidden;
+}
+
+.table thead th {
+  color: #5a5a5a;
+  font-weight: 600;
+}
+
+.table tbody td {
+  color: #5a5a5a;
+}
+
+.table-hover tbody tr:hover {
+  background-color: rgba(51, 90, 163, 0.05);
+}
+
+/* Logout button */
+.btn-outline-danger {
+  border-radius: 10px;
+  font-weight: 600;
+  transition: all 0.2s ease;
+}
+
+.btn-outline-danger:hover {
+  background-color: #dc3545;
+  color: #fff;
+}

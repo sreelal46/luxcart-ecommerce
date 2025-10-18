@@ -1,82 +1,113 @@
-{{!-- Use this for your main dashboard page --}}
-<h2 class="pt-4 pb-2">Dashboard</h2>
-<span class="text-muted">Welcome back, {{username}}</span>
-<div class="row g-4 mb-4">
-  <div class="col-md-3">
-    <div class="card text-center">
-      <div class="card-body">
-        <h5>Today's Sales</h5>
-        <h3 class="fw-bold">{{todaysSales}}</h3>
-        <span class="text-success">+{{salesGrowth}}%</span>
-      </div>
-    </div>
+<!-- Dashboard Header -->
+<div class="d-flex justify-content-between align-items-center pt-4 pb-2">
+  <div>
+    <h2 class="fw-bold text-dark">Dashboard</h2>
+    <span class="text-muted">Welcome back, {{username}} 👋</span>
   </div>
-  <div class="col-md-3">
-    <div class="card text-center">
-      <div class="card-body">
-        <h5>Monthly Revenue</h5>
-        <h3 class="fw-bold">{{monthlyRevenue}}</h3>
-        <span class="text-success">+{{revenueGrowth}}%</span>
-      </div>
-    </div>
-  </div>
-  <div class="col-md-3">
-    <div class="card text-center">
-      <div class="card-body">
-        <h5>Total Orders</h5>
-        <h3 class="fw-bold">{{totalOrders}}</h3>
-        <span class="text-success">+{{ordersGrowth}}%</span>
-      </div>
-    </div>
-  </div>
-  <div class="col-md-3">
-    <div class="card text-center">
-      <div class="card-body">
-        <h5>Total Users</h5>
-        <h3 class="fw-bold">{{totalUsers}}</h3>
-        <span class="text-success">+{{usersGrowth}}%</span>
-      </div>
-    </div>
-  </div>
-</div>
-<div class="card mb-4">
-  <div class="card-body">
-    <h5>Recent Orders</h5>
-    <table class="table table-hover mb-0">
-      <thead>
-        <tr>
-          <th>Order ID</th>
-          <th>Customer</th>
-          <th>Product</th>
-          <th>Date</th>
-          <th>Amount</th>
-          <th>Status</th>
-        </tr>
-      </thead>
-      <tbody>
-        {{#each orders}}
-        <tr>
-          <td>{{orderId}}</td>
-          <td>{{customer}}</td>
-          <td>{{product}}</td>
-          <td>{{date}}</td>
-          <td>{{amount}}</td>
-          <td>
-            {{#if (eq status "Completed")}}
-            <span class="badge bg-success">Completed</span>
-            {{else if (eq status "Processing")}}
-            <span class="badge bg-primary">Processing</span>
-            {{else if (eq status "Pending")}}
-            <span class="badge bg-warning text-dark">Pending</span>
-            {{else}}
-            <span class="badge bg-info text-dark">{{status}}</span>
-            {{/if}}
-          </td>
-        </tr>
-        {{/each}}
-      </tbody>
-    </table>
+  <div>
+    <a href="/admin/logout" class="btn btn-outline-danger px-4">
+      <i class="bi bi-box-arrow-right me-2"></i> Logout
+    </a>
   </div>
 </div>
 
-<a href="/admin/logout" class="btn btn-outline-secondary w-100">Lgout</a>
+<!-- Stat Cards -->
+<div class="row g-4 mb-4 mt-2">
+  <div class="col-md-3">
+    <div class="card stat-card shadow-sm border-0">
+      <div class="card-body text-center">
+        <div class="icon-circle bg-primary mb-3">
+          <i class="bi bi-currency-dollar text-white fs-4"></i>
+        </div>
+        <h6 class="text-secondary">Today's Sales</h6>
+        <h3 class="fw-bold text-dark">{{todaysSales}}</h3>
+        <span class="text-success small">+{{salesGrowth}}%</span>
+      </div>
+    </div>
+  </div>
+
+  <div class="col-md-3">
+    <div class="card stat-card shadow-sm border-0">
+      <div class="card-body text-center">
+        <div class="icon-circle bg-info mb-3">
+          <i class="bi bi-graph-up text-white fs-4"></i>
+        </div>
+        <h6 class="text-secondary">Monthly Revenue</h6>
+        <h3 class="fw-bold text-dark">{{monthlyRevenue}}</h3>
+        <span class="text-success small">+{{revenueGrowth}}%</span>
+      </div>
+    </div>
+  </div>
+
+  <div class="col-md-3">
+    <div class="card stat-card shadow-sm border-0">
+      <div class="card-body text-center">
+        <div class="icon-circle bg-warning mb-3">
+          <i class="bi bi-bag-check text-white fs-4"></i>
+        </div>
+        <h6 class="text-secondary">Total Orders</h6>
+        <h3 class="fw-bold text-dark">{{totalOrders}}</h3>
+        <span class="text-success small">+{{ordersGrowth}}%</span>
+      </div>
+    </div>
+  </div>
+
+  <div class="col-md-3">
+    <div class="card stat-card shadow-sm border-0">
+      <div class="card-body text-center">
+        <div class="icon-circle bg-success mb-3">
+          <i class="bi bi-people-fill text-white fs-4"></i>
+        </div>
+        <h6 class="text-secondary">Total Users</h6>
+        <h3 class="fw-bold text-dark">{{totalUsers}}</h3>
+        <span class="text-success small">+{{usersGrowth}}%</span>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- Recent Orders Table -->
+<div class="card shadow-sm border-0 mb-5">
+  <div class="card-body">
+    <div class="d-flex justify-content-between align-items-center mb-3">
+      <h5 class="fw-bold text-dark mb-0">Recent Orders</h5>
+      <a href="#" class="text-decoration-none small text-primary fw-semibold">View All</a>
+    </div>
+    <div class="table-responsive">
+      <table class="table align-middle table-hover table-striped mb-0">
+        <thead class="table-light">
+          <tr>
+            <th>Order ID</th>
+            <th>Customer</th>
+            <th>Product</th>
+            <th>Date</th>
+            <th>Amount</th>
+            <th>Status</th>
+          </tr>
+        </thead>
+        <tbody>
+          {{#each orders}}
+          <tr>
+            <td class="fw-semibold text-dark">#{{orderId}}</td>
+            <td>{{customer}}</td>
+            <td>{{product}}</td>
+            <td>{{date}}</td>
+            <td>₹{{amount}}</td>
+            <td>
+              {{#if (eq status "Completed")}}
+              <span class="badge bg-success">Completed</span>
+              {{else if (eq status "Processing")}}
+              <span class="badge bg-primary">Processing</span>
+              {{else if (eq status "Pending")}}
+              <span class="badge bg-warning text-dark">Pending</span>
+              {{else}}
+              <span class="badge bg-secondary">{{status}}</span>
+              {{/if}}
+            </td>
+          </tr>
+          {{/each}}
+        </tbody>
+      </table>
+    </div>
+  </div>
+</div>

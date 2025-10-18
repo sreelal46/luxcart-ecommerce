@@ -1,0 +1,40 @@
+/* ===== Navbar Styling ===== */
+.navbar {
+  position: sticky;
+  top: 0;
+  z-index: 1030;
+  background-color: #fff;
+}
+
+.navbar .bi-bag-check-fill {
+  color: #335aa3;
+}
+
+.dropdown-menu {
+  border-radius: 10px;
+  font-size: 0.9rem;
+}
+
+.dropdown-item {
+  padding: 8px 15px;
+  transition: all 0.2s ease;
+}
+
+.dropdown-item:hover {
+  background-color: rgba(51, 90, 163, 0.1);
+  color: #335aa3;
+}
+
+.dropdown-item.text-danger:hover {
+  background-color: rgba(220, 53, 69, 0.1);
+}
+
+/* Avatar hover effect */
+.dropdown button img {
+  transition: all 0.2s ease;
+}
+
+.dropdown button:hover img {
+  transform: scale(1.05);
+  box-shadow: 0 0 8px rgba(51, 90, 163, 0.2);
+}

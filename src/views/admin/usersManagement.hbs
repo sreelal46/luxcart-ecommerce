@@ -1,0 +1,153 @@
+<div class="container py-5">
+  <!-- Header -->
+  <div class="d-flex justify-content-between align-items-center mb-4">
+    <h2 class="fw-bold text-primary">Users Management</h2>
+  </div>
+
+  <!-- Search & Filter -->
+  <div class="d-flex justify-content-between mb-3">
+    <input type="text" id="searchUserInput" class="form-control w-50" placeholder="Search by name or email">
+    <button class="btn btn-primary ms-2" data-bs-toggle="modal" data-bs-target="#filterUserModal">
+      <i class="bi bi-funnel"></i> Filter
+    </button>
+  </div>
+
+  <!-- Users Table Card -->
+  <div class="card shadow-sm rounded-4 p-4">
+    <div class="table-responsive">
+      <table class="table table-hover align-middle text-center">
+        <thead class="table-light">
+          <tr>
+            <th>#</th>
+            <th>User</th>
+            <th>Status</th>
+            <th>Total Orders</th>
+            <th>Action</th>
+          </tr>
+        </thead>
+        <tbody id="usersTableBody">
+          <!-- Example User 1 -->
+          <tr>
+            <td>1</td>
+            <td class="d-flex align-items-center">
+              <img src="https://via.placeholder.com/40" class="rounded-circle me-2" alt="profile">
+              <div class="text-start">
+                <div class="fw-bold">John Doe</div>
+                <small class="text-muted">john@example.com</small>
+              </div>
+            </td>
+            <td><span class="badge bg-success">Active</span></td>
+            <td>12</td>
+            <td>
+              <button class="btn btn-sm btn-info rounded-pill me-1"><i class="bi bi-eye-fill"></i> View</button>
+              <button class="btn btn-sm btn-warning rounded-pill" data-bs-toggle="modal"
+                data-bs-target="#blockUserModal" data-user="John Doe" data-action="block">Block</button>
+            </td>
+          </tr>
+
+          <!-- Example User 2 -->
+          <tr>
+            <td>2</td>
+            <td class="d-flex align-items-center">
+              <img src="https://via.placeholder.com/40" class="rounded-circle me-2" alt="profile">
+              <div class="text-start">
+                <div class="fw-bold">Jane Smith</div>
+                <small class="text-muted">jane@example.com</small>
+              </div>
+            </td>
+            <td><span class="badge bg-danger">Blocked</span></td>
+            <td>5</td>
+            <td>
+              <button class="btn btn-sm btn-info rounded-pill me-1"><i class="bi bi-eye-fill"></i> View</button>
+              <button class="btn btn-sm btn-success rounded-pill" data-bs-toggle="modal"
+                data-bs-target="#blockUserModal" data-user="Jane Smith" data-action="unblock">Unblock</button>
+            </td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+  </div>
+</div>
+
+<!-- Filter Modal -->
+<div class="modal fade" id="filterUserModal" tabindex="-1" aria-labelledby="filterUserModalLabel" aria-hidden="true">
+  <div class="modal-dialog modal-dialog-centered">
+    <div class="modal-content rounded-4 shadow-lg">
+      <div class="modal-header bg-primary text-white">
+        <h5 class="modal-title fw-bold" id="filterUserModalLabel"><i class="bi bi-funnel me-2"></i> Filter Users</h5>
+        <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+      </div>
+      <div class="modal-body">
+        <form id="filterUserForm">
+          <div class="mb-3">
+            <label class="form-label fw-semibold">Status</label>
+            <select class="form-select" name="status">
+              <option value="">All</option>
+              <option value="Active">Active</option>
+              <option value="Blocked">Blocked</option>
+            </select>
+          </div>
+          <div class="text-end mt-3">
+            <button type="button" class="btn btn-secondary me-2" data-bs-dismiss="modal">Close</button>
+            <button type="submit" class="btn btn-primary">Apply Filter</button>
+          </div>
+        </form>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- Block/Unblock Confirmation Modal -->
+<div class="modal fade" id="blockUserModal" tabindex="-1" aria-labelledby="blockUserModalLabel" aria-hidden="true">
+  <div class="modal-dialog modal-dialog-centered">
+    <div class="modal-content rounded-4 shadow-lg">
+      <div class="modal-header bg-warning text-dark">
+        <h5 class="modal-title fw-bold" id="blockUserModalLabel"><i class="bi bi-exclamation-triangle-fill me-2"></i>
+          Confirm Action</h5>
+        <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+      </div>
+      <div class="modal-body">
+        <p class="fs-6">Are you sure you want to <span id="blockActionText"></span> user <strong
+            id="blockUserName"></strong>?</p>
+      </div>
+      <div class="modal-footer">
+        <button type="button" class="btn btn-secondary rounded-pill" data-bs-dismiss="modal">Cancel</button>
+        <button type="button" class="btn btn-warning rounded-pill" id="confirmBlockUser">Yes</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- Scripts -->
+<script>
+  // Search functionality
+  document.getElementById('searchUserInput').addEventListener('keyup', function () {
+    const searchText = this.value.toLowerCase();
+    const rows = document.querySelectorAll('#usersTableBody tr');
+    rows.forEach(row => {
+      const rowText = row.innerText.toLowerCase();
+      row.style.display = rowText.includes(searchText) ? '' : 'none';
+    });
+  });
+
+  // Populate Block/Unblock modal
+  const blockUserModal = document.getElementById('blockUserModal');
+  let currentAction = '';
+  let currentUser = '';
+
+  blockUserModal.addEventListener('show.bs.modal', function (event) {
+    const button = event.relatedTarget;
+    currentAction = button.getAttribute('data-action'); // block/unblock
+    currentUser = button.getAttribute('data-user');
+
+    document.getElementById('blockUserName').textContent = currentUser;
+    document.getElementById('blockActionText').textContent = currentAction;
+  });
+
+  document.getElementById('confirmBlockUser').addEventListener('click', function () {
+    console.log(`${currentAction} user: ${currentUser}`);
+    // TODO: Call API or update table dynamically
+    const modal = bootstrap.Modal.getInstance(blockUserModal);
+    modal.hide();
+  });
+</script>

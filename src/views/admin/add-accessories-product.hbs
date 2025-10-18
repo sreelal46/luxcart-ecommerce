@@ -1,0 +1,142 @@
+<div class="container py-4">
+  <h3 class="fw-bold mb-4">Add Accessory Product</h3>
+
+  <form id="accessoryForm" enctype="multipart/form-data">
+    <!-- Basic Info -->
+    <div class="card mb-4 shadow-sm">
+      <div class="card-header bg-light fw-semibold">Basic Information</div>
+      <div class="card-body row g-3">
+        <div class="col-md-4">
+          <label class="form-label">Name</label>
+          <input type="text" class="form-control" name="name" placeholder="Enter product name" required />
+        </div>
+
+        <div class="col-md-4">
+          <label class="form-label">Category</label>
+          <select class="form-select" name="category_id" required>
+            <option selected disabled>Select category</option>
+            <option value="1">Exterior</option>
+            <option value="2">Interior</option>
+            <option value="3">Electronics</option>
+          </select>
+        </div>
+
+        <div class="col-md-4">
+          <label class="form-label">Product Type</label>
+          <select class="form-select" name="product_type" required>
+            <option selected disabled>Select type</option>
+            <option value="Luxury">Luxury</option>
+            <option value="Premium">Premium</option>
+          </select>
+        </div>
+
+        <div class="col-md-4">
+          <label class="form-label">Brand</label>
+          <select class="form-select" name="brand" required>
+            <option selected disabled>Select brand</option>
+            <option value="BMW">BMW</option>
+            <option value="Audi">Audi</option>
+            <option value="Mercedes">Mercedes</option>
+          </select>
+        </div>
+
+        <div class="col-md-12">
+          <label class="form-label">Description</label>
+          <textarea class="form-control" rows="3" name="description" placeholder="Enter description"></textarea>
+        </div>
+      </div>
+    </div>
+
+    <!-- Specification -->
+    <div class="card mb-4 shadow-sm">
+      <div class="card-header bg-light fw-semibold">Specification</div>
+      <div class="card-body row g-3">
+        <div class="col-md-4"><label class="form-label">Country of Origin</label><input type="text" class="form-control"
+            name="country_of_origin" /></div>
+        <div class="col-md-4"><label class="form-label">Fabric</label><input type="text" class="form-control"
+            name="fabric" /></div>
+        <div class="col-md-4"><label class="form-label">Finish</label><input type="text" class="form-control"
+            name="finish" /></div>
+        <div class="col-md-4"><label class="form-label">Fitting</label><input type="text" class="form-control"
+            name="fitting" /></div>
+        <div class="col-md-4"><label class="form-label">Warranty</label><input type="text" class="form-control"
+            name="warranty" /></div>
+        <div class="col-md-4">
+          <label class="form-label">Waterproof</label>
+          <select class="form-select" name="waterproof">
+            <option value="true">Yes</option>
+            <option value="false">No</option>
+          </select>
+        </div>
+      </div>
+    </div>
+
+    <!-- Vehicle Compatibility -->
+    <div class="card mb-4 shadow-sm">
+      <div class="card-header bg-light fw-semibold">Vehicle Compatibility</div>
+      <div class="card-body row g-3">
+        <div class="col-md-6"><label class="form-label">Vehicle</label><input type="text" class="form-control"
+            name="vehicle" /></div>
+        <div class="col-md-6"><label class="form-label">Production Year</label><input type="number" class="form-control"
+            name="production_year" /></div>
+      </div>
+    </div>
+
+    <!-- Variants -->
+    <div id="variantContainer">
+      <div class="variant-section card mb-4 shadow-sm">
+        <div class="card-header bg-light fw-semibold d-flex justify-content-between align-items-center">
+          <span>Variant #1</span>
+          <button type="button" class="btn btn-sm btn-danger remove-variant d-none">Remove</button>
+        </div>
+
+        <div class="card-body row g-3">
+          <div class="col-md-4"><label class="form-label">Price</label><input type="number" class="form-control"
+              name="variant_price[]" /></div>
+          <div class="col-md-4"><label class="form-label">Material</label><input type="text" class="form-control"
+              name="variant_material[]" /></div>
+          <div class="col-md-4"><label class="form-label">Stock</label><input type="number" class="form-control"
+              name="variant_stock[]" /></div>
+
+          <div class="col-md-4">
+            <label class="form-label">Images</label>
+            <div class="upload-box" onclick="this.querySelector('input').click()">
+              <i class="bi bi-cloud-arrow-up"></i>
+              <p class="mt-2 mb-1">Click to upload images</p>
+              <small>PNG, JPG or JPEG (max. 5MB)</small>
+              <input type="file" name="variant_images[]" multiple hidden accept="image/*" />
+            </div>
+          </div>
+          <div class="col-md-4">
+            <label class="form-label">Images</label>
+            <div class="upload-box" onclick="this.querySelector('input').click()">
+              <i class="bi bi-cloud-arrow-up"></i>
+              <p class="mt-2 mb-1">Click to upload images</p>
+              <small>PNG, JPG or JPEG (max. 5MB)</small>
+              <input type="file" name="variant_images[]" multiple hidden accept="image/*" />
+            </div>
+          </div>
+          <div class="col-md-4">
+            <label class="form-label">Images</label>
+            <div class="upload-box" onclick="this.querySelector('input').click()">
+              <i class="bi bi-cloud-arrow-up"></i>
+              <p class="mt-2 mb-1">Click to upload images</p>
+              <small>PNG, JPG or JPEG (max. 5MB)</small>
+              <input type="file" name="variant_images[]" multiple hidden accept="image/*" />
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Add Variant Button -->
+    <button type="button" id="addVariantBtn" class="btn btn-outline-primary mb-4">
+      <i class="bi bi-plus-circle me-1"></i> Add Variant
+    </button>
+
+    <!-- Submit -->
+    <div class="text-end">
+      <button type="submit" class="btn btn-primary px-4">Save Product</button>
+    </div>
+  </form>
+</div>

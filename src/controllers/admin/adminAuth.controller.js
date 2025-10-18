@@ -163,7 +163,7 @@ const PasswordChanging = async (req, res, next) => {
     req.session.success = "Password changed successfully";
     console.log("session checking in chnage password", req.session.success);
 
-    res.status(OK).redirect("/admin/login");
+    req.session.save(() => res.status(OK).redirect("/admin/login"));
   } catch (error) {
     console.error("Error from password chnaging admin", error);
     next(error);

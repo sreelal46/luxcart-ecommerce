@@ -1,0 +1,143 @@
+<div class="container-fluid px-4 py-4">
+  <!-- Header -->
+  <div class="d-flex justify-content-between align-items-center mb-4">
+    <h4 class="fw-bold mb-0">Type Management</h4>
+
+    <div class="d-flex align-items-center gap-3">
+      <!-- Search Bar -->
+      <div class="input-group" style="width: 250px;">
+        <span class="input-group-text bg-white"><i class="bi bi-search"></i></span>
+        <input type="text" id="searchType" class="form-control" placeholder="Search type...">
+      </div>
+
+      <!-- Add Type Button -->
+      <button class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#addTypeModal">
+        <i class="bi bi-plus-lg me-1"></i> Add Type
+      </button>
+    </div>
+  </div>
+
+  <!-- Type Table -->
+  <div class="card shadow-sm">
+    <div class="card-body table-responsive">
+      <table class="table table-hover align-middle">
+        <thead class="table-light">
+          <tr>
+            <th>ID</th>
+            <th>Type Name</th>
+            <th>Description</th>
+            <th>Actions</th>
+          </tr>
+        </thead>
+        <tbody id="typeTable">
+          <!-- Sample Data -->
+          <tr>
+            <td>1</td>
+            <td>Luxury</td>
+            <td>Premium luxury cars and accessories</td>
+            <td>
+              <button class="btn btn-sm btn-outline-primary me-2" data-bs-toggle="modal" data-bs-target="#editTypeModal"
+                data-id="1" data-name="Luxury" data-description="Premium luxury cars and accessories">
+                <i class="bi bi-pencil-fill"></i>
+              </button>
+              <button class="btn btn-sm btn-outline-danger" data-bs-toggle="modal" data-bs-target="#deleteTypeModal"
+                data-id="1" data-name="Luxury">
+                <i class="bi bi-trash-fill"></i>
+              </button>
+            </td>
+          </tr>
+
+          <tr>
+            <td>2</td>
+            <td>Premium</td>
+            <td>High-end premium types for cars & accessories</td>
+            <td>
+              <button class="btn btn-sm btn-outline-primary me-2" data-bs-toggle="modal" data-bs-target="#editTypeModal"
+                data-id="2" data-name="Premium" data-description="High-end premium types for cars & accessories">
+                <i class="bi bi-pencil-fill"></i>
+              </button>
+              <button class="btn btn-sm btn-outline-danger" data-bs-toggle="modal" data-bs-target="#deleteTypeModal"
+                data-id="2" data-name="Premium">
+                <i class="bi bi-trash-fill"></i>
+              </button>
+            </td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+  </div>
+</div>
+
+<!-- 🟢 Add Type Modal -->
+<div class="modal fade" id="addTypeModal" tabindex="-1">
+  <div class="modal-dialog">
+    <div class="modal-content">
+      <form id="addTypeForm">
+        <div class="modal-header">
+          <h5 class="modal-title fw-bold">Add New Type</h5>
+          <button class="btn-close" data-bs-dismiss="modal"></button>
+        </div>
+        <div class="modal-body">
+          <div class="mb-3">
+            <label class="form-label">Type Name</label>
+            <input type="text" class="form-control" name="name" required>
+          </div>
+          <div class="mb-3">
+            <label class="form-label">Description</label>
+            <textarea class="form-control" name="description" rows="3" required></textarea>
+          </div>
+        </div>
+        <div class="modal-footer">
+          <button class="btn btn-primary w-100">Save Type</button>
+        </div>
+      </form>
+    </div>
+  </div>
+</div>
+
+<!-- 🟠 Edit Type Modal -->
+<div class="modal fade" id="editTypeModal" tabindex="-1">
+  <div class="modal-dialog">
+    <div class="modal-content">
+      <form id="editTypeForm">
+        <div class="modal-header">
+          <h5 class="modal-title fw-bold">Edit Type</h5>
+          <button class="btn-close" data-bs-dismiss="modal"></button>
+        </div>
+        <div class="modal-body">
+          <input type="hidden" id="editTypeId">
+          <div class="mb-3">
+            <label class="form-label">Type Name</label>
+            <input type="text" id="editTypeName" class="form-control" required>
+          </div>
+          <div class="mb-3">
+            <label class="form-label">Description</label>
+            <textarea id="editTypeDescription" class="form-control" rows="3" required></textarea>
+          </div>
+        </div>
+        <div class="modal-footer">
+          <button class="btn btn-success w-100">Update Type</button>
+        </div>
+      </form>
+    </div>
+  </div>
+</div>
+
+<!-- 🔴 Delete Type Modal -->
+<div class="modal fade" id="deleteTypeModal" tabindex="-1">
+  <div class="modal-dialog modal-dialog-centered">
+    <div class="modal-content text-center">
+      <div class="modal-header border-0">
+        <h5 class="modal-title text-danger fw-bold">Delete Type</h5>
+        <button class="btn-close" data-bs-dismiss="modal"></button>
+      </div>
+      <div class="modal-body">
+        Are you sure you want to delete <strong id="deleteTypeName"></strong>?
+      </div>
+      <div class="modal-footer border-0">
+        <button class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+        <button class="btn btn-danger">Delete</button>
+      </div>
+    </div>
+  </div>
+</div>

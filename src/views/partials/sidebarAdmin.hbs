@@ -1,4 +1,4 @@
-<div class="d-flex flex-column p-3 bg-white shadow-sm border-end" style="min-height:100vh; width:250px;">
+<div class="d-flex flex-column p-3 bg-white shadow-sm border-end sticky-top" style="min-height:100vh; width:250px;">
   <!-- Brand -->
   <div class="d-flex align-items-center mb-3">
     <i class="bi bi-bag-check-fill fs-3 me-2 text-primary"></i>
@@ -10,43 +10,55 @@
   <!-- Sidebar Nav -->
   <ul class="nav nav-pills flex-column mb-auto">
     <li class="nav-item mb-1">
-      <a href="/dashboard"
+      <a href="/admin/dashboard"
         class="nav-link d-flex align-items-center {{#if isDashboard}}active-link{{else}}text-dark{{/if}}">
         <i class="bi bi-speedometer2 me-2"></i> Dashboard
       </a>
     </li>
     <li class="nav-item mb-1">
-      <a href="/admin/brand"
+      <a href="/admin/brands-management"
         class="nav-link d-flex align-items-center {{#if isBrand}}active-link{{else}}text-dark{{/if}}">
         <i class="bi bi-tags-fill me-2"></i> Brands
       </a>
     </li>
-    <li><a href="#" class="nav-link text-dark d-flex align-items-center"><i class="bi bi-grid-fill me-2"></i>
+    <li><a href="/admin/categorys-management" class="nav-link text-dark d-flex align-items-center"><i
+          class="bi bi-grid-fill me-2"></i>
         Categories</a></li>
-    <li><a href="#" class="nav-link text-dark d-flex align-items-center"><i class="bi bi-layers-fill me-2"></i> Type</a>
+    <li><a href="/admin/types-management" class="nav-link text-dark d-flex align-items-center"><i
+          class="bi bi-layers-fill me-2"></i> Type</a>
     </li>
-    <li><a href="#" class="nav-link text-dark d-flex align-items-center"><i class="bi bi-box-seam-fill me-2"></i>
+    <li><a href="/admin/products-management" class="nav-link text-dark d-flex align-items-center"><i
+          class="bi bi-box-seam-fill me-2"></i>
         Products</a></li>
-    <li><a href="#" class="nav-link text-dark d-flex align-items-center"><i class="bi bi-bar-chart-fill me-2"></i>
+    <li><a href="/admin/sales-report" class="nav-link text-dark d-flex align-items-center"><i
+          class="bi bi-bar-chart-fill me-2"></i>
         Sales</a></li>
-    <li><a href="#" class="nav-link text-dark d-flex align-items-center"><i class="bi bi-wallet2 me-2"></i> Wallet</a>
+    <li><a href="/admin/wallet" class="nav-link text-dark d-flex align-items-center"><i class="bi bi-wallet2 me-2"></i>
+        Wallet</a>
     </li>
-    <li><a href="#" class="nav-link text-dark d-flex align-items-center"><i
+    <li><a href="/admin/coupons-management" class="nav-link text-dark d-flex align-items-center"><i
           class="bi bi-ticket-perforated-fill me-2"></i> Coupons</a></li>
-    <li><a href="#" class="nav-link text-dark d-flex align-items-center"><i class="bi bi-basket-fill me-2"></i>
+    <li><a href="/admin/orders-management" class="nav-link text-dark d-flex align-items-center"><i
+          class="bi bi-basket-fill me-2"></i>
         Orders</a></li>
-    <li><a href="#" class="nav-link text-dark d-flex align-items-center"><i class="bi bi-people-fill me-2"></i>
+    <li><a href="/admin/users-management" class="nav-link text-dark d-flex align-items-center"><i
+          class="bi bi-people-fill me-2"></i>
         Users</a></li>
-    <li><a href="#" class="nav-link text-dark d-flex align-items-center"><i class="bi bi-gear-fill me-2"></i>
+    <li><a href="/admin/settings" class="nav-link text-dark d-flex align-items-center"><i
+          class="bi bi-gear-fill me-2"></i>
         Settings</a></li>
+    <hr>
+    <li><a href="/admin/settings" class="nav-link text-dark d-flex align-items-center">
+        <button class="btn btn-outline-primary w-100 d-flex align-items-center justify-content-center">
+          <i class="bi bi-box-arrow-right me-2"></i> Logout
+        </button>
+      </a></li>
   </ul>
 
-  <hr>
+
 
   <!-- Logout -->
   <form action="/admin/logout" method="post" class="mt-auto">
-    <button class="btn btn-outline-primary w-100 d-flex align-items-center justify-content-center">
-      <i class="bi bi-box-arrow-right me-2"></i> Logout
-    </button>
+
   </form>
 </div>

@@ -1,0 +1,273 @@
+<div class="container-fluid px-4 py-4">
+  <!-- Header -->
+  <div class="d-flex justify-content-between align-items-center mb-4">
+    <h4 class="fw-bold mb-0">Category Management</h4>
+
+    <div class="d-flex align-items-center gap-3">
+      <!-- Search Bar -->
+      <div class="input-group" style="width: 250px;">
+        <span class="input-group-text bg-white"><i class="bi bi-search"></i></span>
+        <input type="text" id="searchCategory" class="form-control" placeholder="Search category...">
+      </div>
+
+      <!-- Add Category Button -->
+      <button class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#addCategoryModal">
+        <i class="bi bi-plus-lg me-1"></i> Add Category
+      </button>
+    </div>
+  </div>
+
+  <!-- Category Table -->
+  <div class="card shadow-sm">
+    <div class="card-body table-responsive">
+      <table class="table table-hover align-middle">
+        <thead class="table-light">
+          <tr>
+            <th>ID</th>
+            <th>Name</th>
+            <th>Type</th>
+            <th>Description</th>
+            <th>Products</th>
+            <th>Status</th>
+            <th>Offer</th>
+            <th>Actions</th>
+          </tr>
+        </thead>
+        <tbody id="categoryTable">
+          <!-- Sample Data -->
+          <tr>
+            <td>1</td>
+            <td>Luxury Cars</td>
+            <td><span class="badge bg-primary">Car</span></td>
+            <td>High-end vehicles and sports cars</td>
+            <td>25</td>
+            <td>
+              <div class="form-check form-switch">
+                <input class="form-check-input" type="checkbox" checked data-bs-toggle="modal"
+                  data-bs-target="#confirmListModal">
+              </div>
+            </td>
+            <td>
+              <button class="btn btn-sm btn-outline-info" data-bs-toggle="modal" data-bs-target="#addOfferModal"
+                data-name="Luxury Cars">
+                <i class="bi bi-tags-fill me-1"></i>Add Offer
+              </button>
+            </td>
+            <td>
+              <button class="btn btn-sm btn-outline-primary me-2" data-bs-toggle="modal"
+                data-bs-target="#editCategoryModal" data-id="1" data-name="Luxury Cars"
+                data-description="High-end vehicles and sports cars" data-type="Car">
+                <i class="bi bi-pencil-fill"></i>
+              </button>
+              <button class="btn btn-sm btn-outline-danger" data-bs-toggle="modal" data-bs-target="#deleteCategoryModal"
+                data-id="1" data-name="Luxury Cars">
+                <i class="bi bi-trash-fill"></i>
+              </button>
+            </td>
+          </tr>
+
+          <tr>
+            <td>2</td>
+            <td>Car Accessories</td>
+            <td><span class="badge bg-warning text-dark">Accessories</span></td>
+            <td>Wheels, seat covers, and gadgets</td>
+            <td>80</td>
+            <td>
+              <button class="btn btn-sm btn-outline-danger" data-bs-toggle="modal" data-bs-target="#toggleStatusModal"
+                data-name="Car Accessories" data-status="List">
+                Unlist
+              </button>
+            </td>
+            <td>
+              <button class="btn btn-sm btn-outline-info" data-bs-toggle="modal" data-bs-target="#addOfferModal"
+                data-name="Car Accessories">
+                <i class="bi bi-tags-fill me-1"></i>Add Offer
+              </button>
+            </td>
+            <td>
+              <button class="btn btn-sm btn-outline-primary me-2" data-bs-toggle="modal"
+                data-bs-target="#editCategoryModal" data-id="2" data-name="Car Accessories"
+                data-description="Wheels, seat covers, and gadgets" data-type="Accessories">
+                <i class="bi bi-pencil-fill"></i>
+              </button>
+              <button class="btn btn-sm btn-outline-danger" data-bs-toggle="modal" data-bs-target="#deleteCategoryModal"
+                data-id="2" data-name="Car Accessories">
+                <i class="bi bi-trash-fill"></i>
+              </button>
+            </td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+  </div>
+</div>
+
+<!-- 🟢 Add Category Modal -->
+<div class="modal fade" id="addCategoryModal" tabindex="-1" aria-labelledby="addCategoryModalLabel" aria-hidden="true">
+  <div class="modal-dialog">
+    <div class="modal-content">
+      <form id="addCategoryForm" enctype="multipart/form-data">
+        <div class="modal-header">
+          <h5 class="modal-title fw-bold" id="addCategoryModalLabel">Add New Category</h5>
+          <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+        </div>
+        <div class="modal-body">
+          <div class="mb-3">
+            <label class="form-label">Category Name</label>
+            <input type="text" class="form-control" name="name" required>
+          </div>
+
+          <div class="mb-3">
+            <label class="form-label">Description</label>
+            <textarea class="form-control" name="description" rows="3" required></textarea>
+          </div>
+
+          <div class="mb-3">
+            <label class="form-label">Type</label><br>
+            <div class="form-check form-check-inline">
+              <input class="form-check-input" type="radio" name="type" value="Car" id="typeCar" required>
+              <label class="form-check-label" for="typeCar">Car</label>
+            </div>
+            <div class="form-check form-check-inline">
+              <input class="form-check-input" type="radio" name="type" value="Accessories" id="typeAccessories"
+                required>
+              <label class="form-check-label" for="typeAccessories">Accessories</label>
+            </div>
+          </div>
+
+          <div class="mb-3">
+            <label class="form-label">Category Image</label>
+            <input type="file" class="form-control" name="image" accept="image/*" required>
+          </div>
+        </div>
+
+        <div class="modal-footer">
+          <button type="submit" class="btn btn-primary w-100">Save Category</button>
+        </div>
+      </form>
+    </div>
+  </div>
+</div>
+
+<!-- 🟠 Edit Modal -->
+<div class="modal fade" id="editCategoryModal" tabindex="-1">
+  <div class="modal-dialog">
+    <div class="modal-content">
+      <form id="editCategoryForm">
+        <div class="modal-header">
+          <h5 class="modal-title fw-bold">Edit Category</h5>
+          <button class="btn-close" data-bs-dismiss="modal"></button>
+        </div>
+        <div class="modal-body">
+          <input type="hidden" id="editCategoryId">
+          <div class="mb-3">
+            <label class="form-label">Category Name</label>
+            <input type="text" id="editCategoryName" class="form-control" required>
+          </div>
+          <div class="mb-3">
+            <label class="form-label">Description</label>
+            <textarea id="editCategoryDescription" class="form-control" rows="3" required></textarea>
+          </div>
+          <div class="mb-3">
+            <label class="form-label">Type</label><br>
+            <div class="form-check form-check-inline">
+              <input class="form-check-input" type="radio" name="editType" id="editTypeCar" value="Car">
+              <label class="form-check-label" for="editTypeCar">Car</label>
+            </div>
+            <div class="form-check form-check-inline">
+              <input class="form-check-input" type="radio" name="editType" id="editTypeAccessories" value="Accessories">
+              <label class="form-check-label" for="editTypeAccessories">Accessories</label>
+            </div>
+          </div>
+        </div>
+        <div class="modal-footer">
+          <button class="btn btn-success w-100">Update Category</button>
+        </div>
+      </form>
+    </div>
+  </div>
+</div>
+
+<!-- 🔵 Offer Modal -->
+<div class="modal fade" id="addOfferModal" tabindex="-1">
+  <div class="modal-dialog">
+    <div class="modal-content">
+      <form id="addOfferForm">
+        <div class="modal-header">
+          <h5 class="modal-title fw-bold">Add Offer</h5>
+          <button class="btn-close" data-bs-dismiss="modal"></button>
+        </div>
+        <div class="modal-body">
+          <p class="text-muted small mb-3">Add offer for: <strong id="offerCategoryName"></strong></p>
+          <div class="mb-3">
+            <label class="form-label">Discount Type</label>
+            <select class="form-select" name="discountType" required>
+              <option value="">Select Type</option>
+              <option value="Percentage">Percentage</option>
+              <option value="Price">Fixed Price</option>
+            </select>
+          </div>
+          <div class="mb-3">
+            <label class="form-label">Discount Value</label>
+            <input type="number" class="form-control" name="discount" placeholder="Enter discount value" required>
+          </div>
+          <div class="row">
+            <div class="col mb-3">
+              <label class="form-label">Valid From</label>
+              <input type="date" class="form-control" name="validFrom" required>
+            </div>
+            <div class="col mb-3">
+              <label class="form-label">Valid To</label>
+              <input type="date" class="form-control" name="validTo" required>
+            </div>
+          </div>
+          <div class="mb-3">
+            <label class="form-label">Usage Limit</label>
+            <input type="number" class="form-control" name="usageLimit" required>
+          </div>
+        </div>
+        <div class="modal-footer">
+          <button class="btn btn-info w-100">Save Offer</button>
+        </div>
+      </form>
+    </div>
+  </div>
+</div>
+
+<!-- 🔴 Delete Modal -->
+<div class="modal fade" id="deleteCategoryModal" tabindex="-1">
+  <div class="modal-dialog modal-dialog-centered">
+    <div class="modal-content text-center">
+      <div class="modal-header border-0">
+        <h5 class="modal-title text-danger fw-bold">Delete Category</h5>
+        <button class="btn-close" data-bs-dismiss="modal"></button>
+      </div>
+      <div class="modal-body">
+        Are you sure you want to delete <strong id="deleteCategoryName"></strong>?
+      </div>
+      <div class="modal-footer border-0">
+        <button class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+        <button class="btn btn-danger">Delete</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- 🟣 List/Unlist Confirmation -->
+<div class="modal fade" id="confirmListModal" tabindex="-1">
+  <div class="modal-dialog modal-dialog-centered">
+    <div class="modal-content text-center">
+      <div class="modal-header border-0">
+        <h5 class="modal-title fw-bold text-danger">Change Product Status</h5>
+        <button class="btn-close" data-bs-dismiss="modal"></button>
+      </div>
+      <div class="modal-body">
+        Are you sure you want to <strong>list/unlist</strong> this product?
+      </div>
+      <div class="modal-footer border-0">
+        <button class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+        <button class="btn btn-danger">Yes, Confirm</button>
+      </div>
+    </div>
+  </div>
+</div>

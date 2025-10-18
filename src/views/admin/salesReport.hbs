@@ -1,0 +1,104 @@
+<div class="container py-4">
+  <!-- Header -->
+  <div class="d-flex justify-content-between align-items-center mb-4">
+    <h2 class="fw-bold">Sales Report</h2>
+    <div>
+      <button class="btn btn-success me-2" id="downloadExcel">Get Excel Sheet</button>
+      <button class="btn btn-danger" id="downloadPDF">Download PDF</button>
+    </div>
+  </div>
+
+  <!-- Search & Filter -->
+  <div class="d-flex justify-content-between mb-3">
+    <input type="text" id="searchInput" class="form-control w-50" placeholder="Search by buyer, product, or category">
+    <button class="btn btn-primary ms-2" data-bs-toggle="modal" data-bs-target="#filterModal">
+      <i class="bi bi-funnel"></i> Filter
+    </button>
+  </div>
+
+  <!-- Sales Table -->
+  <div class="card p-3">
+    <div class="table-responsive">
+      <table class="table table-hover align-middle">
+        <thead class="table-light">
+          <tr>
+            <th>#</th>
+            <th>Buyer</th>
+            <th>Product</th>
+            <th>Product ID</th>
+            <th>Quantity</th>
+            <th>Price (₹)</th>
+            <th>Category</th>
+            <th>Total (₹)</th>
+          </tr>
+        </thead>
+        <tbody id="salesTableBody">
+          {{#each sales}}
+          <tr>
+            <td>{{@index}}</td>
+            <td>{{this.buyer}}</td>
+            <td>{{this.product}}</td>
+            <td>{{this.product_id}}</td>
+            <td>{{this.quantity}}</td>
+            <td>{{this.price}}</td>
+            <td>{{this.category}}</td>
+            <td>{{this.total}}</td>
+          </tr>
+          {{else}}
+          <tr>
+            <td colspan="8" class="text-center text-muted py-4">No sales data available</td>
+          </tr>
+          {{/each}}
+        </tbody>
+      </table>
+    </div>
+  </div>
+</div>
+
+<!-- Filter Modal -->
+<div class="modal fade" id="filterModal" tabindex="-1" aria-labelledby="filterModalLabel" aria-hidden="true">
+  <div class="modal-dialog modal-dialog-centered">
+    <div class="modal-content rounded-3">
+      <div class="modal-header">
+        <h5 class="modal-title fw-bold" id="filterModalLabel">Filter Sales</h5>
+        <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+      </div>
+      <div class="modal-body">
+        <form id="filterForm">
+          <div class="mb-3">
+            <label class="form-label fw-semibold">Category</label>
+            <select class="form-select" name="category">
+              <option value="">All</option>
+              <option value="Car">Car</option>
+              <option value="Accessories">Accessories</option>
+            </select>
+          </div>
+
+          <div class="mb-3">
+            <label class="form-label fw-semibold">Date From</label>
+            <input type="date" class="form-control" name="dateFrom">
+          </div>
+
+          <div class="mb-3">
+            <label class="form-label fw-semibold">Date To</label>
+            <input type="date" class="form-control" name="dateTo">
+          </div>
+
+          <div class="mb-3">
+            <label class="form-label fw-semibold">Minimum Total (₹)</label>
+            <input type="number" class="form-control" name="minTotal" placeholder="e.g. 1000">
+          </div>
+
+          <div class="mb-3">
+            <label class="form-label fw-semibold">Maximum Total (₹)</label>
+            <input type="number" class="form-control" name="maxTotal" placeholder="e.g. 50000">
+          </div>
+        </form>
+      </div>
+      <div class="modal-footer">
+        <button class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+        <button class="btn btn-primary" id="applyFilter">Apply Filter</button>
+      </div>
+    </div>
+  </div>
+</div>

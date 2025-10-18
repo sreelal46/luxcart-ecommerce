@@ -1,0 +1,22 @@
+/* Upload box styling */
+.upload-box {
+  border: 2px dashed #d3d3d3;
+  border-radius: 8px;
+  padding: 30px;
+  text-align: center;
+  background-color: #fafafa;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+.upload-box:hover {
+  background-color: #f0f0f0;
+  border-color: #b5b5b5;
+}
+.upload-box i {
+  font-size: 2rem;
+  color: #888;
+}
+.upload-box small {
+  display: block;
+  color: #777;
+}

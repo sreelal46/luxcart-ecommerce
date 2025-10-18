@@ -1,0 +1,254 @@
+<div class="container-fluid px-4 py-4">
+  <!-- Header -->
+  <div class="d-flex justify-content-between align-items-center mb-4">
+    <h4 class="fw-bold mb-0">Product Management</h4>
+
+    <div class="d-flex align-items-center gap-3">
+      <!-- Search -->
+      <div class="input-group" style="width: 260px;">
+        <span class="input-group-text bg-white"><i class="bi bi-search"></i></span>
+        <input type="text" id="searchProduct" class="form-control" placeholder="Search product, type, brand...">
+      </div>
+
+      <!-- Filter Button -->
+      <button class="btn btn-outline-secondary" data-bs-toggle="modal" data-bs-target="#filterModal">
+        <i class="bi bi-funnel-fill me-1"></i> Filter
+      </button>
+
+      <!-- Add Product Button -->
+      <button class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#productTypeModal">
+        <i class="bi bi-plus-lg me-1"></i> Add Product
+      </button>
+    </div>
+  </div>
+
+  <!-- Product Table -->
+  <div class="card shadow-sm">
+    <div class="card-body table-responsive">
+      <table class="table table-hover align-middle">
+        <thead class="table-light">
+          <tr>
+            <th>ID</th>
+            <th>Product</th>
+            <th>Category</th>
+            <th>Brand</th>
+            <th>Price</th>
+            <th>Stock</th>
+            <th>Offer</th>
+            <th>Status</th>
+            <th>Action</th>
+          </tr>
+        </thead>
+        <tbody id="productTable">
+          <!-- Example Data -->
+          <tr>
+            <td>1</td>
+            <td>BMW M5</td>
+            <td>Car</td>
+            <td>BMW</td>
+            <td>$85,000</td>
+            <td>10</td>
+            <td><span class="badge bg-success">10% Off</span></td>
+            <td>
+              <div class="form-check form-switch">
+                <input class="form-check-input" type="checkbox" checked data-bs-toggle="modal"
+                  data-bs-target="#confirmListModal">
+              </div>
+            </td>
+            <td>
+              <a href="/admin/products-management/view-car-product" class="btn btn-sm btn-outline-primary me-2">
+                <i class="bi bi-eye-fill"></i>
+              </a>
+              <button class="btn btn-sm btn-outline-success me-2" data-bs-toggle="modal"
+                data-bs-target="#editProductModal"><i class="bi bi-pencil-fill"></i></button>
+              <button class="btn btn-sm btn-outline-warning" data-bs-toggle="modal" data-bs-target="#offerModal"><i
+                  class="bi bi-tag-fill"></i></button>
+            </td>
+          </tr>
+          <tr>
+            <td>2</td>
+            <td>Carbon Fiber Spoiler</td>
+            <td>Accessories</td>
+            <td>LuxAuto</td>
+            <td>$500</td>
+            <td>25</td>
+            <td><span class="badge bg-secondary">No Offer</span></td>
+            <td>
+              <div class="form-check form-switch">
+                <input class="form-check-input" type="checkbox" data-bs-toggle="modal"
+                  data-bs-target="#confirmListModal">
+              </div>
+            </td>
+            <td>
+              <a href="/admin/products-management/view-categories-product" class="btn btn-sm btn-outline-primary me-2">
+                <i class="bi bi-eye-fill"></i>
+              </a>
+              <button class="btn btn-sm btn-outline-success me-2" data-bs-toggle="modal"
+                data-bs-target="#editProductModal"><i class="bi bi-pencil-fill"></i></button>
+              <button class="btn btn-sm btn-outline-warning" data-bs-toggle="modal" data-bs-target="#offerModal"><i
+                  class="bi bi-tag-fill"></i></button>
+            </td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+  </div>
+</div>
+
+<!-- 🟢 Select Product Type Modal -->
+<div class="modal fade" id="productTypeModal" tabindex="-1" aria-labelledby="productTypeModalLabel" aria-hidden="true">
+  <div class="modal-dialog modal-dialog-centered">
+    <div class="modal-content border-0 shadow rounded-3">
+      <div class="modal-header border-0 pb-0">
+        <h5 class="modal-title fw-semibold" id="productTypeModalLabel">Select Product Type</h5>
+        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+      </div>
+
+      <div class="modal-body text-center">
+        <div class="d-flex justify-content-around flex-wrap gap-3">
+
+          <!-- Car Card -->
+          <a href="/admin/products-management/add-car-product" class="card border-1 p-4 rounded-3 shadow-sm type-card"
+            role="button" style="width: 180px;">
+            <div class="text-primary fs-1 mb-2">
+              <i class="bi bi-car-front"></i>
+            </div>
+            <h6 class="fw-semibold mb-1">Car</h6>
+            <small class="text-muted">Add a new vehicle to your inventory</small>
+          </a>
+
+          <!-- Accessories Card -->
+          <a href="/admin/products-management/add-accessories-product"
+            class="card border-1 p-4 rounded-3 shadow-sm type-card" role="button" style="width: 180px;">
+            <div class="text-primary fs-1 mb-2">
+              <i class="bi bi-bag"></i>
+            </div>
+            <h6 class="fw-semibold mb-1">Accessories</h6>
+            <small class="text-muted">Add car accessories and parts</small>
+          </a>
+        </div>
+      </div>
+
+      <div class="modal-footer border-0 pt-0">
+        <button type="button" class="btn btn-outline-secondary w-100" data-bs-dismiss="modal">Cancel</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- 🟠 Offer Modal -->
+<div class="modal fade" id="offerModal" tabindex="-1">
+  <div class="modal-dialog">
+    <div class="modal-content">
+      <form id="offerForm">
+        <div class="modal-header">
+          <h5 class="modal-title fw-bold">Add Offer</h5>
+          <button class="btn-close" data-bs-dismiss="modal"></button>
+        </div>
+        <div class="modal-body">
+          <div class="mb-3">
+            <label class="form-label">Discount Type</label>
+            <select class="form-select" name="discountType" required>
+              <option value="Percentage">Percentage (%)</option>
+              <option value="Price">Fixed Price ($)</option>
+            </select>
+          </div>
+          <div class="mb-3">
+            <label class="form-label">Discount Value</label>
+            <input type="number" class="form-control" name="discountValue" required>
+          </div>
+          <div class="row">
+            <div class="col-md-6 mb-3">
+              <label class="form-label">Valid From</label>
+              <input type="date" class="form-control" name="validFrom" required>
+            </div>
+            <div class="col-md-6 mb-3">
+              <label class="form-label">Valid To</label>
+              <input type="date" class="form-control" name="validTo" required>
+            </div>
+          </div>
+          <div class="mb-3">
+            <label class="form-label">Usage Limit</label>
+            <input type="number" class="form-control" name="usageLimit" required>
+          </div>
+        </div>
+        <div class="modal-footer">
+          <button class="btn btn-success w-100">Apply Offer</button>
+        </div>
+      </form>
+    </div>
+  </div>
+</div>
+
+<!-- 🔵 Filter Modal -->
+<div class="modal fade" id="filterModal" tabindex="-1">
+  <div class="modal-dialog">
+    <div class="modal-content">
+      <form id="filterForm">
+        <div class="modal-header">
+          <h5 class="modal-title fw-bold">Filter Products</h5>
+          <button class="btn-close" data-bs-dismiss="modal"></button>
+        </div>
+        <div class="modal-body">
+          <div class="mb-3">
+            <label class="form-label">Category</label>
+            <select class="form-select">
+              <option>All</option>
+              <option>Car</option>
+              <option>Accessories</option>
+            </select>
+          </div>
+          <div class="mb-3">
+            <label class="form-label">Brand</label>
+            <select class="form-select">
+              <option>All</option>
+              <option>BMW</option>
+              <option>LuxAuto</option>
+            </select>
+          </div>
+          <div class="mb-3">
+            <label class="form-label">Price Range</label>
+            <div class="d-flex gap-2">
+              <input type="number" class="form-control" placeholder="Min">
+              <input type="number" class="form-control" placeholder="Max">
+            </div>
+          </div>
+          <div class="mb-3">
+            <label class="form-label">Stock Status</label>
+            <select class="form-select">
+              <option>All</option>
+              <option>In Stock</option>
+              <option>Out of Stock</option>
+            </select>
+          </div>
+          <div class="form-check">
+            <input class="form-check-input" type="checkbox" id="offerApplied">
+            <label class="form-check-label" for="offerApplied">Show Only Products with Offers</label>
+          </div>
+        </div>
+        <div class="modal-footer">
+          <button class="btn btn-primary w-100">Apply Filters</button>
+        </div>
+      </form>
+    </div>
+  </div>
+</div>
+
+<!-- 🟣 List/Unlist Confirmation -->
+<div class="modal fade" id="confirmListModal" tabindex="-1">
+  <div class="modal-dialog modal-dialog-centered">
+    <div class="modal-content text-center">
+      <div class="modal-header border-0">
+        <h5 class="modal-title fw-bold text-danger">Change Product Status</h5>
+        <button class="btn-close" data-bs-dismiss="modal"></button>
+      </div>
+      <div class="modal-body">
+        Are you sure you want to <strong>list/unlist</strong> this product?
+      </div>
+      <div class="modal-footer border-0">
+        <button class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+        <button class="btn btn-danger">Yes, Confirm</button>
+      </div>
+    </div>
+  </div>
+</div>
