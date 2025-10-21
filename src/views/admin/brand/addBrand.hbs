@@ -1,0 +1,236 @@
+{{!-- Layout Wrapper --}}
+<div class="container py-5">
+  <div class="row justify-content-center">
+    <div class="col-md-8 col-lg-6">
+      <div class="card shadow border-0">
+        <div class="card-header bg-success text-white text-center">
+          <h4 class="mb-0 fw-bold">Add New Brand</h4>
+        </div>
+
+        <div class="card-body p-4">
+          <!-- Alert -->
+          <div id="alert" class="d-none text-center mb-3"></div>
+
+          <form id="addBrandForm" method="post" enctype="multipart/form-data">
+            <div class="mb-3">
+              <label class="form-label fw-semibold">Brand Name</label>
+              <input type="text" class="form-control" name="name" id="addBrandName" placeholder="Enter brand name"
+                required>
+            </div>
+
+            <div class="mb-3">
+              <label class="form-label fw-semibold">Origin Country</label>
+              <input type="text" class="form-control" name="country" id="addBrandCountry"
+                placeholder="Enter country of origin" required>
+            </div>
+
+            <div class="mb-3">
+              <label class="form-label fw-semibold">Upload Logo</label>
+              <input type="file" class="form-control" id="addBrandImage" accept="image/*" required>
+            </div>
+
+            <div class="text-center mb-3">
+              <img id="previewBrandImage" src="/images/placeholder.jpg" alt="Brand Preview" class="rounded border"
+                style="width:100px;height:100px;object-fit:cover;">
+            </div>
+
+            <button type="submit" class="btn btn-success w-100 py-2 fw-bold">Add Brand</button>
+          </form>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- Crop Modal -->
+<div class="modal fade" id="cropModal" tabindex="-1" aria-labelledby="cropModalLabel" aria-hidden="true">
+  <div class="modal-dialog modal-dialog-centered modal-lg">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h5 class="modal-title">Crop Image</h5>
+        <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+      </div>
+      <div class="modal-body text-center">
+        <img id="cropperImage" src="" style="max-width:100%;" />
+      </div>
+      <div class="modal-footer">
+        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+        <button type="button" id="cropImageBtn" class="btn btn-success">Crop & Save</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+
+<!-- required libs (put once in your layout head or before this script) -->
+<link href="https://cdnjs.cloudflare.com/ajax/libs/cropperjs/1.5.13/cropper.min.css" rel="stylesheet" />
+<script src="https://cdnjs.cloudflare.com/ajax/libs/cropperjs/1.5.13/cropper.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/axios/dist/axios.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+
+<script>
+  // ====== elements ======
+  const addBrandForm = document.getElementById('addBrandForm');
+  const inputFile = document.getElementById('addBrandImage');
+  const cropperImage = document.getElementById('cropperImage');
+  const previewImage = document.getElementById('previewBrandImage');
+  const cropModalEl = document.getElementById('cropModal');
+  const cropImageBtn = document.getElementById('cropImageBtn');
+
+  // bootstrap modal instance (ensure bootstrap JS is loaded)
+  const cropModal = new bootstrap.Modal(cropModalEl, { backdrop: 'static', keyboard: false });
+
+  let cropper = null;
+  let latestBlob = null; // always keep the blob reference here
+
+  // Helper: safe log
+  const log = (...args) => { if (window.console) console.log('[BrandForm]', ...args); };
+
+  // -------- when a file is selected --------
+  inputFile.addEventListener('change', (e) => {
+    const file = e.target.files && e.target.files[0];
+    if (!file) {
+      log('No file selected');
+      return;
+    }
+    // reset previous blob
+    latestBlob = null;
+    previewImage.removeAttribute('data-hasblob');
+
+    const reader = new FileReader();
+    reader.onload = (ev) => {
+      cropperImage.src = ev.target.result;
+      // show modal; Cropper init handled on modal shown
+      cropModal.show();
+    };
+    reader.onerror = (err) => {
+      console.error('FileReader error', err);
+      Swal.fire('Error', 'Failed to read file', 'error');
+    };
+    reader.readAsDataURL(file);
+  });
+
+  // Initialize cropper when modal fully shown (ensures image dimensions are ready)
+  cropModalEl.addEventListener('shown.bs.modal', () => {
+    log('modal shown -> init cropper');
+    if (cropper) {
+      try { cropper.destroy(); } catch (e) { /* ignore */ }
+      cropper = null;
+    }
+    cropper = new Cropper(cropperImage, {
+      aspectRatio: 1,
+      viewMode: 1,
+      autoCropArea: 0.8,
+      responsive: true,
+      movable: true,
+      zoomable: true,
+      background: false
+    });
+  });
+
+  // Destroy cropper when modal hidden to free memory
+  cropModalEl.addEventListener('hidden.bs.modal', () => {
+    log('modal hidden -> destroy cropper (if exists)');
+    if (cropper) {
+      try { cropper.destroy(); } catch (e) { /* ignore */ }
+      cropper = null;
+    }
+  });
+
+  // Crop & prepare preview blob
+  cropImageBtn.addEventListener('click', () => {
+    if (!cropper) {
+      Swal.fire('Error', 'Cropper is not ready', 'error');
+      return;
+    }
+
+    const canvas = cropper.getCroppedCanvas({
+      width: 600,    // larger canvas gives better quality
+      height: 600,
+      imageSmoothingQuality: 'high'
+    });
+
+    if (!canvas) {
+      Swal.fire('Error', 'Unable to get cropped canvas', 'error');
+      return;
+    }
+
+    canvas.toBlob((blob) => {
+      if (!blob) {
+        Swal.fire('Error', 'Failed to convert crop to blob', 'error');
+        return;
+      }
+
+      // store blob reference in a global variable (ensures it survives submit)
+      latestBlob = blob;
+      previewImage.src = URL.createObjectURL(blob);
+      previewImage.setAttribute('data-hasblob', '1'); // quick marker
+
+      log('Cropped blob prepared', blob);
+      cropModal.hide();
+    }, 'image/jpeg', 0.92);
+  });
+
+  // Form submit with Axios
+  addBrandForm.addEventListener('submit', async (e) => {
+    e.preventDefault();
+    log('submit clicked');
+
+    // small form validation
+    const name = document.getElementById('addBrandName').value.trim();
+    const country = document.getElementById('addBrandCountry').value.trim();
+    if (!name) return Swal.fire('Validation', 'Please enter brand name', 'warning');
+    if (!country) return Swal.fire('Validation', 'Please enter origin country', 'warning');
+
+    // ensure cropped blob exists (use latestBlob reference)
+    if (!latestBlob) {
+      return Swal.fire('Wait', 'Please upload and crop a logo before submitting.', 'warning');
+    }
+
+    // Disable submit button to prevent double submits
+    const submitBtn = addBrandForm.querySelector('button[type="submit"]');
+    submitBtn.disabled = true;
+    submitBtn.innerHTML = 'Uploading...';
+
+    try {
+      const formData = new FormData();
+      formData.append('name', name);
+      formData.append('country', country);
+      // filename safe fallback
+      const safeName = name.replace(/\s+/g, '_').toLowerCase() || 'brand';
+      formData.append('image', latestBlob, `${safeName}_logo.jpg`);
+
+      // NOTE: confirm your backend endpoint. I'm using '/admin/brand/add' which we used earlier.
+      const endpoint = '/admin/brand/add'; // <-- change if your route is different
+      log('posting to', endpoint);
+
+      const res = await axios.post(endpoint, formData, {
+        headers: { 'Content-Type': 'multipart/form-data' }
+      });
+
+      log('server response', res && res.data);
+
+      if (res && res.data && res.data.success) {
+        Swal.fire({ icon: 'success', title: 'Brand added!', timer: 1400, showConfirmButton: false });
+        // reset UI
+        addBrandForm.reset();
+        previewImage.src = '/images/placeholder.jpg';
+        previewImage.removeAttribute('data-hasblob');
+        latestBlob = null;
+        // optional: redirect to list page after short delay
+        setTimeout(() => window.location.href = '/admin/brands', 900);
+      } else {
+        const msg = (res && res.data && res.data.message) || 'Upload failed';
+        Swal.fire('Error', msg, 'error');
+      }
+    } catch (err) {
+      console.error('Upload error', err);
+      // show message from server if available
+      const serverMsg = err?.response?.data?.message || err.message || 'Upload failed';
+      Swal.fire('Error', serverMsg, 'error');
+    } finally {
+      submitBtn.disabled = false;
+      submitBtn.innerHTML = 'Add Brand';
+    }
+  });
+</script>

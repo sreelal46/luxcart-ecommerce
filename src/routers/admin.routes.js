@@ -1,18 +1,28 @@
 const express = require("express");
 const route = express.Router();
+const upload = require("../config/multer");
+const Brand = require("../models/admin/brandModal");
 
+//page loading
 const {
   checkSession,
   isLogin,
   isPasswordChange,
 } = require("../middlewares/admin/adminAuth");
+
+//page loading
 const {
   adminLoadLoginPage,
   loadDashboard,
   loadChangePassword,
   loadEmailVerify,
   loadOTPVerify,
+  loadBrands,
+  loadCategory,
+  loadType,
 } = require("../controllers/admin/pageLoad.controller");
+
+//auth controller
 const {
   verifyadmin,
   emailVerification,
@@ -20,6 +30,27 @@ const {
   PasswordChanging,
   resendOTP,
 } = require("../controllers/admin/adminAuth.controller");
+
+//brand controller
+const {
+  addBrand,
+  editBrand,
+  softDeleteBrand,
+} = require("../controllers/admin/brand.controller");
+
+//category controller
+const {
+  addCategory,
+  editCategory,
+  softDeleteCategory,
+} = require("../controllers/admin/category.controller");
+
+//Type controller
+const {
+  addType,
+  editType,
+  softDeleteType,
+} = require("../controllers/admin/type.controller");
 
 // Setup for admin layout for these routes only
 route.use((req, res, next) => {
@@ -52,40 +83,67 @@ route.get("/resend-otp", resendOTP);
 // Dashboard
 route.get("/dashboard", checkSession, loadDashboard);
 
-//Brand Management
-route.get("/brands-management", (req, res) => {
-  res.render("admin/brandManagement");
-});
+/// Brand Management
+route.get("/brands-management", loadBrands);
+
+// Add Brand
+route.post("/brands-management/add-brand", upload.single("image"), addBrand);
+
+//Edit Brands
+route.put(
+  "/brands-management/edit-brand/:id",
+  upload.single("image"),
+  editBrand
+);
+//soft delete
+route.patch("/brands-management/soft-delete-brand/:id", softDeleteBrand);
 
 //Category Management
-route.get("/categorys-management", (req, res) => {
-  res.render("admin/categoryManagement");
-});
+route.get("/categorys-management", loadCategory);
+
+//add category
+route.post("/categorys-management/add-category", addCategory);
+
+//edit category
+route.put("/categorys-management/edit-category/:id", editCategory);
+
+//soft delete cetegory
+route.patch(
+  "/categorys-management/soft-delete-category/:id",
+  softDeleteCategory
+);
 
 //Type Management
-route.get("/types-management", (req, res) => {
-  res.render("admin/typeManagement");
-});
+route.get("/types-management", loadType);
+
+//Type adding
+route.post("/types-management/add-type", addType);
+
+//type editing
+route.put("/types-management/edit-type/:id", editType);
+
+//Type soft delete
+route.patch("/types-management/soft-delete-type/:id", softDeleteType);
 
 //Product Management
 route.get("/products-management", (req, res) => {
-  res.render("admin/productManagement");
+  res.render("admin/products/productManagement");
 });
 
 route.get("/products-management/add-car-product", (req, res) => {
-  res.render("admin/add-car-product");
+  res.render("admin/products/car/add-car-product");
 });
 
 route.get("/products-management/view-car-product", (req, res) => {
-  res.render("admin/view-car-product");
+  res.render("admin/products/car/view-car-product");
 });
 
 route.get("/products-management/view-categories-product", (req, res) => {
-  res.render("admin/view-accessories-product");
+  res.render("admin/products/accessories/view-accessories-product");
 });
 
 route.get("/products-management/add-accessories-product", (req, res) => {
-  res.render("admin/add-accessories-product");
+  res.render("admin/products/accessories/add-accessories-product");
 });
 
 route.get("/sales-report", async (req, res) => {
@@ -121,7 +179,11 @@ route.get("/coupons-management", (req, res) => {
 });
 
 route.get("/orders-management", (req, res) => {
-  res.render("admin/ordersManagement");
+  res.render("admin/orders/ordersManagement");
+});
+
+route.get("/orders-management/view-order", (req, res) => {
+  res.render("admin/orders/orderDetails");
 });
 
 route.get("/orders-management/return-request-management", (req, res) => {
@@ -130,6 +192,14 @@ route.get("/orders-management/return-request-management", (req, res) => {
 
 route.get("/users-management", (req, res) => {
   res.render("admin/usersManagement");
+});
+
+route.get("/users-management/user-details", (req, res) => {
+  res.render("admin/userDetails");
+});
+
+route.get("/settings", (req, res) => {
+  res.render("admin/settings");
 });
 
 module.exports = route;

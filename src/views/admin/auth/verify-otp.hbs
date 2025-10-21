@@ -6,8 +6,9 @@
       <h1 class="h5 fw-bold mt-3 mb-2">Enter Verification Code</h1>
       <p class="text-muted small mb-0">We’ve sent a 6-digit code to your email</p>
     </div>
-
-    <form action="/admin/otp-verify" method="post" class="mt-4">
+    <!-- Alert -->
+    <div id="alert" class="d-none text-center"></div>
+    <form method="post" id="OTPVerificationForm" class="mt-4">
       <div class="mb-4 text-center">
         <div class="d-flex justify-content-center gap-2">
           <input type="text" maxlength="1" class="form-control text-center" name="otp1"
@@ -53,5 +54,40 @@
         inputs[index + 1].focus();
       }
     });
+
+    const OTPVerificationForm = document.getElementById("OTPVerificationForm")
+    const alert = document.getElementById("alert")
+    OTPVerificationForm.addEventListener("submit", async (e) => {
+      e.preventDefault()
+      const formData = new FormData(OTPVerificationForm)
+      const data = Object.fromEntries(formData.entries())
+
+      alert.className = "alert alert-info text-center";
+      alert.textContent = "OTP verifing......";
+      alert.classList.remove("d-none");
+
+
+      try {
+
+        const res = await axios.post("/admin/otp-verify", data, { withCredentials: true })
+        if (res.data.success) {
+          alert.className = "alert alert-success text-center";
+          alert.textContent = "OTP verified! Redirecting...";
+          alert.classList.remove("d-none");
+          setTimeout(() => window.location.href = res.data.redirect, 800);
+        }
+
+      } catch (error) {
+        const message = error.response?.data?.alert || "Invalid OTP.Please try aging";
+        alert.className = "alert alert-danger text-center";
+        alert.textContent = message;
+        alert.classList.remove("d-none");
+      }
+
+    })
+
   });
 </script>
+
+//OTP Timer
+<script src="/common/OTPTimer.js"></script>

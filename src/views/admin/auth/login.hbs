@@ -2,7 +2,6 @@
   style="background: url('/images/car-bg.jpg') no-repeat center center; background-size: cover;">
 
   <div class="bg-white rounded-3 shadow p-5" style="max-width: 400px; width: 100%;">
-
     <!-- Header -->
     <div class="text-center mb-4">
       <h2 class="fw-bold text-dark">Admin Panel</h2>
@@ -11,21 +10,10 @@
     </div>
 
     <!-- Alert -->
-    {{#if alert}}
-    <div class="alert alert-warning text-center text-danger" role="alert">
-      {{alert}}
-    </div>
-    {{/if}}
-
-    <!-- messgage -->
-    {{#if message}}
-    <div class="alert alert-warning text-center text-success" role="alert">
-      {{message}}
-    </div>
-    {{/if}}
+    <div id="alert" class="d-none text-center"></div>
 
     <!-- Form -->
-    <form class="mt-4" action="/admin/login" method="post">
+    <form class="mt-4" id="loginForm">
       <div class="mb-3">
         <label for="adminEmail" class="form-label fw-medium small">Admin Email</label>
         <input type="email" class="form-control" id="adminEmail" name="email" placeholder="admin@example.com" required>
@@ -49,6 +37,39 @@
 
       <button type="submit" class="btn btn-dark w-100 fw-medium">Admin Sign In</button>
     </form>
-
   </div>
 </div>
+
+
+<!-- Axios -->
+<script>
+  document.addEventListener("DOMContentLoaded", () => {
+    const loginForm = document.getElementById("loginForm");
+    const alertDiv = document.getElementById("alert");
+
+    loginForm.addEventListener("submit", async (e) => {
+      e.preventDefault();
+
+      const formData = new FormData(loginForm);
+      const data = Object.fromEntries(formData.entries());
+
+      try {
+        const res = await axios.post("/admin/login", data, { withCredentials: true });
+
+        // Success case (200)
+        if (res.data.success) {
+          alertDiv.className = "alert alert-success text-center";
+          alertDiv.textContent = "Login successful! Redirecting...";
+          alertDiv.classList.remove("d-none");
+          setTimeout(() => window.location.href = res.data.redirect, 400);
+        }
+      } catch (error) {
+        // Error case (403, 500, etc.)
+        const message = error.response?.data?.message || "Invalid credentials or server error.";
+        alertDiv.className = "alert alert-danger text-center";
+        alertDiv.textContent = message;
+        alertDiv.classList.remove("d-none");
+      }
+    });
+  });
+</script>

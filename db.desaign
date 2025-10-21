@@ -1,0 +1,455 @@
+// LuxCar Admin E-commerce Data Model
+title LuxCart Admin E-commerce Data Model
+
+// Users Collection
+users [icon: user, color: yellow] {
+  id ObjectId pk
+  name string
+  email string
+  image_url string
+  password_hash string (hashed)
+  is_active boolean
+  is_deleted boolean
+  is_referred boolean
+  referral_code string
+  created_at timestamp
+  updated_at timestamp
+}
+
+//admin collection
+admins[icon:shield,color:red] {
+  id ObjectId pk 
+  name string 
+  email string 
+  password string (hashed)
+  image_url string
+  createdAt timestamp
+  updatedAt timestamp
+}
+
+// Brands Collection
+brands [icon: star, color: orange] {
+  id ObjectId pk
+  name string
+  description string
+  logo_url string
+  isDeleted boolean 
+  created_at timestamp
+  updated_at timestamp
+}
+
+
+// Categories Collection
+categories [icon: tag, color: purple] {
+  id ObjectId pk
+  name string
+  categorie_type string
+  description string
+  categoryOffer number
+  isActive boolean
+  isDeleted boolean 
+  created_at timestamp
+  updated_at timestamp
+}
+
+//product Type collection
+product_type[]{
+  id ObjectId pk
+  name string
+  description string
+  logo_url string
+  created_at timestamp
+  updated_at timestamp
+}
+
+// Cars Collection
+cars[icon:car,color:blue] 
+{
+  id ObjectId 
+  name string
+  brand_id ObjectId
+  category_id ObjectId
+  product_type_id ObjectId
+  price Number
+  description string
+  offer_price Number
+  is_active boolean
+    year Number
+    mileage Number
+    warranty string
+    region string
+    top_speed Number
+    power_hp Number
+    engine string
+    transmission string
+    drive_type string
+    torque string
+    acceleration_0_100 string
+  
+    colors string
+    wheels string
+    upholstery string
+    design string
+
+    cameras string
+    lane_assist boolean
+    sound_system string
+    keyless_go boolean
+  
+  variantIds [ObjectId]
+  created_at timestamp
+  updated_at timestamp
+}
+
+// Car Variant Collection
+cars_variant {
+  id ObjectId
+  product_id ObjectId
+  price NumberDecimal
+  color string
+  stock int
+  image_url [string]
+}
+
+
+// Accessories Collection
+accessories [icon: package, color: green] {
+  id ObjectId pk
+  name string
+  category_id ObjectId
+  product_type_id ObjectId
+  brand_id ObjectId
+  offer_price number
+  description string
+  
+  specification[
+    country_of_origin string
+    fabric string
+    finish string
+    fitting string
+    warranty string
+    waterproof boolean
+    ]
+  vehicle_compatibility [
+    vehicle string
+    production_year number
+    ]
+  variants 
+    [
+      price number
+      material string
+      stock number
+      image [string]
+      ]
+    
+  created_at timestamp
+  updated_at timestamp
+}
+
+//wallets collection
+wallets[icon:wallet,color:yellow] {
+  id ObjectId pk
+  userId ObjectId  
+  balance number  
+  transactionHistory [  
+      amount number
+      type string    
+      message string 
+      date timestamp
+  ]
+
+  createdAt timestamp
+  updatedAt timestamp
+}
+
+//coupons collection
+coupons[icon:tag,color:indigo]{
+  id ObjectId pk
+  code string 
+  discount number
+  discountType string 
+  maxDiscount number 
+  minPurchase number 
+  isActive boolean 
+  maxUsage number 
+  usageCount number  
+  expiryDate date 
+  isDeleted boolean 
+  createdAt timestamp
+  updatedAt timestamp
+}
+
+
+//oders collection
+orders[icon:truck,color:orange]{
+  id ObjectId pk
+  userId ObjectId 
+  status string
+  paymentMethodId ObjectId 
+  couponApplied ObjectId 
+  totalAmount number  
+  shipping Address[
+    fullName string
+    phone string
+    fullAddress string
+    landmark string
+    district string
+    city string
+    state string
+    pincode number
+  ]  
+  products [
+    productId ObjectId
+    name string
+    quantity number
+    selectedColor string
+    priceAtPurchase number
+    productTotal number  
+  ]
+  createdAt timestamp
+  updatedAt timestamp
+}
+
+
+//return collection
+returns[icon:rotate-ccw,color:gray]{
+  id ObjectId pk
+  orderId ObjectId 
+  productId ObjectId  
+  userId ObjectId  
+  reason string
+  status enum("pending", "approved", "rejected", "completed")
+  refundStatus enum("pending", "processed", "failed", "completed")
+  refundAmount number
+  refundMethod string 
+  refundDate timestamp
+  returnDate timestamp 
+  updatedAt timestamp
+}
+
+// Settings Collection (optional)
+settings [icon: settings, color: gray] {
+  id ObjectId pk
+  general[
+    email string
+    addresses string
+    phone Number
+    support_email string
+  ]
+  updated_at timestamp
+}
+
+//Banner collection
+banner{
+    id ObjectId pk
+    type enum(["image","video"])
+    mediaUrl [string]
+    title string
+    description string
+    start_date timestamp
+    end_date timestamp
+    is_deleted boolean
+    created_at timestamp
+    updated_at timestamp
+}
+
+
+//address collection
+address[icon:map-pin,color:cyan]{
+  id ObjectId pk
+  userId ObjectId 
+  fullName string
+  email string
+  phone string
+  address_label string
+  streate_address string
+  landmark string 
+  district string
+  city string
+  state string
+  pincode number
+  default_use boolean
+  isDeleted boolean default:false
+  createdAt timestamp
+  updatedAt timestamp
+}
+
+//carts collection
+carts[icon:shopping-cart,color:yellow]{
+  id ObjectId pk
+  userId ObjectId  
+  productId ObjectId 
+  quantity number
+  createdAt timestamp
+  updatedAt timestamp
+}
+
+//wishlist collection
+wishlist[icon:heart,color:pink]{
+  id ObjectId pk
+  userId ObjectId  
+  productId ObjectId 
+}
+
+
+//payment methods collection
+paymentMethods[icon:credit-card,color:stone]{
+  id ObjectId pk   
+  paymentMethod string 
+  transactionId string 
+  orderId ObjectId   
+  userId ObjectId  
+  amount number  
+  status string 
+  currency string 
+  isActive boolean   
+  createdAt timestamp 
+  updatedAt timestamp 
+}
+
+
+//reviews collection
+reviews[icon:star,color:amber]{
+  id ObjectId pk
+  userId ObjectId
+  orderId ObjectId 
+  productId ObjectId 
+  rating number 
+  comment string
+  isVerified boolean   
+  createdAt timestamp
+  updatedAt timestamp
+}
+
+//analytics collection
+analytics[icon:bar-chart,color:purple]{
+  id ObjectId pk  
+  date date 
+  totalUsers number  
+  totalOrders number
+  ordersPlacedToday number 
+  pendingOrders number  
+  totalRevenue number  
+  todayRevenue number   
+  progressPercentage number
+  createdAt timestamp
+  updatedAt timestamp
+}
+
+
+
+//referrals collection
+referrals[icon:gift,color:purple] {
+  id ObjectId pk
+  referrerId ObjectId   
+  referredId ObjectId    
+  referralCode string unique
+  referrerReward number
+  referredReward number 
+  status enum("pending","credited","rejected") 
+  createdAt timestamp
+  creditedAt timestamp
+}
+
+
+
+
+
+// Users Relationships
+users.id > address.userId
+users.id > orders.userId
+users.id > wallets.userId
+users.id > returns.userId
+users.id > carts.userId
+users.id > wishlist.userId
+users.id > paymentMethods.userId
+users.id > reviews.userId
+users.id > referrals.referrerId
+users.id > referrals.referredId
+
+// Admin Relationships
+admins.id > brands.id
+admins.id > categories.id
+admins.id > product_type.id
+admins.id > cars.id
+admins.id > accessories.id
+admins.id > banner.id
+admins.id > analytics.id
+admins.id > settings.id
+admins.id > coupons.id
+admins.id > returns.id
+admins.id > wallets.id
+admins.id > reviews.id
+admins.id > users.id
+admins.id > orders.id
+
+// Cars Relationships
+cars.id > cars_variant.product_id
+cars.brand_id > brands.id
+cars.category_id > categories.id
+cars.product_type_id > product_type.id
+cars.id > reviews.productId
+cars.id > returns.productId
+cars.id > carts.productId
+cars.id > wishlist.productId
+cars.id > orders.products.productId
+
+// Accessories Relationships
+accessories.brand_id > brands.id
+accessories.category_id > categories.id
+accessories.product_type_id > product_type.id
+accessories.id > reviews.productId
+accessories.id > returns.productId
+accessories.id > carts.productId
+accessories.id > wishlist.productId
+accessories.id > orders.products.productId
+
+// Orders Relationships
+orders.userId > users.id
+orders.paymentMethodId > paymentMethods.id
+orders.couponApplied > coupons.id
+
+// Returns Relationships
+returns.orderId > orders.id
+returns.productId > cars.id
+returns.productId > accessories.id
+returns.userId > users.id
+
+// Wallet Relationships
+wallets.userId - users.id
+
+// Reviews Relationships
+reviews.userId > users.id
+reviews.orderId > orders.id
+reviews.productId > cars.id
+reviews.productId > accessories.id
+
+// Referrals Relationships
+referrals.referrerId > users.id
+referrals.referredId > users.id
+
+// Category Relationships
+categories.id > brands.id
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+// Notifications Table (optional)
+// notifications [icon: bell, color: orange] {
+//   id string pk
+//   user_id string
+//   message string
+//   is_read boolean
+//   created_at timestamp
+// }

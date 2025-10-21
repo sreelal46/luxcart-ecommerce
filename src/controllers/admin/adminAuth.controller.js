@@ -10,7 +10,7 @@ const {
 } = require("../../constant/statusCode");
 const emailSending = require("../../services/sendEmail");
 
-// Verify admin login
+// Verify admin login orijinal
 const verifyadmin = async (req, res, next) => {
   try {
     const { email, password } = req.body;
@@ -18,13 +18,13 @@ const verifyadmin = async (req, res, next) => {
     if (!admin)
       return res
         .status(FORBIDDEN)
-        .render("admin/login", { alert: "Email not found" });
+        .json({ success: false, message: "Email not found" });
 
     const compare = await bcrypt.compare(password, admin.password);
     if (!compare)
       return res
         .status(FORBIDDEN)
-        .render("admin/login", { alert: "Invalid email or password" });
+        .json({ success: false, message: "Invalid email or password" });
 
     // Store session object
     req.session.admin = {
@@ -32,7 +32,13 @@ const verifyadmin = async (req, res, next) => {
       name: admin.name,
       email: admin.email,
     };
-    req.session.save(() => res.status(OK).redirect("/admin/dashboard"));
+    req.session.save(() =>
+      res.status(OK).json({
+        success: true,
+        message: "Login Successfull",
+        redirect: "/admin/dashboard",
+      })
+    );
   } catch (error) {
     next(error);
   }
@@ -51,7 +57,7 @@ const emailVerification = async (req, res, next) => {
     if (!admin)
       return res
         .status(UNAUTHORIZED)
-        .render("admin/verify-email", { alert: "Email not Found" });
+        .json({ success: false, alert: "Email not Found" });
 
     //saving admin id to session for OTP verification
     const adminId = admin._id;
@@ -61,7 +67,11 @@ const emailVerification = async (req, res, next) => {
     //sending OTP to email
     await emailSending(admin.email, adminId, typeOfMail);
 
-    res.status(OK).redirect("/admin/otp-verify-page");
+    res.status(OK).json({
+      success: true,
+      alert: "Email Verified",
+      redirect: "/admin/otp-verify-page",
+    });
   } catch (error) {
     console.log("error from email verification in admin side:", error);
     next(error);
@@ -110,7 +120,7 @@ const OTPVerification = async (req, res, next) => {
     if (!adminOTP)
       return res
         .status(GONE)
-        .render("admin/verify-otp", { alert: "Your OTP has expired" });
+        .json({ success: false, alert: "Your OTP has expired" });
 
     //comparing OTP
     const compare = await bcrypt.compare(OTPCode, adminOTP.otp);
@@ -120,9 +130,11 @@ const OTPVerification = async (req, res, next) => {
     if (!compare)
       return res
         .status(CONFLICT)
-        .render("admin/verify-otp", { alert: "Invalid OTP.Please try again." });
+        .json({ success: false, alert: "Invalid OTP.Please try again." });
 
-    res.status(OK).redirect("/admin/change-password-page");
+    res
+      .status(OK)
+      .json({ success: true, redirect: "/admin/change-password-page" });
   } catch (error) {
     console.log("Error form admin OTP verificcation", error);
     next(error);
@@ -141,7 +153,9 @@ const PasswordChanging = async (req, res, next) => {
 
     //compare password
     if (newPassword !== confirmPassword)
-      return res.status(CONFLICT).render("admin/change-password");
+      return res
+        .status(CONFLICT)
+        .json({ success: false, alert: "Password mismatch" });
 
     //password hashing
     const salt = parseInt(process.env.BCRYPT_SALT_ROUNDS);
@@ -160,10 +174,16 @@ const PasswordChanging = async (req, res, next) => {
 
     //saving success message
     req.session.passwordChanged = true;
-    req.session.success = "Password changed successfully";
-    console.log("session checking in chnage password", req.session.success);
+    // req.session.success = "Password changed successfully";
+    // console.log("session checking in chnage password", req.session.success);
 
-    req.session.save(() => res.status(OK).redirect("/admin/login"));
+    req.session.save(() =>
+      res.status(OK).json({
+        success: true,
+        alert: "Password changed",
+        redirect: "/admin/login",
+      })
+    );
   } catch (error) {
     console.error("Error from password chnaging admin", error);
     next(error);

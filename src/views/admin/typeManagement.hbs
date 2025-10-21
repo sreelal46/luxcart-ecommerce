@@ -26,42 +26,37 @@
             <th>ID</th>
             <th>Type Name</th>
             <th>Description</th>
+            <th>status</th>
             <th>Actions</th>
           </tr>
         </thead>
         <tbody id="typeTable">
           <!-- Sample Data -->
+          {{#each types}}
           <tr>
-            <td>1</td>
-            <td>Luxury</td>
-            <td>Premium luxury cars and accessories</td>
+            <td>{{@index}}</td>
+            <td>{{this.name}}</td>
+            <td>{{this.description}}</td>
+            {{#if this.isListed}}
+            <td class="text-success">Listed</td>
+            {{else}}
+            <td class="text-danger">Unlisted</td>
+            {{/if}}
             <td>
               <button class="btn btn-sm btn-outline-primary me-2" data-bs-toggle="modal" data-bs-target="#editTypeModal"
-                data-id="1" data-name="Luxury" data-description="Premium luxury cars and accessories">
+                data-id="{{this._id}}" data-name="{{this.name}}" data-description="{{this.description}}">
                 <i class="bi bi-pencil-fill"></i>
               </button>
-              <button class="btn btn-sm btn-outline-danger" data-bs-toggle="modal" data-bs-target="#deleteTypeModal"
-                data-id="1" data-name="Luxury">
-                <i class="bi bi-trash-fill"></i>
-              </button>
-            </td>
-          </tr>
 
-          <tr>
-            <td>2</td>
-            <td>Premium</td>
-            <td>High-end premium types for cars & accessories</td>
-            <td>
-              <button class="btn btn-sm btn-outline-primary me-2" data-bs-toggle="modal" data-bs-target="#editTypeModal"
-                data-id="2" data-name="Premium" data-description="High-end premium types for cars & accessories">
-                <i class="bi bi-pencil-fill"></i>
-              </button>
-              <button class="btn btn-sm btn-outline-danger" data-bs-toggle="modal" data-bs-target="#deleteTypeModal"
-                data-id="2" data-name="Premium">
-                <i class="bi bi-trash-fill"></i>
+
+              <button class="btn btn-sm {{#if this.isListed}}btn-outline-warning{{else}}btn-outline-success{{/if}}"
+                data-bs-toggle="modal" data-bs-target="#deleteTypeModal" data-id="{{this._id}}"
+                data-name="{{this.name}}">
+                <i class="bi {{#if this.isListed}}bi-eye-slash-fill{{else}}bi-eye-fill{{/if}}"></i>
               </button>
             </td>
           </tr>
+          {{/each}}
         </tbody>
       </table>
     </div>
@@ -72,7 +67,7 @@
 <div class="modal fade" id="addTypeModal" tabindex="-1">
   <div class="modal-dialog">
     <div class="modal-content">
-      <form id="addTypeForm">
+      <form id="addTypeForm" method="post">
         <div class="modal-header">
           <h5 class="modal-title fw-bold">Add New Type</h5>
           <button class="btn-close" data-bs-dismiss="modal"></button>
@@ -99,7 +94,7 @@
 <div class="modal fade" id="editTypeModal" tabindex="-1">
   <div class="modal-dialog">
     <div class="modal-content">
-      <form id="editTypeForm">
+      <form id="editTypeForm" method="post">
         <div class="modal-header">
           <h5 class="modal-title fw-bold">Edit Type</h5>
           <button class="btn-close" data-bs-dismiss="modal"></button>
@@ -108,11 +103,11 @@
           <input type="hidden" id="editTypeId">
           <div class="mb-3">
             <label class="form-label">Type Name</label>
-            <input type="text" id="editTypeName" class="form-control" required>
+            <input type="text" id="editTypeName" name="name" class="form-control" required>
           </div>
           <div class="mb-3">
             <label class="form-label">Description</label>
-            <textarea id="editTypeDescription" class="form-control" rows="3" required></textarea>
+            <textarea id="editTypeDescription" name="description" class="form-control" rows="3" required></textarea>
           </div>
         </div>
         <div class="modal-footer">
@@ -128,15 +123,15 @@
   <div class="modal-dialog modal-dialog-centered">
     <div class="modal-content text-center">
       <div class="modal-header border-0">
-        <h5 class="modal-title text-danger fw-bold">Delete Type</h5>
+        <h5 class="modal-title text-danger fw-bold">Unlist/List Type</h5>
         <button class="btn-close" data-bs-dismiss="modal"></button>
       </div>
       <div class="modal-body">
-        Are you sure you want to delete <strong id="deleteTypeName"></strong>?
+        Are you sure <strong id="deleteTypeName"></strong>?
       </div>
       <div class="modal-footer border-0">
-        <button class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
-        <button class="btn btn-danger">Delete</button>
+        <button class="btn btn-secondary" data-bs-dismiss="modal">No</button>
+        <button class="btn btn-danger" id="typeSoftDelete">Yes</button>
       </div>
     </div>
   </div>

@@ -35,67 +35,47 @@
         </thead>
         <tbody id="categoryTable">
           <!-- Sample Data -->
+          {{#each categories}}
           <tr>
-            <td>1</td>
-            <td>Luxury Cars</td>
-            <td><span class="badge bg-primary">Car</span></td>
-            <td>High-end vehicles and sports cars</td>
-            <td>25</td>
-            <td>
-              <div class="form-check form-switch">
-                <input class="form-check-input" type="checkbox" checked data-bs-toggle="modal"
-                  data-bs-target="#confirmListModal">
-              </div>
+            <td>{{@index}}</td>
+            <td>{{this.name}}</td>
+            <td><span class="badge bg-primary">{{this.product}}</span></td>
+            <td>{{this.description}}</td>
+            <td>total product</td>
+            {{#if isListed}}
+            <td class="text-success">
+              Listed
             </td>
+            {{else}}
+            <td class="text-danger">
+              Unlisted
+            </td>
+            {{/if}}
             <td>
-              <button class="btn btn-sm btn-outline-info" data-bs-toggle="modal" data-bs-target="#addOfferModal"
-                data-name="Luxury Cars">
+              <button class="btn btn-sm btn-outline-info" data-id={{this._id}} data-bs-toggle="modal"
+                data-bs-target="#addOfferModal" data-name="{{this.name}}">
                 <i class="bi bi-tags-fill me-1"></i>Add Offer
               </button>
             </td>
             <td>
               <button class="btn btn-sm btn-outline-primary me-2" data-bs-toggle="modal"
-                data-bs-target="#editCategoryModal" data-id="1" data-name="Luxury Cars"
-                data-description="High-end vehicles and sports cars" data-type="Car">
+                data-bs-target="#editCategoryModal" data-id={{this._id}} data-name="{{this.name}}"
+                data-description="{{this.description}}" data-type={{this.product}}>
                 <i class="bi bi-pencil-fill"></i>
               </button>
-              <button class="btn btn-sm btn-outline-danger" data-bs-toggle="modal" data-bs-target="#deleteCategoryModal"
-                data-id="1" data-name="Luxury Cars">
-                <i class="bi bi-trash-fill"></i>
+              <button class="btn btn-sm {{#if this.isListed}}btn-outline-warning{{else}}btn-outline-success{{/if}}"
+                data-bs-toggle="modal" data-bs-target="#confirmListModal" data-id="{{this._id}}"
+                data-status="{{this.isListed}}">
+                <i class="bi {{#if this.isListed}}bi-eye-slash-fill{{else}}bi-eye-fill{{/if}}"></i>
               </button>
-            </td>
-          </tr>
 
-          <tr>
-            <td>2</td>
-            <td>Car Accessories</td>
-            <td><span class="badge bg-warning text-dark">Accessories</span></td>
-            <td>Wheels, seat covers, and gadgets</td>
-            <td>80</td>
-            <td>
-              <button class="btn btn-sm btn-outline-danger" data-bs-toggle="modal" data-bs-target="#toggleStatusModal"
-                data-name="Car Accessories" data-status="List">
-                Unlist
-              </button>
-            </td>
-            <td>
-              <button class="btn btn-sm btn-outline-info" data-bs-toggle="modal" data-bs-target="#addOfferModal"
-                data-name="Car Accessories">
-                <i class="bi bi-tags-fill me-1"></i>Add Offer
-              </button>
-            </td>
-            <td>
-              <button class="btn btn-sm btn-outline-primary me-2" data-bs-toggle="modal"
-                data-bs-target="#editCategoryModal" data-id="2" data-name="Car Accessories"
-                data-description="Wheels, seat covers, and gadgets" data-type="Accessories">
-                <i class="bi bi-pencil-fill"></i>
-              </button>
-              <button class="btn btn-sm btn-outline-danger" data-bs-toggle="modal" data-bs-target="#deleteCategoryModal"
-                data-id="2" data-name="Car Accessories">
-                <i class="bi bi-trash-fill"></i>
-              </button>
             </td>
           </tr>
+          {{else}}
+          <tr>
+            <td colspan="12" class="text-center text-muted py-4">No Categories</td>
+          </tr>
+          {{/each}}
         </tbody>
       </table>
     </div>
@@ -106,11 +86,13 @@
 <div class="modal fade" id="addCategoryModal" tabindex="-1" aria-labelledby="addCategoryModalLabel" aria-hidden="true">
   <div class="modal-dialog">
     <div class="modal-content">
-      <form id="addCategoryForm" enctype="multipart/form-data">
+      <form id="addCategoryForm" method="post" enctype="multipart/form-data">
         <div class="modal-header">
           <h5 class="modal-title fw-bold" id="addCategoryModalLabel">Add New Category</h5>
           <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
         </div>
+        <!-- Alert -->
+        <div id="alert" class="d-none text-center"></div>
         <div class="modal-body">
           <div class="mb-3">
             <label class="form-label">Category Name</label>
@@ -123,21 +105,16 @@
           </div>
 
           <div class="mb-3">
-            <label class="form-label">Type</label><br>
+            <label class="form-label">Product</label><br>
             <div class="form-check form-check-inline">
-              <input class="form-check-input" type="radio" name="type" value="Car" id="typeCar" required>
+              <input class="form-check-input" type="radio" name="productType" value="Car" id="typeCar" required>
               <label class="form-check-label" for="typeCar">Car</label>
             </div>
             <div class="form-check form-check-inline">
-              <input class="form-check-input" type="radio" name="type" value="Accessories" id="typeAccessories"
+              <input class="form-check-input" type="radio" name="productType" value="Accessories" id="typeAccessories"
                 required>
               <label class="form-check-label" for="typeAccessories">Accessories</label>
             </div>
-          </div>
-
-          <div class="mb-3">
-            <label class="form-label">Category Image</label>
-            <input type="file" class="form-control" name="image" accept="image/*" required>
           </div>
         </div>
 
@@ -153,20 +130,22 @@
 <div class="modal fade" id="editCategoryModal" tabindex="-1">
   <div class="modal-dialog">
     <div class="modal-content">
-      <form id="editCategoryForm">
+      <form id="editCategoryForm" method="post">
         <div class="modal-header">
           <h5 class="modal-title fw-bold">Edit Category</h5>
           <button class="btn-close" data-bs-dismiss="modal"></button>
         </div>
         <div class="modal-body">
           <input type="hidden" id="editCategoryId">
+          <!-- Alert -->
+          <div id="alert" class="d-none text-center"></div>
           <div class="mb-3">
             <label class="form-label">Category Name</label>
-            <input type="text" id="editCategoryName" class="form-control" required>
+            <input type="text" id="editCategoryName" name="name" class="form-control" required>
           </div>
           <div class="mb-3">
             <label class="form-label">Description</label>
-            <textarea id="editCategoryDescription" class="form-control" rows="3" required></textarea>
+            <textarea id="editCategoryDescription" name="description" class="form-control" rows="3" required></textarea>
           </div>
           <div class="mb-3">
             <label class="form-label">Type</label><br>
@@ -264,10 +243,151 @@
       <div class="modal-body">
         Are you sure you want to <strong>list/unlist</strong> this product?
       </div>
+      <input type="hidden" name="id" id="categoriesId">
       <div class="modal-footer border-0">
         <button class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
-        <button class="btn btn-danger">Yes, Confirm</button>
+        <button class="btn btn-danger" id="categoriesDeleteConfirm">Yes, Confirm</button>
       </div>
     </div>
   </div>
 </div>
+
+<script>
+  document.addEventListener("DOMContentLoaded", () => {
+    const alertDiv = document.getElementById("alert")
+
+    //adding new category
+    const addCategoryForm = document.getElementById("addCategoryForm")
+    addCategoryForm.addEventListener("submit", async (e) => {
+      e.preventDefault()
+
+      const formData = new FormData(addCategoryForm)
+      const data = Object.fromEntries(formData.entries())
+
+      try {
+        const res = await axios.post("/admin/categorys-management/add-category", data)
+
+        //desing the alert 
+        alertDiv.className = "alert alert-info text-center";
+        alertDiv.textContent = "Processing......";
+        alertDiv.classList.remove("d-none");
+
+        if (res.data.success) {
+          alertDiv.className = "alert alert-success text-center";
+          alertDiv.textContent = "Category added successfully......";
+          alertDiv.classList.remove("d-none");
+          setTimeout(() => window.location.reload(), 800)
+        }
+      } catch (error) {
+        console.log(error)
+        const message = error.response?.data?.alert || "Somthing worng";
+        alertDiv.className = "alert alert-danger text-center";
+        alertDiv.textContent = message;
+        alertDiv.classList.remove("d-none");
+      }
+
+
+
+    })
+
+    //editing input box filling category
+    const editCategoryModal = document.getElementById("editCategoryModal")
+    editCategoryModal.addEventListener("show.bs.modal", e => {
+      const btn = e.relatedTarget;
+      document.getElementById("editCategoryId").value = btn.dataset.id
+      document.getElementById("editCategoryName").value = btn.dataset.name
+      document.getElementById("editCategoryDescription").value = btn.dataset.description
+      // Set the correct radio button checked
+      if (btn.dataset.type === "Car") {
+        document.getElementById("editTypeCar").checked = true;
+      } else if (btn.dataset.type === "Accessories") {
+        document.getElementById("editTypeAccessories").checked = true;
+      }
+    }
+    )
+
+    //editted form submitting
+    const editCategoryForm = document.getElementById("editCategoryForm")
+    editCategoryForm.addEventListener("submit", async e => {
+      e.preventDefault()
+      const id = document.getElementById("editCategoryId").value;
+      const formData = new FormData(editCategoryForm)
+      const data = Object.fromEntries(formData.entries())
+
+      const localAlert = e.target.querySelector("#alert");
+
+      try {
+        const res = await axios.put(`/admin/categorys-management/edit-category/${id}`, data)
+
+        //alert message
+        localAlert.className = "alert alert-info text-center";
+        localAlert.textContent = "Updating...";
+        localAlert.classList.remove("d-none");
+        if (res.data.success) {
+          localAlert.className = "alert alert-success text-center";
+          localAlert.textContent = "Category updated successfully!";
+          setTimeout(() => window.location.reload(), 500)
+        } else {
+          localAlert.className = "alert alert-danger text-center";
+          localAlert.textContent = res.data.message || "Failed to update Category";
+        }
+      } catch (err) {
+        console.error(err);
+        localAlert.className = "alert alert-danger text-center";
+        localAlert.textContent = "Update failed";
+      }
+    }
+    )
+
+    //soft delete
+    const confirmListModal = document.getElementById("confirmListModal");
+
+    confirmListModal.addEventListener("show.bs.modal", e => {
+      const btn = e.relatedTarget;
+      document.getElementById("categoriesId").value = btn.dataset.id;
+    });
+
+    document.getElementById("categoriesDeleteConfirm").addEventListener("click", async e => {
+      const id = document.getElementById("categoriesId").value;
+
+      // Get the Bootstrap modal instance
+      const confirmModal = bootstrap.Modal.getInstance(confirmListModal);
+
+      try {
+        const res = await axios.patch(`/admin/categorys-management/soft-delete-category/${id}`);
+
+        // Hide modal before showing SweetAlert
+        confirmModal.hide();
+
+        if (res.data.success) {
+          Swal.fire({
+            icon: 'success',
+            title: 'Category updated!',
+            text: 'The category has been successfully updated.',
+            timer: 1500,
+            showConfirmButton: false
+          }).then(() => window.location.reload());
+        } else {
+          Swal.fire({
+            icon: 'error',
+            title: 'Failed!',
+            text: res.data.message || 'Failed to update category',
+          });
+        }
+      } catch (err) {
+        confirmModal.hide(); // hide modal even on error
+        console.error(err);
+        Swal.fire({
+          icon: 'error',
+          title: 'Error!',
+          text: 'Something went wrong while updating the category',
+        });
+      }
+    });
+
+
+
+  })
+
+
+</script>

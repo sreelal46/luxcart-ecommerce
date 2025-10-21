@@ -1,0 +1,327 @@
+<div class="container-fluid px-4 py-4">
+  <!-- Header -->
+  <div class="d-flex justify-content-between align-items-center mb-4">
+    <h4 class="fw-bold mb-0">Brand Management</h4>
+    <div class="d-flex align-items-center gap-3">
+      <!-- Search Bar -->
+      <div class="input-group" style="width: 250px;">
+        <span class="input-group-text bg-white"><i class="bi bi-search"></i></span>
+        <input type="text" id="searchBrand" class="form-control" placeholder="Search brand...">
+      </div>
+      <!-- Add Brand Button -->
+      <button class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#addBrandModal">
+        <i class="bi bi-plus-lg me-1"></i> Add Brand
+      </button>
+      <!-- <a href="/admin/brands-management/add"" class=" btn btn-primary"><i class="bi bi-plus-lg me-1"></i> Add Brand</a> -->
+    </div>
+  </div>
+
+  <!-- Brand Table -->
+  <div class="card shadow-sm">
+    <div class="card-body table-responsive">
+      <table class="table table-hover align-middle">
+        <thead class="table-light">
+          <tr>
+            <th>#</th>
+            <th>Logo</th>
+            <th>Brand Name</th>
+            <th>Origin Country</th>
+            <th>Status</th>
+            <th>Actions</th>
+          </tr>
+        </thead>
+        <tbody id="brandTable">
+          {{#each brands}}
+          <tr>
+            <td>{{@index}}</td>
+            <td>
+              <img src="{{image_url}}" alt="{{name}}" class="rounded"
+                style="width:50px; height:50px; object-fit:cover;">
+            </td>
+            <td class="fw-semibold">{{name}}</td>
+            <td>{{country}}</td>
+            {{#if this.isListed}}
+            <td class="text-success">Listed</td>
+            {{else}}
+            <td class="text-danger">Listed</td>
+            {{/if}}
+            <td>
+              <button class="btn btn-sm btn-outline-primary me-2 editBrandBtn" data-id="{{_id}}" data-name="{{name}}"
+                data-country="{{country}}" data-image="{{image_url}}" data-bs-toggle="modal"
+                data-bs-target="#editBrandModal">
+                <i class="bi bi-pencil-fill"></i>
+              </button>
+
+              <button
+                class="btn btn-sm  {{#if this.isListed}}btn-outline-warning{{else}}btn-outline-success{{/if}} deleteBrandBtn"
+                data-id="{{_id}}" data-name="{{name}}" data-bs-toggle="modal" data-bs-target="#deleteConfirmModal">
+                <i class="bi {{#if this.isListed}}bi-eye-slash-fill{{else}}bi-eye-fill{{/if}}"></i>
+              </button>
+            </td>
+          </tr>
+          {{/each}}
+        </tbody>
+      </table>
+    </div>
+  </div>
+</div>
+
+<!-- Add Brand Modal -->
+<div class="modal fade" id="addBrandModal" tabindex="-1" aria-hidden="true">
+  <div class="modal-dialog">
+    <div class="modal-content">
+      <form id="addBrandForm" method="post" enctype="multipart/form-data">
+        <div class="modal-header">
+          <h5 class="modal-title fw-bold">Add New Brand</h5>
+          <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+        </div>
+        <div class="modal-body">
+          <!-- Alert -->
+          <div id="alert" class="d-none text-center"></div>
+          <div class="mb-3">
+            <label class="form-label">Brand Name</label>
+            <input type="text" class="form-control" name="name" required>
+          </div>
+          <div class="mb-3">
+            <label class="form-label">Origin Country</label>
+            <input type="text" class="form-control" name="country" required>
+          </div>
+          <div class="mb-3 text-center">
+            <label class="form-label">Brand Logo</label>
+            <input type="file" id="brandImageInput" class="form-control" accept="image/*">
+            <div class="mt-3" style="max-height: 300px;">
+              <img id="brandImagePreview" class="img-fluid d-none rounded border" alt="Preview">
+            </div>
+          </div>
+        </div>
+        <div class="modal-footer">
+          <button type="submit" class="btn btn-primary w-100">Save Brand</button>
+        </div>
+      </form>
+    </div>
+  </div>
+</div>
+
+<!-- Edit Brand Modal -->
+<div class="modal fade" id="editBrandModal" tabindex="-1" aria-hidden="true">
+  <div class="modal-dialog">
+    <div class="modal-content">
+      <form id="editBrandForm" method="post" enctype="multipart/form-data">
+        <div class="modal-header">
+          <h5 class="modal-title fw-bold">Edit Brand</h5>
+          <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+        </div>
+        <div class="modal-body">
+          <input type="hidden" name="id" id="editBrandId">
+          <!-- Alert -->
+          <div id="alert" class="d-none text-center"></div>
+          <div class="mb-3">
+            <label class="form-label">Brand Name</label>
+            <input type="text" class="form-control" name="name" id="editBrandName" required>
+          </div>
+          <div class="mb-3">
+            <label class="form-label">Origin Country</label>
+            <input type="text" class="form-control" name="country" id="editBrandCountry" required>
+          </div>
+          <div class="mb-3">
+            <label class="form-label">Change Logo (optional)</label>
+            <input type="file" class="form-control" name="image" id="editBrandImage" accept="image/*">
+          </div>
+          <div class="text-center">
+            <img id="currentBrandImage" src="" alt="Brand Image" class="rounded border"
+              style="width:80px;height:80px;object-fit:cover;">
+          </div>
+        </div>
+        <div class="modal-footer">
+          <button type="submit" class="btn btn-success w-100">Update Brand</button>
+        </div>
+      </form>
+    </div>
+  </div>
+</div>
+
+<!-- Delete Brand Modal -->
+<div class="modal fade" id="deleteConfirmModal" tabindex="-1" aria-hidden="true">
+  <div class="modal-dialog modal-dialog-centered">
+    <div class="modal-content">
+      <div class="modal-header border-0">
+        <h5 class="modal-title text-danger fw-bold">Unlist/List Brand</h5>
+        <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+      </div>
+      <div class="modal-body text-center">
+        <p>Are you sure <strong id="deleteBrandName"></strong>?</p>
+        <input type="hidden" id="deleteBrandId">
+      </div>
+      <div class="modal-footer border-0">
+        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">No</button>
+        <button type="button" id="confirmDeleteBrand" class="btn btn-danger">Yes</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- Scripts -->
+<script>
+  let cropper;
+  const addInput = document.getElementById("brandImageInput");
+  const addPreview = document.getElementById("brandImagePreview");
+  const alertDiv = document.getElementById("alert");
+
+  // ADD BRAND CROP LOGIC
+  // ============================
+  addInput.addEventListener("change", e => {
+    const file = e.target.files[0];
+    if (!file) return;
+    const reader = new FileReader();
+    reader.onload = () => {
+      addPreview.src = reader.result;
+      addPreview.classList.remove("d-none");
+      if (cropper) cropper.destroy();
+      cropper = new Cropper(addPreview, {
+        aspectRatio: NaN,
+        viewMode: 2,
+        autoCropArea: 1,
+      });
+    };
+    reader.readAsDataURL(file);
+  });
+
+  // ADD BRAND SUBMIT
+  // ============================
+  document.getElementById("addBrandForm").addEventListener("submit", async e => {
+    e.preventDefault();
+    const formData = new FormData();
+    formData.append("name", e.target.name.value);
+    formData.append("country", e.target.country.value);
+
+    if (cropper) {
+      const blob = await new Promise(resolve =>
+        cropper.getCroppedCanvas().toBlob(resolve, "image/png")
+      );
+      formData.append("image", blob, "cropped.png");
+    }
+
+    alertDiv.className = "alert alert-info text-center";
+    alertDiv.textContent = "Processing...";
+    alertDiv.classList.remove("d-none");
+
+    try {
+      const res = await axios.post("/admin/brands-management/add-brand", formData, {
+        headers: { "Content-Type": "multipart/form-data" },
+      });
+
+      if (res.data.success) {
+        alertDiv.className = "alert alert-success text-center";
+        alertDiv.textContent = "Brand added successfully!";
+        setTimeout(() => window.location.reload(), 500);
+      } else {
+        alertDiv.className = "alert alert-danger text-center";
+        alertDiv.textContent = res.data.message || "Failed to add brand";
+      }
+    } catch (err) {
+      console.error(err);
+      alertDiv.className = "alert alert-danger text-center";
+      alertDiv.textContent = "Upload failed";
+    }
+  });
+
+
+  //  EDIT BRAND
+  // ============================
+  const editBrandModal = document.getElementById("editBrandModal");
+  const editPreview = document.getElementById("currentBrandImage");
+  const editInput = document.getElementById("editBrandImage");
+  let editCropper;
+
+  //modal opens — fill data
+  editBrandModal.addEventListener("show.bs.modal", e => {
+    const btn = e.relatedTarget;
+    document.getElementById("editBrandId").value = btn.dataset.id;
+    document.getElementById("editBrandName").value = btn.dataset.name;
+    document.getElementById("editBrandCountry").value = btn.dataset.country;
+    editPreview.src = btn.dataset.image;
+    editPreview.style.width = "200px";
+    editPreview.style.height = "200px";
+  });
+
+  //image is changed in edit modal — allow cropping
+  editInput.addEventListener("change", e => {
+    const file = e.target.files[0];
+    if (!file) return;
+    const reader = new FileReader();
+    reader.onload = () => {
+      editPreview.src = reader.result;
+      if (editCropper) editCropper.destroy();
+      editCropper = new Cropper(editPreview, {
+        aspectRatio: NaN,
+        viewMode: 2,
+        autoCropArea: 1,
+      });
+    };
+    reader.readAsDataURL(file);
+  });
+
+  //Edit Form is submitted
+  document.getElementById("editBrandForm").addEventListener("submit", async e => {
+    e.preventDefault();
+    const id = document.getElementById("editBrandId").value;
+    const formData = new FormData();
+    formData.append("name", document.getElementById("editBrandName").value);
+    formData.append("country", document.getElementById("editBrandCountry").value);
+
+    // If a new image was cropped
+    if (editCropper) {
+      const blob = await new Promise(resolve =>
+        editCropper.getCroppedCanvas().toBlob(resolve, "image/png")
+      );
+      formData.append("image", blob, "updated.png");
+    }
+
+    const localAlert = e.target.querySelector("#alert");
+    localAlert.className = "alert alert-info text-center";
+    localAlert.textContent = "Updating...";
+    localAlert.classList.remove("d-none");
+
+    try {
+      const res = await axios.put(`/admin/brands-management/edit-brand/${id}`, formData, {
+        headers: { "Content-Type": "multipart/form-data" },
+      });
+
+      if (res.data.success) {
+        localAlert.className = "alert alert-success text-center";
+        localAlert.textContent = "Brand updated successfully!";
+        setTimeout(() => window.location.reload(), 400);
+      } else {
+        localAlert.className = "alert alert-danger text-center";
+        localAlert.textContent = res.data.message || "Failed to update brand";
+      }
+    } catch (err) {
+      console.error(err);
+      localAlert.className = "alert alert-danger text-center";
+      localAlert.textContent = "Update failed";
+    }
+  });
+
+  // DELETE BRAND
+  // ============================
+  const deleteBrandModal = document.getElementById("deleteConfirmModal");
+  deleteBrandModal.addEventListener("show.bs.modal", e => {
+    const btn = e.relatedTarget;
+    document.getElementById("deleteBrandId").value = btn.dataset.id;
+    document.getElementById("deleteBrandName").textContent = btn.dataset.name;
+  });
+
+  document.getElementById("confirmDeleteBrand").addEventListener("click", async () => {
+    const id = document.getElementById("deleteBrandId").value;
+    try {
+      const res = await axios.patch(`/admin/brands-management/soft-delete-brand/${id}`);
+      if (res.data.success) {
+        window.location.reload();
+      }
+
+    } catch (err) {
+      console.error(err);
+      alert("Delete failed");
+    }
+  });
+</script>

@@ -1,0 +1,142 @@
+<div class="container py-4">
+  <div class="d-flex justify-content-between align-items-center mb-4">
+    <h3 class="fw-bold"><i class="bi bi-box-seam me-2"></i>Order Details</h3>
+    <a href="/admin/orders" class="btn btn-outline-secondary">
+      <i class="bi bi-arrow-left me-1"></i>Back
+    </a>
+  </div>
+
+  <div class="row g-4">
+    <!-- Left Side -->
+    <div class="col-lg-8">
+      <div class="card shadow-sm mb-4">
+        <div class="card-body">
+          <h5 class="fw-bold mb-3">Order Information</h5>
+          <p><strong>Order ID:</strong> #ORD12345</p>
+          <p><strong>Placed On:</strong> 18 Oct 2025, 03:45 PM</p>
+        </div>
+      </div>
+
+      <div class="card shadow-sm mb-4">
+        <div class="card-body">
+          <h5 class="fw-bold mb-3">Customer Information</h5>
+          <p><i class="bi bi-person-circle me-2"></i><strong>Name:</strong> Rahul Sharma</p>
+          <p><i class="bi bi-envelope me-2"></i><strong>Email:</strong> rahul.sharma@example.com</p>
+          <p><i class="bi bi-telephone me-2"></i><strong>Phone:</strong> +91 9876543210</p>
+        </div>
+      </div>
+
+      <div class="card shadow-sm mb-4">
+        <div class="card-body">
+          <h5 class="fw-bold mb-3">Shipping Address</h5>
+          <p><i class="bi bi-geo-alt me-2"></i>Flat 203, Green Residency, MG Road, Kochi, Kerala - 682001</p>
+        </div>
+      </div>
+
+      <div class="card shadow-sm mb-4">
+        <div class="card-body">
+          <h5 class="fw-bold mb-3">Payment Method</h5>
+          <p><i class="bi bi-credit-card me-2"></i>Credit Card (HDFC Bank)</p>
+        </div>
+      </div>
+
+      <!-- Order Timeline -->
+      <div class="card shadow-sm">
+        <div class="card-body">
+          <h5 class="fw-bold mb-3">Order Timeline</h5>
+          <ul class="timeline list-unstyled">
+            <li><i class="bi bi-check-circle-fill text-success me-2"></i>Order Placed - 18 Oct 2025, 03:45 PM</li>
+            <li><i class="bi bi-truck text-info me-2"></i>Shipped - 18 Oct 2025, 07:30 PM</li>
+            <li><i class="bi bi-box2-heart text-warning me-2"></i>Out for Delivery - 19 Oct 2025, 09:00 AM</li>
+            <li><i class="bi bi-house-door text-primary me-2"></i>Delivered - 19 Oct 2025, 05:15 PM</li>
+          </ul>
+        </div>
+      </div>
+    </div>
+
+    <!-- Right Side -->
+    <div class="col-lg-4">
+      <div class="card shadow-sm mb-4">
+        <div class="card-body">
+          <h5 class="fw-bold mb-3">Order Status</h5>
+          <span class="badge bg-success px-3 py-2 fs-6">Delivered</span>
+        </div>
+      </div>
+
+      <div class="card shadow-sm mb-4">
+        <div class="card-body">
+          <h5 class="fw-bold mb-3">Order Summary</h5>
+          <ul class="list-group list-group-flush">
+            <li class="list-group-item d-flex justify-content-between align-items-center">
+              <span>Wireless Earbuds (x1)</span>
+              <strong>₹1,499</strong>
+            </li>
+            <li class="list-group-item d-flex justify-content-between align-items-center">
+              <span>Leather Wallet (x2)</span>
+              <strong>₹1,800</strong>
+            </li>
+            <li class="list-group-item d-flex justify-content-between align-items-center">
+              <span>Smartwatch (x1)</span>
+              <strong>₹2,999</strong>
+            </li>
+          </ul>
+          <hr>
+          <div class="d-flex justify-content-between">
+            <strong>Total:</strong>
+            <strong>₹6,298</strong>
+          </div>
+        </div>
+      </div>
+
+      <div class="d-flex justify-content-between">
+        <button class="btn btn-outline-secondary" onclick="window.history.back()">
+          <i class="bi bi-arrow-left me-1"></i>Back
+        </button>
+        <button class="btn btn-danger" data-bs-toggle="modal" data-bs-target="#cancelModal">
+          <i class="bi bi-x-circle me-1"></i>Cancel Order
+        </button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- Cancel Confirmation Modal -->
+<div class="modal fade" id="cancelModal" tabindex="-1" aria-labelledby="cancelModalLabel" aria-hidden="true">
+  <div class="modal-dialog modal-dialog-centered">
+    <div class="modal-content">
+      <div class="modal-header bg-danger text-white">
+        <h5 class="modal-title" id="cancelModalLabel"><i class="bi bi-exclamation-triangle me-2"></i>Confirm
+          Cancellation</h5>
+        <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+      </div>
+      <div class="modal-body">
+        Are you sure you want to cancel this order? This action cannot be undone.
+      </div>
+      <div class="modal-footer">
+        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">No, Go Back</button>
+        <form action="/admin/orders/ORD12345/cancel" method="POST">
+          <button type="submit" class="btn btn-danger">Yes, Cancel Order</button>
+        </form>
+      </div>
+    </div>
+  </div>
+</div>
+
+<style>
+  .timeline li {
+    position: relative;
+    padding-left: 25px;
+    margin-bottom: 8px;
+  }
+
+  .timeline li::before {
+    content: "";
+    position: absolute;
+    left: 8px;
+    top: 8px;
+    height: 6px;
+    width: 6px;
+    background-color: #6c757d;
+    border-radius: 50%;
+  }
+</style>
