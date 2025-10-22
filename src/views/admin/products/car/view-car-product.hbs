@@ -7,9 +7,9 @@
       <div class="mb-4">
         <h5>Images</h5>
         <div class="d-flex flex-wrap gap-3">
-          <img src="image1.jpg" alt="Car Image 1" class="img-thumbnail" style="width: 150px; height: auto;">
-          <img src="image2.jpg" alt="Car Image 2" class="img-thumbnail" style="width: 150px; height: auto;">
-          <img src="image3.jpg" alt="Car Image 3" class="img-thumbnail" style="width: 150px; height: auto;">
+          {{#each singleCar.variantIds.[0].image_url}}
+          <img src="{{this}}" alt="Car Image 1" class="img-thumbnail" style="width: 300px; height: auto;">
+          {{/each}}
           <!-- Add more images as needed -->
         </div>
       </div>
@@ -18,15 +18,14 @@
       <div class="mb-4">
         <h5>Basic Info</h5>
         <ul class="list-group">
-          <li class="list-group-item"><strong>Price:</strong> $100,000</li>
-          <li class="list-group-item"><strong>Stock:</strong> 10 units</li>
-          <li class="list-group-item"><strong>Color:</strong> Red</li>
-          <li class="list-group-item"><strong>Brand:</strong> Example Brand</li>
-          <li class="list-group-item"><strong>Category:</strong> Sedan</li>
-          <li class="list-group-item"><strong>Product Type:</strong> Car</li>
-          <li class="list-group-item"><strong>Description:</strong> A premium quality sedan car with excellent features.
-          </li>
-          <li class="list-group-item"><strong>Offer Price:</strong> $95,000</li>
+          <li class="list-group-item"><strong>Price:</strong> ₹{{singleCar.variantIds.[0].price}}</li>
+          <li class="list-group-item"><strong>Stock:</strong>{{singleCar.variantIds.[0].stock}} units</li>
+          <li class="list-group-item"><strong>Color:</strong> {{singleCar.variantIds.[0].color}}</li>
+          <li class="list-group-item"><strong>Brand:</strong>{{singleCar.brand_id.name}}</li>
+          <li class="list-group-item"><strong>Category:</strong>{{singleCar.category_id.name}}</li>
+          <li class="list-group-item"><strong>Product Type:</strong>{{singleCar.product_type_id.name}}</li>
+          <li class="list-group-item"><strong>Description:</strong>{{singleCar.description}}</li>
+          <li class="list-group-item"><strong>Offer Price:</strong>₹{{singleCar.offer_price}}</li>
         </ul>
       </div>
 
@@ -34,10 +33,10 @@
       <div class="mb-4">
         <h5>Quick Info</h5>
         <ul class="list-group">
-          <li class="list-group-item"><strong>Year:</strong> 2025</li>
-          <li class="list-group-item"><strong>Mileage:</strong> 15,000 km</li>
-          <li class="list-group-item"><strong>Warranty:</strong> 5 years</li>
-          <li class="list-group-item"><strong>Region:</strong> North America</li>
+          <li class="list-group-item"><strong>Year:</strong>{{singleCar.year}}</li>
+          <li class="list-group-item"><strong>Mileage:</strong>{{singleCar.mileage}}</li>
+          <li class="list-group-item"><strong>Warranty:</strong>{{singleCar.warranty}}</li>
+          <li class="list-group-item"><strong>Region:</strong>{{singleCar.region}}</li>
         </ul>
       </div>
 
@@ -45,13 +44,13 @@
       <div class="mb-4">
         <h5>Performance</h5>
         <ul class="list-group">
-          <li class="list-group-item"><strong>Top Speed:</strong> 250 km/h</li>
-          <li class="list-group-item"><strong>Power (HP):</strong> 400</li>
-          <li class="list-group-item"><strong>Engine:</strong> V8 Turbo</li>
-          <li class="list-group-item"><strong>Transmission:</strong> Automatic</li>
-          <li class="list-group-item"><strong>Drive Type:</strong> AWD</li>
-          <li class="list-group-item"><strong>Torque:</strong> 550 Nm</li>
-          <li class="list-group-item"><strong>Acceleration 0-100:</strong> 4.5 seconds</li>
+          <li class="list-group-item"><strong>Top Speed:</strong>{{singleCar.top_speed}}</li>
+          <li class="list-group-item"><strong>Power (HP):</strong>{{singleCar.power_hp}}</li>
+          <li class="list-group-item"><strong>Engine:</strong>{{singleCar.engine}}</li>
+          <li class="list-group-item"><strong>Transmission:</strong>{{singleCar.transmission}}</li>
+          <li class="list-group-item"><strong>Drive Type:</strong>{{singleCar.drive_type}}</li>
+          <li class="list-group-item"><strong>Torque:</strong>{{singleCar.torque}}</li>
+          <li class="list-group-item"><strong>Acceleration 0-100:</strong> {{singleCar.acceleration_0_100}}</li>
         </ul>
       </div>
 
@@ -59,10 +58,10 @@
       <div class="mb-4">
         <h5>Exterior & Interior</h5>
         <ul class="list-group">
-          <li class="list-group-item"><strong>Colors Available:</strong> Red, Black, White</li>
-          <li class="list-group-item"><strong>Wheels:</strong> 19-inch alloy</li>
-          <li class="list-group-item"><strong>Upholstery:</strong> Leather</li>
-          <li class="list-group-item"><strong>Design:</strong> Modern and elegant</li>
+          <li class="list-group-item"><strong>Colors Available:</strong>{{singleCar.interiorAndExteriorColor}}</li>
+          <li class="list-group-item"><strong>Wheels:</strong>{{singleCar.wheels}}</li>
+          <li class="list-group-item"><strong>Upholstery:</strong>{{singleCar.upholstery}}</li>
+          <li class="list-group-item"><strong>Design:</strong>{{singleCar.design}}</li>
         </ul>
       </div>
 
@@ -70,10 +69,10 @@
       <div class="mb-4">
         <h5>Tech & Assistance</h5>
         <ul class="list-group">
-          <li class="list-group-item">Cameras: Yes</li>
-          <li class="list-group-item">Lane Assist: Yes</li>
-          <li class="list-group-item">Sound System: Premium</li>
-          <li class="list-group-item">Keyless Go: Yes</li>
+          <li class="list-group-item">Cameras: {{singleCar.cameras}}</li>
+          <li class="list-group-item">Lane Assist: {{singleCar.lane_assist}}</li>
+          <li class="list-group-item">Sound System:{{singleCar.sound_system}}</li>
+          <li class="list-group-item">Keyless Go:{{singleCar.keyless_go}}</li>
         </ul>
       </div>
 

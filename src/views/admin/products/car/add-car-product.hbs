@@ -8,15 +8,15 @@
       <div class="card-body row g-3">
         <div class="col-md-12">
           <label class="form-label">Product Name</label>
-          <input type="text" class="form-control" name="price" placeholder="Enter Product Name" required />
+          <input type="text" class="form-control" name="name" placeholder="Enter Product Name" required />
         </div>
         <div class="col-md-4">
           <label class="form-label">Brand</label>
           <select class="form-select" name="brand" required>
             <option selected disabled>Select brand</option>
-            <option value="BMW">BMW</option>
-            <option value="Audi">Audi</option>
-            <option value="Mercedes">Mercedes</option>
+            {{#each brands}}
+            <option value="{{this._id}}">{{this.name}}</option>
+            {{/each}}
           </select>
         </div>
 
@@ -24,9 +24,9 @@
           <label class="form-label">Category</label>
           <select class="form-select" name="category" required>
             <option selected disabled>Select category</option>
-            <option value="SUV">SUV</option>
-            <option value="Sedan">Sedan</option>
-            <option value="Hatchback">Hatchback</option>
+            {{#each category}}
+            <option value="{{this._id}}">{{this.name}}</option>
+            {{/each}}
           </select>
         </div>
 
@@ -34,8 +34,9 @@
           <label class="form-label">Product Type</label>
           <select class="form-select" name="product_type" required>
             <option selected disabled>Select type</option>
-            <option value="Luxury">Luxury</option>
-            <option value="Premium">Premium</option>
+            {{#each types}}
+            <option value="{{this._id}}">{{this.name}}</option>
+            {{/each}}
           </select>
         </div>
 
@@ -45,11 +46,6 @@
         </div>
 
 
-
-        <!-- <div class="col-md-6">
-          <label class="form-label">Offer Price (Optional)</label>
-          <input type="number" class="form-control" name="offer_price" placeholder="Enter offer price" />
-        </div> -->
       </div>
     </div>
 
@@ -59,7 +55,7 @@
       <div class="card-body row g-3">
         <div class="col-md-3"><label class="form-label">Year</label><input type="number" class="form-control"
             name="year" /></div>
-        <div class="col-md-3"><label class="form-label">Mileage (km/l)</label><input type="number" class="form-control"
+        <div class="col-md-3"><label class="form-label">Mileage (km/l)</label><input type="text" class="form-control"
             name="mileage" /></div>
         <div class="col-md-3"><label class="form-label">Warranty</label><input type="text" class="form-control"
             name="warranty" /></div>
@@ -74,7 +70,7 @@
       <div class="card-body row g-3">
         <div class="col-md-3"><label class="form-label">Top Speed (km/h)</label><input type="number"
             class="form-control" name="top_speed" /></div>
-        <div class="col-md-3"><label class="form-label">Power (hp)</label><input type="number" class="form-control"
+        <div class="col-md-3"><label class="form-label">Power (hp)</label><input type="text" class="form-control"
             name="power_hp" /></div>
         <div class="col-md-3"><label class="form-label">Engine</label><input type="text" class="form-control"
             name="engine" /></div>
@@ -138,7 +134,7 @@
         </div>
         <div class="card-body row g-3">
           <div class="col-md-4"><label class="form-label">Color</label><input type="text" class="form-control"
-              name="variant_name[]" placeholder="Color" /></div>
+              name="variant_color[]" placeholder="Color" /></div>
           <div class="col-md-4"><label class="form-label">Price</label><input type="number" class="form-control"
               name="variant_price[]" /></div>
           <div class="col-md-4"><label class="form-label">Stock</label><input type="number" class="form-control"
@@ -151,6 +147,7 @@
               <p class="mt-2 mb-1">Click to upload images</p>
               <small>PNG, JPG or JPEG (max. 5MB)</small>
               <input type="file" name="variant_images[]" multiple hidden accept="image/*" />
+              <div class="image-preview mt-2 d-flex flex-wrap gap-2"></div>
             </div>
           </div>
           <div class="col-md-4">
@@ -159,6 +156,7 @@
               <p class="mt-2 mb-1">Click to upload images</p>
               <small>PNG, JPG or JPEG (max. 5MB)</small>
               <input type="file" name="variant_images[]" multiple hidden accept="image/*" />
+              <div class="image-preview mt-2 d-flex flex-wrap gap-2"></div>
             </div>
           </div>
           <div class="col-md-4">
@@ -167,6 +165,7 @@
               <p class="mt-2 mb-1">Click to upload images</p>
               <small>PNG, JPG or JPEG (max. 5MB)</small>
               <input type="file" name="variant_images[]" multiple hidden accept="image/*" />
+              <div class="image-preview mt-2 d-flex flex-wrap gap-2"></div>
             </div>
           </div>
           <div class="col-md-4">
@@ -175,6 +174,7 @@
               <p class="mt-2 mb-1">Click to upload images</p>
               <small>PNG, JPG or JPEG (max. 5MB)</small>
               <input type="file" name="variant_images[]" multiple hidden accept="image/*" />
+              <div class="image-preview mt-2 d-flex flex-wrap gap-2"></div>
             </div>
           </div>
           <div class="col-md-4">
@@ -183,6 +183,7 @@
               <p class="mt-2 mb-1">Click to upload images</p>
               <small>PNG, JPG or JPEG (max. 5MB)</small>
               <input type="file" name="variant_images[]" multiple hidden accept="image/*" />
+              <div class="image-preview mt-2 d-flex flex-wrap gap-2"></div>
             </div>
           </div>
           <div class="col-md-4">
@@ -191,7 +192,38 @@
               <p class="mt-2 mb-1">Click to upload images</p>
               <small>PNG, JPG or JPEG (max. 5MB)</small>
               <input type="file" name="variant_images[]" multiple hidden accept="image/*" />
+              <div class="image-preview mt-2 d-flex flex-wrap gap-2"></div>
             </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Bigger modal for cropping -->
+    <div class="modal fade" id="cropModal" tabindex="-1">
+      <div class="modal-dialog modal-fullscreen-lg-down modal-xl modal-dialog-centered">
+        <div class="modal-content" style="height: 90vh; border-radius: 12px; overflow: hidden;">
+          <div class="modal-header border-0 py-3 px-4"
+            style="background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);">
+            <h5 class="modal-title text-white fw-semibold">
+              <i class="bi bi-crop me-2"></i>Crop Image
+            </h5>
+            <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
+          </div>
+          <div class="modal-body p-4" style="height: calc(100% - 140px); overflow: hidden; background-color: #f8f9fa;">
+            <div
+              style="width: 100%; height: 100%; display: flex; align-items: center; justify-content: center; background-color: #fff; border-radius: 8px; box-shadow: 0 2px 8px rgba(0,0,0,0.1);">
+              <img id="cropImage" style="max-width: 100%; max-height: 100%; display: block;" />
+            </div>
+          </div>
+          <div class="modal-footer border-0 py-3 px-4" style="height: 70px; background-color: #fff;">
+            <button type="button" class="btn btn-secondary px-4" data-bs-dismiss="modal">
+              <i class="bi bi-x-circle me-2"></i>Cancel
+            </button>
+            <button type="button" id="cropConfirm" class="btn btn-primary px-4"
+              style="background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); border: none;">
+              <i class="bi bi-check-circle me-2"></i>Crop & Save
+            </button>
           </div>
         </div>
       </div>

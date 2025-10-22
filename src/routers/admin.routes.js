@@ -3,7 +3,7 @@ const route = express.Router();
 const upload = require("../config/multer");
 const Brand = require("../models/admin/brandModal");
 
-//page loading
+//check session
 const {
   checkSession,
   isLogin,
@@ -20,6 +20,9 @@ const {
   loadBrands,
   loadCategory,
   loadType,
+  loadProduct,
+  loadCarProduct,
+  loadEditCar,
 } = require("../controllers/admin/pageLoad.controller");
 
 //auth controller
@@ -51,6 +54,14 @@ const {
   editType,
   softDeleteType,
 } = require("../controllers/admin/type.controller");
+
+//Product Controller
+const {
+  addCarProduct,
+  // editCarProduct,
+} = require("../controllers/admin/product.controller");
+
+//=========================================code section=======================================================
 
 // Setup for admin layout for these routes only
 route.use((req, res, next) => {
@@ -126,17 +137,25 @@ route.put("/types-management/edit-type/:id", editType);
 route.patch("/types-management/soft-delete-type/:id", softDeleteType);
 
 //Product Management
-route.get("/products-management", (req, res) => {
-  res.render("admin/products/productManagement");
-});
+route.get("/products-management", loadProduct);
 
-route.get("/products-management/add-car-product", (req, res) => {
-  res.render("admin/products/car/add-car-product");
-});
+//add Car product page
+route.get("/products-management/add-car-product", loadCarProduct);
 
-route.get("/products-management/view-car-product", (req, res) => {
-  res.render("admin/products/car/view-car-product");
-});
+//add Car product page
+route.post("/products-management/add-car-product", upload.any(), addCarProduct);
+
+//Single car product
+route.get("/products-management/view-car-product/:id", loadEditCar);
+// route.put(
+//   "/products-management/edit-car-product",
+//   upload.any(),
+//   editCarProduct
+// );
+
+// route.get("/products-management/view-car-product", (req, res) => {
+//   res.render("admin/products/car/view-car-product");
+// });
 
 route.get("/products-management/view-categories-product", (req, res) => {
   res.render("admin/products/accessories/view-accessories-product");
