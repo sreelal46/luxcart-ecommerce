@@ -34,7 +34,6 @@
           </tr>
         </thead>
         <tbody id="categoryTable">
-          <!-- Sample Data -->
           {{#each categories}}
           <tr>
             <td>{{@index}}</td>
@@ -43,13 +42,9 @@
             <td>{{this.description}}</td>
             <td>total product</td>
             {{#if isListed}}
-            <td class="text-success">
-              Listed
-            </td>
+            <td class="text-success">Listed</td>
             {{else}}
-            <td class="text-danger">
-              Unlisted
-            </td>
+            <td class="text-danger">Unlisted</td>
             {{/if}}
             <td>
               <button class="btn btn-sm btn-outline-info" data-id={{this._id}} data-bs-toggle="modal"
@@ -68,7 +63,6 @@
                 data-status="{{this.isListed}}">
                 <i class="bi {{#if this.isListed}}bi-eye-slash-fill{{else}}bi-eye-fill{{/if}}"></i>
               </button>
-
             </td>
           </tr>
           {{else}}
@@ -254,20 +248,32 @@
 
 <script>
   document.addEventListener("DOMContentLoaded", () => {
-    const alertDiv = document.getElementById("alert")
+    const alertDiv = document.getElementById("alert");
+    const addCategoryModal = document.getElementById("addCategoryModal");
 
-    //adding new category
-    const addCategoryForm = document.getElementById("addCategoryForm")
+    // Prevent clicks inside Add Category modal from propagating and triggering outer modals
+    addCategoryModal.addEventListener('click', e => {
+      e.stopPropagation();
+    });
+
+    // Extra stopPropagation on radio buttons as extra safety
+    document.querySelectorAll('#addCategoryModal input[type="radio"]').forEach(radio => {
+      radio.addEventListener('click', function (e) {
+        e.stopPropagation();
+      });
+    });
+
+    // Adding new category
+    const addCategoryForm = document.getElementById("addCategoryForm");
     addCategoryForm.addEventListener("submit", async (e) => {
-      e.preventDefault()
+      e.preventDefault();
 
-      const formData = new FormData(addCategoryForm)
-      const data = Object.fromEntries(formData.entries())
+      const formData = new FormData(addCategoryForm);
+      const data = Object.fromEntries(formData.entries());
 
       try {
-        const res = await axios.post("/admin/categorys-management/add-category", data)
+        const res = await axios.post("/admin/categorys-management/add-category", data);
 
-        //desing the alert 
         alertDiv.className = "alert alert-info text-center";
         alertDiv.textContent = "Processing......";
         alertDiv.classList.remove("d-none");
@@ -276,57 +282,51 @@
           alertDiv.className = "alert alert-success text-center";
           alertDiv.textContent = "Category added successfully......";
           alertDiv.classList.remove("d-none");
-          setTimeout(() => window.location.reload(), 800)
+          setTimeout(() => window.location.reload(), 800);
         }
       } catch (error) {
-        console.log(error)
-        const message = error.response?.data?.alert || "Somthing worng";
+        console.log(error);
+        const message = error.response?.data?.alert || "Something went wrong";
         alertDiv.className = "alert alert-danger text-center";
         alertDiv.textContent = message;
         alertDiv.classList.remove("d-none");
       }
+    });
 
-
-
-    })
-
-    //editing input box filling category
-    const editCategoryModal = document.getElementById("editCategoryModal")
+    // Editing input box filling category
+    const editCategoryModal = document.getElementById("editCategoryModal");
     editCategoryModal.addEventListener("show.bs.modal", e => {
       const btn = e.relatedTarget;
-      document.getElementById("editCategoryId").value = btn.dataset.id
-      document.getElementById("editCategoryName").value = btn.dataset.name
-      document.getElementById("editCategoryDescription").value = btn.dataset.description
-      // Set the correct radio button checked
+      document.getElementById("editCategoryId").value = btn.dataset.id;
+      document.getElementById("editCategoryName").value = btn.dataset.name;
+      document.getElementById("editCategoryDescription").value = btn.dataset.description;
       if (btn.dataset.type === "Car") {
         document.getElementById("editTypeCar").checked = true;
       } else if (btn.dataset.type === "Accessories") {
         document.getElementById("editTypeAccessories").checked = true;
       }
-    }
-    )
+    });
 
-    //editted form submitting
-    const editCategoryForm = document.getElementById("editCategoryForm")
+    // Edited form submitting
+    const editCategoryForm = document.getElementById("editCategoryForm");
     editCategoryForm.addEventListener("submit", async e => {
-      e.preventDefault()
+      e.preventDefault();
       const id = document.getElementById("editCategoryId").value;
-      const formData = new FormData(editCategoryForm)
-      const data = Object.fromEntries(formData.entries())
+      const formData = new FormData(editCategoryForm);
+      const data = Object.fromEntries(formData.entries());
 
       const localAlert = e.target.querySelector("#alert");
 
       try {
-        const res = await axios.put(`/admin/categorys-management/edit-category/${id}`, data)
+        const res = await axios.put(`/admin/categorys-management/edit-category/${id}`, data);
 
-        //alert message
         localAlert.className = "alert alert-info text-center";
         localAlert.textContent = "Updating...";
         localAlert.classList.remove("d-none");
         if (res.data.success) {
           localAlert.className = "alert alert-success text-center";
           localAlert.textContent = "Category updated successfully!";
-          setTimeout(() => window.location.reload(), 500)
+          setTimeout(() => window.location.reload(), 500);
         } else {
           localAlert.className = "alert alert-danger text-center";
           localAlert.textContent = res.data.message || "Failed to update Category";
@@ -336,10 +336,9 @@
         localAlert.className = "alert alert-danger text-center";
         localAlert.textContent = "Update failed";
       }
-    }
-    )
+    });
 
-    //soft delete
+    // Soft delete and toggle list/unlist confirmation
     const confirmListModal = document.getElementById("confirmListModal");
 
     confirmListModal.addEventListener("show.bs.modal", e => {
@@ -349,14 +348,10 @@
 
     document.getElementById("categoriesDeleteConfirm").addEventListener("click", async e => {
       const id = document.getElementById("categoriesId").value;
-
-      // Get the Bootstrap modal instance
       const confirmModal = bootstrap.Modal.getInstance(confirmListModal);
 
       try {
         const res = await axios.patch(`/admin/categorys-management/soft-delete-category/${id}`);
-
-        // Hide modal before showing SweetAlert
         confirmModal.hide();
 
         if (res.data.success) {
@@ -375,7 +370,7 @@
           });
         }
       } catch (err) {
-        confirmModal.hide(); // hide modal even on error
+        confirmModal.hide();
         console.error(err);
         Swal.fire({
           icon: 'error',
@@ -385,9 +380,6 @@
       }
     });
 
-
-
-  })
-
+  });
 
 </script>

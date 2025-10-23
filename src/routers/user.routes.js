@@ -9,6 +9,7 @@ const {
   loadVerify_OTP_Page,
   loadEmailPage,
   loadForgotPassPage,
+  loadCarCollection,
 } = require("../controllers/user/pageLoadController");
 const {
   createUser,
@@ -62,5 +63,7 @@ route.post("/verify-otp", verifyOTP);
 
 //resend OTP for user verification and forgot password
 route.get("/resend-otp", resendOTP);
+
+route.get("/cars-collection", loadCarCollection);
 
 module.exports = route;

@@ -8,6 +8,10 @@ const {
   CONFLICT,
   INTERNAL_SERVER_ERROR,
 } = require("../../constant/statusCode");
+const Brand = require("../../models/admin/brandModal");
+const Category = require("../../models/admin/categoryModel");
+const Type = require("../../models/admin/typeModal");
+const Car = require("../../models/admin/productCarModal");
 
 //loading login page
 const loadLandingPage = (req, res) => {
@@ -49,6 +53,30 @@ const loadVerify_OTP_Page = (req, res) => {
   res.status(OK).render("user/verify-otp");
 };
 
+const loadCarCollection = async (req, res, next) => {
+  try {
+    const cars = await Car.find({})
+      .sort({ createdAt: -1 })
+      .populate("brand_id", "name")
+      .populate("category_id", "name")
+      .populate("product_type_id", "name")
+      .populate("variantIds", "image_url")
+      .lean();
+    const brands = await Brand.find({ isListed: true }).lean();
+    const categories = await Category.find({
+      isListed: true,
+      product: "Car",
+    }).lean();
+    const types = await Type.find({ isListed: true });
+    res
+      .status(200)
+      .render("user/carCollection", { cars, brands, categories, types });
+  } catch (error) {
+    console.error("Error loading car collection:", error);
+    res.status(500).send("Something went wrong");
+  }
+};
+
 module.exports = {
   loadLandingPage,
   loadHomePage,
@@ -58,4 +86,5 @@ module.exports = {
   loadSend_OTP_Page,
   loadVerify_OTP_Page,
   loadForgotPassPage,
+  loadCarCollection,
 };

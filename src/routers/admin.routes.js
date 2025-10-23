@@ -22,7 +22,9 @@ const {
   loadType,
   loadProduct,
   loadCarProduct,
+  loadViewCar,
   loadEditCar,
+  loadAddAccessories,
 } = require("../controllers/admin/pageLoad.controller");
 
 //auth controller
@@ -58,7 +60,9 @@ const {
 //Product Controller
 const {
   addCarProduct,
-  // editCarProduct,
+  editCarProduct,
+  softDeleteCar,
+  addAccessoriesProduct,
 } = require("../controllers/admin/product.controller");
 
 //=========================================code section=======================================================
@@ -68,7 +72,6 @@ route.use((req, res, next) => {
   res.locals.layout = "adminLayout";
   next();
 });
-
 // loading login page
 route.get("/login", isLogin, adminLoadLoginPage);
 
@@ -142,27 +145,39 @@ route.get("/products-management", loadProduct);
 //add Car product page
 route.get("/products-management/add-car-product", loadCarProduct);
 
-//add Car product page
+//add Car product
 route.post("/products-management/add-car-product", upload.any(), addCarProduct);
 
 //Single car product
-route.get("/products-management/view-car-product/:id", loadEditCar);
-// route.put(
-//   "/products-management/edit-car-product",
-//   upload.any(),
-//   editCarProduct
-// );
+route.get("/products-management/view-car-product/:id", loadViewCar);
 
+//edit car page
+route.get("/products-management/edit-car-product/:id", loadEditCar);
+
+//edit car product
+route.put(
+  "/products-management/edit-car-product/:id",
+  upload.any(),
+  editCarProduct
+);
+
+//soft delete
+route.patch("/products-management/soft-delete-car-product/:id", softDeleteCar);
+
+//load add accessories page
+route.get("/products-management/add-accessories-product", loadAddAccessories);
+
+route.post(
+  "/products-management/add-accessories-product",
+  upload.any(),
+  addAccessoriesProduct
+);
 // route.get("/products-management/view-car-product", (req, res) => {
 //   res.render("admin/products/car/view-car-product");
 // });
 
 route.get("/products-management/view-categories-product", (req, res) => {
   res.render("admin/products/accessories/view-accessories-product");
-});
-
-route.get("/products-management/add-accessories-product", (req, res) => {
-  res.render("admin/products/accessories/add-accessories-product");
 });
 
 route.get("/sales-report", async (req, res) => {

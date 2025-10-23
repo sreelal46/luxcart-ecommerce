@@ -1,0 +1,295 @@
+<style>
+  /* Overall container background */
+  body {
+    background-color: #ffffff;
+    /* Plain white background */
+    font-family: 'Montserrat', sans-serif;
+    color: #333333;
+    /* Dark gray text */
+  }
+
+  /* Page title */
+  .page-title {
+    font-weight: 700;
+    color: #222222;
+    letter-spacing: 0.02em;
+  }
+
+  /* Section subtitle */
+  .section-subtitle {
+    color: #666666;
+    font-size: 1.05rem;
+  }
+
+  /* Filters sidebar */
+  .filter-sidebar {
+    background: #f9f9f9;
+    border-radius: 12px;
+    box-shadow: none;
+    border: 1px solid #dedede;
+    padding: 1.5rem;
+    transition: none;
+  }
+
+  .filter-title {
+    font-weight: 600;
+    color: #222222;
+    margin-bottom: 0.75rem;
+  }
+
+  /* Clear filters link */
+  .clear-filters {
+    color: #555555;
+    font-weight: 600;
+    text-decoration: none;
+    font-size: 0.85rem;
+  }
+
+  .clear-filters:hover {
+    color: #111111;
+    text-decoration: underline;
+    transform: none;
+  }
+
+  /* Search input */
+  .search-input {
+    border-radius: 25px;
+    padding: 10px 20px;
+    border: 1.5px solid #cccccc;
+    box-shadow: none;
+    transition: border-color 0.3s ease;
+  }
+
+  .search-input:focus {
+    border-color: #888888;
+    outline: none;
+    box-shadow: none;
+  }
+
+  /* Car cards */
+  .car-card {
+    border: 1px solid #e0e0e0;
+    border-radius: 12px;
+    background-color: #ffffff;
+    box-shadow: none;
+    transition: box-shadow 0.3s ease;
+  }
+
+  .car-card:hover {
+    box-shadow: 0 6px 15px rgba(0, 0, 0, 0.07);
+    transform: none;
+  }
+
+  /* Image wrapper & image size */
+  .car-image-wrapper {
+    height: 180px;
+    overflow: hidden;
+    border-bottom: 1px solid #e0e0e0;
+  }
+
+  .car-image {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    transition: none;
+  }
+
+  /* Category badge */
+  .category-badge {
+    background: rgba(0, 0, 0, 0.6);
+    color: #fff;
+    font-size: 0.75rem;
+    font-weight: 600;
+    padding: 6px 15px;
+    border-radius: 20px;
+    letter-spacing: 0.02em;
+  }
+
+  /* Brand and car name */
+  .brand-name {
+    color: #444444;
+    font-weight: 600;
+    text-transform: uppercase;
+    font-size: 0.85rem;
+  }
+
+  .car-name {
+    font-weight: 700;
+    font-size: 1.1rem;
+    color: #111111;
+    margin: 8px 0 4px;
+  }
+
+  /* Price */
+  .price-tag {
+    color: #333333;
+    font-weight: 700;
+    font-size: 1.1rem;
+  }
+
+  /* Year badge */
+  .year-badge {
+    background: #f0f0f0;
+    color: #555555;
+    font-weight: 600;
+    font-size: 0.8rem;
+    padding: 4px 12px;
+    border-radius: 12px;
+  }
+
+  /* View Details button */
+  .view-details-btn {
+    background: transparent;
+    color: #333333;
+    border: 1.8px solid #333333;
+    border-radius: 10px;
+    padding: 12px 24px;
+    font-weight: 600;
+    font-size: 0.85rem;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+    transition: all 0.3s ease;
+  }
+
+  .view-details-btn:hover {
+    background: #333333;
+    color: #fff;
+    border-color: #333333;
+    transform: translateY(-2px);
+    box-shadow: 0 5px 15px rgba(51, 51, 51, 0.2);
+  }
+
+  /* Pagination */
+  .pagination .page-link {
+    border-radius: 50%;
+    margin: 0 4px;
+    width: 40px;
+    height: 40px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border: 1.5px solid #ccc;
+    color: #666;
+    font-weight: 600;
+    transition: border-color 0.3s ease, color 0.3s ease;
+  }
+
+  .pagination .page-item.active .page-link {
+    background: #333;
+    border-color: #333;
+    color: white;
+    box-shadow: 0 3px 8px rgba(51, 51, 51, 0.3);
+  }
+
+  .pagination .page-link:hover {
+    background-color: #333;
+    border-color: #333;
+    color: white;
+    transform: translateY(-2px);
+  }
+</style>
+
+<div class="container-fluid py-5 px-4">
+  <!-- Title Section -->
+  <div class="mb-5">
+    <h3 class="page-title display-5 mt-5 mb-2">Our Collection</h3>
+    <p class="section-subtitle">Discover our handpicked selection of exceptional automobiles.</p>
+  </div>
+
+  <!-- Search and Filter Row -->
+  <div class="row">
+    <!-- Filters Sidebar -->
+    <div class="col-md-3 col-lg-2 mb-4">
+      <div class="filter-sidebar p-4">
+        <div class="d-flex justify-content-between align-items-center mb-4">
+          <h6 class="filter-title mb-0">Filters</h6>
+          <a href="#" class="clear-filters">Clear All</a>
+        </div>
+
+        <!-- Brand Filter -->
+        <h6 class="filter-title mt-4">Brand</h6>
+        {{#each brands}}
+        <div class="form-check mb-2">
+          <input class="form-check-input" value="{{this.name}}" type="checkbox" />
+          <label class="form-check-label" for="mercedes">{{this.name}}</label>
+        </div>
+        {{/each}}
+
+        <!-- Category Filter -->
+        <h6 class="filter-title mt-4">Category</h6>
+        {{#each categories}}
+        <div class="form-check mb-2">
+          <input class="form-check-input" value="{{this.name}}" type="checkbox" />
+          <label class="form-check-label" for="sedan">{{this.name}}</label>
+        </div>
+        {{/each}}
+        <!-- <div class="form-check mb-2">
+          <input class="form-check-input" type="checkbox" id="sports" />
+          <label class="form-check-label" for="sports">Sports</label>
+        </div>
+        <div class="form-check mb-2">
+          <input class="form-check-input" type="checkbox" id="luxury" />
+          <label class="form-check-label" for="luxury">Luxury</label>
+        </div>
+        <div class="form-check mb-2">
+          <input class="form-check-input" type="checkbox" id="electric" />
+          <label class="form-check-label" for="electric">Electric</label>
+        </div> -->
+
+        <!-- Type Filter -->
+        <h6 class="filter-title mt-4">Type</h6>
+        {{#each types}}
+        <div class="form-check mb-2">
+          <input class="form-check-input" value="{{this.name}}" type="checkbox" />
+          <label class="form-check-label" for="performance">{{this.name}}</label>
+        </div>
+        {{/each}}
+      </div>
+    </div>
+
+    <!-- Cars Grid -->
+    <div class="col-md-9 col-lg-10">
+      <!-- Search -->
+      <div class="mb-4">
+        <input type="text" class="form-control search-input" placeholder="🔍 Search by brand, model or category..." />
+      </div>
+
+      <!-- Cars List -->
+      <div class="row g-4">
+        {{#each cars}}
+        <div class="col-md-6 col-lg-4">
+          <div class="card car-card">
+            <div class="car-image-wrapper position-relative">
+              <img src="{{firstImage variantIds}}" alt="{{name}}" class="car-image" />
+              {{#if category_id.name}}
+              <span
+                class="badge category-badge position-absolute top-0 start-0 m-3 text-capitalize">{{category_id.name}}</span>
+              {{/if}}
+            </div>
+            <div class="card-body p-4">
+              <h6 class="brand-name mb-2">{{brand_id.name}}</h6>
+              <h5 class="car-name">{{name}}</h5>
+              <div class="d-flex justify-content-between align-items-center mt-3">
+                <span class="price-tag">₹{{price}}</span>
+                <span class="year-badge">{{year}}</span>
+              </div>
+            </div>
+            <div class="card-footer bg-white text-center border-0 p-3">
+              <a href="/car/{{_id}}" class="btn view-details-btn w-100">View Details</a>
+            </div>
+          </div>
+        </div>
+        {{/each}}
+      </div>
+
+      <!-- Pagination -->
+      <nav class="mt-5">
+        <ul class="pagination justify-content-center">
+          <li class="page-item active"><a class="page-link" href="#">1</a></li>
+          <li class="page-item"><a class="page-link" href="#">2</a></li>
+          <li class="page-item"><a class="page-link" href="#">3</a></li>
+        </ul>
+      </nav>
+    </div>
+  </div>
+</div>

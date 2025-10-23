@@ -1,0 +1,434 @@
+<style>
+  .image-box {
+    width: 120px;
+    height: 80px;
+    border-radius: 12px;
+    overflow: hidden;
+    background-color: #f8f9fa;
+    position: relative;
+    display: inline-block;
+    margin: 5px;
+  }
+
+  .image-box img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+  }
+
+  .remove-image-btn {
+    position: absolute;
+    top: 2px;
+    right: 2px;
+    background: rgba(255, 0, 0, 0.8);
+    border: none;
+    color: white;
+    border-radius: 50%;
+    width: 20px;
+    height: 20px;
+    font-size: 14px;
+    line-height: 18px;
+    cursor: pointer;
+    z-index: 10;
+  }
+
+  .add-image-btn {
+    width: 120px;
+    height: 80px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border: 1px dashed #6c757d;
+    border-radius: 12px;
+    cursor: pointer;
+    margin: 5px;
+  }
+
+  .modal {
+    display: none;
+    position: fixed;
+    z-index: 9999;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: rgba(0, 0, 0, 0.6);
+    align-items: center;
+    justify-content: center;
+  }
+
+  .modal-content {
+    background: #fff;
+    padding: 15px;
+    border-radius: 10px;
+    max-width: 600px;
+    width: 90%;
+  }
+
+  .card-header {
+    font-size: 1.1rem;
+    color: #0d6efd;
+    background-color: #f1f3f5 !important;
+  }
+</style>
+
+<div class="container py-4">
+  <div class="row justify-content-center">
+    <div class="col-lg-10">
+      <h2 class="fw-bold mb-4 text-center text-primary">Edit Car Product</h2>
+
+      <form id="editCarProduct" enctype="multipart/form-data">
+        <input type="hidden" name="product_id" value="{{singleCar._id}}">
+
+        {{#each singleCar.variantIds}}
+        <div class="card shadow-sm mb-4 border-0">
+          <div class="card-header bg-light fw-semibold">Variant: {{color}}</div>
+          <div class="card-body">
+            <input type="hidden" name="variant_id_{{@index}}" value="{{this._id}}">
+
+            <div id="image-container-{{@index}}">
+              {{#each image_url}}
+              <div class="image-box">
+                <img src="{{this}}" alt="Car Image" />
+                <button type="button" class="remove-image-btn">&times;</button>
+              </div>
+              {{/each}}
+              <div class="add-image-btn" data-variant="{{@index}}">+ Add Image</div>
+            </div>
+
+            <div class="row g-3 mt-3">
+              <div class="col-md-4">
+                <label>Price (₹)</label>
+                <input type="number" name="variant_{{@index}}_price" value="{{price}}" class="form-control" required />
+              </div>
+              <div class="col-md-4">
+                <label>Stock</label>
+                <input type="number" name="variant_{{@index}}_stock" value="{{stock}}" class="form-control" required />
+              </div>
+              <div class="col-md-4">
+                <label>Color</label>
+                <input type="text" name="variant_{{@index}}_color" value="{{color}}" class="form-control" required />
+              </div>
+            </div>
+          </div>
+        </div>
+        {{/each}}
+
+        <!-- Basic Info -->
+        <div class="card shadow-sm mb-4 border-0">
+          <div class="card-header bg-light fw-semibold">Basic Info</div>
+          <div class="card-body row g-3">
+            <div class="col-md-4">
+              <label>Brand</label>
+              <select name="brand" class="form-select" required>
+                {{#each brands}}
+                <option value="{{this._id}}" {{#if (eq this._id ../singleCar.brand_id._id)}}selected{{/if}}>
+                  {{this.name}}
+                </option>
+                {{/each}}
+              </select>
+            </div>
+            <div class="col-md-4">
+              <label>Category</label>
+              <select name="category" class="form-select" required>
+                {{#each categories}}
+                <option value="{{this._id}}" {{#if (eq this._id ../singleCar.category_id._id)}}selected{{/if}}>
+                  {{this.name}}
+                </option>
+                {{/each}}
+              </select>
+            </div>
+            <div class="col-md-4">
+              <label>Product Type</label>
+              <select name="product_type" class="form-select" required>
+                {{#each types}}
+                <option value="{{this._id}}" {{#if (eq this._id ../singleCar.product_type_id._id)}}selected{{/if}}>
+                  {{this.name}}
+                </option>
+                {{/each}}
+              </select>
+            </div>
+            <div class="col-md-12">
+              <label>Description</label>
+              <textarea name="description" class="form-control" rows="3">{{singleCar.description}}</textarea>
+            </div>
+            <div class="col-md-4">
+              <label>Offer Price (₹)</label>
+              <input type="number" name="offer_price" value="{{singleCar.offer_price}}" class="form-control" />
+            </div>
+          </div>
+        </div>
+
+        <!-- Quick Info -->
+        <div class="card shadow-sm mb-4 border-0">
+          <div class="card-header bg-light fw-semibold">Quick Info</div>
+          <div class="card-body row g-3">
+            <div class="col-md-3">
+              <label>Year</label>
+              <input type="number" name="year" value="{{singleCar.year}}" class="form-control" />
+            </div>
+            <div class="col-md-3">
+              <label>Mileage</label>
+              <input type="text" name="mileage" value="{{singleCar.mileage}}" class="form-control" />
+            </div>
+            <div class="col-md-3">
+              <label>Warranty</label>
+              <input type="text" name="warranty" value="{{singleCar.warranty}}" class="form-control" />
+            </div>
+            <div class="col-md-3">
+              <label>Region</label>
+              <input type="text" name="region" value="{{singleCar.region}}" class="form-control" />
+            </div>
+          </div>
+        </div>
+
+        <!-- Performance -->
+        <div class="card shadow-sm mb-4 border-0">
+          <div class="card-header bg-light fw-semibold">Performance</div>
+          <div class="card-body row g-3">
+            <div class="col-md-3"><label>Top Speed</label><input type="text" name="top_speed"
+                value="{{singleCar.top_speed}}" class="form-control" /></div>
+            <div class="col-md-3"><label>Power (HP)</label><input type="text" name="power_hp"
+                value="{{singleCar.power_hp}}" class="form-control" /></div>
+            <div class="col-md-3"><label>Engine</label><input type="text" name="engine" value="{{singleCar.engine}}"
+                class="form-control" /></div>
+            <div class="col-md-3"><label>Transmission</label><input type="text" name="transmission"
+                value="{{singleCar.transmission}}" class="form-control" /></div>
+            <div class="col-md-3"><label>Drive Type</label><input type="text" name="drive_type"
+                value="{{singleCar.drive_type}}" class="form-control" /></div>
+            <div class="col-md-3"><label>Torque</label><input type="text" name="torque" value="{{singleCar.torque}}"
+                class="form-control" /></div>
+            <div class="col-md-3"><label>Acceleration 0–100</label><input type="text" name="acceleration_0_100"
+                value="{{singleCar.acceleration_0_100}}" class="form-control" /></div>
+          </div>
+        </div>
+
+        <!-- Exterior & Interior -->
+        <div class="card shadow-sm mb-4 border-0">
+          <div class="card-header bg-light fw-semibold">Exterior & Interior</div>
+          <div class="card-body row g-3">
+            <div class="col-md-4"><label>Colors Available</label><input type="text" name="interiorAndExteriorColor"
+                value="{{singleCar.interiorAndExteriorColor}}" class="form-control" /></div>
+            <div class="col-md-4"><label>Wheels</label><input type="text" name="wheels" value="{{singleCar.wheels}}"
+                class="form-control" /></div>
+            <div class="col-md-4"><label>Upholstery</label><input type="text" name="upholstery"
+                value="{{singleCar.upholstery}}" class="form-control" /></div>
+            <div class="col-md-12"><label>Design</label><input type="text" name="design" value="{{singleCar.design}}"
+                class="form-control" /></div>
+          </div>
+        </div>
+
+        <!-- Tech & Assistance -->
+        <div class="card shadow-sm mb-4 border-0">
+          <div class="card-header bg-light fw-semibold">Tech & Assistance</div>
+          <div class="card-body row g-3">
+            <div class="col-md-3"><label>Cameras</label><input type="text" name="cameras" value="{{singleCar.cameras}}"
+                class="form-control" /></div>
+            <div class="col-md-3"><label>Lane Assist</label><input type="text" name="lane_assist"
+                value="{{singleCar.lane_assist}}" class="form-control" /></div>
+            <div class="col-md-3"><label>Sound System</label><input type="text" name="sound_system"
+                value="{{singleCar.sound_system}}" class="form-control" /></div>
+            <div class="col-md-3"><label>Keyless Go</label><input type="text" name="keyless_go"
+                value="{{singleCar.keyless_go}}" class="form-control" /></div>
+          </div>
+        </div>
+
+        <div class="text-center mt-4">
+          <a href="/admin/products-management" class="btn btn-outline-secondary me-2 px-4">Cancel</a>
+          <button type="submit" class="btn btn-primary px-4">Save Changes</button>
+        </div>
+      </form>
+    </div>
+  </div>
+</div>
+
+<!-- Cropper Modal -->
+<div class="modal" id="cropperModal">
+  <div class="modal-content">
+    <h5>Crop Image</h5>
+    <div style="width:100%; max-height:400px;">
+      <img id="cropperImage" style="max-width:100%; display:block; margin:auto;">
+    </div>
+    <div class="mt-2 text-end">
+      <button id="cropCancel" class="btn btn-secondary">Cancel</button>
+      <button id="cropSave" class="btn btn-primary">Crop & Save</button>
+    </div>
+  </div>
+</div>
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/cropperjs/1.5.13/cropper.min.js"></script>
+
+<script>
+  document.addEventListener("DOMContentLoaded", () => {
+    let cropper;
+    let currentInput;
+    let currentVariantIndex;
+    let removedImages = [];
+
+    // Remove image button - track removed images
+    document.body.addEventListener("click", e => {
+      if (e.target.classList.contains("remove-image-btn")) {
+        const imageBox = e.target.parentElement;
+        const imgSrc = imageBox.querySelector("img").src;
+        removedImages.push(imgSrc);
+        imageBox.remove();
+      }
+    });
+
+    // Add new image button with cropping
+    document.body.addEventListener("click", e => {
+      if (e.target.classList.contains("add-image-btn")) {
+        currentVariantIndex = e.target.dataset.variant;
+        const input = document.createElement("input");
+        input.type = "file";
+        input.accept = "image/*";
+        input.name = `variant_${currentVariantIndex}_images`;
+        input.style.display = "none";
+        document.body.appendChild(input);
+        currentInput = input;
+
+        input.addEventListener("change", () => {
+          if (input.files.length) {
+            const reader = new FileReader();
+            reader.onload = function (event) {
+              const cropperModal = document.getElementById('cropperModal');
+              const cropperImage = document.getElementById('cropperImage');
+              cropperImage.src = event.target.result;
+              cropperModal.style.display = 'flex';
+              cropper = new Cropper(cropperImage, { aspectRatio: 16 / 9, viewMode: 1 });
+            };
+            reader.readAsDataURL(input.files[0]);
+          }
+        });
+
+        input.click();
+      }
+    });
+
+    // Cancel cropping
+    document.getElementById("cropCancel").addEventListener("click", () => {
+      if (cropper) cropper.destroy();
+      document.getElementById("cropperModal").style.display = "none";
+      if (currentInput) {
+        currentInput.value = "";
+      }
+    });
+
+    // Save cropped image
+    document.getElementById("cropSave").addEventListener("click", () => {
+      const canvas = cropper.getCroppedCanvas({ width: 320, height: 180 });
+      canvas.toBlob(blob => {
+        const fileName = `cropped-variant-${currentVariantIndex}-${Date.now()}.jpg`;
+        const croppedFile = new File([blob], fileName, { type: "image/jpeg" });
+
+        const dataTransfer = new DataTransfer();
+        dataTransfer.items.add(croppedFile);
+
+        currentInput.files = dataTransfer.files;
+
+        // Add preview box
+        const imageBox = document.createElement("div");
+        imageBox.classList.add("image-box");
+
+        const img = document.createElement("img");
+        img.src = URL.createObjectURL(croppedFile);
+        imageBox.appendChild(img);
+
+        const removeBtn = document.createElement("button");
+        removeBtn.className = "remove-image-btn";
+        removeBtn.innerHTML = "&times;";
+        imageBox.appendChild(removeBtn);
+
+        // Append hidden input for form submission
+        imageBox.appendChild(currentInput);
+
+        document.getElementById(`image-container-${currentVariantIndex}`).insertBefore(
+          imageBox,
+          document.querySelector(`#image-container-${currentVariantIndex} .add-image-btn`)
+        );
+
+        cropper.destroy();
+        document.getElementById("cropperModal").style.display = "none";
+        currentInput = null;
+      }, "image/jpeg");
+    });
+
+    // Submit form: append removedImages data to formData
+    const editCarProduct = document.getElementById("editCarProduct");
+    editCarProduct.addEventListener("submit", async e => {
+      e.preventDefault();
+
+      const productId = document.querySelector("input[name='product_id']").value;
+      const formData = new FormData(editCarProduct);
+      formData.append("removed_images", JSON.stringify(removedImages));
+
+      try {
+        Swal.fire({
+          title: "Saving Car...",
+          html: "Please wait",
+          allowOutsideClick: false,
+          didOpen: () => {
+            Swal.showLoading();
+          },
+        });
+
+
+        const res = await axios.put(
+          `/admin/products-management/edit-car-product/${productId}`,
+          formData,
+          { headers: { "Content-Type": "multipart/form-data" } }
+        );
+        Swal.close();
+        if (res.data.success) {
+          Swal.fire({
+            title: "Product Updated Successfully!",
+            text: "Your car product details have been updated.",
+            icon: "success",
+            confirmButtonText: "OK",
+            confirmButtonColor: "#3085d6",
+          }).then(() => {
+            window.location.href = "/admin/dashboard";
+          });
+        } else {
+          Swal.fire({
+            title: "Update Failed",
+            text: res.data.message || "Something went wrong while updating the product.",
+            icon: "error",
+            confirmButtonText: "Try Again",
+          });
+        }
+      } catch (error) {
+        if (error.response) {
+          Swal.close();
+          console.error("Backend responded with error:", error.response.data);
+          Swal.fire({
+            title: "Server Error",
+            text: error.response.data.message || "Something went wrong on the server.",
+            icon: "error",
+            confirmButtonText: "OK",
+          });
+        } else if (error.request) {
+          console.error("No response from backend:", error.request);
+          Swal.fire({
+            title: "No Response",
+            text: "The server did not respond. Please try again later.",
+            icon: "warning",
+            confirmButtonText: "OK",
+          });
+        } else {
+          console.error("Request error:", error.message);
+          Swal.fire({
+            title: "Request Error",
+            text: "An unexpected error occurred.",
+            icon: "error",
+            confirmButtonText: "OK",
+          });
+        }
+      }
+    });
+
+
+
+
+  });
+</script>

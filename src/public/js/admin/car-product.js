@@ -12,8 +12,6 @@ document.addEventListener("DOMContentLoaded", () => {
     const newIndex = variants.length;
 
     const clone = variants[0].cloneNode(true);
-
-    // Update header
     clone.querySelector(".card-header span").textContent = `Variant #${
       newIndex + 1
     }`;
@@ -23,28 +21,90 @@ document.addEventListener("DOMContentLoaded", () => {
       .querySelectorAll("input[type='text'], input[type='number']")
       .forEach((input) => (input.value = ""));
 
-    // Change file input names for this variant
-    clone.querySelectorAll('input[type="file"]').forEach((fileInput, index) => {
-      fileInput.name = `variant_images_${newIndex}[]`;
-    });
+    // Reset dynamic image container
+    const imageContainer = clone.querySelector(".variant-images-container");
+    imageContainer.innerHTML = `
+      <button type="button" class="btn btn-outline-primary btn-sm add-image-btn">
+        <i class="bi bi-plus-circle"></i> Add Image
+      </button>
+    `;
 
-    // Clear image previews
-    clone
-      .querySelectorAll(".image-preview")
-      .forEach((preview) => (preview.innerHTML = ""));
-
-    // Show remove button
+    // Show remove variant button
     clone.querySelector(".remove-variant").classList.remove("d-none");
-
-    // Add remove handler
     clone
       .querySelector(".remove-variant")
       .addEventListener("click", () => clone.remove());
 
+    // Re-bind the Add Image button for this clone
+    clone.querySelector(".add-image-btn").addEventListener("click", (e) => {
+      addImageBox(e.target.closest(".variant-section"), newIndex);
+    });
+
     container.appendChild(clone);
   });
 
-  // --- File Change / Crop Trigger ---
+  // --- Function to add dynamic image upload box ---
+  function addImageBox(variantSection, variantIndex) {
+    const imageContainer = variantSection.querySelector(
+      ".variant-images-container"
+    );
+    const uploadBox = document.createElement("div");
+    uploadBox.classList.add(
+      "upload-box",
+      "d-flex",
+      "flex-column",
+      "justify-content-center",
+      "align-items-center",
+      "border",
+      "rounded",
+      "mt-3",
+      "p-4",
+      "position-relative"
+    );
+    uploadBox.style.width = "300px";
+    uploadBox.style.height = "250px";
+    uploadBox.style.cursor = "pointer";
+    uploadBox.style.textAlign = "center";
+    uploadBox.style.transition = "0.3s";
+    uploadBox.style.background = "#f8f9fa";
+
+    uploadBox.innerHTML = `
+  <i class="bi bi-cloud-arrow-up fs-1 text-secondary"></i>
+  <p class="mt-2 mb-1 fw-semibold text-muted">Click to upload image</p>
+  <small class="text-muted">PNG, JPG, JPEG (max 5MB)</small>
+  <input type="file" name="variant_images_${variantIndex}[]" hidden accept="image/*" />
+  <div class="image-preview mt-3"></div>
+  <button type="button" class="btn btn-sm btn-outline-danger remove-image-btn position-absolute top-0 end-0 m-1 rounded-circle">
+    <i class="bi bi-x-lg"></i>
+  </button>
+`;
+
+    // Hover effect
+    uploadBox.addEventListener("mouseenter", () => {
+      uploadBox.style.background = "#e9ecef";
+    });
+    uploadBox.addEventListener("mouseleave", () => {
+      uploadBox.style.background = "#f8f9fa";
+    });
+
+    // Add to DOM
+    imageContainer.appendChild(uploadBox);
+
+    // Handle click on upload box
+    uploadBox.addEventListener("click", (e) => {
+      if (e.target.closest(".remove-image-btn")) return;
+      uploadBox.querySelector("input").click();
+    });
+
+    // Handle remove image box
+    uploadBox
+      .querySelector(".remove-image-btn")
+      .addEventListener("click", () => {
+        uploadBox.remove();
+      });
+  }
+
+  // --- Handle File Change / Cropping ---
   document.addEventListener("change", (e) => {
     if (e.target.matches("input[type='file'][name^='variant_images']")) {
       const file = e.target.files[0];
@@ -75,23 +135,14 @@ document.addEventListener("DOMContentLoaded", () => {
         viewMode: 2,
         autoCropArea: 0.95,
         responsive: true,
-        restore: true,
-        center: true,
-        highlight: true,
-        cropBoxMovable: true,
-        cropBoxResizable: true,
-        toggleDragModeOnDblclick: false,
         background: false,
-        modal: true,
-        guides: true,
         zoomable: true,
-        zoomOnWheel: true,
-        wheelZoomRatio: 0.1,
+        cropBoxResizable: true,
       });
     }
   });
 
-  // --- Crop Confirm ---
+  // --- Confirm Crop ---
   document.getElementById("cropConfirm").addEventListener("click", () => {
     if (!cropper || !currentInput) return;
 
@@ -105,8 +156,6 @@ document.addEventListener("DOMContentLoaded", () => {
       const canvas = cropper.getCroppedCanvas({
         maxWidth: 4096,
         maxHeight: 4096,
-        imageSmoothingEnabled: true,
-        imageSmoothingQuality: "high",
       });
 
       canvas.toBlob(
@@ -128,13 +177,9 @@ document.addEventListener("DOMContentLoaded", () => {
           const imgPreview = document.createElement("img");
           imgPreview.src = URL.createObjectURL(newFile);
           imgPreview.style.width = "100%";
-          imgPreview.style.height = "auto";
-          imgPreview.style.objectFit = "cover";
           imgPreview.style.borderRadius = "8px";
-          imgPreview.style.boxShadow = "0 2px 8px rgba(0,0,0,0.1)";
           previewContainer.appendChild(imgPreview);
 
-          // Cleanup
           cropper.destroy();
           cropper = null;
           currentInput = null;
@@ -165,13 +210,12 @@ document.addEventListener("DOMContentLoaded", () => {
     const formData = new FormData(carProductForm);
 
     try {
-      // Show a loading modal
       Swal.fire({
         title: "Saving Car...",
         html: "Please wait",
-        allowOutsideClick: false, // prevent clicking outside
+        allowOutsideClick: false,
         didOpen: () => {
-          Swal.showLoading(); // show loading spinner
+          Swal.showLoading();
         },
       });
 
@@ -181,7 +225,7 @@ document.addEventListener("DOMContentLoaded", () => {
         { headers: { "Content-Type": "multipart/form-data" } }
       );
 
-      Swal.close(); // close the loading modal
+      Swal.close();
 
       if (res.data.success) {
         Swal.fire({
@@ -200,7 +244,7 @@ document.addEventListener("DOMContentLoaded", () => {
         });
       }
     } catch (error) {
-      Swal.close(); // close loading modal
+      Swal.close();
       console.error(error);
       Swal.fire({
         icon: "error",
@@ -209,4 +253,99 @@ document.addEventListener("DOMContentLoaded", () => {
       });
     }
   });
+
+  // --- Initialize first "Add Image" button in the first variant ---
+  const firstAddImageBtn = document.querySelector(".add-image-btn");
+  if (firstAddImageBtn) {
+    firstAddImageBtn.addEventListener("click", (e) => {
+      addImageBox(e.target.closest(".variant-section"), 0);
+    });
+  }
+});
+
+document.addEventListener("DOMContentLoaded", () => {
+  let targetCheckbox = null;
+
+  // When the toggle switch is changed, save the checkbox and show confirmation modal
+  document.body.addEventListener("change", (e) => {
+    if (e.target.classList.contains("form-check-input")) {
+      targetCheckbox = e.target;
+
+      // Revert toggle immediately to preserve old state until confirmed
+      e.target.checked = !e.target.checked;
+
+      // Show the confirmation modal using Bootstrap's API
+      const confirmListModal = new bootstrap.Modal(
+        document.getElementById("confirmListModal")
+      );
+      confirmListModal.show();
+    }
+  });
+
+  // On modal show: (optional if you want to do something with the event)
+  const confirmListModalEl = document.getElementById("confirmListModal");
+  confirmListModalEl.addEventListener("show.bs.modal", (e) => {
+    // You can access e.relatedTarget here if needed
+  });
+
+  // Confirm button click inside modal - proceed with PATCH request
+  document
+    .getElementById("confirmListModal")
+    .querySelector(".btn-danger")
+    .addEventListener("click", async () => {
+      if (!targetCheckbox) return;
+
+      const productId = targetCheckbox.dataset.id;
+      const newStatus = !targetCheckbox.checked; // Because we reverted state initially
+
+      // Get Bootstrap modal instance to close later
+      const confirmModal = bootstrap.Modal.getInstance(confirmListModalEl);
+
+      try {
+        // Make PATCH request to update product status
+        const res = await axios.patch(
+          `/admin/products-management/soft-delete-car-product/${productId}`,
+          { listed: newStatus }
+        );
+
+        confirmModal.hide();
+
+        if (res.data.success) {
+          // Update toggle to new state on success
+          targetCheckbox.checked = newStatus;
+
+          Swal.fire({
+            icon: "success",
+            title: "Product status updated!",
+            text: "The product has been successfully updated.",
+            timer: 1500,
+            showConfirmButton: false,
+          }).then(() => window.location.reload());
+        } else {
+          Swal.fire({
+            icon: "error",
+            title: "Failed!",
+            text: res.data.message || "Failed to update product status.",
+          });
+        }
+      } catch (err) {
+        confirmModal.hide();
+
+        Swal.fire({
+          icon: "error",
+          title: "Error!",
+          text: "Something went wrong while updating the product status.",
+        });
+      }
+    });
+
+  // Cancel button reverts toggle state back to previous
+  document
+    .getElementById("confirmListModal")
+    .querySelector(".btn-secondary")
+    .addEventListener("click", () => {
+      if (targetCheckbox) {
+        targetCheckbox.checked = !targetCheckbox.checked;
+      }
+    });
 });

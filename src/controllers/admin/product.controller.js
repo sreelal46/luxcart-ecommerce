@@ -1,5 +1,7 @@
-const { OK } = require("../../constant/statusCode");
+const { OK, CONFLICT } = require("../../constant/statusCode");
 const { saveCarWithVariants } = require("../helper/saveCarWithVariants");
+const Car = require("../../models/admin/productCarModal");
+const Accessory = require("../../models/admin/productAccessoryModal");
 
 const addCarProduct = async (req, res, next) => {
   try {
@@ -30,4 +32,158 @@ const addCarProduct = async (req, res, next) => {
   }
 };
 
-module.exports = { addCarProduct };
+const editCarProduct = async (req, res) => {
+  try {
+    const { id } = req.params;
+
+    const existingCar = await Car.findById(id).populate("variantIds");
+    if (!existingCar)
+      return res.status(404).json({ success: false, message: "Car not found" });
+
+    // Update basic car info
+    existingCar.brand_id = req.body.brand;
+    existingCar.category_id = req.body.category;
+    existingCar.product_type_id = req.body.product_type;
+    existingCar.description = req.body.description;
+    existingCar.offer_price = req.body.offer_price || null;
+    existingCar.year = req.body.year;
+    existingCar.mileage = req.body.mileage;
+    existingCar.warranty = req.body.warranty;
+    existingCar.region = req.body.region;
+    existingCar.top_speed = req.body.top_speed;
+    existingCar.power_hp = req.body.power_hp;
+    existingCar.engine = req.body.engine;
+    existingCar.transmission = req.body.transmission;
+    existingCar.drive_type = req.body.drive_type;
+    existingCar.torque = req.body.torque;
+    existingCar.acceleration_0_100 = req.body.acceleration_0_100;
+    existingCar.interiorAndExteriorColor = req.body.interiorAndExteriorColor;
+    existingCar.wheels = req.body.wheels;
+    existingCar.upholstery = req.body.upholstery;
+    existingCar.design = req.body.design;
+    existingCar.cameras = req.body.cameras;
+    existingCar.lane_assist =
+      req.body.lane_assist === "true" || req.body.lane_assist === true;
+    existingCar.sound_system = req.body.sound_system;
+    existingCar.keyless_go =
+      req.body.keyless_go === "true" || req.body.keyless_go === true;
+
+    await existingCar.save();
+
+    // Parse removed images sent from frontend
+    const removedImages = req.body.removed_images
+      ? JSON.parse(req.body.removed_images)
+      : [];
+
+    // Update each variant's info and images
+    for (let i = 0; i < existingCar.variantIds.length; i++) {
+      const variant = existingCar.variantIds[i];
+      variant.price = req.body[`variant_${i}_price`];
+      variant.stock = req.body[`variant_${i}_stock`];
+      variant.color = req.body[`variant_${i}_color`];
+
+      // Remove deleted images from variant's image_url
+      variant.image_url = variant.image_url.filter(
+        (imgUrl) => !removedImages.includes(imgUrl)
+      );
+
+      // Append newly uploaded images
+      if (req.files) {
+        const uploadedImages = req.files
+          .filter((file) => file.fieldname === `variant_${i}_images`)
+          .map((file) => file.path);
+
+        if (uploadedImages.length > 0) {
+          variant.image_url.push(...uploadedImages);
+        }
+      }
+
+      await variant.save();
+    }
+
+    res.json({ success: true, message: "Car product updated successfully" });
+  } catch (err) {
+    console.error("Edit car error:", err);
+    if (!res.headersSent) {
+      res.status(500).json({ success: false, error: err.message });
+    }
+  }
+};
+
+const softDeleteCar = async (req, res, next) => {
+  try {
+    console.log("......................", req.params.id);
+    const id = req.params.id;
+    const carProduct = await Car.findById(id);
+    const carProductId = carProduct._id;
+    console.log(carProduct);
+
+    if (carProduct.isListed) {
+      await Car.updateOne({ _id: carProductId }, { $set: { isListed: false } });
+    } else {
+      await Car.updateOne({ _id: carProductId }, { $set: { isListed: true } });
+    }
+    res.status(OK).json({ success: true });
+  } catch (error) {
+    console.log(error);
+    next(error);
+  }
+};
+
+const addAccessoriesProduct = async (req, res, next) => {
+  try {
+    console.log("working from Add acc product", req.body);
+    console.log("working from Add acc product", req.files);
+    const name = req.body.name;
+    const duplicate = await Accessory.findOne({
+      name: { $regex: new RegExp(`^${name}$`, "i") },
+    });
+
+    if (duplicate)
+      return res
+        .status(CONFLICT)
+        .json({ success: false, message: "Accessory name already exists." });
+
+    const image_url = req.files.map((file) => file.path);
+    const newAccessories = new Accessory({
+      name: req.body.name,
+      brand_id: req.body.category_id,
+      category_id: req.body.brand,
+      product_type_id: req.body.product_type,
+      description: req.body.description,
+
+      // Specification fields
+      country_of_origin: req.body.country_of_origin,
+      fabric: req.body.fabric,
+      finish: req.body.finish,
+      fitting: req.body.fitting,
+      warranty: req.body.warranty,
+      waterproof: req.body.waterproof,
+
+      // Vehicle compatibility
+      vehicle: req.body.vehicle,
+      production_year: req.body.production_year,
+      price: req.body.price,
+      material: req.body.material,
+      stock: req.body.stock,
+      images: image_url,
+    });
+
+    await newAccessories.save();
+    res.status(OK).json({
+      success: true,
+      redirect: "/admin/products-management",
+      message: "Accessory added successfully.",
+    });
+  } catch (error) {
+    console.error(error);
+    next(error);
+  }
+};
+
+module.exports = {
+  addCarProduct,
+  editCarProduct,
+  softDeleteCar,
+  addAccessoriesProduct,
+};

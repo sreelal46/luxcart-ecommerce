@@ -1,0 +1,64 @@
+/* --- Image upload cards --- */
+.variant-images-container {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 1rem;
+}
+
+.upload-card {
+  width: 160px;
+  height: 160px;
+  border: 2px dashed #cfd8dc;
+  border-radius: 12px;
+  background-color: #f8f9fa;
+  cursor: pointer;
+  position: relative;
+  transition: all 0.2s ease-in-out;
+  overflow: hidden;
+}
+
+.upload-card:hover {
+  border-color: #0d6efd;
+  background-color: #e9f2ff;
+  transform: scale(1.03);
+}
+
+.upload-card img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  border-radius: 10px;
+}
+
+.upload-card .remove-image-btn {
+  position: absolute;
+  top: 5px;
+  right: 5px;
+  background-color: rgba(255, 255, 255, 0.85);
+  border: none;
+  border-radius: 50%;
+  width: 28px;
+  height: 28px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  opacity: 0;
+  transition: opacity 0.2s ease-in-out;
+}
+
+.upload-card:hover .remove-image-btn {
+  opacity: 1;
+}
+
+.upload-card.add-image-btn {
+  border: 2px dashed #b0bec5;
+  color: #6c757d;
+  background-color: #ffffff;
+  transition: all 0.25s ease;
+}
+
+.upload-card.add-image-btn:hover {
+  background-color: #f1f8ff;
+  color: #0d6efd;
+  border-color: #0d6efd;
+}

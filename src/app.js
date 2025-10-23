@@ -28,8 +28,28 @@ app.engine(
     defaultLayout: "userLayout",
     layoutsDir: path.join(__dirname, "views", "layouts"),
     partialsDir: path.join(__dirname, "views", "partials"),
+    runtimeOptions: {
+      allowProtoPropertiesByDefault: true,
+      allowProtoMethodsByDefault: true,
+    },
+    helpers: {
+      eq: function (a, b) {
+        return a.toString() === b.toString();
+      },
+      firstImage: function (variantIds) {
+        if (variantIds && variantIds.length > 0) {
+          const firstVariant = variantIds[0];
+          if (firstVariant.image_url && firstVariant.image_url.length > 0) {
+            return firstVariant.image_url[0];
+          }
+        }
+        // Fallback image path - ensure this exists in your public folder
+        return "/images/default-car.jpg";
+      },
+    },
   })
 );
+
 app.set("view engine", "hbs");
 app.set("view cache", true);
 app.set("views", path.join(__dirname, "views"));
