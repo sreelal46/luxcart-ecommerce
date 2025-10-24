@@ -23,7 +23,7 @@
 
         <div class="col-md-4">
           <label class="form-label">Product Type</label>
-          <select class="form-select" name="product_type" required>
+          <select class="form-select" name="product_type_id" required>
             <option selected disabled>Select type</option>
             {{#each types}}
             <option value="{{this._id}}">{{this.name}}</option>
@@ -33,7 +33,7 @@
 
         <div class="col-md-4">
           <label class="form-label">Brand</label>
-          <select class="form-select" name="brand" required>
+          <select class="form-select" name="brand_id" required>
             <option selected disabled>Select brand</option>
             {{#each brands}}
             <option value="{{this._id}}">{{this.name}}</option>

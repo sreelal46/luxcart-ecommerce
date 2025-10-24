@@ -25,6 +25,9 @@ const {
   loadViewCar,
   loadEditCar,
   loadAddAccessories,
+  loadViewAccessories,
+  loadEditAccessories,
+  usersManagement,
 } = require("../controllers/admin/pageLoad.controller");
 
 //auth controller
@@ -35,6 +38,9 @@ const {
   PasswordChanging,
   resendOTP,
 } = require("../controllers/admin/adminAuth.controller");
+
+//user controller
+const { blockOrUnblockUser } = require("../controllers/admin/user.controller");
 
 //brand controller
 const {
@@ -61,8 +67,9 @@ const {
 const {
   addCarProduct,
   editCarProduct,
-  softDeleteCar,
+  softDelete,
   addAccessoriesProduct,
+  editAccessories,
 } = require("../controllers/admin/product.controller");
 
 //=========================================code section=======================================================
@@ -139,6 +146,8 @@ route.put("/types-management/edit-type/:id", editType);
 //Type soft delete
 route.patch("/types-management/soft-delete-type/:id", softDeleteType);
 
+//======================================PRODUCT MANAGEMENT===============================
+
 //Product Management
 route.get("/products-management", loadProduct);
 
@@ -161,25 +170,44 @@ route.put(
   editCarProduct
 );
 
-//soft delete
-route.patch("/products-management/soft-delete-car-product/:id", softDeleteCar);
+//soft delete car and accessories
+route.patch("/products-management/soft-delete-product/:id", softDelete);
+
+//======================================ACCESSORY===============================
 
 //load add accessories page
 route.get("/products-management/add-accessories-product", loadAddAccessories);
 
+//add Accessories
 route.post(
   "/products-management/add-accessories-product",
   upload.any(),
   addAccessoriesProduct
 );
-// route.get("/products-management/view-car-product", (req, res) => {
-//   res.render("admin/products/car/view-car-product");
-// });
 
+//load view page
+route.get(
+  "/products-management/view-accessories-product/:id",
+  loadViewAccessories
+);
+
+//load edit Accessories page
+route.get(
+  "/products-management/edit-accessories-product/:id",
+  loadEditAccessories
+);
+
+//edit Accessories
+route.put(
+  "/products-management/edit-accessories-product/:id",
+  upload.any(),
+  editAccessories
+);
+
+////
 route.get("/products-management/view-categories-product", (req, res) => {
   res.render("admin/products/accessories/view-accessories-product");
 });
-
 route.get("/sales-report", async (req, res) => {
   const sales = [
     {
@@ -224,9 +252,13 @@ route.get("/orders-management/return-request-management", (req, res) => {
   res.render("admin/returnRequestManagement");
 });
 
-route.get("/users-management", (req, res) => {
-  res.render("admin/usersManagement");
-});
+//=======================================USER MANAGEMENT==========================
+
+//view all user
+route.get("/users-management", usersManagement);
+
+//block user
+route.patch("/users-management/block-unblock-user/:id", blockOrUnblockUser);
 
 route.get("/users-management/user-details", (req, res) => {
   res.render("admin/userDetails");

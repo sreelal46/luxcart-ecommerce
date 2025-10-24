@@ -4,9 +4,18 @@ const Brand = require("../../models/admin/brandModal");
 //adding new brand
 const addBrand = async (req, res) => {
   try {
+    //collect data
     const { name, country } = req.body;
     const imageFile = req.file;
+    //finding data
+    const duplicate = await Brand.findOne({
+      name: { $regex: new RegExp(`^${name}$`, "i") },
+    });
 
+    if (duplicate)
+      return res
+        .status(CONFLICT)
+        .json({ success: false, message: "Brand name already exists." });
     //if no image
     if (!imageFile) {
       return res
@@ -31,9 +40,21 @@ const addBrand = async (req, res) => {
 //editing brand
 const editBrand = async (req, res, next) => {
   try {
+    //colleting data
     const brandId = req.params.id;
     const { name, country } = req.body;
 
+    //duplicte finding
+    const duplicate = await Brand.findOne({
+      name: { $regex: new RegExp(`^${name}$`, "i") },
+    });
+
+    if (duplicate)
+      return res
+        .status(CONFLICT)
+        .json({ success: false, message: "Brand name already exists." });
+
+    //updating data
     const updateData = { name, country };
     if (req.file) updateData.image_url = req.file.path;
 
@@ -51,12 +72,11 @@ const editBrand = async (req, res, next) => {
 
 const softDeleteBrand = async (req, res, next) => {
   try {
+    //colleting data
     const id = req.params.id;
-    console.log("deleting brand id====================", id);
     const brand = await Brand.findById(id);
     const brandId = brand._id;
-    console.log("brand founed==============", brand);
-
+    //update data
     if (brand.isListed) {
       await Brand.updateOne({ _id: brandId }, { $set: { isListed: false } });
     } else {

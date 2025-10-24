@@ -1,5 +1,6 @@
 const { OK, CONFLICT, NOT_FOUND } = require("../../constant/statusCode");
 const Type = require("../../models/admin/typeModal");
+
 const addType = async (req, res, next) => {
   try {
     //colleting data
@@ -15,6 +16,7 @@ const addType = async (req, res, next) => {
         .status(CONFLICT)
         .json({ success: false, alert: "This type is existing" });
 
+    //new Types
     const newType = await new Type({
       name,
       description,
@@ -33,6 +35,16 @@ const editType = async (req, res, next) => {
     //collecting data
     const id = req.params.id;
     const { name, description } = req.body;
+
+    //finding duplicate
+    const duplicate = await Type.findOne({
+      name: { $regex: new RegExp(`^${name}$`, "i") },
+    });
+
+    if (duplicate)
+      return res
+        .status(CONFLICT)
+        .json({ success: false, message: "Brand name already exists." });
 
     //finding and updating
     const updateData = { name, description };

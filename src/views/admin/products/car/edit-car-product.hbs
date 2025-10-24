@@ -387,7 +387,7 @@
             confirmButtonText: "OK",
             confirmButtonColor: "#3085d6",
           }).then(() => {
-            window.location.href = "/admin/dashboard";
+            window.location.href = res.data.redirect;
           });
         } else {
           Swal.fire({
@@ -426,9 +426,5 @@
         }
       }
     });
-
-
-
-
   });
 </script>

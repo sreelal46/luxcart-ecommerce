@@ -4,8 +4,7 @@ node_modules/
 .env
 
 # just text
-TEST.txt.env
-test.html
+
 
 # session storage
 sessions/

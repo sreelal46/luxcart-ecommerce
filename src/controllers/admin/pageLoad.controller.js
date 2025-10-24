@@ -3,7 +3,8 @@ const Brand = require("../../models/admin/brandModal");
 const Category = require("../../models/admin/categoryModel");
 const Type = require("../../models/admin/typeModal");
 const Car = require("../../models/admin/productCarModal");
-const Accessories = require("../../models/admin/productAccessoryModal");
+const Accessory = require("../../models/admin/productAccessoryModal");
+const User = require("../../models/user/UserModel");
 //loading admin loaging page
 const adminLoadLoginPage = (req, res) => {
   res.status(OK).render("admin/auth/login");
@@ -72,6 +73,7 @@ const loadType = async (req, res, next) => {
 //Load Product page
 const loadProduct = async (req, res, next) => {
   try {
+    //car Product
     const cars = await Car.find({})
       .sort({ createdAt: -1 })
       .populate("brand_id", "name")
@@ -80,17 +82,13 @@ const loadProduct = async (req, res, next) => {
       .populate("variantIds", "price stock")
       .lean();
 
-    const accessories = await Accessories.find({})
-      .sort({ createdAt: 1 })
+    //Accessories
+    const accessories = await Accessory.find({})
+      .sort({ createdAt: -1 })
       .populate("brand_id", "name")
       .populate("category_id", "name")
       .populate("product_type_id", "name")
       .lean();
-
-    console.log(accessories);
-
-    console.log(await Brand.findById("68f8a723fb372243f4c94dcb"));
-    console.log(await Category.findById("68fa45c1317bdbc4e1ae309e")); // if you knowingly set a category
 
     res
       .status(OK)
@@ -170,6 +168,7 @@ const loadCarProduct = async (req, res, next) => {
   }
 };
 
+//load add accessories
 const loadAddAccessories = async (req, res) => {
   try {
     const brands = await Brand.find({ isListed: true }).lean();
@@ -191,6 +190,70 @@ const loadAddAccessories = async (req, res) => {
   }
 };
 
+//view accessories
+const loadViewAccessories = async (req, res, next) => {
+  try {
+    const id = req.params.id;
+
+    const accessory = await Accessory.findById(id)
+      .populate("brand_id", "name")
+      .populate("category_id", "name")
+      .populate("product_type_id", "name")
+      .lean();
+
+    res.render("admin/products/accessories/view-accessories-product", {
+      accessory,
+    });
+  } catch (error) {
+    console.log(error);
+    next(error);
+  }
+};
+
+//edit accessories
+const loadEditAccessories = async (req, res, next) => {
+  try {
+    const id = req.params.id;
+
+    const types = await Type.find({ isListed: true }).lean();
+    const categories = await Category.find({
+      isListed: true,
+      product: "Accessories",
+    }).lean();
+    const brands = await Brand.find({ isListed: true }).lean();
+    const accessory = await Accessory.findById(id)
+      .populate("brand_id", "name")
+      .populate("category_id", "name")
+      .populate("product_type_id", "name")
+      .lean();
+
+    res
+      .status(OK)
+      .render("admin/products/accessories/edit-accessories-product", {
+        accessory,
+        types,
+        categories,
+        brands,
+      });
+  } catch (error) {
+    console.log(error);
+    next(error);
+  }
+};
+
+//User Management
+const usersManagement = async (req, res, next) => {
+  try {
+    //finding all users
+    const users = await User.find({}).sort({ createdAt: -1 }).lean();
+    // console.log(users);
+    res.status(OK).render("admin/users/usersManagement", { users });
+  } catch (error) {
+    console.log(error);
+    next(error);
+  }
+};
+
 module.exports = {
   adminLoadLoginPage,
   loadDashboard,
@@ -205,4 +268,7 @@ module.exports = {
   loadViewCar,
   loadEditCar,
   loadAddAccessories,
+  loadViewAccessories,
+  loadEditAccessories,
+  usersManagement,
 };

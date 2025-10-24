@@ -1,61 +1,83 @@
-<div class="container">
-  <div class="row">
-    <div class="col-md-10">
-      <h2 class="mb-4">Accessory Product Details</h2>
+<div class="container py-5">
+  <div class="row justify-content-center">
+    <div class="col-lg-10">
+      <h2 class="fw-bold mb-4 text-center">Accessory Product Details</h2>
 
       <!-- Image Gallery -->
-      <div class="mb-4">
-        <h5>Images</h5>
-        <div class="d-flex flex-wrap gap-3">
-          <img src="accessory_image1.jpg" alt="Accessory Image 1" class="img-thumbnail"
-            style="width: 150px; height: auto;">
-          <img src="accessory_image2.jpg" alt="Accessory Image 2" class="img-thumbnail"
-            style="width: 150px; height: auto;">
-          <!-- Add more images as needed -->
+      <div class="card shadow-sm mb-4 border-0">
+        <div class="card-header bg-light fw-semibold fs-5">Images</div>
+        <div class="card-body">
+          <div class="d-flex flex-wrap gap-3">
+            {{#each accessory.images}}
+            <div class="image-box shadow-sm rounded overflow-hidden">
+              <img src="{{this}}" alt="{{../accessory.name}}" class="img-fluid"
+                style="width: 180px; height: 120px; object-fit: cover;" />
+            </div>
+            {{/each}}
+          </div>
         </div>
       </div>
 
       <!-- Basic Info -->
-      <div class="mb-4">
-        <h5>Basic Info</h5>
-        <ul class="list-group">
-          <li class="list-group-item"><strong>Name:</strong> Example Accessory</li>
-          <li class="list-group-item"><strong>Price:</strong> $50</li>
-          <li class="list-group-item"><strong>Material:</strong> Leather</li>
-          <li class="list-group-item"><strong>Stock:</strong> 25</li>
-          <li class="list-group-item"><strong>Category:</strong> Interior</li>
-          <li class="list-group-item"><strong>Product Type:</strong> Car Accessory</li>
-          <li class="list-group-item"><strong>Brand:</strong> Accessories Brand</li>
-          <li class="list-group-item"><strong>Description:</strong> High-quality leather car accessory for enhanced
-            comfort.</li>
+      <div class="card shadow-sm mb-4 border-0">
+        <div class="card-header bg-light fw-semibold fs-5">Basic Information</div>
+        <ul class="list-group list-group-flush">
+          <li class="list-group-item"><strong>Name:</strong> {{accessory.name}}</li>
+          <li class="list-group-item"><strong>Price:</strong> ₹{{accessory.price}}</li>
+          <li class="list-group-item"><strong>Material:</strong> {{accessory.material}}</li>
+          <li class="list-group-item"><strong>Stock:</strong> {{accessory.stock}} units</li>
+          <li class="list-group-item"><strong>Category:</strong> {{accessory.category_id.name}}</li>
+          <li class="list-group-item"><strong>Product Type:</strong> {{accessory.product_type_id.name}}</li>
+          <li class="list-group-item"><strong>Brand:</strong> {{accessory.brand_id.name}}</li>
+          <li class="list-group-item"><strong>Description:</strong> {{accessory.description}}</li>
         </ul>
       </div>
 
       <!-- Specification -->
-      <div class="mb-4">
-        <h5>Specification</h5>
-        <ul class="list-group">
-          <li class="list-group-item"><strong>Country of Origin:</strong> Germany</li>
-          <li class="list-group-item"><strong>Fabric:</strong> Premium Leather</li>
-          <li class="list-group-item"><strong>Finish:</strong> Matte</li>
-          <li class="list-group-item"><strong>Fitting:</strong> Universal</li>
-          <li class="list-group-item"><strong>Warranty:</strong> 2 years</li>
-          <li class="list-group-item"><strong>Waterproof:</strong> Yes</li>
+      <div class="card shadow-sm mb-4 border-0">
+        <div class="card-header bg-light fw-semibold fs-5">Specifications</div>
+        <ul class="list-group list-group-flush">
+          <li class="list-group-item"><strong>Country of Origin:</strong> {{accessory.country_of_origin}}</li>
+          <li class="list-group-item"><strong>Fabric:</strong> {{accessory.fabric}}</li>
+          <li class="list-group-item"><strong>Finish:</strong> {{accessory.finish}}</li>
+          <li class="list-group-item"><strong>Fitting:</strong> {{accessory.fitting}}</li>
+          <li class="list-group-item"><strong>Warranty:</strong> {{accessory.warranty}}</li>
+          <li class="list-group-item">
+            <strong>Waterproof:</strong>
+            {{#if accessory.waterproof}}Yes{{else}}No{{/if}}
+          </li>
         </ul>
       </div>
 
       <!-- Vehicle Compatibility -->
-      <div class="mb-4">
-        <h5>Vehicle Compatibility</h5>
-        <ul class="list-group">
-          <li class="list-group-item"><strong>Vehicle:</strong> Sedan, SUV</li>
-          <li class="list-group-item"><strong>Production Year:</strong> 2018-2025</li>
+      <div class="card shadow-sm mb-4 border-0">
+        <div class="card-header bg-light fw-semibold fs-5">Vehicle Compatibility</div>
+        <ul class="list-group list-group-flush">
+          <li class="list-group-item"><strong>Vehicle:</strong> {{accessory.vehicle}}</li>
+          <li class="list-group-item"><strong>Production Year:</strong> {{accessory.production_year}}</li>
         </ul>
       </div>
 
-      <!-- Action buttons -->
-      <a href="/admin/accessories-management" class="btn btn-secondary me-2">Back to Accessories</a>
-      <a href="/admin/accessories/edit" class="btn btn-primary">Edit Accessory</a>
+      <!-- Action Buttons -->
+      <div class="d-flex justify-content-end gap-3 mt-4">
+        <a href="/admin/products-management" class="btn btn-outline-secondary px-4">
+          <i class="bi bi-arrow-left-circle me-1"></i> Back
+        </a>
+        <a href="/admin/products-management/edit-accessories-product/{{accessory._id}}" class="btn btn-primary px-4">
+          <i class="bi bi-pencil-square me-1"></i> Edit Accessory
+        </a>
+      </div>
     </div>
   </div>
 </div>
+
+<style>
+  .image-box:hover img {
+    transform: scale(1.05);
+    transition: 0.3s ease;
+  }
+
+  .card-header {
+    border-bottom: 1px solid #e9ecef;
+  }
+</style>

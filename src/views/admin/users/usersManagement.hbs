@@ -27,44 +27,38 @@
         </thead>
         <tbody id="usersTableBody">
           <!-- Example User 1 -->
+          {{#each users}}
           <tr>
-            <td>1</td>
+            <td>{{@index}}</td>
             <td class="d-flex align-items-center">
-              <img src="https://via.placeholder.com/40" class="rounded-circle me-2" alt="profile">
+              <img src="" class="rounded-circle me-2" alt="profile">
               <div class="text-start">
-                <div class="fw-bold">John Doe</div>
-                <small class="text-muted">john@example.com</small>
+                <div class="fw-bold">{{this.name}}</div>
+                <small class="text-muted">{{this.email}}</small>
               </div>
             </td>
+            {{#if isBlocked}}
+            <td><span class="badge bg-danger">Blocked</span></td>
+            {{else}}
             <td><span class="badge bg-success">Active</span></td>
+            {{/if}}
             <td>12</td>
             <td>
               <a href="/admin/users-management/user-details" style="text-decoration: none;">
                 <button class="btn btn-sm btn-info rounded-pill me-1"><i class="bi bi-eye-fill"></i> View</button>
               </a>
+              {{#if isBlocked}}
               <button class="btn btn-sm btn-warning rounded-pill" data-bs-toggle="modal"
-                data-bs-target="#blockUserModal" data-user="John Doe" data-action="block">Block</button>
+                data-bs-target="#blockUserModal" data-id="{{this._id}}" data-user="{{this.name}}"
+                data-action="unblock">Block</button>
+              {{else}}
+              <button class="btn btn-sm btn-warning rounded-pill" data-bs-toggle="modal"
+                data-bs-target="#blockUserModal" data-id="{{this._id}}" data-user="{{this.name}}"
+                data-action="block">Block</button>
+              {{/if}}
             </td>
           </tr>
-
-          <!-- Example User 2 -->
-          <tr>
-            <td>2</td>
-            <td class="d-flex align-items-center">
-              <img src="https://via.placeholder.com/40" class="rounded-circle me-2" alt="profile">
-              <div class="text-start">
-                <div class="fw-bold">Jane Smith</div>
-                <small class="text-muted">jane@example.com</small>
-              </div>
-            </td>
-            <td><span class="badge bg-danger">Blocked</span></td>
-            <td>5</td>
-            <td>
-              <button class="btn btn-sm btn-info rounded-pill me-1"><i class="bi bi-eye-fill"></i> View</button>
-              <button class="btn btn-sm btn-success rounded-pill" data-bs-toggle="modal"
-                data-bs-target="#blockUserModal" data-user="Jane Smith" data-action="unblock">Unblock</button>
-            </td>
-          </tr>
+          {{/each}}
         </tbody>
       </table>
     </div>
@@ -121,6 +115,7 @@
 </div>
 
 <!-- Scripts -->
+
 <script>
   // Search functionality
   document.getElementById('searchUserInput').addEventListener('keyup', function () {
@@ -136,19 +131,47 @@
   const blockUserModal = document.getElementById('blockUserModal');
   let currentAction = '';
   let currentUser = '';
+  let currentUserId;
 
   blockUserModal.addEventListener('show.bs.modal', function (event) {
     const button = event.relatedTarget;
-    currentAction = button.getAttribute('data-action'); // block/unblock
+    currentAction = button.getAttribute('data-action'); // block or unblock
     currentUser = button.getAttribute('data-user');
+    currentUserId = button.getAttribute('data-id');
 
     document.getElementById('blockUserName').textContent = currentUser;
     document.getElementById('blockActionText').textContent = currentAction;
   });
 
-  document.getElementById('confirmBlockUser').addEventListener('click', function () {
-    console.log(`${currentAction} user: ${currentUser}`);
-    // TODO: Call API or update table dynamically
+  document.getElementById('confirmBlockUser').addEventListener('click', async function () {
+    try {
+      // API request
+      const res = await axios.patch(`/admin/users-management/block-unblock-user/${currentUserId}`);
+
+      if (res.data.success) {
+        await Swal.fire({
+          title: `User ${res.data.status === 'Block' ? 'Blocked' : 'Unblocked'}!`,
+          text: `${currentUser} has been successfully ${res.data.status === 'Block' ? 'blocked' : 'unblocked'}.`,
+          icon: "success",
+          timer: 1800,
+          showConfirmButton: false
+        });
+
+        // Reload the page to reflect changes
+        window.location.reload();
+      }
+    } catch (error) {
+      console.error("Error blocking/unblocking user:", error);
+
+      Swal.fire({
+        title: "Error!",
+        text: "Something went wrong while updating the user status.",
+        icon: "error",
+        confirmButtonColor: "#ef4444"
+      });
+    }
+
+    // Close modal after action
     const modal = bootstrap.Modal.getInstance(blockUserModal);
     modal.hide();
   });

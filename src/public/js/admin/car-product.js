@@ -304,7 +304,7 @@ document.addEventListener("DOMContentLoaded", () => {
       try {
         // Make PATCH request to update product status
         const res = await axios.patch(
-          `/admin/products-management/soft-delete-car-product/${productId}`,
+          `/admin/products-management/soft-delete-product/${productId}`,
           { listed: newStatus }
         );
 

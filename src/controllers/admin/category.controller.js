@@ -36,8 +36,19 @@ const addCategory = async (req, res, next) => {
 const editCategory = async (req, res, next) => {
   try {
     //collecting data
-    const { name, description, editType } = req.body;
+    const { name, description, product } = req.body;
+    console.log(req.body);
     const categorieId = req.params.id;
+
+    //finding duplicate
+    const duplicate = await Category.findOne({
+      name: { $regex: new RegExp(`^${name}$`, "i") },
+    });
+
+    if (duplicate)
+      return res
+        .status(CONFLICT)
+        .json({ success: false, message: "Brand name already exists." });
 
     //searching
     const categoryData = await Category.findById(categorieId);
@@ -47,7 +58,7 @@ const editCategory = async (req, res, next) => {
         .json({ success: false, alert: "Category not found" });
 
     //updating data
-    const updateData = { name, description, editType };
+    const updateData = { name, description, product };
     await Category.findByIdAndUpdate(categorieId, updateData);
 
     res.status(OK).json({ success: true });

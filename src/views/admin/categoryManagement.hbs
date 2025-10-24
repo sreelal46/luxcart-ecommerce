@@ -1,3 +1,32 @@
+<style>
+  /* Force radio buttons to be clickable */
+  .radio-container {
+    position: relative;
+    z-index: 1;
+  }
+
+  .radio-container input[type="radio"] {
+    position: relative;
+    z-index: 2;
+    cursor: pointer !important;
+    pointer-events: auto !important;
+    width: 20px;
+    height: 20px;
+  }
+
+  .radio-container label {
+    cursor: pointer !important;
+    user-select: none;
+    margin-left: 8px;
+  }
+
+  .modal-body {
+    position: relative;
+    z-index: 1;
+  }
+</style>
+
+
 <div class="container-fluid px-4 py-4">
   <!-- Header -->
   <div class="d-flex justify-content-between align-items-center mb-4">
@@ -41,21 +70,21 @@
             <td><span class="badge bg-primary">{{this.product}}</span></td>
             <td>{{this.description}}</td>
             <td>total product</td>
-            {{#if isListed}}
+            {{#if this.isListed}}
             <td class="text-success">Listed</td>
             {{else}}
             <td class="text-danger">Unlisted</td>
             {{/if}}
             <td>
-              <button class="btn btn-sm btn-outline-info" data-id={{this._id}} data-bs-toggle="modal"
-                data-bs-target="#addOfferModal" data-name="{{this.name}}">
-                <i class="bi bi-tags-fill me-1"></i>Add Offer
+              <button class="btn btn-sm btn-outline-info" data-id="{{this._id}}" data-name="{{this.name}}"
+                data-bs-toggle="modal" data-bs-target="#addOfferModal">
+                <i class="bi bi-tags-fill me-1"></i> Add Offer
               </button>
             </td>
             <td>
               <button class="btn btn-sm btn-outline-primary me-2" data-bs-toggle="modal"
-                data-bs-target="#editCategoryModal" data-id={{this._id}} data-name="{{this.name}}"
-                data-description="{{this.description}}" data-type={{this.product}}>
+                data-bs-target="#editCategoryModal" data-id="{{this._id}}" data-name="{{this.name}}"
+                data-description="{{this.description}}" data-type="{{this.product}}">
                 <i class="bi bi-pencil-fill"></i>
               </button>
               <button class="btn btn-sm {{#if this.isListed}}btn-outline-warning{{else}}btn-outline-success{{/if}}"
@@ -67,7 +96,7 @@
           </tr>
           {{else}}
           <tr>
-            <td colspan="12" class="text-center text-muted py-4">No Categories</td>
+            <td colspan="8" class="text-center text-muted py-4">No Categories</td>
           </tr>
           {{/each}}
         </tbody>
@@ -76,42 +105,37 @@
   </div>
 </div>
 
-<!-- 🟢 Add Category Modal -->
-<div class="modal fade" id="addCategoryModal" tabindex="-1" aria-labelledby="addCategoryModalLabel" aria-hidden="true">
+<!-- Add Category Modal -->
+<div class="modal fade" id="addCategoryModal" tabindex="-1" data-bs-backdrop="static">
   <div class="modal-dialog">
     <div class="modal-content">
       <form id="addCategoryForm" method="post" enctype="multipart/form-data">
         <div class="modal-header">
-          <h5 class="modal-title fw-bold" id="addCategoryModalLabel">Add New Category</h5>
+          <h5 class="modal-title fw-bold">Add New Category</h5>
           <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
         </div>
-        <!-- Alert -->
-        <div id="alert" class="d-none text-center"></div>
+        <div id="addAlert" class="d-none text-center"></div>
         <div class="modal-body">
           <div class="mb-3">
             <label class="form-label">Category Name</label>
-            <input type="text" class="form-control" name="name" required>
+            <input type="text" class="form-control" name="name" id="addName" required>
           </div>
-
           <div class="mb-3">
             <label class="form-label">Description</label>
-            <textarea class="form-control" name="description" rows="3" required></textarea>
+            <textarea class="form-control" name="description" id="addDescription" rows="3" required></textarea>
           </div>
-
           <div class="mb-3">
-            <label class="form-label">Product</label><br>
-            <div class="form-check form-check-inline">
-              <input class="form-check-input" type="radio" name="productType" value="Car" id="typeCar" required>
-              <label class="form-check-label" for="typeCar">Car</label>
+            <label class="form-label d-block">Product Type <span class="text-danger">*</span></label>
+            <div class="radio-container d-inline-block me-4">
+              <input type="radio" name="productType" value="Car" id="typeCar" required>
+              <label for="typeCar">Car</label>
             </div>
-            <div class="form-check form-check-inline">
-              <input class="form-check-input" type="radio" name="productType" value="Accessories" id="typeAccessories"
-                required>
-              <label class="form-check-label" for="typeAccessories">Accessories</label>
+            <div class="radio-container d-inline-block">
+              <input type="radio" name="productType" value="Accessories" id="typeAccessories" required>
+              <label for="typeAccessories">Accessories</label>
             </div>
           </div>
         </div>
-
         <div class="modal-footer">
           <button type="submit" class="btn btn-primary w-100">Save Category</button>
         </div>
@@ -120,8 +144,8 @@
   </div>
 </div>
 
-<!-- 🟠 Edit Modal -->
-<div class="modal fade" id="editCategoryModal" tabindex="-1">
+<!-- Edit Category Modal -->
+<div class="modal fade" id="editCategoryModal" tabindex="-1" data-bs-backdrop="static">
   <div class="modal-dialog">
     <div class="modal-content">
       <form id="editCategoryForm" method="post">
@@ -129,10 +153,9 @@
           <h5 class="modal-title fw-bold">Edit Category</h5>
           <button class="btn-close" data-bs-dismiss="modal"></button>
         </div>
+        <div id="editAlert" class="d-none text-center"></div>
         <div class="modal-body">
           <input type="hidden" id="editCategoryId">
-          <!-- Alert -->
-          <div id="alert" class="d-none text-center"></div>
           <div class="mb-3">
             <label class="form-label">Category Name</label>
             <input type="text" id="editCategoryName" name="name" class="form-control" required>
@@ -142,91 +165,26 @@
             <textarea id="editCategoryDescription" name="description" class="form-control" rows="3" required></textarea>
           </div>
           <div class="mb-3">
-            <label class="form-label">Type</label><br>
-            <div class="form-check form-check-inline">
-              <input class="form-check-input" type="radio" name="editType" id="editTypeCar" value="Car">
-              <label class="form-check-label" for="editTypeCar">Car</label>
+            <label class="form-label d-block">Product Type <span class="text-danger">*</span></label>
+            <div class="radio-container d-inline-block me-4">
+              <input type="radio" name="product" id="editTypeCar" value="Car">
+              <label for="editTypeCar">Car</label>
             </div>
-            <div class="form-check form-check-inline">
-              <input class="form-check-input" type="radio" name="editType" id="editTypeAccessories" value="Accessories">
-              <label class="form-check-label" for="editTypeAccessories">Accessories</label>
+            <div class="radio-container d-inline-block">
+              <input type="radio" name="product" id="editTypeAccessories" value="Accessories">
+              <label for="editTypeAccessories">Accessories</label>
             </div>
           </div>
         </div>
         <div class="modal-footer">
-          <button class="btn btn-success w-100">Update Category</button>
+          <button type="submit" class="btn btn-success w-100">Update Category</button>
         </div>
       </form>
     </div>
   </div>
 </div>
 
-<!-- 🔵 Offer Modal -->
-<div class="modal fade" id="addOfferModal" tabindex="-1">
-  <div class="modal-dialog">
-    <div class="modal-content">
-      <form id="addOfferForm">
-        <div class="modal-header">
-          <h5 class="modal-title fw-bold">Add Offer</h5>
-          <button class="btn-close" data-bs-dismiss="modal"></button>
-        </div>
-        <div class="modal-body">
-          <p class="text-muted small mb-3">Add offer for: <strong id="offerCategoryName"></strong></p>
-          <div class="mb-3">
-            <label class="form-label">Discount Type</label>
-            <select class="form-select" name="discountType" required>
-              <option value="">Select Type</option>
-              <option value="Percentage">Percentage</option>
-              <option value="Price">Fixed Price</option>
-            </select>
-          </div>
-          <div class="mb-3">
-            <label class="form-label">Discount Value</label>
-            <input type="number" class="form-control" name="discount" placeholder="Enter discount value" required>
-          </div>
-          <div class="row">
-            <div class="col mb-3">
-              <label class="form-label">Valid From</label>
-              <input type="date" class="form-control" name="validFrom" required>
-            </div>
-            <div class="col mb-3">
-              <label class="form-label">Valid To</label>
-              <input type="date" class="form-control" name="validTo" required>
-            </div>
-          </div>
-          <div class="mb-3">
-            <label class="form-label">Usage Limit</label>
-            <input type="number" class="form-control" name="usageLimit" required>
-          </div>
-        </div>
-        <div class="modal-footer">
-          <button class="btn btn-info w-100">Save Offer</button>
-        </div>
-      </form>
-    </div>
-  </div>
-</div>
-
-<!-- 🔴 Delete Modal -->
-<div class="modal fade" id="deleteCategoryModal" tabindex="-1">
-  <div class="modal-dialog modal-dialog-centered">
-    <div class="modal-content text-center">
-      <div class="modal-header border-0">
-        <h5 class="modal-title text-danger fw-bold">Delete Category</h5>
-        <button class="btn-close" data-bs-dismiss="modal"></button>
-      </div>
-      <div class="modal-body">
-        Are you sure you want to delete <strong id="deleteCategoryName"></strong>?
-      </div>
-      <div class="modal-footer border-0">
-        <button class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
-        <button class="btn btn-danger">Delete</button>
-      </div>
-    </div>
-  </div>
-</div>
-
-<!-- 🟣 List/Unlist Confirmation -->
+<!-- List/Unlist Confirmation Modal -->
 <div class="modal fade" id="confirmListModal" tabindex="-1">
   <div class="modal-dialog modal-dialog-centered">
     <div class="modal-content text-center">
@@ -237,7 +195,7 @@
       <div class="modal-body">
         Are you sure you want to <strong>list/unlist</strong> this product?
       </div>
-      <input type="hidden" name="id" id="categoriesId">
+      <input type="hidden" id="categoriesId">
       <div class="modal-footer border-0">
         <button class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
         <button class="btn btn-danger" id="categoriesDeleteConfirm">Yes, Confirm</button>
@@ -248,138 +206,130 @@
 
 <script>
   document.addEventListener("DOMContentLoaded", () => {
-    const alertDiv = document.getElementById("alert");
+
+    // -------------------- Add Category --------------------
+    const addCategoryForm = document.getElementById("addCategoryForm");
+    const addAlert = document.getElementById("addAlert");
     const addCategoryModal = document.getElementById("addCategoryModal");
 
-    // Prevent clicks inside Add Category modal from propagating and triggering outer modals
-    addCategoryModal.addEventListener('click', e => {
-      e.stopPropagation();
+    // Reset form when modal opens
+    addCategoryModal.addEventListener('shown.bs.modal', () => {
+      addCategoryForm.reset();
+      addAlert.classList.add('d-none');
+      // Remove any checked state
+      document.querySelectorAll('#addCategoryModal input[type="radio"]').forEach(r => r.checked = false);
     });
 
-    // Extra stopPropagation on radio buttons as extra safety
-    document.querySelectorAll('#addCategoryModal input[type="radio"]').forEach(radio => {
-      radio.addEventListener('click', function (e) {
-        e.stopPropagation();
-      });
-    });
-
-    // Adding new category
-    const addCategoryForm = document.getElementById("addCategoryForm");
-    addCategoryForm.addEventListener("submit", async (e) => {
+    addCategoryForm.addEventListener("submit", async e => {
       e.preventDefault();
 
-      const formData = new FormData(addCategoryForm);
-      const data = Object.fromEntries(formData.entries());
+      // Manual validation for radio buttons
+      const radioChecked = document.querySelector('input[name="productType"]:checked');
+      if (!radioChecked) {
+        addAlert.className = "alert alert-warning text-center";
+        addAlert.textContent = "Please select a product type";
+        addAlert.classList.remove("d-none");
+        return;
+      }
+
+      const data = Object.fromEntries(new FormData(addCategoryForm).entries());
+      addAlert.className = "alert alert-info text-center";
+      addAlert.textContent = "Processing...";
+      addAlert.classList.remove("d-none");
 
       try {
         const res = await axios.post("/admin/categorys-management/add-category", data);
-
-        alertDiv.className = "alert alert-info text-center";
-        alertDiv.textContent = "Processing......";
-        alertDiv.classList.remove("d-none");
-
         if (res.data.success) {
-          alertDiv.className = "alert alert-success text-center";
-          alertDiv.textContent = "Category added successfully......";
-          alertDiv.classList.remove("d-none");
+          addAlert.className = "alert alert-success text-center";
+          addAlert.textContent = "Category added successfully!";
           setTimeout(() => window.location.reload(), 800);
         }
-      } catch (error) {
-        console.log(error);
-        const message = error.response?.data?.alert || "Something went wrong";
-        alertDiv.className = "alert alert-danger text-center";
-        alertDiv.textContent = message;
-        alertDiv.classList.remove("d-none");
+      } catch (err) {
+        addAlert.className = "alert alert-danger text-center";
+        addAlert.textContent = err.response?.data?.alert || "Something went wrong";
       }
     });
 
-    // Editing input box filling category
+    // -------------------- Edit Category --------------------
+    const editCategoryForm = document.getElementById("editCategoryForm");
+    const editAlert = document.getElementById("editAlert");
     const editCategoryModal = document.getElementById("editCategoryModal");
+
     editCategoryModal.addEventListener("show.bs.modal", e => {
+      editAlert.classList.add('d-none');
       const btn = e.relatedTarget;
       document.getElementById("editCategoryId").value = btn.dataset.id;
       document.getElementById("editCategoryName").value = btn.dataset.name;
       document.getElementById("editCategoryDescription").value = btn.dataset.description;
-      if (btn.dataset.type === "Car") {
-        document.getElementById("editTypeCar").checked = true;
-      } else if (btn.dataset.type === "Accessories") {
-        document.getElementById("editTypeAccessories").checked = true;
-      }
+
+      // Set radio buttons
+      const type = btn.dataset.type;
+      document.getElementById("editTypeCar").checked = (type === "Car");
+      document.getElementById("editTypeAccessories").checked = (type === "Accessories");
     });
 
-    // Edited form submitting
-    const editCategoryForm = document.getElementById("editCategoryForm");
     editCategoryForm.addEventListener("submit", async e => {
       e.preventDefault();
       const id = document.getElementById("editCategoryId").value;
-      const formData = new FormData(editCategoryForm);
-      const data = Object.fromEntries(formData.entries());
-
-      const localAlert = e.target.querySelector("#alert");
+      const data = Object.fromEntries(new FormData(editCategoryForm).entries());
+      editAlert.className = "alert alert-info text-center";
+      editAlert.textContent = "Updating...";
+      editAlert.classList.remove("d-none");
 
       try {
         const res = await axios.put(`/admin/categorys-management/edit-category/${id}`, data);
-
-        localAlert.className = "alert alert-info text-center";
-        localAlert.textContent = "Updating...";
-        localAlert.classList.remove("d-none");
         if (res.data.success) {
-          localAlert.className = "alert alert-success text-center";
-          localAlert.textContent = "Category updated successfully!";
-          setTimeout(() => window.location.reload(), 500);
+          editAlert.className = "alert alert-success text-center";
+          editAlert.textContent = "Category updated successfully!";
+          setTimeout(() => window.location.reload(), 600);
         } else {
-          localAlert.className = "alert alert-danger text-center";
-          localAlert.textContent = res.data.message || "Failed to update Category";
+          editAlert.className = "alert alert-danger text-center";
+          editAlert.textContent = res.data.message || "Failed to update Category";
         }
       } catch (err) {
-        console.error(err);
-        localAlert.className = "alert alert-danger text-center";
-        localAlert.textContent = "Update failed";
+        editAlert.className = "alert alert-danger text-center";
+        editAlert.textContent = "Update failed";
       }
     });
 
-    // Soft delete and toggle list/unlist confirmation
+    // -------------------- List/Unlist --------------------
     const confirmListModal = document.getElementById("confirmListModal");
+    const categoriesDeleteConfirm = document.getElementById("categoriesDeleteConfirm");
 
     confirmListModal.addEventListener("show.bs.modal", e => {
       const btn = e.relatedTarget;
+      if (!btn || !btn.dataset.id) return e.preventDefault();
       document.getElementById("categoriesId").value = btn.dataset.id;
     });
 
-    document.getElementById("categoriesDeleteConfirm").addEventListener("click", async e => {
+    categoriesDeleteConfirm.addEventListener("click", async () => {
       const id = document.getElementById("categoriesId").value;
-      const confirmModal = bootstrap.Modal.getInstance(confirmListModal);
-
+      const modalInstance = bootstrap.Modal.getInstance(confirmListModal);
       try {
         const res = await axios.patch(`/admin/categorys-management/soft-delete-category/${id}`);
-        confirmModal.hide();
-
+        modalInstance.hide();
         if (res.data.success) {
-          Swal.fire({
-            icon: 'success',
-            title: 'Category updated!',
-            text: 'The category has been successfully updated.',
-            timer: 1500,
-            showConfirmButton: false
-          }).then(() => window.location.reload());
+          Swal.fire({ icon: 'success', title: 'Category Updated!', timer: 1500, showConfirmButton: false })
+            .then(() => window.location.reload());
         } else {
-          Swal.fire({
-            icon: 'error',
-            title: 'Failed!',
-            text: res.data.message || 'Failed to update category',
-          });
+          Swal.fire({ icon: 'error', title: 'Failed!', text: res.data.message || 'Failed to update category' });
         }
       } catch (err) {
-        confirmModal.hide();
-        console.error(err);
-        Swal.fire({
-          icon: 'error',
-          title: 'Error!',
-          text: 'Something went wrong while updating the category',
-        });
+        modalInstance.hide();
+        Swal.fire({ icon: 'error', title: 'Error!', text: 'Something went wrong while updating the category' });
       }
     });
 
-  });
+    // -------------------- Live Search --------------------
+    const searchInput = document.getElementById("searchCategory");
+    searchInput.addEventListener("input", e => {
+      const query = e.target.value.toLowerCase();
+      document.querySelectorAll("#categoryTable tr").forEach(tr => {
+        const name = tr.querySelector("td:nth-child(2)")?.textContent.toLowerCase() || "";
+        const type = tr.querySelector("td:nth-child(3)")?.textContent.toLowerCase() || "";
+        tr.style.display = (name.includes(query) || type.includes(query)) ? "" : "none";
+      });
+    });
 
+  });
 </script>
