@@ -41,14 +41,14 @@ const editCategory = async (req, res, next) => {
     const categorieId = req.params.id;
 
     //finding duplicate
-    const duplicate = await Category.findOne({
-      name: { $regex: new RegExp(`^${name}$`, "i") },
-    });
+    // const duplicate = await Category.findOne({
+    //   name: { $regex: new RegExp(`^${name}$`, "i") },
+    // });
 
-    if (duplicate)
-      return res
-        .status(CONFLICT)
-        .json({ success: false, message: "Brand name already exists." });
+    // if (duplicate)
+    //   return res
+    //     .status(CONFLICT)
+    //     .json({ success: false, message: "Brand name already exists." });
 
     //searching
     const categoryData = await Category.findById(categorieId);

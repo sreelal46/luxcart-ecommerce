@@ -2,7 +2,7 @@ const express = require("express");
 const passport = require("passport");
 const router = express.Router();
 
-// Google login
+// Step Google login
 router.get(
   "/google",
   passport.authenticate("google", {
@@ -11,27 +11,38 @@ router.get(
   })
 );
 
-// Google callback
-router.get(
-  "/google/callback",
-  passport.authenticate("google", { failureRedirect: "/login" }),
-  (req, res) => {
-    console.log(" Google Auth Success:", req.user);
+// Step Google callback (custom callback used here)
+router.get("/google/callback", (req, res, next) => {
+  passport.authenticate("google", (err, user, info) => {
+    if (err) {
+      console.error("Google Auth Error:", err);
+      return res.render("user/login", { alert: "Something went wrong!" });
+    }
 
-    // storing session
+    if (!user) {
+      // info.message comes from done(null, false, { message: "..." })
+      return res.render("user/login", {
+        alert: info?.message || "Login failed. Please try again.",
+      });
+    }
+
+    // Success create session
     req.session.user = {
-      _id: req.user._id,
-      name: req.user.name,
-      email: req.user.email,
-      image_url: req.user.image_url,
-      authProvider: req.user.authProvider,
+      _id: user._id,
+      name: user.name,
+      email: user.email,
+      image_url: user.image_url,
+      authProvider: user.authProvider,
     };
 
-    return res.redirect("/homepage");
-  }
-);
+    req.session.save(() => {
+      console.log("Google user session created:", req.session.user);
+      res.redirect("/homepage");
+    });
+  })(req, res, next);
+});
 
-//logout
+// Step Logout
 router.get("/logout", (req, res, next) => {
   req.logout((err) => {
     if (err) return next(err);

@@ -27,7 +27,7 @@ const checkSession = async (req, res, next) => {
 const isLogin = async (req, res, next) => {
   try {
     if (req.session.user) {
-      const userId = req.session.user._id; // 🆕 unified id key
+      const userId = req.session.user._id; //
       const user = await User.findById(userId).lean();
 
       //if user not found

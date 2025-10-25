@@ -1,5 +1,6 @@
 const express = require("express");
 const route = express.Router();
+
 const {
   loadLandingPage,
   loadHomePage,
@@ -11,6 +12,7 @@ const {
   loadForgotPassPage,
   loadCarCollection,
 } = require("../controllers/user/pageLoadController");
+
 const {
   createUser,
   verifyUser,
@@ -20,19 +22,16 @@ const {
   forgotPassword,
   resendOTP,
 } = require("../controllers/user/usersController");
+
 const {
   isLogin,
   checkSession,
   isPasswordChange,
 } = require("../middlewares/user/userAuth");
 
-//load loginpage
+//User Auth
 route.get("/", loadLandingPage);
-
-//load home page
 route.get("/homepage", checkSession, loadHomePage);
-
-//logout route
 route.get("/logout", logoutPage);
 
 //User login page loading and user verification

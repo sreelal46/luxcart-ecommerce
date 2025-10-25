@@ -44,15 +44,15 @@ const editBrand = async (req, res, next) => {
     const brandId = req.params.id;
     const { name, country } = req.body;
 
-    //duplicte finding
-    const duplicate = await Brand.findOne({
-      name: { $regex: new RegExp(`^${name}$`, "i") },
-    });
+    // //duplicte finding
+    // const duplicate = await Brand.findOne({
+    //   name: { $regex: new RegExp(`^${name}$`, "i") },
+    // });
 
-    if (duplicate)
-      return res
-        .status(CONFLICT)
-        .json({ success: false, message: "Brand name already exists." });
+    // if (duplicate)
+    //   return res
+    //     .status(CONFLICT)
+    //     .json({ success: false, message: "Brand name already exists." });
 
     //updating data
     const updateData = { name, country };

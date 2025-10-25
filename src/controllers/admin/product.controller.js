@@ -54,15 +54,15 @@ const editCarProduct = async (req, res) => {
       return res.status(404).json({ success: false, message: "Car not found" });
 
     //finding duplicate
-    const name = existingCar.name;
-    const duplicate = await Car.findOne({
-      name: { $regex: new RegExp(`^${name}$`, "i") },
-    });
+    // const name = existingCar.name;
+    // const duplicate = await Car.findOne({
+    //   name: { $regex: new RegExp(`^${name}$`, "i") },
+    // });
 
-    if (duplicate)
-      return res
-        .status(CONFLICT)
-        .json({ success: false, message: "Brand name already exists." });
+    // if (duplicate)
+    //   return res
+    //     .status(CONFLICT)
+    //     .json({ success: false, message: "Brand name already exists." });
 
     // Update basic car info
     existingCar.brand_id = req.body.brand;
@@ -262,14 +262,14 @@ const editAccessories = async (req, res, next) => {
     //collecting data
     const { accessoryId, name } = req.body;
 
-    const duplicate = await Accessory.findOne({
-      name: { $regex: new RegExp(`^${name}$`, "i") },
-    });
+    // const duplicate = await Accessory.findOne({
+    //   name: { $regex: new RegExp(`^${name}$`, "i") },
+    // });
 
-    if (duplicate)
-      return res
-        .status(CONFLICT)
-        .json({ success: false, message: "Accessory name already exists." });
+    // if (duplicate)
+    //   return res
+    //     .status(CONFLICT)
+    //     .json({ success: false, message: "Accessory name already exists." });
 
     //saving removed image path to array
     const removed_images = req.body.removed_images

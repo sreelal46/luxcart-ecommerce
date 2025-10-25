@@ -4,41 +4,50 @@
     <!-- Header -->
     <div class="text-center mb-4">
       <a class="h4 fw-bold text-dark text-decoration-none">{{alert}}</a>
-      <a href="index.html" class="h2 fw-bold text-dark text-decoration-none">LuxCart</a>
       <h1 class="h4 fw-bold mt-3 mb-1">Create Account</h1>
       <p class="text-muted mb-0">Join our exclusive community</p>
     </div>
 
     <!-- Form -->
-    <form class="mt-4" action="/signup" method="post">
+    <form class="mt-4" id="signupForm" action="/signup" method="post">
       <div class="row g-3">
         <div class="col-md-12">
           <label for="firstName" class="form-label fw-medium small">First Name</label>
-          <input type="text" class="form-control" id="firstName" name="name" placeholder="John">
+          <input type="text" class="form-control" id="name" name="name" placeholder="John">
+          <span class="text-danger" id="nameError" style="display: none;"></span>
+
         </div>
       </div>
 
       <div class="mb-3 mt-3">
         <label for="email" class="form-label fw-medium small">Email Address</label>
         <input type="email" class="form-control" id="email" name="email" placeholder="your.email@example.com">
+        <span class="text-danger" id="email" style="display: none;"></span>
+
       </div>
 
       <div class="mb-3">
         <label for="password" class="form-label fw-medium small">Password</label>
         <input type="password" class="form-control" id="password" name="password"
           placeholder="Create a strong password">
+        <span class="text-danger" id="passwordError" style="display: none;"></span>
+
       </div>
 
       <div class="mb-3">
         <label for="confirmPassword" class="form-label fw-medium small">Confirm Password</label>
         <input type="password" class="form-control" id="confirmPassword" name="confirmPassword"
           placeholder="Confirm your password">
+        <span class="text-danger" id="nameError" style="display: none;"></span>
+
       </div>
 
       <div class="mb-3">
         <label for="confirmPassword" class="form-label fw-medium small">Referral code (Optional)</label>
         <input type="password" class="form-control" id="confirmPassword" name="referralCode"
           placeholder=" Enter your referral code">
+        <span class="text-danger" id="confirmPasswordError" style="display: none;"></span>
+
       </div>
 
       <div class="form-check mb-3">
@@ -77,3 +86,6 @@
 
   </div>
 </div>
+
+
+<script src="/js/user/auth/signup.js"></script>

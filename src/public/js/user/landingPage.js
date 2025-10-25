@@ -42,7 +42,7 @@ document.addEventListener("DOMContentLoaded", () => {
   // Enable ScrollTrigger
   gsap.registerPlugin(ScrollTrigger);
 
-  // 🏎️ HERO SECTION
+  // HERO SECTION
   gsap.from(".hero-content", {
     opacity: 0,
     y: 80,
@@ -50,7 +50,7 @@ document.addEventListener("DOMContentLoaded", () => {
     ease: "power4.out",
   });
 
-  // 🚗 PREMIUM BRANDS
+  // PREMIUM BRANDS
   gsap.fromTo(
     ".premium-brands",
     { opacity: 0, y: 80 },
@@ -79,7 +79,7 @@ document.addEventListener("DOMContentLoaded", () => {
     ease: "back.out(1.7)",
   });
 
-  // 🏁 FEATURED CATEGORIES
+  // FEATURED CATEGORIES
   gsap.from(".featured-categories h2, .featured-categories p", {
     scrollTrigger: {
       trigger: ".featured-categories",
@@ -102,7 +102,7 @@ document.addEventListener("DOMContentLoaded", () => {
     ease: "power3.out",
   });
 
-  // 💎 PREMIUM ACCESSORIES
+  // PREMIUM ACCESSORIES
   gsap.from(".premium-accessories h2", {
     scrollTrigger: {
       trigger: ".premium-accessories",
@@ -124,7 +124,7 @@ document.addEventListener("DOMContentLoaded", () => {
     ease: "power2.out",
   });
 
-  // 🌌 EXPERIENCE LUXCART
+  // EXPERIENCE LUXCART
   gsap.from(".experience-luxcart", {
     scrollTrigger: {
       trigger: ".experience-luxcart",

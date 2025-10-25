@@ -79,13 +79,10 @@ route.use((req, res, next) => {
   res.locals.layout = "adminLayout";
   next();
 });
-// loading login page
+
+// Admin Auth
 route.get("/login", isLogin, adminLoadLoginPage);
-
-// login POST
 route.post("/login", verifyadmin);
-
-//logout
 route.get("/logout", (req, res) => {
   req.session.destroy(() => res.redirect("/admin/login"));
 });
@@ -105,102 +102,112 @@ route.get("/resend-otp", resendOTP);
 route.get("/dashboard", checkSession, loadDashboard);
 
 /// Brand Management
-route.get("/brands-management", loadBrands);
-
-// Add Brand
-route.post("/brands-management/add-brand", upload.single("image"), addBrand);
-
-//Edit Brands
+route.get("/brands-management", checkSession, loadBrands);
+route.post(
+  "/brands-management/add-brand",
+  upload.single("image"),
+  checkSession,
+  addBrand
+);
 route.put(
   "/brands-management/edit-brand/:id",
   upload.single("image"),
+  checkSession,
   editBrand
 );
-//soft delete
-route.patch("/brands-management/soft-delete-brand/:id", softDeleteBrand);
+route.patch(
+  "/brands-management/soft-delete-brand/:id",
+  checkSession,
+  softDeleteBrand
+);
 
 //Category Management
-route.get("/categorys-management", loadCategory);
-
-//add category
-route.post("/categorys-management/add-category", addCategory);
-
-//edit category
-route.put("/categorys-management/edit-category/:id", editCategory);
-
-//soft delete cetegory
+route.get("/categorys-management", checkSession, loadCategory);
+route.post("/categorys-management/add-category", checkSession, addCategory);
+route.put(
+  "/categorys-management/edit-category/:id",
+  checkSession,
+  editCategory
+);
 route.patch(
   "/categorys-management/soft-delete-category/:id",
+  checkSession,
   softDeleteCategory
 );
 
 //Type Management
-route.get("/types-management", loadType);
-
-//Type adding
-route.post("/types-management/add-type", addType);
-
-//type editing
-route.put("/types-management/edit-type/:id", editType);
-
-//Type soft delete
-route.patch("/types-management/soft-delete-type/:id", softDeleteType);
+route.get("/types-management", checkSession, loadType);
+route.post("/types-management/add-type", checkSession, addType);
+route.put("/types-management/edit-type/:id", checkSession, editType);
+route.patch(
+  "/types-management/soft-delete-type/:id",
+  checkSession,
+  softDeleteType
+);
 
 //======================================PRODUCT MANAGEMENT===============================
 
 //Product Management
-route.get("/products-management", loadProduct);
-
-//add Car product page
-route.get("/products-management/add-car-product", loadCarProduct);
-
-//add Car product
-route.post("/products-management/add-car-product", upload.any(), addCarProduct);
-
-//Single car product
-route.get("/products-management/view-car-product/:id", loadViewCar);
-
-//edit car page
-route.get("/products-management/edit-car-product/:id", loadEditCar);
-
-//edit car product
+route.get("/products-management", checkSession, loadProduct);
+route.get("/products-management/add-car-product", checkSession, loadCarProduct);
+route.post(
+  "/products-management/add-car-product",
+  upload.any(),
+  checkSession,
+  addCarProduct
+);
+route.get(
+  "/products-management/view-car-product/:id",
+  checkSession,
+  loadViewCar
+);
+route.get(
+  "/products-management/edit-car-product/:id",
+  checkSession,
+  loadEditCar
+);
 route.put(
   "/products-management/edit-car-product/:id",
   upload.any(),
+  checkSession,
   editCarProduct
 );
 
 //soft delete car and accessories
-route.patch("/products-management/soft-delete-product/:id", softDelete);
+route.patch(
+  "/products-management/soft-delete-product/:id",
+  checkSession,
+  softDelete
+);
 
 //======================================ACCESSORY===============================
 
 //load add accessories page
-route.get("/products-management/add-accessories-product", loadAddAccessories);
-
-//add Accessories
+route.get(
+  "/products-management/add-accessories-product",
+  checkSession,
+  loadAddAccessories
+);
 route.post(
   "/products-management/add-accessories-product",
   upload.any(),
+  checkSession,
   addAccessoriesProduct
 );
-
-//load view page
 route.get(
   "/products-management/view-accessories-product/:id",
+  checkSession,
   loadViewAccessories
 );
-
-//load edit Accessories page
 route.get(
   "/products-management/edit-accessories-product/:id",
+  checkSession,
   loadEditAccessories
 );
-
-//edit Accessories
 route.put(
   "/products-management/edit-accessories-product/:id",
   upload.any(),
+  checkSession,
   editAccessories
 );
 

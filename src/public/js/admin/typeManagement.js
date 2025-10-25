@@ -100,7 +100,7 @@ document.addEventListener("DOMContentLoaded", () => {
     const id = button.getAttribute("data-id");
 
     document.getElementById("deleteTypeName").textContent = name;
-    currentDeleteId = id; // ✅ store for later use
+    currentDeleteId = id;
   });
 
   // Soft delete action

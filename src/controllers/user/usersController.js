@@ -64,40 +64,37 @@ const createUser = async (req, res, next) => {
 //user verification
 const verifyUser = async (req, res, next) => {
   try {
-    //finding user
     const { email, password } = req.body;
-    console.log("Long email and password:", req.body);
     const user = await User.findOne({ email });
-    console.log("from user verification", user);
 
-    //if user not found
     if (!user)
-      return res
-        .status(NOT_FOUND)
-        .render("user/login", { alert: "Email not found" });
+      return res.status(404).json({ success: false, alert: "Email not found" });
 
     if (user.authProvider === "google")
-      return res.status(FORBIDDEN).render("user/login", {
-        alert: `This email is registered with Google. Please use 'Sign in with Google'.`,
+      return res.status(403).json({
+        success: false,
+        alert:
+          "This email is registered with Google. Please use 'Sign in with Google'.",
       });
 
-    //compaire password
     const compare = await bcrypt.compare(password, user.password);
-
     if (!compare)
       return res
-        .status(UNAUTHORIZED)
-        .render("user/login", { alert: "Invalid email or password" });
+        .status(401)
+        .json({ success: false, alert: "Invalid email or password" });
 
-    //storing user data to session
     req.session.user = {
       _id: user._id,
       name: user.name,
       email: user.email,
       authProvider: user.authProvider,
     };
-    console.log("Verify user controller :", req.session.user);
-    req.session.save(() => res.status(OK).redirect("/homepage"));
+
+    req.session.save((err) => {
+      if (err) return next(err);
+
+      res.status(200).json({ success: true, redirect: "/homepage" });
+    });
   } catch (error) {
     next(error);
   }

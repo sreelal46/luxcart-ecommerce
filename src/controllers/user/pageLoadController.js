@@ -24,25 +24,24 @@ const loadHomePage = (req, res) => {
 };
 
 const loadLoginPage = (req, res) => {
-  const alert = req.session.forgotSuccess;
-  console.log("console from load login page:", alert);
-  res.status(OK).render("user/login", { alert });
+  console.log("2555555555552222222222222222222", req.session.user);
+  res.status(OK).render("user/auth/login");
 };
 
 const loadEmailPage = (req, res) => {
-  res.status(OK).render("user/verify-email");
+  res.status(OK).render("user/auth/verify-email");
 };
 
 const loadForgotPassPage = (req, res) => {
-  res.status(OK).render("user/change-password");
+  res.status(OK).render("user/auth/change-password");
 };
 
 const loadSignUpPage = (req, res) => {
-  res.status(OK).render("user/signUp");
+  res.status(OK).render("user/auth/signUp");
 };
 
 const loadSend_OTP_Page = (req, res) => {
-  res.status(OK).render("user/verify-email");
+  res.status(OK).render("user/auth/verify-email");
 };
 
 const loadVerify_OTP_Page = (req, res) => {
@@ -50,7 +49,7 @@ const loadVerify_OTP_Page = (req, res) => {
   // const { userId, email, verifyType } = req.session;
 
   console.log("Debug from loadVerify_otp_page:", req.session.email);
-  res.status(OK).render("user/verify-otp");
+  res.status(OK).render("user/auth/verify-otp");
 };
 
 const loadCarCollection = async (req, res, next) => {
@@ -68,9 +67,12 @@ const loadCarCollection = async (req, res, next) => {
       product: "Car",
     }).lean();
     const types = await Type.find({ isListed: true });
-    res
-      .status(200)
-      .render("user/carCollection", { cars, brands, categories, types });
+    res.status(200).render("user/products/car/carCollection", {
+      cars,
+      brands,
+      categories,
+      types,
+    });
   } catch (error) {
     console.error("Error loading car collection:", error);
     res.status(500).send("Something went wrong");

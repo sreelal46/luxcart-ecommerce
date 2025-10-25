@@ -9,6 +9,7 @@ const { engine } = require("express-handlebars");
 require("dotenv").config();
 
 const connectDB = require("./config/db");
+require("./config/passport")(passport);
 const googleAuthRoutes = require("./routers/googleAuth.routes");
 const userRoutes = require("./routers/user.routes");
 const adminRoutes = require("./routers/admin.routes");

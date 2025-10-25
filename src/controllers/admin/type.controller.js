@@ -37,14 +37,14 @@ const editType = async (req, res, next) => {
     const { name, description } = req.body;
 
     //finding duplicate
-    const duplicate = await Type.findOne({
-      name: { $regex: new RegExp(`^${name}$`, "i") },
-    });
+    // const duplicate = await Type.findOne({
+    //   name: { $regex: new RegExp(`^${name}$`, "i") },
+    // });
 
-    if (duplicate)
-      return res
-        .status(CONFLICT)
-        .json({ success: false, message: "Brand name already exists." });
+    // if (duplicate)
+    //   return res
+    //     .status(CONFLICT)
+    //     .json({ success: false, message: "Brand name already exists." });
 
     //finding and updating
     const updateData = { name, description };

@@ -1,5 +1,5 @@
 document.addEventListener("DOMContentLoaded", () => {
-  const form = document.getElementById("userLoginForm");
+  const userLoginForm = document.getElementById("userLoginFrom");
   const emailInput = document.getElementById("email");
   const passwordInput = document.getElementById("password");
   const emailError = document.getElementById("emailError");
@@ -9,49 +9,63 @@ document.addEventListener("DOMContentLoaded", () => {
   // Helper function to validate email
   const validateEmail = (email) => /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email);
 
-  // Live validation while typing
-  emailInput.addEventListener("input", () => {
-    if (!emailInput.value.trim()) {
-      emailError.textContent = "Email is required.";
+  // Reset errors
+  emailError.style.display = "none";
+  passwordError.style.display = "none";
+
+  function emailValidation() {
+    const email = emailInput.value.trim();
+    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+    if (!email) {
+      emailError.textContent = "Email is required";
       emailError.style.display = "block";
-    } else if (!validateEmail(emailInput.value.trim())) {
+    } else if (!emailRegex.test(email)) {
       emailError.textContent = "Invalid email format.";
       emailError.style.display = "block";
     } else {
+      emailError.textContent = "";
       emailError.style.display = "none";
+      return true;
     }
-  });
+  }
 
-  passwordInput.addEventListener("input", () => {
-    const pwd = passwordInput.value.trim();
-    if (!pwd) {
-      passwordError.textContent = "Password is required.";
+  function passwordVerification() {
+    const password = passwordInput.value.trim();
+    if (!password) {
+      passwordError.textContent = "Password is required";
       passwordError.style.display = "block";
-    } else if (pwd.length < 6) {
-      passwordError.textContent = "Password must be at least 6 characters.";
+    } else if (password.length < 6) {
+      passwordError.textContent = "Password must be at least 6 characters";
       passwordError.style.display = "block";
     } else {
+      passwordError.textContent = "";
       passwordError.style.display = "none";
+      return true;
     }
-  });
+  }
+  emailInput.addEventListener("input", emailValidation);
+  passwordInput.addEventListener("input", passwordVerification);
 
-  form.addEventListener("submit", async (e) => {
+  userLoginForm.addEventListener("submit", async (e) => {
     e.preventDefault();
 
-    // Reset server message
+    // Reset errors
+
     serverMessage.style.display = "none";
+    serverMessage.textContent = "";
 
     const email = emailInput.value.trim();
     const password = passwordInput.value.trim();
+    function validateRemove() {
+      if (!email || !validateEmail(email)) {
+        emailError.style.display = "block";
+        return;
+      }
 
-    // Final frontend validation
-    if (!email || !validateEmail(email)) {
-      emailError.style.display = "block";
-      return;
-    }
-    if (!password || password.length < 6) {
-      passwordError.style.display = "block";
-      return;
+      if (!password || password.length < 6) {
+        passwordError.style.display = "block";
+        return;
+      }
     }
 
     try {
@@ -64,7 +78,8 @@ document.addEventListener("DOMContentLoaded", () => {
       if (res.data.success) {
         window.location.href = res.data.redirect;
       } else {
-        serverMessage.textContent = res.data.alert || "Login failed!";
+        serverMessage.textContent =
+          res.data.alert || "Invalid email or password.";
         serverMessage.style.display = "block";
       }
     } catch (err) {
@@ -74,4 +89,3 @@ document.addEventListener("DOMContentLoaded", () => {
     }
   });
 });
-userLoginForm;
