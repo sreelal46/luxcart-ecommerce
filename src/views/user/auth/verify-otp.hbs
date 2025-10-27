@@ -1,12 +1,11 @@
 <div class="bg-light min-vh-100 d-flex align-items-center justify-content-center py-5">
   <div class="bg-white rounded-3 shadow p-5" style="max-width: 500px; width: 100%;">
     <div class="text-center mb-4">
-      <a class="h2 fw-medium text-dark text-decoration-none">{{alert}}</a>
-      <a href="/" class="h2 fw-bold text-dark text-decoration-none">LuxCart</a>
       <h1 class="h5 fw-bold mt-3 mb-2">Enter Verification Code</h1>
       <p class="text-muted small mb-0">We’ve sent a 6-digit code to your email</p>
     </div>
 
+    <span class="text-danger fw-bold text-center" id="serverMessage" style="display: none;"></span>
 
     <form action="/verify-otp" method="post" id="OTPVerificationForm" class="mt-4">
       <div class="mb-4 text-center">
@@ -40,19 +39,8 @@
   </div>
 </div>
 
-<script>
-  document.addEventListener("DOMContentLoaded", () => {
-    // Auto focus next input after typing
-    const inputs = document.querySelectorAll('input[type="text"]');
-    inputs.forEach((input, index) => {
-      input.addEventListener('input', () => {
-        if (input.value && index < inputs.length - 1) {
-          inputs[index + 1].focus();
-        }
-      });
-    });
-  })
-</script>
 
 //OTP Timer
 <script src="/common/OTPTimer.js"></script>
+
+<script src="/js/user/auth/otpverification.js"></script>

@@ -24,7 +24,6 @@ const loadHomePage = (req, res) => {
 };
 
 const loadLoginPage = (req, res) => {
-  console.log("2555555555552222222222222222222", req.session.user);
   res.status(OK).render("user/auth/login");
 };
 
@@ -79,6 +78,25 @@ const loadCarCollection = async (req, res, next) => {
   }
 };
 
+const loadSingleCarProduct = async (req, res, next) => {
+  try {
+    console.log(req.params.id);
+    const carId = req.params.id;
+    const singleCar = await Car.findById(carId)
+      .populate("brand_id", "name")
+      .populate("category_id", "name")
+      .populate("product_type_id", "name")
+      .populate("variantIds", "image_url stock color price")
+      .lean();
+    console.log(singleCar);
+
+    res.status(OK).render("user/products/car/viewCarProduct", { singleCar });
+  } catch (error) {
+    console.log("Error from Loading single Car Product", error);
+    next(error);
+  }
+};
+
 module.exports = {
   loadLandingPage,
   loadHomePage,
@@ -89,4 +107,5 @@ module.exports = {
   loadVerify_OTP_Page,
   loadForgotPassPage,
   loadCarCollection,
+  loadSingleCarProduct,
 };

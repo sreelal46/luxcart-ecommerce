@@ -11,6 +11,7 @@ const {
   loadEmailPage,
   loadForgotPassPage,
   loadCarCollection,
+  loadSingleCarProduct,
 } = require("../controllers/user/pageLoadController");
 
 const {
@@ -43,7 +44,9 @@ route.get("/signup", isLogin, loadSignUpPage);
 route.post("/signup", createUser);
 
 //loading OTP page for user verifiation
-route.get("/send-otp", isLogin, loadSend_OTP_Page);
+route.get("/send-otp", isLogin, isPasswordChange, loadSend_OTP_Page);
+//sending otp for forgot password
+route.post("/send-otp", sendOTP);
 
 //forgot password email page loading and load OTP verifying page
 route.get("/forgot-password-email-verification", isLogin, loadEmailPage);
@@ -53,9 +56,6 @@ route.get("/forgot-password-otp", loadVerify_OTP_Page);
 route.get("/forgot-password", isPasswordChange, loadForgotPassPage);
 route.post("/forgot-password", forgotPassword);
 
-//sending otp for forgot password
-route.post("/send-otp", sendOTP);
-
 //loading OTP entering page and verifying OTP
 route.get("/verify-otp", isPasswordChange, loadVerify_OTP_Page);
 route.post("/verify-otp", verifyOTP);
@@ -64,5 +64,6 @@ route.post("/verify-otp", verifyOTP);
 route.get("/resend-otp", resendOTP);
 
 route.get("/cars-collection", loadCarCollection);
+route.get("/cars-collection/view-car-product/:id", loadSingleCarProduct);
 
 module.exports = route;

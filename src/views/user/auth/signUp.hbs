@@ -3,13 +3,13 @@
 
     <!-- Header -->
     <div class="text-center mb-4">
-      <a class="h4 fw-bold text-dark text-decoration-none">{{alert}}</a>
       <h1 class="h4 fw-bold mt-3 mb-1">Create Account</h1>
       <p class="text-muted mb-0">Join our exclusive community</p>
     </div>
+    <span class="text-danger fw-bold text-center" id="serverMessage" style="display: none;"></span>
 
     <!-- Form -->
-    <form class="mt-4" id="signupForm" action="/signup" method="post">
+    <form class="mt-4" id="signupForm" method="post">
       <div class="row g-3">
         <div class="col-md-12">
           <label for="firstName" class="form-label fw-medium small">First Name</label>
@@ -44,10 +44,9 @@
 
       <div class="mb-3">
         <label for="confirmPassword" class="form-label fw-medium small">Referral code (Optional)</label>
-        <input type="password" class="form-control" id="referral-code" name="referralCode"
+        <input type="password" class="form-control" id="referralCode" name="referralCode"
           placeholder=" Enter your referral code">
         <span class="text-danger" id="" style="display: none;"></span>
-
       </div>
 
       <div class="form-check mb-3">

@@ -90,7 +90,7 @@ route.get("/logout", (req, res) => {
 //forgot-password setup
 route.get("/verify-email-page", loadEmailVerify);
 route.post("/verify-email", emailVerification);
-route.get("/otp-verify-page", isPasswordChange, loadOTPVerify);
+route.get("/otp-verify-page", loadOTPVerify);
 route.post("/otp-verify", OTPVerification);
 route.get("/change-password-page", isPasswordChange, loadChangePassword);
 route.post("/change-password", PasswordChanging);
@@ -211,7 +211,7 @@ route.put(
   editAccessories
 );
 
-////
+//
 route.get("/products-management/view-categories-product", (req, res) => {
   res.render("admin/products/accessories/view-accessories-product");
 });

@@ -25,13 +25,13 @@ const createUser = async (req, res, next) => {
     if (existingUser)
       return res
         .status(CONFLICT)
-        .render("user/signUp", { alert: "Email id alrady taken" });
+        .json({ success: false, alert: "Email id alrady taken" });
 
     //comparing password
     if (password !== confirmPassword)
       return res
         .status(CONFLICT)
-        .render("user/signUp", { alert: "Password miss match" });
+        .json({ success: false, alert: "Password Mismatch" });
 
     //hashing password
     const salt = await bcrypt.genSalt(parseInt(process.env.BCRYPT_SALT_ROUNDS));
@@ -55,8 +55,9 @@ const createUser = async (req, res, next) => {
     req.session.verifyType = "verification";
 
     //sending response status code 201
-    res.status(CREATED).redirect("/verify-otp");
+    res.status(CREATED).json({ success: true, redirect: "/verify-otp" });
   } catch (error) {
+    console.error("Error from creating user");
     next(error);
   }
 };
@@ -126,7 +127,7 @@ const sendOTP = async (req, res, next) => {
     if (!user)
       return res
         .status(NOT_FOUND)
-        .render("user/verify-email", { alert: "Invalid email" });
+        .json({ success: false, alert: "Email not Found" });
 
     //send OTP to user
     await emailSending(email, user.id, "ForgotPassword");
@@ -135,14 +136,18 @@ const sendOTP = async (req, res, next) => {
     req.session.userId = user.id;
     req.session.email = email;
     req.session.verifyType = "ForgotPassword";
+    req.session.userPasswordChanged = false;
 
-    res.status(CREATED).redirect("/verify-otp");
+    req.session.save(() =>
+      res.status(CREATED).json({ success: true, redirect: "/verify-otp" })
+    );
   } catch (error) {
+    console.error("Error from forgot password email otp", error);
     next(error);
   }
 };
 
-//verifing otp for creating user and forgott password OTP
+//verifing otp for creating user and forgott password
 const verifyOTP = async (req, res, next) => {
   try {
     //object to string OTP
@@ -153,13 +158,14 @@ const verifyOTP = async (req, res, next) => {
     const verifyType = req.session.verifyType;
     console.log("user id:", userId);
     console.log("type of verification :", req.session.verifyType);
+    const user = await User.findById(userId);
     const findUserOTP = await OTP.findOne({ userId }).sort({ createdAt: -1 });
 
     //OTP is expired or not
     if (!findUserOTP)
       return res
         .status(GONE)
-        .render("user/verify-otp", { alert: "Your OTP has expired" });
+        .json({ success: false, alert: "Your OTP has expired" });
 
     //compairing hashed otp
     const verifyOTP = await bcrypt.compare(otp, findUserOTP.otp);
@@ -169,7 +175,7 @@ const verifyOTP = async (req, res, next) => {
     if (!verifyOTP)
       return res
         .status(UNAUTHORIZED)
-        .render("user/verify-otp", { alert: "Invalid OTP.Please try again." });
+        .json({ success: false, alert: "Invalid OTP.Please try again." });
 
     // verifying user
     if (verifyType === "verification") {
@@ -179,13 +185,25 @@ const verifyOTP = async (req, res, next) => {
     //success message redirect to correct route
     if (verifyType === "verification") {
       req.session.signSuccess = "Account created successfully!";
-      return res.status(CREATED).redirect("/login");
+      req.session.user = {
+        _id: user._id,
+        name: user.name,
+        email: user.email,
+        authProvider: user.authProvider,
+      };
+      return req.session.save(() =>
+        res.status(CREATED).json({ success: true, redirect: "/homepage" })
+      );
     }
 
     if (verifyType === "ForgotPassword") {
-      return res.status(OK).redirect("/forgot-password");
+      req.session.userPasswordChanged = false;
+      return res
+        .status(OK)
+        .json({ success: true, redirect: "/forgot-password" });
     }
   } catch (error) {
+    console.error("Error from OTP verification", error);
     next(error);
   }
 };
@@ -200,17 +218,19 @@ const forgotPassword = async (req, res, next) => {
 
     //if user not found
     if (!user)
-      return res
-        .status(UNAUTHORIZED)
-        .render("user/forgot-password", { alert: "User not found" });
+      return res.status(UNAUTHORIZED).json({
+        success: false,
+        alert: "User not found..Please try again later",
+      });
 
     const { newPassword, confirmPassword } = req.body;
 
     //cpmparing password
     if (newPassword !== confirmPassword)
-      return res
-        .status(BAD_REQUEST)
-        .render("user/forgot-password", { alert: "Password miss match" });
+      return res.status(BAD_REQUEST).json({
+        success: false,
+        alert: "Password Mismatch",
+      });
 
     //hashing new password
     const salt = await bcrypt.genSalt(parseInt(process.env.BCRYPT_SALT_ROUNDS));
@@ -224,9 +244,13 @@ const forgotPassword = async (req, res, next) => {
 
     //saving success message
     req.session.userPasswordChanged = true;
-    req.session.forgotSuccess = "Password changed successfully";
 
-    req.session.save(() => res.status(OK).redirect("/login"));
+    req.session.save(() =>
+      res.status(OK).json({
+        success: true,
+        redirect: "/login",
+      })
+    );
   } catch (error) {
     next(error);
   }

@@ -19,11 +19,18 @@ router.get("/google/callback", (req, res, next) => {
       return res.render("user/login", { alert: "Something went wrong!" });
     }
 
+    // if (!user) {
+    //   // info.message comes from done(null, false, { message: "..." })
+    //   return res.json({
+    //     success: false,
+    //     alert: info?.message || "Login failed. Please try again.",
+    //   });
+    // }
     if (!user) {
-      // info.message comes from done(null, false, { message: "..." })
-      return res.render("user/login", {
-        alert: info?.message || "Login failed. Please try again.",
-      });
+      const message = encodeURIComponent(
+        info?.message || "Login failed. Please try again."
+      );
+      return res.redirect(`/login?alert=${message}`);
     }
 
     // Success create session

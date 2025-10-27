@@ -43,6 +43,19 @@ document.addEventListener("DOMContentLoaded", () => {
       return true;
     }
   }
+
+  // Check if URL has alert message (from Google redirect)
+  const params = new URLSearchParams(window.location.search);
+  const alertMessage = params.get("alert");
+
+  if (alertMessage) {
+    serverMessage.textContent = decodeURIComponent(alertMessage);
+    serverMessage.style.display = "block";
+
+    // Optionally clear it from URL
+    window.history.replaceState({}, document.title, window.location.pathname);
+  }
+
   emailInput.addEventListener("input", emailValidation);
   passwordInput.addEventListener("input", passwordVerification);
 
@@ -56,7 +69,7 @@ document.addEventListener("DOMContentLoaded", () => {
 
     const email = emailInput.value.trim();
     const password = passwordInput.value.trim();
-    function validateRemove() {
+    function validationRemove() {
       if (!email || !validateEmail(email)) {
         emailError.style.display = "block";
         return;
