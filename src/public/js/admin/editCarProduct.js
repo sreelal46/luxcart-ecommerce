@@ -62,7 +62,10 @@ document.addEventListener("DOMContentLoaded", () => {
 
   // Save cropped image
   document.getElementById("cropSave").addEventListener("click", () => {
-    const canvas = cropper.getCroppedCanvas({ width: 320, height: 180 });
+    const canvas = cropper.getCroppedCanvas({
+      maxWidth: 4096,
+      maxHeight: 4096,
+    });
     canvas.toBlob((blob) => {
       const fileName = `cropped-variant-${currentVariantIndex}-${Date.now()}.jpg`;
       const croppedFile = new File([blob], fileName, { type: "image/jpeg" });

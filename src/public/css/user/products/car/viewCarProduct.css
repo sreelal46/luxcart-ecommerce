@@ -1,0 +1,257 @@
+/* Existing styles with adjustments for zoom container */
+body {
+  font-family: "Inter", "Poppins", sans-serif;
+  background-color: #fafafa;
+  color: #333;
+  font-size: 16px;
+  line-height: 1.5;
+  margin: 0;
+  padding: 0 15px;
+}
+
+.car-page {
+  max-width: 1300px;
+  margin: 50px auto;
+  padding: 0 15px;
+}
+
+.car-header h2 {
+  font-size: 2.4rem;
+  font-weight: 700;
+  margin: 25px 0 6px;
+  letter-spacing: 0.02rem;
+}
+
+.car-header small {
+  color: #777;
+  font-size: 0.95rem;
+}
+
+.zoom-container {
+  overflow: hidden;
+  border-radius: 14px;
+  cursor: zoom-in;
+}
+
+.zoom-container.zoomed {
+  cursor: zoom-out;
+}
+
+.car-main-img {
+  width: 100%;
+  height: 460px;
+  object-fit: cover;
+  transition: transform 0.3s ease;
+  will-change: transform;
+  user-select: none;
+}
+
+.variant-section {
+  margin-top: 25px;
+}
+
+.variant-btn {
+  border-radius: 8px;
+  padding: 8px 14px;
+  font-weight: 600;
+  transition: all 0.3s ease;
+  font-size: 0.95rem;
+}
+
+.variant-btn.active {
+  background: #000;
+  color: #fff;
+}
+
+.price-box {
+  background: #fff;
+  border: 1px solid #ddd;
+  border-radius: 14px;
+  padding: 25px 22px;
+  box-shadow: 0 6px 18px rgba(0, 0, 0, 0.07);
+  position: relative;
+  top: 120px;
+}
+
+.price {
+  font-size: 2rem;
+  font-weight: 800;
+  color: #000;
+  margin-bottom: 18px;
+}
+
+.info-text {
+  font-size: 1rem;
+  color: #555;
+  margin-bottom: 6px;
+}
+
+.btn-buy,
+.btn-cart {
+  width: 100%;
+  border-radius: 10px;
+  font-weight: 700;
+  padding: 14px 0;
+  margin-bottom: 14px;
+  font-size: 1rem;
+  transition: 0.3s;
+  box-shadow: 0 3px 8px rgba(0, 0, 0, 0.12);
+}
+
+.btn-buy {
+  background: #fff;
+  border: 2px solid #000;
+  color: #000;
+}
+
+.btn-buy:hover {
+  background: #000;
+  color: #fff;
+}
+
+.btn-cart {
+  background: #000;
+  color: #fff;
+  border: none;
+}
+
+.btn-cart:hover {
+  background: #222;
+}
+
+.description-section {
+  margin-top: 60px;
+}
+
+.description-text {
+  max-height: 160px;
+  overflow: hidden;
+  position: relative;
+  transition: max-height 0.4s ease;
+}
+
+.description-text p {
+  font-size: 1.05rem;
+  color: #555;
+  margin-bottom: 10px;
+  line-height: 1.6;
+}
+
+.description-text::after {
+  content: "";
+  position: absolute;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  height: 60px;
+  background: linear-gradient(to bottom, rgba(250, 250, 250, 0), #fafafa 90%);
+}
+
+.description-text.expanded::after {
+  opacity: 0;
+}
+
+#toggleDescBtn {
+  border-radius: 8px;
+  font-weight: 600;
+  font-size: 0.95rem;
+  padding: 8px 16px;
+  border: 2px solid #000;
+  color: #000;
+  background: #fff;
+  transition: all 0.3s ease;
+}
+
+#toggleDescBtn:hover {
+  background: #000;
+  color: #fff;
+}
+
+.accordion-section {
+  border-top: 1px solid #ddd;
+  padding-top: 25px;
+  margin-top: 50px;
+}
+
+.accordion {
+  margin-bottom: 16px;
+  border-radius: 10px;
+  overflow: hidden;
+  background: #fff;
+  box-shadow: 0 3px 10px rgba(0, 0, 0, 0.04);
+}
+
+.accordion-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  cursor: pointer;
+  font-weight: 700;
+  font-size: 1.05rem;
+  padding: 15px 20px;
+  background: #f9f9f9;
+  transition: background-color 0.3s ease;
+}
+
+.accordion-header:hover {
+  background-color: #efefef;
+}
+
+.accordion-content {
+  height: 0;
+  overflow: hidden;
+  opacity: 0;
+  transition: all 0.3s ease;
+  padding: 0 20px;
+}
+
+.accordion.active .accordion-content {
+  height: auto;
+  opacity: 1;
+  padding-bottom: 20px;
+}
+
+@media (max-width: 768px) {
+  .price-box {
+    position: static;
+    margin-top: 30px;
+    padding: 18px 15px;
+    top: 0;
+  }
+
+  .car-main-img {
+    height: 260px;
+    margin: 10px auto;
+    display: block;
+  }
+
+  .variant-btn {
+    flex: 1 1 calc(50% - 8px);
+    font-size: 0.9rem;
+    padding: 8px 10px;
+    margin-bottom: 8px;
+    white-space: nowrap;
+  }
+}
+
+@media (max-width: 480px) {
+  .car-main-img {
+    height: 220px;
+  }
+
+  .price {
+    font-size: 1.3rem;
+  }
+
+  .variant-btn {
+    font-size: 0.85rem;
+    padding: 6px 8px;
+    flex: 1 1 100%;
+  }
+
+  .btn-buy,
+  .btn-cart {
+    font-size: 0.9rem;
+    padding: 10px 0;
+  }
+}

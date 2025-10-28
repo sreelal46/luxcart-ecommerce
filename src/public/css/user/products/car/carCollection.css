@@ -1,0 +1,271 @@
+/* Overall container background */
+body {
+  background-color: #ffffff;
+  font-family: "Montserrat", sans-serif;
+  color: #333333;
+}
+
+/* Page title */
+.page-title {
+  font-weight: 700;
+  color: #222222;
+  letter-spacing: 0.02em;
+}
+
+/* Section subtitle */
+.section-subtitle {
+  color: #666666;
+  font-size: 1.05rem;
+}
+
+/* Filters sidebar */
+.filter-sidebar {
+  background: #f9f9f9;
+  border-radius: 12px;
+  border: 1px solid #dedede;
+  padding: 1.5rem;
+}
+
+.filter-title {
+  font-weight: 600;
+  color: #222222;
+  margin-bottom: 0.75rem;
+}
+
+/* Clear filters link */
+.clear-filters {
+  color: #555555;
+  font-weight: 600;
+  text-decoration: none;
+  font-size: 0.85rem;
+}
+
+.clear-filters:hover {
+  color: #111111;
+  text-decoration: underline;
+}
+
+/* Search input */
+.search-input {
+  border-radius: 25px;
+  padding: 10px 20px;
+  border: 1.5px solid #cccccc;
+  transition: border-color 0.3s ease;
+}
+
+.search-input:focus {
+  border-color: #888888;
+  outline: none;
+}
+
+/* Car cards */
+.car-card {
+  border: 1px solid #e0e0e0;
+  border-radius: 12px;
+  background-color: #ffffff;
+  transition: box-shadow 0.3s ease;
+}
+
+.car-card:hover {
+  box-shadow: 0 6px 15px rgba(0, 0, 0, 0.07);
+}
+
+/* Image wrapper */
+.car-image-wrapper {
+  height: 180px;
+  overflow: hidden;
+  border-bottom: 1px solid #e0e0e0;
+}
+
+.car-image {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+/* Category badge */
+.category-badge {
+  background: rgba(0, 0, 0, 0.6);
+  color: #fff;
+  font-size: 0.75rem;
+  font-weight: 600;
+  padding: 6px 15px;
+  border-radius: 20px;
+}
+
+/* Brand and car name */
+.brand-name {
+  color: #444444;
+  font-weight: 600;
+  text-transform: uppercase;
+  font-size: 0.85rem;
+}
+
+.car-name {
+  font-weight: 700;
+  font-size: 1.1rem;
+  color: #111111;
+  margin: 8px 0 4px;
+}
+
+/* Price */
+.price-tag {
+  color: #333333;
+  font-weight: 700;
+  font-size: 1.1rem;
+}
+
+/* Year badge */
+.year-badge {
+  background: #f0f0f0;
+  color: #555555;
+  font-weight: 600;
+  font-size: 0.8rem;
+  padding: 4px 12px;
+  border-radius: 12px;
+}
+
+/* View Details button */
+.view-details-btn {
+  background: transparent;
+  color: #333333;
+  border: 1.8px solid #333333;
+  border-radius: 10px;
+  padding: 12px 24px;
+  font-weight: 600;
+  font-size: 0.85rem;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  transition: all 0.3s ease;
+}
+
+.view-details-btn:hover {
+  background: #333333;
+  color: #fff;
+  box-shadow: 0 5px 15px rgba(51, 51, 51, 0.2);
+}
+
+/* Pagination */
+.pagination .page-link {
+  border-radius: 50%;
+  margin: 0 4px;
+  width: 40px;
+  height: 40px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border: 1.5px solid #ccc;
+  color: #666;
+  font-weight: 600;
+  transition: border-color 0.3s ease, color 0.3s ease;
+}
+
+.pagination .page-item.active .page-link {
+  background: #333;
+  border-color: #333;
+  color: white;
+  box-shadow: 0 3px 8px rgba(51, 51, 51, 0.3);
+}
+
+.pagination .page-link:hover {
+  background-color: #333;
+  border-color: #333;
+  color: white;
+}
+
+/* Mobile-only filter button and search input container */
+.mobile-filter-search {
+  display: none;
+  align-items: center;
+  gap: 12px;
+  margin-bottom: 1rem;
+}
+
+/* Mobile filter button styling */
+.mobile-filter-btn {
+  flex: 1;
+  background-color: #333;
+  color: white;
+  border: none;
+  border-radius: 10px;
+  padding: 10px;
+  font-weight: 600;
+  cursor: pointer;
+}
+
+/* Mobile search input styling flex 4 */
+.mobile-search-input {
+  flex: 4;
+}
+
+/* Mobile sidebar filter panel */
+.mobile-filter-panel {
+  position: fixed;
+  top: 0;
+  left: -100%;
+  width: 80%;
+  max-width: 300px;
+  height: 100vh;
+  background: #f9f9f9;
+  border-right: 1px solid #dedede;
+  padding: 1rem;
+  overflow-y: auto;
+  transition: left 0.3s ease;
+  z-index: 1050;
+}
+
+/* Show filter panel */
+.mobile-filter-panel.active {
+  left: 0;
+}
+
+/* Bottom fixed action buttons */
+.mobile-filter-actions {
+  position: sticky;
+  bottom: 0;
+  margin-top: 1rem;
+  padding-top: 1rem;
+  background: #f9f9f9;
+  display: flex;
+  justify-content: space-between;
+  gap: 10px;
+}
+
+.mobile-filter-actions button {
+  flex: 1;
+  padding: 10px 0;
+  font-weight: 600;
+  border-radius: 10px;
+  border: none;
+  cursor: pointer;
+}
+
+.mobile-clear-btn {
+  background-color: #bbb;
+  color: #333;
+}
+
+.mobile-save-btn {
+  background-color: #333;
+  color: white;
+}
+
+/* Responsive: Hide sidebar and show mobile filter/search row */
+@media (max-width: 767.98px) {
+  .filter-sidebar {
+    display: none;
+  }
+
+  .mobile-filter-search {
+    display: flex;
+  }
+
+  .car-list > div.col-md-6.col-lg-4 {
+    flex: 0 0 100%;
+    max-width: 100%;
+  }
+
+  .search-input {
+    display: none;
+  }
+}

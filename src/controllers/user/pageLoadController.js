@@ -89,8 +89,17 @@ const loadSingleCarProduct = async (req, res, next) => {
       .populate("variantIds", "image_url stock color price")
       .lean();
     console.log(singleCar);
+    const relatedCars = await Car.find({
+      brand_id: singleCar.brand_id._id,
+      _id: { $ne: singleCar._id },
+    })
+      .limit(4)
+      .populate("brand_id product_type_id variantIds")
+      .lean();
 
-    res.status(OK).render("user/products/car/viewCarProduct", { singleCar });
+    res
+      .status(OK)
+      .render("user/products/car/viewCarProduct", { singleCar, relatedCars });
   } catch (error) {
     console.log("Error from Loading single Car Product", error);
     next(error);

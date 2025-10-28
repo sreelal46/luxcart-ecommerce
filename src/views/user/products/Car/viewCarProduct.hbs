@@ -1,172 +1,130 @@
-<style>
-  .car-page {
-    background-color: #f8f9fa;
-    padding: 60px 0;
-  }
+<!--custom stylesheet -->
+<link rel="stylesheet" href="/css/user/products/car/viewCarProduct.css">
 
-  .main-img {
-    width: 100%;
-    height: 420px;
-    border-radius: 14px;
-    object-fit: cover;
-  }
+<section class="car-page">
+  <div class="container">
+    <div class="row g-4">
 
-  .thumbs img {
-    width: 110px;
-    height: 75px;
-    border-radius: 10px;
-    object-fit: cover;
-    cursor: pointer;
-    transition: transform 0.2s ease;
-  }
+      <!-- LEFT SIDE: CAR IMAGE CAROUSEL -->
+      <div class="col-lg-7">
+        <div class="car-header">
+          <h2>{{singleCar.name}}</h2>
+          <small>{{singleCar.year}} • {{singleCar.mileage}} • {{singleCar.region}}</small>
+        </div>
 
-  .thumbs img:hover {
-    transform: scale(1.05);
-  }
-
-  .price-box {
-    background: #fff;
-    border-radius: 12px;
-    padding: 25px;
-    box-shadow: 0 2px 10px rgba(0, 0, 0, 0.05);
-  }
-
-  .price {
-    font-size: 2rem;
-    font-weight: 700;
-  }
-
-  .btn-buy,
-  .btn-cart {
-    width: 100%;
-    font-weight: 600;
-    border-radius: 8px;
-  }
-
-  .btn-buy {
-    border: 1.5px solid #000;
-  }
-
-  .btn-cart {
-    background: #000;
-    color: #fff;
-  }
-
-  .tab-buttons button {
-    flex: 1;
-    border: none;
-    background: #f1f1f1;
-    padding: 10px;
-    font-weight: 600;
-    cursor: pointer;
-    transition: all 0.3s;
-  }
-
-  .tab-buttons button.active {
-    background: #000;
-    color: #fff;
-  }
-
-  .tab-content-box {
-    background: #fff;
-    border-radius: 12px;
-    padding: 20px;
-    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05);
-    margin-top: 15px;
-  }
-
-  .spec-item {
-    display: flex;
-    justify-content: space-between;
-    border-bottom: 1px solid #f1f1f1;
-    padding: 6px 0;
-  }
-</style>
-
-<div class="container car-page">
-  <div class="row g-5">
-    <!-- LEFT SIDE -->
-    <div class="col-lg-7">
-      <h2 class="fw-bold">{{singleCar.brand_id.name}}</h2>
-      <h4 class="fw-semibold">{{singleCar.product_type_id.name}}</h4>
-      <small>{{singleCar.year}} • {{singleCar.mileage}} km • {{singleCar.region}}</small>
-
-      <img src="{{singleCar.variantIds.[0].image_url.[0]}}" class="main-img my-3" id="mainImage">
-
-      <div class="d-flex thumbs gap-2">
-        {{#each singleCar.variantIds.[0].image_url}}
-        <img src="{{this}}" onclick="document.getElementById('mainImage').src='{{this}}'">
-        {{/each}}
+        <!-- Unified Bootstrap Carousel with auto-slide enabled -->
+        <div id="carImageCarousel" class="carousel slide" data-bs-ride="carousel" data-bs-interval="3500"
+          data-bs-pause="hover">
+          <div class="carousel-inner">
+            {{#each singleCar.variantIds.[0].image_url}}
+            <div class="carousel-item {{#if @first}}active{{/if}}">
+              <div class="zoom-container">
+                <img src="{{this}}" class="d-block w-100 car-main-img" alt="{{../singleCar.name}}">
+              </div>
+            </div>
+            {{/each}}
+          </div>
+          <button class="carousel-control-prev" type="button" data-bs-target="#carImageCarousel" data-bs-slide="prev">
+            <span class="carousel-control-prev-icon" aria-hidden="true"></span>
+            <span class="visually-hidden">Previous</span>
+          </button>
+          <button class="carousel-control-next" type="button" data-bs-target="#carImageCarousel" data-bs-slide="next">
+            <span class="carousel-control-next-icon" aria-hidden="true"></span>
+            <span class="visually-hidden">Next</span>
+          </button>
+        </div>
       </div>
 
-      <p class="mt-3 text-muted">{{singleCar.description}}</p>
-    </div>
-
-    <!-- RIGHT SIDE -->
-    <div class="col-lg-5">
-      <div class="price-box">
-        <div class="d-flex justify-content-between mb-3">
-          <div class="price">₹{{singleCar.variantIds.[0].price}}</div>
-          <i class="bi bi-heart fs-4 text-muted"></i>
-        </div>
-
-        <div class="mb-3">
-          <i class="bi bi-calendar3"></i> Year: {{singleCar.year}} <br>
-          <i class="bi bi-geo-alt"></i> Region: {{singleCar.region}} <br>
-          <i class="bi bi-shield-check"></i> Warranty: {{singleCar.warranty}}
-        </div>
-
-        <button class="btn btn-buy mb-2"><i class="bi bi-lightning-charge"></i> Buy Now</button>
-        <button class="btn btn-cart mb-3"><i class="bi bi-cart"></i> Add to Cart</button>
-
-        <!-- Tab Buttons -->
-        <div class="tab-buttons d-flex mb-2">
-          <button class="active" data-tab="basic">Basic Info</button>
-          <button data-tab="performance">Performance</button>
-          <button data-tab="dimension">Dimensions</button>
-        </div>
-
-        <!-- Tab Content -->
-        <div class="tab-content-box">
-          <!-- Basic Info -->
-          <div class="tab-content active" id="basic">
-            <div class="spec-item"><strong>Brand</strong> <span>{{singleCar.brand_id.name}}</span></div>
-            <div class="spec-item"><strong>Model</strong> <span>{{singleCar.product_type_id.name}}</span></div>
-            <div class="spec-item"><strong>Fuel Type</strong> <span>{{singleCar.fuel_type}}</span></div>
-            <div class="spec-item"><strong>Transmission</strong> <span>{{singleCar.transmission}}</span></div>
+      <!-- RIGHT SIDE -->
+      <div class="col-lg-5">
+        <div class="price-box">
+          <div class="d-flex justify-content-between align-items-center mb-3">
+            <div class="price">₹{{singleCar.variantIds.[0].price}}</div>
+            <i class="bi bi-heart fs-5 text-muted"></i>
           </div>
 
-          <!-- Performance -->
-          <div class="tab-content" id="performance" style="display:none;">
-            <div class="spec-item"><strong>Top Speed</strong> <span>{{singleCar.top_speed}}</span></div>
-            <div class="spec-item"><strong>Horse Power</strong> <span>{{singleCar.power_hp}} HP</span></div>
-            <div class="spec-item"><strong>Torque</strong> <span>{{singleCar.torque}}</span></div>
-            <div class="spec-item"><strong>Acceleration 0–100</strong> <span>{{singleCar.acceleration_0_100}}</span>
+          <!-- VARIANT BUTTONS -->
+          {{#if (gt (length singleCar.variantIds) 1)}}
+          <div class="variant-section mb-3">
+            <h5 class="fw-semibold mb-3">Available Variants</h5>
+            <div class="d-flex flex-wrap gap-2">
+              {{#each singleCar.variantIds}}
+              <button class="variant-btn btn btn-outline-dark" data-color="{{this.color}}" data-price="{{this.price}}"
+                data-images='{{{json this.image_url}}}' onclick="changeVariant(this)">
+                {{this.color}}
+              </button>
+              {{/each}}
             </div>
           </div>
+          {{/if}}
 
-          <!-- Dimensions -->
-          <div class="tab-content" id="dimension" style="display:none;">
-            <div class="spec-item"><strong>Length</strong> <span>{{singleCar.length}}</span></div>
-            <div class="spec-item"><strong>Width</strong> <span>{{singleCar.width}}</span></div>
-            <div class="spec-item"><strong>Height</strong> <span>{{singleCar.height}}</span></div>
-            <div class="spec-item"><strong>Weight</strong> <span>{{singleCar.weight}}</span></div>
-          </div>
+          <div class="info-text">Year: {{singleCar.year}}</div>
+          <div class="info-text">Region: {{singleCar.region}}</div>
+          <div class="info-text mb-3">Warranty: {{singleCar.warranty}}</div>
+
+          <button class="btn btn-buy"><i class="bi bi-lightning-charge"></i> Buy Now</button>
+          <button class="btn btn-cart"><i class="bi bi-cart"></i> Add to Cart</button>
+        </div>
+      </div>
+
+    </div>
+
+    <!-- DESCRIPTION -->
+    <div class="description-section mt-5">
+      <h4>Description</h4>
+      <div class="description-text" id="descriptionText">
+        {{{formatDescription singleCar.description}}}
+      </div>
+      <button class="btn btn-outline-dark mt-3" id="toggleDescBtn">Read More</button>
+    </div>
+
+    <!-- ACCORDION SECTION -->
+    <div class="accordion-section mt-5">
+      <div class="accordion">
+        <div class="accordion-header" onclick="toggleAccordion(this)">
+          Performance Specifications <i class="bi bi-chevron-down"></i>
+        </div>
+        <div class="accordion-content">
+          <ul>
+            <li><strong>Top Speed:</strong> {{singleCar.top_speed}}</li>
+            <li><strong>Power (HP):</strong> {{singleCar.power_hp}}</li>
+            <li><strong>Engine:</strong> {{singleCar.engine}}</li>
+            <li><strong>Transmission:</strong> {{singleCar.transmission}}</li>
+            <li><strong>Drive Type:</strong> {{singleCar.drive_type}}</li>
+            <li><strong>Acceleration:</strong> {{singleCar.acceleration_0_100}}</li>
+          </ul>
+        </div>
+      </div>
+
+      <div class="accordion">
+        <div class="accordion-header" onclick="toggleAccordion(this)">
+          Exterior & Interior <i class="bi bi-chevron-down"></i>
+        </div>
+        <div class="accordion-content">
+          <ul>
+            <li><strong>Colors:</strong> {{singleCar.interiorAndExteriorColor}}</li>
+            <li><strong>Wheels:</strong> {{singleCar.wheels}}</li>
+            <li><strong>Upholstery:</strong> {{singleCar.upholstery}}</li>
+            <li><strong>Design:</strong> {{singleCar.design}}</li>
+          </ul>
+        </div>
+      </div>
+
+      <div class="accordion">
+        <div class="accordion-header" onclick="toggleAccordion(this)">
+          Technology & Assistance <i class="bi bi-chevron-down"></i>
+        </div>
+        <div class="accordion-content">
+          <ul>
+            <li><strong>Cameras:</strong> {{singleCar.cameras}}</li>
+            <li><strong>Lane Assist:</strong> {{singleCar.lane_assist}}</li>
+            <li><strong>Sound System:</strong> {{singleCar.sound_system}}</li>
+            <li><strong>Keyless Go:</strong> {{singleCar.keyless_go}}</li>
+          </ul>
         </div>
       </div>
     </div>
   </div>
-</div>
+</section>
 
-<script>
-  // Tab switching logic
-  document.querySelectorAll('.tab-buttons button').forEach(btn => {
-    btn.addEventListener('click', () => {
-      document.querySelectorAll('.tab-buttons button').forEach(b => b.classList.remove('active'));
-      btn.classList.add('active');
-
-      document.querySelectorAll('.tab-content').forEach(c => c.style.display = 'none');
-      document.getElementById(btn.dataset.tab).style.display = 'block';
-    });
-  });
-</script>
+<script src="/js/user/products/car/viewCarProduct.js"></script>
