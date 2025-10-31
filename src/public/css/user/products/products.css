@@ -47,7 +47,7 @@ body {
 
 /* Search input */
 .search-input {
-  border-radius: 25px;
+  border-radius: 10px;
   padding: 10px 20px;
   border: 1.5px solid #cccccc;
   transition: border-color 0.3s ease;

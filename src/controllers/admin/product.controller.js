@@ -7,8 +7,8 @@ const addCarProduct = async (req, res, next) => {
   try {
     //collecting data
     const carData = req.body;
-    const { name } = req.body.name;
-
+    const name = carData.name?.trim();
+    console.log(carData);
     //finding duplicate
     const duplicate = await Car.findOne({
       name: { $regex: new RegExp(`^${name}$`, "i") },

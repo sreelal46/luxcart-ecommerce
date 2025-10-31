@@ -1,3 +1,5 @@
+<link rel="stylesheet" href="/css/admin/products/productManagement.css">
+
 <div class="container-fluid px-4 py-4">
   <!-- Header -->
   <div class="d-flex justify-content-between align-items-center mb-4">
@@ -21,10 +23,87 @@
       </button>
     </div>
   </div>
+  <div class="mb-3">
+    <button id="showAllProduct" class="toggle-btn active">All</button>
+    <button id="showCars" class="toggle-btn">Cars</button>
+    <button id="showAccessories" class="toggle-btn">Accessory</button>
+  </div>
+
+  <!-- All products Table -->
+  <div id="allProductTable" class="card shadow-sm mb-5">
+    <div class="card-body table-responsive">
+      <table class="table table-hover align-middle">
+        <thead class="table-light">
+          <tr>
+            <th>ID</th>
+            <th>Product</th>
+            <th>Category</th>
+            <th>Brand</th>
+            <th>Price</th>
+            <th>Stock</th>
+            <th>Offer</th>
+            <th>Status</th>
+            <th>Action</th>
+          </tr>
+        </thead>
+        <tbody>
+          {{#each fullProducts}}
+          <tr>
+            <td>{{@index}}</td>
+            <td>{{this.name}}</td>
+            <td>{{this.category_id.name}}</td>
+            <td>{{this.brand_id.name}}</td>
+            {{#if this.engine}}
+            <td>{{this.variantIds.[0].price}}</td>
+            <td>{{this.variantIds.[0].stock}}</td>
+            {{else}}
+            <td>{{this.price}}</td>
+            <td>{{this.stock}}</td>
+            {{/if}}
+            <td><span class="badge bg-success">10% Off</span></td>
+            {{#if this.isListed}}
+            <td class="text-success">Listed</td>
+            {{else}}
+            <td class="text-danger">Unlisted</td>
+            {{/if}}
+            <td>
+              {{#if this.engine}}
+              <a href="/admin/products-management/view-car-product/{{this._id}}"
+                class="btn btn-sm btn-outline-primary me-2">
+                <i class="bi bi-eye-fill"></i>
+              </a>
+              <a href="/admin/products-management/edit-car-product/{{this._id}}"
+                class="btn btn-sm btn-outline-success me-2">
+                <i class="bi bi-pencil-fill"></i>
+              </a>
+              <div class="form-check form-switch">
+                <input class="form-check-input" data-id="{{this._id}}" type="checkbox" checked data-bs-toggle="modal"
+                  data-bs-target="#confirmListModal">
+              </div>
+              {{else}}
+              <a href="/admin/products-management/view-accessories-product/{{this._id}}"
+                class="btn btn-sm btn-outline-primary me-2">
+                <i class="bi bi-eye-fill"></i>
+              </a>
+              <a href="/admin/products-management/edit-accessories-product/{{this._id}}"
+                class="btn btn-sm btn-outline-success me-2">
+                <i class="bi bi-pencil-fill"></i>
+              </a>
+              <div class="form-check form-switch">
+                <input class="form-check-input" data-id="{{this._id}}" type="checkbox" checked data-bs-toggle="modal"
+                  data-bs-target="#confirmListModal">
+              </div>
+              {{/if}}
+            </td>
+          </tr>
+          {{/each}}
+        </tbody>
+      </table>
+    </div>
+  </div>
 
   <!-- Cars Table -->
-  <h5>Cars</h5>
-  <div class="card shadow-sm mb-5">
+  <div id="carTable" class="card shadow-sm mb-5">
     <div class="card-body table-responsive">
       <table class="table table-hover align-middle">
         <thead class="table-light">
@@ -77,8 +156,7 @@
   </div>
 
   <!-- Accessories Table -->
-  <h5>Accessories</h5>
-  <div class="card shadow-sm">
+  <div id="accessoryTable" class="card shadow-sm">
     <div class="card-body table-responsive">
       <table class="table table-hover align-middle">
         <thead class="table-light">
@@ -131,6 +209,7 @@
   </div>
 </div>
 
+
 <!-- Modals (Product Type, Offer, Filter, Confirm List) -->
 <!-- Product Type Modal -->
 <div class="modal fade" id="productTypeModal" tabindex="-1" aria-labelledby="productTypeModalLabel" aria-hidden="true">
@@ -146,7 +225,7 @@
 
           <!-- Car Card -->
           <a href="/admin/products-management/add-car-product" class="card border-1 p-4 rounded-3 shadow-sm type-card"
-            role="button" style="width: 180px;">
+            role="button" style="width: 180px;text-decoration: none;">
             <div class="text-primary fs-1 mb-2">
               <i class="bi bi-car-front"></i>
             </div>
@@ -156,7 +235,8 @@
 
           <!-- Accessories Card -->
           <a href="/admin/products-management/add-accessories-product"
-            class="card border-1 p-4 rounded-3 shadow-sm type-card" role="button" style="width: 180px;">
+            class="card border-1 p-4 rounded-3 shadow-sm type-card" role="button"
+            style="width: 180px; text-decoration: none;">
             <div class="text-primary fs-1 mb-2">
               <i class="bi bi-bag"></i>
             </div>

@@ -1,10 +1,11 @@
+<!-- //same design used in the car collection -->
 <link rel="stylesheet" href="/css/user/products/products.css">
 
 <div class="container-fluid py-5 px-4">
   <!-- Title Section -->
   <div class="mb-5 text-center">
-    <h3 class="page-title display-5 mt-5 mb-2">Our Collection</h3>
-    <p class="section-subtitle">Discover our handpicked selection of exceptional automobiles.</p>
+    <h3 class="page-title display-5 mt-5 mb-2">Our Accessories</h3>
+    <p class="section-subtitle">Enhance your ride with premium automotive accessories.</p>
   </div>
 
   <!-- Search and Filter Row -->
@@ -46,42 +47,44 @@
       </div>
     </div>
 
-    <!-- Cars Grid -->
+    <!-- Accessories Grid -->
     <div class="col-md-9 col-lg-10">
       <!-- Mobile Filter Button and Search Input -->
       <div class="mobile-filter-search">
         <button class="mobile-filter-btn" id="filterToggleBtn">Filter</button>
         <input type="text" class="form-control mobile-search-input"
-          placeholder=" Search by brand, model or category..." />
+          placeholder=" Search by name, brand or category..." />
       </div>
 
       <!-- Desktop Search Input -->
       <div class="mb-4">
-        <input type="text" class="form-control search-input" placeholder=" Search by brand, model or category..." />
+        <input type="text" class="form-control search-input" placeholder=" Search by name, brand or category..." />
       </div>
 
-      <!-- Cars List -->
+      <!-- Accessories List -->
       <div class="row g-4 car-list">
-        {{#each cars}}
+        {{#each accessories}}
         <div class="col-md-6 col-lg-4">
           <div class="card car-card">
             <div class="car-image-wrapper position-relative">
-              <img src="{{firstImage variantIds}}" alt="{{name}}" class="car-image" />
-              {{#if category_id.name}}
+              <img src="{{this.images.[0]}}" alt="{{this.name}}" class="car-image" />
+              {{#if this.category_id.name}}
               <span
-                class="badge category-badge position-absolute top-0 start-0 m-3 text-capitalize">{{category_id.name}}</span>
+                class="badge category-badge position-absolute top-0 start-0 m-3 text-capitalize">{{this.category_id.name}}</span>
               {{/if}}
             </div>
             <div class="card-body p-4">
-              <h6 class="brand-name mb-2">{{brand_id.name}}</h6>
-              <h5 class="car-name">{{name}}</h5>
+              <h6 class="brand-name mb-2">{{this.brand_id.name}}</h6>
+              <h5 class="car-name">{{this.name}}</h5>
               <div class="d-flex justify-content-between align-items-center mt-3">
-                <span class="price-tag">₹{{price}}</span>
-                <span class="year-badge">{{year}}</span>
+                <span class="price-tag">₹{{this.price}}</span>
+                <span class="year-badge">{{this.production_year}}</span>
               </div>
             </div>
             <div class="card-footer bg-white text-center border-0 p-3">
-              <a href="/cars-collection/view-car-product/{{_id}}" class="btn view-details-btn w-100">View Details</a>
+              <a href="/all-accessories/view-accessory-product/{{this._id}}" class="btn view-details-btn w-100">
+                View Details
+              </a>
             </div>
           </div>
         </div>

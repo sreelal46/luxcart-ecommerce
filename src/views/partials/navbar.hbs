@@ -18,7 +18,7 @@
         <ul class="navbar-nav mx-auto mb-2 mb-lg-0 fs-5">
           <li class="nav-item"><a class="nav-link text-white px-3" href="/">Home</a></li>
           <li class="nav-item"><a class="nav-link text-white px-3" href="/cars-collection">Cars</a></li>
-          <li class="nav-item"><a class="nav-link text-white px-3" href="/accessories">Accessories</a></li>
+          <li class="nav-item"><a class="nav-link text-white px-3" href="/all-accessories">Accessories</a></li>
           <li class="nav-item"><a class="nav-link text-white px-3" href="/contact">Contact</a></li>
           <li class="nav-item"><a class="nav-link text-white px-3" href="/about">About Us</a></li>
 
@@ -74,3 +74,19 @@
     </div>
   </nav>
 </header>
+<script>
+  document.addEventListener("click", function (event) {
+    const navbar = document.querySelector(".navbar-collapse");
+    const toggler = document.querySelector(".navbar-toggler");
+
+    // Check if click is outside the navbar and toggler
+    if (
+      navbar.classList.contains("show") &&
+      !navbar.contains(event.target) &&
+      !toggler.contains(event.target)
+    ) {
+      const bsCollapse = bootstrap.Collapse.getInstance(navbar);
+      bsCollapse.hide(); // Close the collapse
+    }
+  });
+</script>

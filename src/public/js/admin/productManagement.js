@@ -74,13 +74,57 @@ document.addEventListener("DOMContentLoaded", () => {
       }
     });
 
-  // Cancel button reverts toggle state back to previous
+  // Cancel button reverts toggle state, removes focus, and cleans up modal/backdrop
   document
     .getElementById("confirmListModal")
     .querySelector(".btn-secondary")
     .addEventListener("click", () => {
       if (targetCheckbox) {
         targetCheckbox.checked = !targetCheckbox.checked;
+        targetCheckbox.blur();
       }
+      const confirmModal = bootstrap.Modal.getInstance(confirmListModalEl);
+      if (confirmModal) confirmModal.hide();
+
+      // Remove modal-open class and any leftover backdrops
+      document.body.classList.remove("modal-open");
+      let backdrops = document.querySelectorAll(".modal-backdrop");
+      backdrops.forEach((bd) => bd.parentNode.removeChild(bd));
     });
+});
+
+document.addEventListener("DOMContentLoaded", () => {
+  const allProductTable = document.getElementById("allProductTable");
+  const carTable = document.getElementById("carTable");
+  const accessoryTable = document.getElementById("accessoryTable");
+  const showCarsBtn = document.getElementById("showCars");
+  const showAccessoriesBtn = document.getElementById("showAccessories");
+  const showAllProductBtn = document.getElementById("showAllProduct");
+
+  showCarsBtn.addEventListener("click", () => {
+    carTable.style.display = "block";
+    allProductTable.style.display = "none";
+    accessoryTable.style.display = "none";
+    showCarsBtn.classList.add("active");
+    showAccessoriesBtn.classList.remove("active");
+    showAllProductBtn.classList.remove("active");
+  });
+
+  showAccessoriesBtn.addEventListener("click", () => {
+    accessoryTable.style.display = "block";
+    allProductTable.style.display = "none";
+    carTable.style.display = "none";
+    showAccessoriesBtn.classList.add("active");
+    showAllProductBtn.classList.remove("active");
+    showCarsBtn.classList.remove("active");
+  });
+
+  showAllProductBtn.addEventListener("click", () => {
+    allProductTable.style.display = "block";
+    accessoryTable.style.display = "none";
+    carTable.style.display = "none";
+    showAllProductBtn.classList.add("active");
+    showAccessoriesBtn.classList.remove("active");
+    showCarsBtn.classList.remove("active");
+  });
 });

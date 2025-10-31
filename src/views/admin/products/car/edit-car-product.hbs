@@ -224,12 +224,21 @@
           <div class="card-body row g-3">
             <div class="col-md-3"><label>Cameras</label><input type="text" name="cameras" value="{{singleCar.cameras}}"
                 class="form-control" /></div>
-            <div class="col-md-3"><label>Lane Assist</label><input type="text" name="lane_assist"
-                value="{{singleCar.lane_assist}}" class="form-control" /></div>
+            <div class="col-md-3"><label>Lane Assist</label>
+              <select class="form-select" name="lane_assist">
+                <option value="true" {{#if singleCar.lane_assist}}selected{{/if}}>Yes</option>
+                <option value="false" {{#unless singleCar.lane_assist}}selected{{/unless}}>No</option>
+              </select>
+            </div>
             <div class="col-md-3"><label>Sound System</label><input type="text" name="sound_system"
                 value="{{singleCar.sound_system}}" class="form-control" /></div>
-            <div class="col-md-3"><label>Keyless Go</label><input type="text" name="keyless_go"
-                value="{{singleCar.keyless_go}}" class="form-control" /></div>
+            <div class="col-md-3">
+              <label>Keyless Go</label>
+              <select class="form-select" name="keyless_go">
+                <option value="true" {{#if singleCar.keyless_go}}selected{{/if}}>Yes</option>
+                <option value="false" {{#unless singleCar.keyless_go}}selected{{/unless}}>No</option>
+              </select>
+            </div>
           </div>
         </div>
 

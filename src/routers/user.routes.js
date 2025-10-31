@@ -12,6 +12,8 @@ const {
   loadForgotPassPage,
   loadCarCollection,
   loadSingleCarProduct,
+  loadAllAccessories,
+  loadSingleAccessories,
 } = require("../controllers/user/pageLoadController");
 
 const {
@@ -63,7 +65,12 @@ route.post("/verify-otp", verifyOTP);
 //resend OTP for user verification and forgot password
 route.get("/resend-otp", resendOTP);
 
+//car colletions
 route.get("/cars-collection", loadCarCollection);
 route.get("/cars-collection/view-car-product/:id", loadSingleCarProduct);
+
+//view all accessories
+route.get("/all-accessories", loadAllAccessories);
+route.get("/all-accessories/view-accessory-product/:id", loadSingleAccessories);
 
 module.exports = route;

@@ -1,7 +1,7 @@
 const Handlebars = require("handlebars");
 
 module.exports = {
-  // ✅ Existing equality helper
+  // Existing equality helper
   eq: (a, b) => {
     return a?.toString() === b?.toString();
   },

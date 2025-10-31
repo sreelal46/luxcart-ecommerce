@@ -3,7 +3,7 @@ const { Schema } = mongoose;
 
 const carSchema = new Schema(
   {
-    name: { type: String, required: true },
+    name: { type: String, required: true, unique: true },
     brand_id: { type: Schema.Types.ObjectId, ref: "Brand", required: true },
     category_id: {
       type: Schema.Types.ObjectId,

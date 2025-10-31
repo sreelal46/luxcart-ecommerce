@@ -1,4 +1,4 @@
-<!--custom stylesheet -->
+<!-- Custom stylesheet -->
 <link rel="stylesheet" href="/css/user/products/car/viewCarProduct.css">
 
 <section class="car-page">
@@ -12,7 +12,6 @@
           <small>{{singleCar.year}} • {{singleCar.mileage}} • {{singleCar.region}}</small>
         </div>
 
-        <!-- Unified Bootstrap Carousel with auto-slide enabled -->
         <div id="carImageCarousel" class="carousel slide" data-bs-ride="carousel" data-bs-interval="3500"
           data-bs-pause="hover">
           <div class="carousel-inner">
@@ -24,6 +23,8 @@
             </div>
             {{/each}}
           </div>
+
+          <!-- Carousel Controls -->
           <button class="carousel-control-prev" type="button" data-bs-target="#carImageCarousel" data-bs-slide="prev">
             <span class="carousel-control-prev-icon" aria-hidden="true"></span>
             <span class="visually-hidden">Previous</span>
@@ -39,7 +40,7 @@
       <div class="col-lg-5">
         <div class="price-box">
           <div class="d-flex justify-content-between align-items-center mb-3">
-            <div class="price">₹{{singleCar.variantIds.[0].price}}</div>
+            <div class="price">₹ {{formatPrice singleCar.variantIds.[0].price}}</div>
             <i class="bi bi-heart fs-5 text-muted"></i>
           </div>
 
@@ -47,7 +48,7 @@
           {{#if (gt (length singleCar.variantIds) 1)}}
           <div class="variant-section mb-3">
             <h5 class="fw-semibold mb-3">Available Variants</h5>
-            <div class="d-flex flex-wrap gap-2">
+            <div class="variant-section-button d-flex flex-wrap gap-2">
               {{#each singleCar.variantIds}}
               <button class="variant-btn btn btn-outline-dark" data-color="{{this.color}}" data-price="{{this.price}}"
                 data-images='{{{json this.image_url}}}' onclick="changeVariant(this)">
@@ -62,68 +63,126 @@
           <div class="info-text">Region: {{singleCar.region}}</div>
           <div class="info-text mb-3">Warranty: {{singleCar.warranty}}</div>
 
+          <!-- Desktop Buttons -->
           <button class="btn btn-buy"><i class="bi bi-lightning-charge"></i> Buy Now</button>
           <button class="btn btn-cart"><i class="bi bi-cart"></i> Add to Cart</button>
         </div>
       </div>
 
+      <!-- DESCRIPTION -->
+      <div class="description-section mt-5">
+        <h4 class="fw-bold">Description</h4>
+        <div class="description-text" id="descriptionText">
+          {{{formatDescription singleCar.description}}}
+        </div>
+        <button class="btn btn-outline-dark mt-3" id="toggleDescBtn">Read More</button>
+      </div>
+
+      <!-- ACCORDION SECTION -->
+      <div class="accordion-section mt-5">
+        <!-- PERFORMANCE SPECIFICATIONS -->
+        <div class="accordion">
+          <div class="accordion-header" onclick="toggleAccordion(this)">
+            Performance Specifications <i class="bi bi-chevron-down"></i>
+          </div>
+          <div class="accordion-content">
+            <table class="table table-bordered">
+              <tbody>
+                <tr>
+                  <th>Top Speed</th>
+                  <td>{{singleCar.top_speed}}</td>
+                </tr>
+                <tr>
+                  <th>Power (HP)</th>
+                  <td>{{singleCar.power_hp}}</td>
+                </tr>
+                <tr>
+                  <th>Engine</th>
+                  <td>{{singleCar.engine}}</td>
+                </tr>
+                <tr>
+                  <th>Transmission</th>
+                  <td>{{singleCar.transmission}}</td>
+                </tr>
+                <tr>
+                  <th>Drive Type</th>
+                  <td>{{singleCar.drive_type}}</td>
+                </tr>
+                <tr>
+                  <th>Acceleration (0-100)</th>
+                  <td>{{singleCar.acceleration_0_100}}</td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+        </div>
+
+        <!-- EXTERIOR & INTERIOR -->
+        <div class="accordion">
+          <div class="accordion-header" onclick="toggleAccordion(this)">
+            Exterior & Interior <i class="bi bi-chevron-down"></i>
+          </div>
+          <div class="accordion-content">
+            <table class="table table-bordered">
+              <tbody>
+                <tr>
+                  <th>Colors</th>
+                  <td>{{singleCar.interiorAndExteriorColor}}</td>
+                </tr>
+                <tr>
+                  <th>Wheels</th>
+                  <td>{{singleCar.wheels}}</td>
+                </tr>
+                <tr>
+                  <th>Upholstery</th>
+                  <td>{{singleCar.upholstery}}</td>
+                </tr>
+                <tr>
+                  <th>Design</th>
+                  <td>{{singleCar.design}}</td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+        </div>
+
+        <!-- TECHNOLOGY & ASSISTANCE -->
+        <div class="accordion">
+          <div class="accordion-header" onclick="toggleAccordion(this)">
+            Technology & Assistance <i class="bi bi-chevron-down"></i>
+          </div>
+          <div class="accordion-content">
+            <table class="table table-bordered">
+              <tbody>
+                <tr>
+                  <th>Cameras</th>
+                  <td>{{singleCar.cameras}}</td>
+                </tr>
+                <tr>
+                  <th>Lane Assist</th>
+                  <td>{{#if singleCar.lane_assist}}Yes{{else}}No{{/if}}</td>
+                </tr>
+                <tr>
+                  <th>Sound System</th>
+                  <td>{{singleCar.sound_system}}</td>
+                </tr>
+                <tr>
+                  <th>Keyless Go</th>
+                  <td>{{#if singleCar.keyless_go}}Yes{{else}}No{{/if}}</td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+        </div>
+      </div>
+
     </div>
+  </div>
 
-    <!-- DESCRIPTION -->
-    <div class="description-section mt-5">
-      <h4>Description</h4>
-      <div class="description-text" id="descriptionText">
-        {{{formatDescription singleCar.description}}}
-      </div>
-      <button class="btn btn-outline-dark mt-3" id="toggleDescBtn">Read More</button>
-    </div>
-
-    <!-- ACCORDION SECTION -->
-    <div class="accordion-section mt-5">
-      <div class="accordion">
-        <div class="accordion-header" onclick="toggleAccordion(this)">
-          Performance Specifications <i class="bi bi-chevron-down"></i>
-        </div>
-        <div class="accordion-content">
-          <ul>
-            <li><strong>Top Speed:</strong> {{singleCar.top_speed}}</li>
-            <li><strong>Power (HP):</strong> {{singleCar.power_hp}}</li>
-            <li><strong>Engine:</strong> {{singleCar.engine}}</li>
-            <li><strong>Transmission:</strong> {{singleCar.transmission}}</li>
-            <li><strong>Drive Type:</strong> {{singleCar.drive_type}}</li>
-            <li><strong>Acceleration:</strong> {{singleCar.acceleration_0_100}}</li>
-          </ul>
-        </div>
-      </div>
-
-      <div class="accordion">
-        <div class="accordion-header" onclick="toggleAccordion(this)">
-          Exterior & Interior <i class="bi bi-chevron-down"></i>
-        </div>
-        <div class="accordion-content">
-          <ul>
-            <li><strong>Colors:</strong> {{singleCar.interiorAndExteriorColor}}</li>
-            <li><strong>Wheels:</strong> {{singleCar.wheels}}</li>
-            <li><strong>Upholstery:</strong> {{singleCar.upholstery}}</li>
-            <li><strong>Design:</strong> {{singleCar.design}}</li>
-          </ul>
-        </div>
-      </div>
-
-      <div class="accordion">
-        <div class="accordion-header" onclick="toggleAccordion(this)">
-          Technology & Assistance <i class="bi bi-chevron-down"></i>
-        </div>
-        <div class="accordion-content">
-          <ul>
-            <li><strong>Cameras:</strong> {{singleCar.cameras}}</li>
-            <li><strong>Lane Assist:</strong> {{singleCar.lane_assist}}</li>
-            <li><strong>Sound System:</strong> {{singleCar.sound_system}}</li>
-            <li><strong>Keyless Go:</strong> {{singleCar.keyless_go}}</li>
-          </ul>
-        </div>
-      </div>
-    </div>
+  <!-- Sticky Bottom Buttons (mobile only) -->
+  <div class="mobile-bottom-buttons d-lg-none">
+    <button class="btn btn-buy"><i class="bi bi-lightning-charge"></i> Buy Now</button>
+    <button class="btn btn-cart"><i class="bi bi-cart"></i> Add to Cart</button>
   </div>
 </section>
 

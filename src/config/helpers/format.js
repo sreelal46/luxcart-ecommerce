@@ -1,6 +1,10 @@
 const Handlebars = require("handlebars");
 
 module.exports = {
+  formatPrice: (price) => {
+    if (!price) return "";
+    return price.toString().replace(/\B(?=(\d{3})+(?!\d))/g, ",");
+  },
   formatDescription: (text) => {
     if (!text) return "";
     const formatted = text

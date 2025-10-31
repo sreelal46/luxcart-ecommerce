@@ -1,0 +1,144 @@
+<!-- Custom stylesheet -->
+<link rel="stylesheet" href="/css/user/products/accessory/viewAccessoryProduct.css">
+
+<section class="accessory-page">
+  <div class="container">
+    <div class="row g-4">
+
+      <!-- LEFT SIDE: IMAGE CAROUSEL -->
+      <div class="col-lg-7">
+        <div class="accessory-header">
+          <h2>{{accessory.name}}</h2>
+          <small>{{accessory.brand_id.name}} • {{accessory.category_id.name}} •
+            {{accessory.product_type_id.name}}</small>
+        </div>
+
+        <!-- Bootstrap Carousel -->
+        <div id="accessoryImageCarousel" class="carousel slide" data-bs-ride="carousel" data-bs-interval="3500"
+          data-bs-pause="hover">
+          <div class="carousel-inner">
+            {{#each accessory.images}}
+            <div class="carousel-item {{#if @first}}active{{/if}}">
+              <div class="zoom-container">
+                <img src="{{this}}" class="d-block w-100 accessory-main-img" style="height: 400px; object-fit: contain;"
+                  alt="{{../accessory.name}}">
+              </div>
+            </div>
+            {{/each}}
+          </div>
+          <button class="carousel-control-prev" type="button" data-bs-target="#accessoryImageCarousel"
+            data-bs-slide="prev">
+            <span class="carousel-control-prev-icon" aria-hidden="true"></span>
+            <span class="visually-hidden">Previous</span>
+          </button>
+          <button class="carousel-control-next" type="button" data-bs-target="#accessoryImageCarousel"
+            data-bs-slide="next">
+            <span class="carousel-control-next-icon" aria-hidden="true"></span>
+            <span class="visually-hidden">Next</span>
+          </button>
+        </div>
+      </div>
+
+      <!-- RIGHT SIDE: PRICE & DETAILS -->
+      <div class="col-lg-5">
+        <div class="price-box">
+          <div class="d-flex justify-content-between align-items-center mb-3">
+            <div class="price">₹{{accessory.price}}</div>
+            <i class="bi bi-heart fs-5 text-muted"></i>
+          </div>
+
+          <div class="info-text">Brand: {{accessory.brand_id.name}}</div>
+          <div class="info-text">Category: {{accessory.category_id.name}}</div>
+          <div class="info-text">Type: {{accessory.product_type_id.name}}</div>
+          <div class="info-text">Material: {{accessory.material}}</div>
+          <div class="info-text">Stock: {{accessory.stock}}</div>
+          <div class="info-text mb-3">Warranty: {{accessory.warranty}}</div>
+
+          <!-- Desktop Buttons -->
+          <button class="btn btn-buy"><i class="bi bi-lightning-charge"></i> Buy Now</button>
+          <button class="btn btn-cart"><i class="bi bi-cart"></i> Add to Cart</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- SINGLE DESCRIPTION SECTION -->
+    <div class="description-section mt-5">
+      <h4>Description</h4>
+      <div class="description-text" id="descriptionText">
+        {{{formatDescription accessory.description}}}
+      </div>
+      <button class="btn btn-outline-dark mt-3" id="toggleDescBtn">Read More</button>
+    </div>
+
+    <!-- ACCORDION DETAILS -->
+    <div class="accordion-section mt-5">
+
+      <!-- PRODUCT INFO TABLE -->
+      <div class="accordion active">
+        <div class="accordion-header" onclick="toggleAccordion(this)">
+          Product Information <i class="bi bi-chevron-down"></i>
+        </div>
+        <div class="accordion-content">
+          <div class="table-responsive">
+            <table class="table product-info-table align-middle">
+              <tbody>
+                <tr>
+                  <th>Country of Origin</th>
+                  <td>{{accessory.country_of_origin}}</td>
+                </tr>
+                <tr>
+                  <th>Fabric</th>
+                  <td>{{accessory.fabric}}</td>
+                </tr>
+                <tr>
+                  <th>Finish</th>
+                  <td>{{accessory.finish}}</td>
+                </tr>
+                <tr>
+                  <th>Fitting</th>
+                  <td>{{accessory.fitting}}</td>
+                </tr>
+                <tr>
+                  <th>Waterproof</th>
+                  <td>{{#if accessory.waterproof}}Yes{{else}}No{{/if}}</td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+        </div>
+      </div>
+
+      <!-- VEHICLE COMPATIBILITY TABLE -->
+      <div class="accordion">
+        <div class="accordion-header" onclick="toggleAccordion(this)">
+          Vehicle Compatibility <i class="bi bi-chevron-down"></i>
+        </div>
+        <div class="accordion-content">
+          <div class="table-responsive">
+            <table class="table product-info-table align-middle">
+              <tbody>
+                <tr>
+                  <th>Vehicle</th>
+                  <td>{{accessory.vehicle}}</td>
+                </tr>
+                <tr>
+                  <th>Production Year</th>
+                  <td>{{accessory.production_year}}</td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+        </div>
+      </div>
+
+    </div>
+  </div>
+
+  <!--MOBILE FIXED BUTTONS (visible only on small screens) -->
+  <div class="mobile-bottom-buttons d-md-none">
+    <button class="btn btn-buy"><i class="bi bi-lightning-charge"></i> Buy Now</button>
+    <button class="btn btn-cart"><i class="bi bi-cart"></i> Add to Cart</button>
+  </div>
+</section>
+
+<script src="/js/user/products/accessory/viewAccessoryProduct.js"></script>

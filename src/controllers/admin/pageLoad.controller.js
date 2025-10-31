@@ -90,9 +90,12 @@ const loadProduct = async (req, res, next) => {
       .populate("product_type_id", "name")
       .lean();
 
-    res
-      .status(OK)
-      .render("admin/products/productManagement", { cars, accessories });
+    const fullProducts = [...cars, ...accessories];
+    res.status(OK).render("admin/products/productManagement", {
+      cars,
+      accessories,
+      fullProducts,
+    });
   } catch (error) {
     console.log(error);
     next(error);
