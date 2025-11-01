@@ -2,27 +2,26 @@
   style="background: url('/images/car-bg.jpg') no-repeat center center; background-size: cover;">
 
   <div class="bg-white rounded-3 shadow p-5" style="max-width: 400px; width: 100%;">
-    <!-- Header -->
     <div class="text-center mb-4">
       <h2 class="fw-bold text-dark">Admin Panel</h2>
       <h1 class="h5 fw-bold mt-2 mb-1">Sign in to Admin Account</h1>
       <p class="text-muted mb-0">Restricted access only</p>
     </div>
 
-    <!-- Alert -->
     <div id="alert" class="d-none text-center"></div>
 
-    <!-- Form -->
-    <form class="mt-4" id="loginForm">
+    <form class="mt-4" id="loginForm" novalidate>
       <div class="mb-3">
         <label for="adminEmail" class="form-label fw-medium small">Admin Email</label>
         <input type="email" class="form-control" id="adminEmail" name="email" placeholder="admin@example.com" required>
+        <div class="invalid-feedback">Please enter a valid email address.</div>
       </div>
 
       <div class="mb-3">
         <label for="adminPassword" class="form-label fw-medium small">Password</label>
         <input type="password" class="form-control" id="adminPassword" name="password" placeholder="Enter your password"
-          required>
+          required minlength="6">
+        <div class="invalid-feedback">Password must be at least 6 characters long.</div>
       </div>
 
       <div class="d-flex justify-content-between align-items-center mb-3">
@@ -40,34 +39,105 @@
   </div>
 </div>
 
-
-<!-- Axios -->
 <script>
   document.addEventListener("DOMContentLoaded", () => {
-    const loginForm = document.getElementById("loginForm");
+    const adminLoginForm = document.getElementById("loginForm");
+    const emailInput = document.getElementById("adminEmail");
+    const passwordInput = document.getElementById("adminPassword");
     const alertDiv = document.getElementById("alert");
 
-    loginForm.addEventListener("submit", async (e) => {
+    // Create and insert error message elements if not present
+    let emailError = emailInput.nextElementSibling;
+    if (!emailError || !emailError.classList.contains("error-text")) {
+      emailError = document.createElement("div");
+      emailError.className = "text-danger small mt-1 error-text";
+      emailInput.insertAdjacentElement("afterend", emailError);
+    }
+
+    let passwordError = passwordInput.nextElementSibling;
+    if (!passwordError || !passwordError.classList.contains("error-text")) {
+      passwordError = document.createElement("div");
+      passwordError.className = "text-danger small mt-1 error-text";
+      passwordInput.insertAdjacentElement("afterend", passwordError);
+    }
+
+    // Hide alerts by default
+    alertDiv.classList.add("d-none");
+
+    // Helper function
+    const validateEmail = (email) => /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email);
+
+    // Email validation
+    function emailValidation() {
+      const email = emailInput.value.trim();
+      if (!email) {
+        emailError.textContent = "Email is required";
+        return false;
+      } else if (!validateEmail(email)) {
+        emailError.textContent = "Invalid email format.";
+        return false;
+      } else {
+        emailError.textContent = "";
+        return true;
+      }
+    }
+
+    // Password validation
+    function passwordValidation() {
+      const password = passwordInput.value.trim();
+      if (!password) {
+        passwordError.textContent = "Password is required";
+        return false;
+      } else if (password.length < 6) {
+        passwordError.textContent = "Password must be at least 6 characters.";
+        return false;
+      } else {
+        passwordError.textContent = "";
+        return true;
+      }
+    }
+
+    // Live input validation
+    emailInput.addEventListener("input", emailValidation);
+    passwordInput.addEventListener("input", passwordValidation);
+
+    // Form submission
+    adminLoginForm.addEventListener("submit", async (e) => {
       e.preventDefault();
 
-      const formData = new FormData(loginForm);
-      const data = Object.fromEntries(formData.entries());
+      alertDiv.classList.add("d-none");
+      alertDiv.textContent = "";
+
+
+      //remove comment production time
+      // const emailValid = emailValidation();
+      // const passwordValid = passwordValidation();
+      // if (!emailValid || !passwordValid) return;
+
+      const email = emailInput.value.trim();
+      const password = passwordInput.value.trim();
 
       try {
-        const res = await axios.post("/admin/login", data, { withCredentials: true });
+        const res = await axios.post(
+          "/admin/login",
+          { email, password },
+          { withCredentials: true }
+        );
 
-        // Success case (200)
         if (res.data.success) {
           alertDiv.className = "alert alert-success text-center";
           alertDiv.textContent = "Login successful! Redirecting...";
           alertDiv.classList.remove("d-none");
-          setTimeout(() => window.location.href = res.data.redirect, 400);
+          setTimeout(() => (window.location.href = res.data.redirect), 400);
+        } else {
+          alertDiv.className = "alert alert-danger text-center";
+          alertDiv.textContent = res.data.message || "Invalid credentials.";
+          alertDiv.classList.remove("d-none");
         }
-      } catch (error) {
-        // Error case (403, 500, etc.)
-        const message = error.response?.data?.message || "Invalid credentials or server error.";
+      } catch (err) {
         alertDiv.className = "alert alert-danger text-center";
-        alertDiv.textContent = message;
+        alertDiv.textContent =
+          err.response?.data?.message || "Server error. Please try again.";
         alertDiv.classList.remove("d-none");
       }
     });

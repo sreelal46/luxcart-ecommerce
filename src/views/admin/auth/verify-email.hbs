@@ -12,6 +12,7 @@
       <div class="mb-3">
         <label for="email" class="form-label fw-medium small">Email Address</label>
         <input type="email" class="form-control" id="email" name="email" placeholder="your.email@example.com" required>
+        <smal class="text-danger" id="emailError" style="display: none;"></small>
       </div>
 
       <button type="submit" class="btn btn-dark w-100 fw-medium">Send Verification Code</button>
@@ -27,7 +28,29 @@
   document.addEventListener("DOMContentLoaded", () => {
 
     const emailVerifyForm = document.getElementById("emailVerifyForm")
+    const emailInput = document.getElementById("email")
+    const emailError = document.getElementById("emailError")
     const alert = document.getElementById("alert")
+
+    // Helper function
+    const validateEmail = (email) => /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email);
+
+    // Email validation
+    function emailValidation() {
+      const email = emailInput.value.trim();
+      if (!email) {
+        emailError.textContent = "Email is required";
+        return false;
+      } else if (!validateEmail(email)) {
+        emailError.textContent = "Invalid email format.";
+        return false;
+      } else {
+        emailError.textContent = "";
+        return true;
+      }
+    }
+
+    emailInput.addEventListener("input", emailValidation)
 
     emailVerifyForm.addEventListener("submit", async (e) => {
       e.preventDefault()

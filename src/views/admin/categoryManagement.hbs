@@ -65,7 +65,7 @@
         <tbody id="categoryTable">
           {{#each categories}}
           <tr>
-            <td>{{@index}}</td>
+            <td>{{inc @index}}</td>
             <td>{{this.name}}</td>
             <td><span class="badge bg-primary">{{this.product}}</span></td>
             <td>{{this.description}}</td>

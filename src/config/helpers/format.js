@@ -1,6 +1,9 @@
 const Handlebars = require("handlebars");
 
 module.exports = {
+  inc: (value) => {
+    return parseInt(value) + 1;
+  },
   formatPrice: (price) => {
     if (!price) return "";
     return price.toString().replace(/\B(?=(\d{3})+(?!\d))/g, ",");

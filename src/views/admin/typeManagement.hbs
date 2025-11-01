@@ -34,7 +34,7 @@
           <!-- Sample Data -->
           {{#each types}}
           <tr>
-            <td>{{@index}}</td>
+            <td>{{inc @index}}</td>
             <td>{{this.name}}</td>
             <td>{{this.description}}</td>
             {{#if this.isListed}}

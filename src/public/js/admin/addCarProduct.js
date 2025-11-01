@@ -119,10 +119,7 @@ document.addEventListener("DOMContentLoaded", () => {
     wheels: (v) => (v && v.trim() !== "") || "Wheels is required.",
     upholstery: (v) => (v && v.trim() !== "") || "Upholstery is required.",
     design: (v) => (v && v.trim() !== "") || "Design is required.",
-    cameras: (v) =>
-      v === "" ||
-      /^[0-9]+$/.test(v) ||
-      "Enter number of cameras or leave blank.",
+    cameras: (v) => (v && v.length > 0) || "Enter cameras info.",
     lane_assist: (v) =>
       ["true", "false"].includes(String(v)) || "Select lane assist option.",
     sound_system: (v) => (v && v.trim() !== "") || "Sound system is required.",
@@ -366,6 +363,8 @@ document.addEventListener("DOMContentLoaded", () => {
       autoCropArea: 0.95,
       responsive: true,
       background: false,
+      zoomable: true,
+      cropBoxResizable: true,
     });
   });
 

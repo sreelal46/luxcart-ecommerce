@@ -20,6 +20,7 @@ const loadLandingPage = async (req, res, next) => {
     const brands = await Brand.find({ isListed: true }).lean();
     const types = await Type.find({ isListed: true }).lean();
     const accessories = await Accessory.find({ isListed: true })
+      .sort({ createdAt: -1 })
       .populate("product_type_id")
       .limit(4)
       .lean();
@@ -34,6 +35,7 @@ const loadHomePage = async (req, res) => {
     const brands = await Brand.find({ isListed: true }).lean();
     const types = await Type.find({ isListed: true }).lean();
     const accessories = await Accessory.find({ isListed: true })
+      .sort({ createdAt: -1 })
       .populate("product_type_id", "name")
       .limit(4)
       .lean();
@@ -125,7 +127,9 @@ const loadSingleCarProduct = async (req, res, next) => {
 
 const loadAllAccessories = async (req, res, next) => {
   try {
-    const accessories = await Accessory.find({ isListed: true }).lean();
+    const accessories = await Accessory.find({ isListed: true })
+      .sort({ createdAt: -1 })
+      .lean();
     console.log(accessories);
     const brands = await Brand.find({ isListed: true }).lean();
     const categories = await Category.find({

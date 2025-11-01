@@ -177,7 +177,7 @@ document.addEventListener("DOMContentLoaded", () => {
       ease: "power2.out",
     });
   } else {
-    // 🖥️ Desktop animations (slightly bolder)
+    //Desktop animations (slightly bolder)
     gsap.from(
       ".car-header, .car-main-img, .price-box, .accordion, .related-card",
       {

@@ -33,7 +33,7 @@
         <tbody id="brandTable">
           {{#each brands}}
           <tr>
-            <td>{{@index}}</td>
+            <td>{{inc @index}}</td>
             <td>
               <img src="{{image_url}}" alt="{{name}}" class="rounded"
                 style="width:50px; height:50px; object-fit:cover;">

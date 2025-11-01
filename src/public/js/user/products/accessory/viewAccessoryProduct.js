@@ -89,36 +89,6 @@ document.addEventListener("DOMContentLoaded", () => {
     });
   });
 
-  // Read More toggle
-  const descText = document.getElementById("descriptionText");
-  const toggleBtn = document.getElementById("toggleDescBtn");
-
-  if (descText && toggleBtn) {
-    const fullText = descText.innerHTML.trim();
-
-    if (fullText.length > 350) {
-      const shortText = fullText.slice(0, 350) + "...";
-      descText.innerHTML = shortText;
-      toggleBtn.style.display = "inline-block";
-
-      toggleBtn.addEventListener("click", () => {
-        const isExpanded = descText.innerHTML !== shortText;
-
-        gsap.to(descText, {
-          opacity: 0,
-          duration: 0.25,
-          onComplete: () => {
-            descText.innerHTML = isExpanded ? shortText : fullText;
-            toggleBtn.textContent = isExpanded ? "Read More" : "Show Less";
-            gsap.to(descText, { opacity: 1, duration: 0.25 });
-          },
-        });
-      });
-    } else {
-      toggleBtn.style.display = "none";
-    }
-  }
-
   // Zoom effect (desktop only)
   if (!isMobile) {
     document.querySelectorAll(".zoom-container img").forEach((img) => {
@@ -133,4 +103,53 @@ document.addEventListener("DOMContentLoaded", () => {
       });
     });
   }
+});
+
+// Description read more/less toggle with GSAP animation
+document.addEventListener("DOMContentLoaded", () => {
+  const desc = document.getElementById("descriptionText");
+  const btn = document.getElementById("toggleDescBtn");
+
+  if (!desc || !btn) return;
+
+  // Initial collapsed state
+  const collapsedHeight = 160;
+  desc.style.maxHeight = collapsedHeight + "px";
+  desc.style.overflow = "hidden";
+  desc.style.transition = "none"; // disable CSS transitions to rely on GSAP only
+
+  let isExpanded = false;
+
+  btn.addEventListener("click", () => {
+    if (!isExpanded) {
+      // 🔹 Expand animation
+      gsap.to(desc, {
+        maxHeight: desc.scrollHeight + 40 + "px", // add little padding for natural feel
+        opacity: 1,
+        duration: 0.8,
+        ease: "power2.out",
+      });
+      gsap.fromTo(
+        desc,
+        { y: 10, opacity: 0.8 },
+        { y: 0, opacity: 1, duration: 0.4, ease: "power2.out" }
+      );
+      btn.textContent = "Read Less";
+    } else {
+      // 🔹 Collapse animation
+      gsap.to(desc, {
+        maxHeight: collapsedHeight,
+        duration: 0.6,
+        ease: "power2.inOut",
+      });
+      gsap.fromTo(
+        desc,
+        { y: 0, opacity: 1 },
+        { y: -10, opacity: 0.8, duration: 0.4, ease: "power2.in" }
+      );
+      btn.textContent = "Read More";
+    }
+
+    isExpanded = !isExpanded;
+  });
 });
