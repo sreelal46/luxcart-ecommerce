@@ -104,16 +104,18 @@ const verifyUser = async (req, res, next) => {
 //logout destroying session
 const logoutPage = (req, res) => {
   //session destroying
-  req.session.destroy((error) => {
-    if (error) {
-      console.log("Error session destroying:", error);
-      next();
-    } else {
-      res.clearCookie("luxcart.sid");
-      console.log("From logout controller session destroy successfully");
-      return res.status(OK).redirect("/");
-    }
-  });
+  delete req.session.user;
+  res.status(OK).redirect("/");
+  // req.session.destroy((error) => {
+  //   if (error) {
+  //     console.log("Error session destroying:", error);
+  //     next();
+  //   } else {
+  //     res.clearCookie("luxcart.sid");
+  //     console.log("From logout controller session destroy successfully");
+  //     return res.status(OK).redirect("/");
+  //   }
+  // });
 };
 
 //sending OTP for forgott password

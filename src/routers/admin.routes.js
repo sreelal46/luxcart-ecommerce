@@ -84,7 +84,9 @@ route.use((req, res, next) => {
 route.get("/login", isLogin, adminLoadLoginPage);
 route.post("/login", verifyadmin);
 route.get("/logout", (req, res) => {
-  req.session.destroy(() => res.redirect("/admin/login"));
+  delete req.session.admin;
+  res.redirect("/admin/login");
+  // req.session.destroy(() => res.redirect("/admin/login"));
 });
 
 //forgot-password setup

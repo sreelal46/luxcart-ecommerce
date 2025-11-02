@@ -17,13 +17,17 @@
           <a href="#" class="clear-filters">Clear All</a>
         </div>
 
+        <h6 class="filter-title mt-4">Price</h6>
+
         <div class="form-check mb-2">
-          <h6 class="filter-title mt-4">Price</h6>
-          <input class="form-check-input" type="checkbox" value="minPrice" id="minPrice" />
-          <label class="form-check-label">Min Price</label>
-          <input class="form-check-input" type="checkbox" value="maxPrice" id="maxPrice" />
-          <label class="form-check-label">Max Price</label>
+          <input class="form-check-input" value="min-price" type="checkbox" id="priceMin" />
+          <label class="form-check-label" for="brand">Min price</label>
         </div>
+        <div class="form-check mb-2">
+          <input class="form-check-input" value="max-price" type="checkbox" id="priceMax" />
+          <label class="form-check-label" for="brand">Max price</label>
+        </div>
+
 
         <!-- Brand Filter -->
         <h6 class="filter-title mt-4">Brand</h6>
@@ -116,13 +120,17 @@
       <button id="closeFilterBtn" aria-label="Close filter panel"
         style="border:none; background:none; font-size:1.5rem; cursor:pointer;">×</button>
     </div>
-    <div>
-      <h6 class="filter-title mt-4">Price</h6>
-      <input class="form-check-input" type="checkbox" value="minPrice" id="minPrice" placeholder="Min Price" />
-      <label class="form-check-label" for="mobile-brand">Min Price</label>
-      <input class="form-check-input" type="checkbox" value="maxPrice" id="maxPrice" placeholder="Max Price" />
-      <label class="form-check-label" for="mobile-brand">Max Price</label>
+    <h6 class="filter-title mt-4">Price</h6>
+
+    <div class="form-check mb-2">
+      <input class="form-check-input" value="min-price" type="checkbox" id="priceMin" />
+      <label class="form-check-label" for="brand">Min price</label>
     </div>
+    <div class="form-check mb-2">
+      <input class="form-check-input" value="max-price" type="checkbox" id="priceMax" />
+      <label class="form-check-label" for="brand">Max price</label>
+    </div>
+
     <!-- Brand Filter -->
     <h6 class="filter-title mt-4">Brand</h6>
     {{#each brands}}

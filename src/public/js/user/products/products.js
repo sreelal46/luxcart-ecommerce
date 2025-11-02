@@ -1,35 +1,47 @@
 document.addEventListener("DOMContentLoaded", () => {
-  // Mobile filter panel toggle
   const filterToggleBtn = document.getElementById("filterToggleBtn");
   const mobileFilterPanel = document.getElementById("mobileFilterPanel");
   const closeFilterBtn = document.getElementById("closeFilterBtn");
 
-  filterToggleBtn.addEventListener("click", () => {
+  // Create overlay dynamically
+  const overlay = document.createElement("div");
+  overlay.id = "filterOverlay";
+  document.body.appendChild(overlay);
+
+  function openPanel() {
     mobileFilterPanel.classList.add("active");
     mobileFilterPanel.setAttribute("aria-hidden", "false");
-    // Optionally lock body scroll when filter open
+    overlay.style.display = "block";
     document.body.style.overflow = "hidden";
-  });
+  }
 
-  closeFilterBtn.addEventListener("click", () => {
+  function closePanel() {
     mobileFilterPanel.classList.remove("active");
     mobileFilterPanel.setAttribute("aria-hidden", "true");
-    // Restore body scroll
+    overlay.style.display = "none";
     document.body.style.overflow = "";
-  });
+  }
 
-  // Clear and Save buttons can be wired up as needed
-  document.getElementById("clearFiltersBtn").addEventListener("click", () => {
+  // Open filter
+  filterToggleBtn.addEventListener("click", openPanel);
+
+  // Close filter with X button or outside click
+  closeFilterBtn.addEventListener("click", closePanel);
+  overlay.addEventListener("click", closePanel);
+
+  // Clear all filters
+  const clearBtn = document.getElementById("clearFiltersBtn");
+  clearBtn.addEventListener("click", () => {
     const checkboxes = mobileFilterPanel.querySelectorAll(
       'input[type="checkbox"]'
     );
     checkboxes.forEach((cb) => (cb.checked = false));
-    // You may want to trigger filter reset logic here
   });
 
-  document.getElementById("saveFiltersBtn").addEventListener("click", () => {
-    // Collect selections and apply filters
-    filterToggleBtn.click(); // Close filter panel after saving
-    // Implement filter apply mechanism here
+  // Save filters and close
+  const saveBtn = document.getElementById("saveFiltersBtn");
+  saveBtn.addEventListener("click", () => {
+    closePanel();
+    // Add filter logic here if needed
   });
 });

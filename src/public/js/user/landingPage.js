@@ -1,10 +1,27 @@
 document.addEventListener("DOMContentLoaded", () => {
+  // ===== CLONE LOGO SLIDE FOR INFINITE SCROLL =====
   const slide = document.querySelector(".logos-slide");
-  const copy = slide.cloneNode(true);
-  document.querySelector(".logos").appendChild(copy);
+  if (slide) {
+    const copy = slide.cloneNode(true);
+    const logosContainer = document.querySelector(".logos");
+    if (logosContainer) logosContainer.appendChild(copy);
+  }
 
+  // ===== PAUSE ON HOVER (PREMIUM BRANDS TRACK) =====
+  const track = document.querySelector(".brand-slide-track");
+  if (track) {
+    track.addEventListener("mouseenter", () => {
+      track.style.animationPlayState = "paused";
+    });
+    track.addEventListener("mouseleave", () => {
+      track.style.animationPlayState = "running";
+    });
+  }
+
+  // ===== GSAP SETUP =====
   gsap.registerPlugin(ScrollTrigger);
 
+  // ===== HERO SECTION ANIMATIONS =====
   const tl = gsap.timeline({ defaults: { ease: "power3.out" } });
 
   // Hero Title
@@ -22,8 +39,8 @@ document.addEventListener("DOMContentLoaded", () => {
       y: 40,
       opacity: 0,
     },
-    "-=0.8"
-  ); // slight overlap
+    "-=0.8" // overlap
+  );
 
   // Hero Button
   tl.from(
@@ -32,17 +49,12 @@ document.addEventListener("DOMContentLoaded", () => {
       duration: 1,
       y: 20,
       opacity: 0,
-      scale: 1, // avoid scale 0, use scale 1 for safety
+      scale: 1,
     },
     "-=0.6"
   );
-});
 
-document.addEventListener("DOMContentLoaded", () => {
-  // Enable ScrollTrigger
-  gsap.registerPlugin(ScrollTrigger);
-
-  // HERO SECTION
+  // Extra hero fade-in for full section
   gsap.from(".hero-content", {
     opacity: 0,
     y: 80,
@@ -50,14 +62,14 @@ document.addEventListener("DOMContentLoaded", () => {
     ease: "power4.out",
   });
 
-  // PREMIUM BRANDS
+  // ===== PREMIUM BRANDS =====
   gsap.fromTo(
     ".premium-brands",
     { opacity: 0, y: 80 },
     {
       scrollTrigger: {
         trigger: ".premium-brands",
-        start: "top 90%", // triggers earlier
+        start: "top 90%",
         toggleActions: "play none none reverse",
       },
       opacity: 1,
@@ -79,7 +91,7 @@ document.addEventListener("DOMContentLoaded", () => {
     ease: "back.out(1.7)",
   });
 
-  // FEATURED CATEGORIES
+  // ===== FEATURED CATEGORIES =====
   gsap.from(".featured-categories h2, .featured-categories p", {
     scrollTrigger: {
       trigger: ".featured-categories",
@@ -90,6 +102,7 @@ document.addEventListener("DOMContentLoaded", () => {
     stagger: 0.2,
     duration: 3,
   });
+
   gsap.from(".category-card", {
     scrollTrigger: {
       trigger: ".featured-categories",
@@ -102,7 +115,7 @@ document.addEventListener("DOMContentLoaded", () => {
     ease: "power3.out",
   });
 
-  // PREMIUM ACCESSORIES
+  // ===== PREMIUM ACCESSORIES =====
   gsap.from(".premium-accessories h2", {
     scrollTrigger: {
       trigger: ".premium-accessories",
@@ -112,6 +125,7 @@ document.addEventListener("DOMContentLoaded", () => {
     y: 0,
     duration: 3,
   });
+
   gsap.from(".accessory-card", {
     scrollTrigger: {
       trigger: ".premium-accessories",
@@ -124,7 +138,7 @@ document.addEventListener("DOMContentLoaded", () => {
     ease: "power2.out",
   });
 
-  // EXPERIENCE LUXCART
+  // ===== EXPERIENCE LUXCART =====
   gsap.from(".experience-luxcart", {
     scrollTrigger: {
       trigger: ".experience-luxcart",
