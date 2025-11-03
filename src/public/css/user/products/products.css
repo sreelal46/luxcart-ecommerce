@@ -249,6 +249,10 @@ body {
   background-color: #333;
   color: white;
 }
+.desk-save-btn {
+  background-color: #333;
+  color: white;
+}
 
 /* --- Overlay --- */
 #filterOverlay {

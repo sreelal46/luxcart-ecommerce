@@ -68,9 +68,9 @@ document.addEventListener("DOMContentLoaded", () => {
     const img = container.querySelector("img");
     let isZoomed = false;
 
-    // 🖥️ Desktop hover zoom
+    // Desktop hover zoom
     container.addEventListener("mousemove", (e) => {
-      if (window.innerWidth <= 768) return; // ❌ No mobile zoom
+      if (window.innerWidth <= 768) return; // No mobile zoom
 
       if (!isZoomed) {
         img.style.transition = "transform 0.3s ease";
@@ -88,7 +88,7 @@ document.addEventListener("DOMContentLoaded", () => {
     });
 
     container.addEventListener("mouseleave", () => {
-      if (window.innerWidth <= 768) return; // ❌ No mobile zoom
+      if (window.innerWidth <= 768) return; // No mobile zoom
       img.style.transform = "scale(1)";
       img.style.transformOrigin = "center center";
       isZoomed = false;
@@ -144,11 +144,11 @@ document.addEventListener("DOMContentLoaded", () => {
     });
   }
 
-  // 🎬 GSAP Entrance Animations (Desktop & Mobile)
+  //GSAP Entrance Animations (Desktop & Mobile)
   const isMobile = window.innerWidth <= 768;
 
   if (isMobile) {
-    // 📱 Mobile animations (fade & slide)
+    // Mobile animations (fade & slide)
     gsap.from(".car-header", {
       opacity: 0,
       y: -20,
