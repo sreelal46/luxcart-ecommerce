@@ -74,99 +74,97 @@ const loadVerify_OTP_Page = (req, res) => {
 
 const loadCarCollection = async (req, res, next) => {
   try {
-    //fetching data
-    console.log("params from filter ", req.query);
-    const querySearch = req.query;
-    let { FilterPrice, FilterBrands, FilterCategories, FilterTypes, search } =
-      querySearch;
+    let {
+      FilterPrice,
+      FilterBrands,
+      FilterCategories,
+      FilterTypes,
+      search,
+      page,
+      limit,
+    } = req.query;
 
-    //converting to array
+    page = parseInt(page) || 1;
+    limit = parseInt(limit) || 12;
+    const skip = (page - 1) * limit;
+
     FilterPrice = FilterPrice ? FilterPrice.split(",") : [];
     FilterBrands = FilterBrands ? FilterBrands.split(",") : [];
     FilterCategories = FilterCategories ? FilterCategories.split(",") : [];
     FilterTypes = FilterTypes ? FilterTypes.split(",") : [];
 
-    //finding filter is existing
-    if (
-      FilterPrice.length ||
-      FilterBrands.length ||
-      FilterCategories.length ||
-      FilterTypes.length
-    ) {
-      //sort price
-      let sortByPrice = { createdAt: -1 };
-      if (FilterPrice.length) {
-        if (FilterPrice[0] === "low-price") sortByPrice = { price: 1 };
-        if (FilterPrice[0] === "high-price") sortByPrice = { price: -1 };
+    const filter = { isListed: true };
 
-        //filter brand
-        let filter = { isListed: true };
-        if (FilterBrands.length && FilterBrands[0] !== "undefined") {
-          const findBrand = await Brand.find({
-            name: { $in: FilterBrands },
-          }).lean();
-          FilterBrands = findBrand.map((brand) => brand._id);
-          filter.brand_id = { $in: FilterBrands };
-        }
-
-        //filter Category
-        if (FilterCategories.length && FilterCategories[0] !== "undefined") {
-          const findCategory = await Category.find({
-            name: { $in: FilterCategories },
-          }).lean();
-          FilterCategories = findCategory.map((brand) => brand._id);
-          filter.category_id = { $in: FilterCategories };
-        }
-        //filter types
-        if (FilterTypes.length && FilterTypes[0] !== "undefined") {
-          const findTypes = await Type.find({
-            name: { $in: FilterTypes },
-          }).lean();
-          FilterTypes = findTypes.map((brand) => brand._id);
-          filter.product_type_id = { $in: FilterTypes };
-        }
-
-        //search
-        if (search && search !== "undefined" && search.trim() !== "") {
-          const regex = new RegExp(search.split("").join("[^a-zA-Z0-9]*"), "i");
-          filter.$or = [{ name: regex }];
-        }
-
-        const cars = await Car.find(filter)
-          .sort(sortByPrice)
-          .populate("brand_id", "name")
-          .populate("category_id", "name")
-          .populate("product_type_id", "name")
-          .populate("variantIds", "image_url")
-          .lean();
-        console.log(cars);
-        return res.status(OK).json({ success: true, result: cars });
-      }
+    // Build Filters
+    if (FilterBrands.length && FilterBrands[0] !== "undefined") {
+      const findBrand = await Brand.find({
+        name: { $in: FilterBrands },
+      }).lean();
+      filter.brand_id = { $in: findBrand.map((b) => b._id) };
     }
 
-    //featching all cars
-    const cars = await Car.find({ isListed: true })
-      .sort({ createdAt: -1 })
-      .populate("brand_id", "name")
-      .populate("category_id", "name")
-      .populate("product_type_id", "name")
-      .populate("variantIds", "image_url")
-      .lean();
+    if (FilterCategories.length && FilterCategories[0] !== "undefined") {
+      const findCategory = await Category.find({
+        name: { $in: FilterCategories },
+      }).lean();
+      filter.category_id = { $in: findCategory.map((c) => c._id) };
+    }
+
+    if (FilterTypes.length && FilterTypes[0] !== "undefined") {
+      const findTypes = await Type.find({ name: { $in: FilterTypes } }).lean();
+      filter.product_type_id = { $in: findTypes.map((t) => t._id) };
+    }
+
+    if (search && search !== "undefined" && search.trim() !== "") {
+      const regex = new RegExp(search.split("").join("[^a-zA-Z0-9]*"), "i");
+      filter.$or = [{ name: regex }];
+    }
+
+    let sortBy = { createdAt: -1 };
+    if (FilterPrice.length) {
+      if (FilterPrice[0] === "low-price") sortBy = { price: 1 };
+      if (FilterPrice[0] === "high-price") sortBy = { price: -1 };
+    }
+
+    // Fetch Data with Pagination
+    const [cars, totalCars] = await Promise.all([
+      Car.find(filter)
+        .sort(sortBy)
+        .skip(skip)
+        .limit(limit)
+        .populate("brand_id", "name")
+        .populate("category_id", "name")
+        .populate("product_type_id", "name")
+        .populate("variantIds", "image_url")
+        .lean(),
+      Car.countDocuments(filter),
+    ]);
+
+    if (req.xhr || req.headers.accept.indexOf("application/json") > -1) {
+      return res.json({
+        success: true,
+        result: cars,
+        totalPages: Math.ceil(totalCars / limit),
+        currentPage: page,
+      });
+    }
+
+    // Initial Page Load
     const brands = await Brand.find({ isListed: true })
       .sort({ name: 1 })
       .lean();
-    const categories = await Category.find({
-      isListed: true,
-      product: "Car",
-    })
+    const categories = await Category.find({ isListed: true, product: "Car" })
       .sort({ name: 1 })
       .lean();
     const types = await Type.find({ isListed: true }).sort({ name: 1 });
-    res.status(200).render("user/products/car/carCollection", {
+
+    res.render("user/products/car/carCollection", {
       cars,
       brands,
       categories,
       types,
+      totalPages: Math.ceil(totalCars / limit),
+      currentPage: page,
     });
   } catch (error) {
     console.error("Error loading car collection:", error);
@@ -204,74 +202,79 @@ const loadSingleCarProduct = async (req, res, next) => {
 
 const loadAllAccessories = async (req, res, next) => {
   try {
-    console.log("params from filter ", req.query);
-    const querySearch = req.query;
-    let { FilterPrice, FilterBrands, FilterCategories, FilterTypes, search } =
-      querySearch;
+    let {
+      FilterPrice,
+      FilterBrands,
+      FilterCategories,
+      FilterTypes,
+      search,
+      page,
+      limit,
+    } = req.query;
 
-    //converting to array
+    page = parseInt(page) || 1;
+    limit = parseInt(limit) || 12;
+    const skip = (page - 1) * limit;
+
     FilterPrice = FilterPrice ? FilterPrice.split(",") : [];
     FilterBrands = FilterBrands ? FilterBrands.split(",") : [];
     FilterCategories = FilterCategories ? FilterCategories.split(",") : [];
     FilterTypes = FilterTypes ? FilterTypes.split(",") : [];
 
-    //finding filter is existing
-    if (
-      FilterPrice.length ||
-      FilterBrands.length ||
-      FilterCategories.length ||
-      FilterTypes.length
-    ) {
-      //sort price
-      let sortByPrice = { createdAt: -1 };
-      if (FilterPrice.length) {
-        if (FilterPrice[0] === "low-price") sortByPrice = { price: 1 };
-        if (FilterPrice[0] === "high-price") sortByPrice = { price: -1 };
+    const filter = { isListed: true };
 
-        //filter brand
-        let filter = { isListed: true };
-        if (FilterBrands.length && FilterBrands[0] !== "undefined") {
-          const findBrand = await Brand.find({
-            name: { $in: FilterBrands },
-          }).lean();
-          FilterBrands = findBrand.map((brand) => brand._id);
-          filter.brand_id = { $in: FilterBrands };
-        }
-
-        //filter Category
-        if (FilterCategories.length && FilterCategories[0] !== "undefined") {
-          const findCategory = await Category.find({
-            name: { $in: FilterCategories },
-          }).lean();
-          FilterCategories = findCategory.map((brand) => brand._id);
-          filter.category_id = { $in: FilterCategories };
-        }
-        //filter types
-        if (FilterTypes.length && FilterTypes[0] !== "undefined") {
-          const findTypes = await Type.find({
-            name: { $in: FilterTypes },
-          }).lean();
-          FilterTypes = findTypes.map((brand) => brand._id);
-          filter.product_type_id = { $in: FilterTypes };
-        }
-
-        //search
-        if (search && search !== "undefined" && search.trim() !== "") {
-          const regex = new RegExp(search.split("").join("[^a-zA-Z0-9]*"), "i");
-          filter.$or = [{ name: regex }];
-        }
-
-        const accessories = await Accessory.find(filter)
-          .sort(sortByPrice)
-          .populate("brand_id", "name")
-          .populate("category_id", "name")
-          .populate("product_type_id", "name")
-          .lean();
-
-        return res.status(OK).json({ success: true, result: accessories });
-      }
+    // Build Filters
+    if (FilterBrands.length && FilterBrands[0] !== "undefined") {
+      const findBrand = await Brand.find({
+        name: { $in: FilterBrands },
+      }).lean();
+      filter.brand_id = { $in: findBrand.map((b) => b._id) };
     }
 
+    if (FilterCategories.length && FilterCategories[0] !== "undefined") {
+      const findCategory = await Category.find({
+        name: { $in: FilterCategories },
+      }).lean();
+      filter.category_id = { $in: findCategory.map((c) => c._id) };
+    }
+
+    if (FilterTypes.length && FilterTypes[0] !== "undefined") {
+      const findTypes = await Type.find({ name: { $in: FilterTypes } }).lean();
+      filter.product_type_id = { $in: findTypes.map((t) => t._id) };
+    }
+
+    if (search && search !== "undefined" && search.trim() !== "") {
+      const regex = new RegExp(search.split("").join("[^a-zA-Z0-9]*"), "i");
+      filter.$or = [{ name: regex }];
+    }
+
+    let sortBy = { createdAt: -1 };
+    if (FilterPrice.length) {
+      if (FilterPrice[0] === "low-price") sortBy = { price: 1 };
+      if (FilterPrice[0] === "high-price") sortBy = { price: -1 };
+    }
+
+    // Fetch Data with Pagination
+    const [accessory, totalAccessory] = await Promise.all([
+      Accessory.find(filter)
+        .sort(sortBy)
+        .skip(skip)
+        .limit(limit)
+        .populate("brand_id", "name")
+        .populate("category_id", "name")
+        .populate("product_type_id", "name")
+        .lean(),
+      Accessory.countDocuments(filter),
+    ]);
+
+    if (req.xhr || req.headers.accept.indexOf("application/json") > -1) {
+      return res.json({
+        success: true,
+        result: accessory,
+        totalPages: Math.ceil(totalAccessory / limit),
+        currentPage: page,
+      });
+    }
     const accessories = await Accessory.find({ isListed: true })
       .sort({ createdAt: -1 })
       .lean();

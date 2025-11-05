@@ -55,19 +55,17 @@ window.renderProducts = function (products) {
     card.innerHTML = `
       <div class="card car-card">
         <div class="car-image-wrapper position-relative">
-          <img src="${
-            product.variantIds
-              ? firstImage(product.variantIds)
-              : product.images[0]
-          }" alt="${product.name}" class="car-image" />
+          <img src="${firstImage(product.variantIds)}" alt="${
+      product.name
+    }" class="car-image" />
           ${
-            product.category_id
-              ? `<span class="badge category-badge position-absolute top-0 start-0 m-3 text-capitalize">${product.category_id.name}</span>`
+            product.category
+              ? `<span class="badge category-badge position-absolute top-0 start-0 m-3 text-capitalize">${product.category}</span>`
               : ""
           }
         </div>
         <div class="card-body p-4">
-          <h6 class="brand-name mb-2">${product.brand_id.name}</h6>
+          <h6 class="brand-name mb-2">${product.brand}</h6>
           <h5 class="car-name">${product.name}</h5>
           <div class="d-flex justify-content-between align-items-center mt-3">
             ${
@@ -75,18 +73,13 @@ window.renderProducts = function (products) {
                 ? `<span class="price-tag">₹${product.price.toLocaleString()}</span>`
                 : `<span class="price-tag text-danger fw-bold">Not Available</span>`
             }
-            <span class="year-badge">${
-              product.year ? product.year : product.production_year
-            }</span>
+            <span class="year-badge">${product.year}</span>
           </div>
         </div>
         <div class="card-footer bg-white text-center border-0 p-3">
-
-            ${
-              product.images
-                ? `<a href="/all-accessories/view-accessory-product/${product._id}" class="btn view-details-btn w-100">View Details</a>`
-                : `<a href="/cars-collection/view-car-product/${product._id}" class="btn view-details-btn w-100">View Details</a>`
-            }
+          <a href="/cars-collection/view-car-product/${
+            product._id
+          }" class="btn view-details-btn w-100">View Details</a>
         </div>
       </div>
     `;

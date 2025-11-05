@@ -3,7 +3,7 @@ document.addEventListener("DOMContentLoaded", () => {
   const mobileFilterPanel = document.getElementById("mobileFilterPanel");
   const closeFilterBtn = document.getElementById("closeFilterBtn");
   const filterSidebar = document.getElementById("filterSidebar");
-  const pagination = document.getElementById("paginationSecction");
+  const paginationSection = document.getElementById("paginationSecction");
 
   // Create overlay dynamically
   const overlay = document.createElement("div");
@@ -64,7 +64,7 @@ document.addEventListener("DOMContentLoaded", () => {
   const saveBtnDesk = document.getElementById("saveFiltersBtn");
   const saveBtnMob = document.getElementById("saveFiltersBtnMobile");
 
-  async function applyFilters(searchInput) {
+  async function applyFilters(searchInput, page = 1) {
     //search filter
     const search = searchInput.value.trim();
 
@@ -76,17 +76,20 @@ document.addEventListener("DOMContentLoaded", () => {
 
     checkBoxes.forEach((box) => {
       const group = box.name;
-      if (!group) return;
+      if (!group) return; // skip invalid
       if (!filter[group]) filter[group] = [];
       filter[group].push(box.value);
     });
 
+    console.log(filter);
     const params = {
       FilterPrice: filter.FilterPrice,
       FilterBrands: filter.FilterBrands,
       FilterCategories: filter.FilterCategories,
       FilterTypes: filter.FilterTypes,
       search,
+      page,
+      limit: 12,
     };
 
     try {
@@ -97,13 +100,59 @@ document.addEventListener("DOMContentLoaded", () => {
 
       if (res.data.success) {
         const accessory = res.data.result;
-        console.log(accessory);
-        renderProducts(accessory);
-        pagination.style.display = accessory.length > 12 ? "block" : "none";
+        renderAccessories(accessory);
+        renderPagination(res.data.currentPage, res.data.totalPages);
       }
     } catch (error) {
       console.log("Error from Filtering", error);
     }
+  }
+
+  // Pagination Renderer
+  window.loadPage = function (page) {
+    const input = window.innerWidth < 768 ? searchInputMobile : searchInputDesk;
+    applyFilters(input, page);
+  };
+
+  function renderPagination(currentPage, totalPages) {
+    if (!paginationSection) return;
+
+    if (totalPages <= 1) {
+      paginationSection.style.display = "none";
+      return;
+    }
+
+    paginationSection.style.display = "block";
+
+    let html = `<ul class="pagination justify-content-center">`;
+
+    html += `
+      <li class="page-item ${currentPage === 1 ? "disabled" : ""}">
+        <a class="page-link" style="cursor:pointer" onclick="loadPage(${
+          currentPage - 1
+        })"><i class="bi bi-chevron-left"></i></a>
+      </li>
+    `;
+
+    for (let i = 1; i <= totalPages; i++) {
+      html += `
+        <li class="page-item ${i === currentPage ? "active" : ""}">
+          <a class="page-link" style="cursor:pointer" onclick="loadPage(${i})">${i}</a>
+        </li>
+      `;
+    }
+
+    html += `
+      <li class="page-item ${currentPage === totalPages ? "disabled" : ""}">
+        <a class="page-link" style="cursor:pointer" onclick="loadPage(${
+          currentPage + 1
+        })"><i class="bi bi-chevron-right"></i></a>
+      </li>
+    `;
+
+    html += `</ul>`;
+
+    paginationSection.innerHTML = html;
   }
 
   // Attach listeners
@@ -118,4 +167,6 @@ document.addEventListener("DOMContentLoaded", () => {
   saveBtnMob.addEventListener("click", () => {
     closePanel(), applyFilters(searchInputMobile);
   });
+
+  applyFilters(searchInput, 1);
 });
