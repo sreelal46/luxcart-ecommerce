@@ -71,13 +71,14 @@
       <!-- Mobile Filter Button and Search Input -->
       <div class="mobile-filter-search">
         <button class="mobile-filter-btn" id="filterToggleBtn">Filter</button>
-        <input type="text" class="form-control mobile-search-input"
+        <input type="text" class="form-control mobile-search-input" id="searchInputMob"
           placeholder=" Search by brand, model or category..." />
       </div>
 
       <!-- Desktop Search Input -->
       <div class="mb-4">
-        <input type="text" class="form-control search-input" placeholder=" Search by brand, model or category..." />
+        <input type="text" id="searchInputDesk" class="form-control search-input"
+          placeholder=" Search by brand, model or category..." />
       </div>
 
       <!-- Cars List -->
@@ -114,11 +115,13 @@
 
       <!-- Pagination -->
       <nav class="mt-5" id="paginationSecction">
+
         <ul class="pagination justify-content-center">
           <li class="page-item active"><a class="page-link" href="#">1</a></li>
           <li class="page-item"><a class="page-link" href="#">2</a></li>
           <li class="page-item"><a class="page-link" href="#">3</a></li>
         </ul>
+
       </nav>
     </div>
   </div>
@@ -183,4 +186,4 @@
 
 <script src="/js/utility/pageloadAnimation.js"></script>
 <script src="/js/utility/renderProducts.js"></script>
-<script src="/js/user/products/products.js"></script>
+<script src="/js/user/products/car/carCollection.js"></script>

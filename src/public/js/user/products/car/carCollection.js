@@ -46,14 +46,30 @@ document.addEventListener("DOMContentLoaded", () => {
     checkboxes.forEach((cb) => (cb.checked = false));
   });
 
+  //searching
+  const searchInput = document.getElementById("searchInputDesk");
+  const searchInputMobile = document.getElementById("searchInputMob");
+
+  function debounce(cb, delay = 400) {
+    let timer;
+    return function (...arg) {
+      clearTimeout(timer);
+      timer = setTimeout(() => {
+        cb(...arg);
+      }, delay);
+    };
+  }
+
   // Save filters and close
   const saveBtnDesk = document.getElementById("saveFiltersBtn");
   const saveBtnMob = document.getElementById("saveFiltersBtnMobile");
 
-  async function applyFilters(sourcePanel) {
-    closePanel();
+  async function applyFilters(searchInput) {
+    //search filter
+    const search = searchInput.value.trim();
 
-    const checkBoxes = sourcePanel.querySelectorAll(
+    //check box filter
+    const checkBoxes = document.querySelectorAll(
       'input[type="checkbox"]:checked'
     );
     const filter = {};
@@ -71,6 +87,7 @@ document.addEventListener("DOMContentLoaded", () => {
       FilterBrands: filter.FilterBrands,
       FilterCategories: filter.FilterCategories,
       FilterTypes: filter.FilterTypes,
+      search,
     };
 
     try {
@@ -89,7 +106,16 @@ document.addEventListener("DOMContentLoaded", () => {
     }
   }
 
-  // Attach listeners for both
-  saveBtnDesk.addEventListener("click", () => applyFilters(filterSidebar));
-  saveBtnMob.addEventListener("click", () => applyFilters(mobileFilterPanel));
+  // Attach listeners
+  const saveDebouns = debounce(() => applyFilters(searchInput), 500);
+  const saveDebounsMobile = debounce(
+    () => applyFilters(searchInputMobile),
+    500
+  );
+  searchInput.addEventListener("input", saveDebouns);
+  searchInputMobile.addEventListener("input", saveDebounsMobile);
+  saveBtnDesk.addEventListener("click", () => applyFilters(searchInput));
+  saveBtnMob.addEventListener("click", () => {
+    closePanel(), applyFilters(searchInputMobile);
+  });
 });

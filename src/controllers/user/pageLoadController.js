@@ -9,6 +9,7 @@ const {
   INTERNAL_SERVER_ERROR,
   REDIRECT,
 } = require("../../constant/statusCode");
+const { filterAndSearchProductUser } = require("../helper/filter");
 const Brand = require("../../models/admin/brandModal");
 const Category = require("../../models/admin/categoryModel");
 const Type = require("../../models/admin/typeModal");
@@ -75,8 +76,9 @@ const loadCarCollection = async (req, res, next) => {
   try {
     //fetching data
     console.log("params from filter ", req.query);
-    let { FilterPrice, FilterBrands, FilterCategories, FilterTypes } =
-      req.query;
+    const querySearch = req.query;
+    let { FilterPrice, FilterBrands, FilterCategories, FilterTypes, search } =
+      querySearch;
 
     //converting to array
     FilterPrice = FilterPrice ? FilterPrice.split(",") : [];
@@ -123,7 +125,13 @@ const loadCarCollection = async (req, res, next) => {
           FilterTypes = findTypes.map((brand) => brand._id);
           filter.product_type_id = { $in: FilterTypes };
         }
-        console.log("=================== filter ", filter);
+
+        //search
+        if (search && search !== "undefined" && search.trim() !== "") {
+          const regex = new RegExp(search.split("").join("[^a-zA-Z0-9]*"), "i");
+          filter.$or = [{ name: regex }];
+        }
+
         const cars = await Car.find(filter)
           .sort(sortByPrice)
           .populate("brand_id", "name")
@@ -154,7 +162,6 @@ const loadCarCollection = async (req, res, next) => {
       .sort({ name: 1 })
       .lean();
     const types = await Type.find({ isListed: true }).sort({ name: 1 });
-    // console.log(cars);
     res.status(200).render("user/products/car/carCollection", {
       cars,
       brands,
@@ -197,10 +204,78 @@ const loadSingleCarProduct = async (req, res, next) => {
 
 const loadAllAccessories = async (req, res, next) => {
   try {
+    console.log("params from filter ", req.query);
+    const querySearch = req.query;
+    let { FilterPrice, FilterBrands, FilterCategories, FilterTypes, search } =
+      querySearch;
+
+    //converting to array
+    FilterPrice = FilterPrice ? FilterPrice.split(",") : [];
+    FilterBrands = FilterBrands ? FilterBrands.split(",") : [];
+    FilterCategories = FilterCategories ? FilterCategories.split(",") : [];
+    FilterTypes = FilterTypes ? FilterTypes.split(",") : [];
+
+    //finding filter is existing
+    if (
+      FilterPrice.length ||
+      FilterBrands.length ||
+      FilterCategories.length ||
+      FilterTypes.length
+    ) {
+      //sort price
+      let sortByPrice = { createdAt: -1 };
+      if (FilterPrice.length) {
+        if (FilterPrice[0] === "low-price") sortByPrice = { price: 1 };
+        if (FilterPrice[0] === "high-price") sortByPrice = { price: -1 };
+
+        //filter brand
+        let filter = { isListed: true };
+        if (FilterBrands.length && FilterBrands[0] !== "undefined") {
+          const findBrand = await Brand.find({
+            name: { $in: FilterBrands },
+          }).lean();
+          FilterBrands = findBrand.map((brand) => brand._id);
+          filter.brand_id = { $in: FilterBrands };
+        }
+
+        //filter Category
+        if (FilterCategories.length && FilterCategories[0] !== "undefined") {
+          const findCategory = await Category.find({
+            name: { $in: FilterCategories },
+          }).lean();
+          FilterCategories = findCategory.map((brand) => brand._id);
+          filter.category_id = { $in: FilterCategories };
+        }
+        //filter types
+        if (FilterTypes.length && FilterTypes[0] !== "undefined") {
+          const findTypes = await Type.find({
+            name: { $in: FilterTypes },
+          }).lean();
+          FilterTypes = findTypes.map((brand) => brand._id);
+          filter.product_type_id = { $in: FilterTypes };
+        }
+
+        //search
+        if (search && search !== "undefined" && search.trim() !== "") {
+          const regex = new RegExp(search.split("").join("[^a-zA-Z0-9]*"), "i");
+          filter.$or = [{ name: regex }];
+        }
+
+        const accessories = await Accessory.find(filter)
+          .sort(sortByPrice)
+          .populate("brand_id", "name")
+          .populate("category_id", "name")
+          .populate("product_type_id", "name")
+          .lean();
+
+        return res.status(OK).json({ success: true, result: accessories });
+      }
+    }
+
     const accessories = await Accessory.find({ isListed: true })
       .sort({ createdAt: -1 })
       .lean();
-    console.log(accessories);
+    // console.log(accessories);
     const brands = await Brand.find({ isListed: true }).lean();
     const categories = await Category.find({
       isListed: true,
@@ -228,7 +303,10 @@ const loadSingleAccessories = async (req, res, next) => {
     res
       .status(OK)
       .render("user/products/accessory/viewAccessorProduct", { accessory });
-  } catch (error) {}
+  } catch (error) {
+    console.log("Error from loadAllAccessories", error);
+    next(error);
+  }
 };
 
 module.exports = {

@@ -14,15 +14,28 @@
     <div class="col-md-3 col-lg-2 mb-4">
       <div class="filter-sidebar p-4">
         <div class="d-flex justify-content-between align-items-center mb-4">
-          <h6 class="filter-title mb-0">Filters</h6>
-          <a href="#" class="clear-filters">Clear All</a>
+          <h6 class="filter-title mb-0" id="filterSidebar">Filters</h6>
+          <a href="#" class="clear-filters" id="clearFiltersBtnDesk">Clear All</a>
         </div>
+
+        <!-- Price Filter -->
+        <h6 class="filter-title mt-4">Price</h6>
+        <div class="form-check mb-2">
+          <input class="form-check-input" name="FilterPrice" value="low-price" type="checkbox" id="priceMin" />
+          <label class="form-check-label" for="brand">Lowest price</label>
+        </div>
+        <div class="form-check mb-2">
+          <input class="form-check-input" name="FilterPrice" value="high-price" type="checkbox" id="priceMax" />
+          <label class="form-check-label" for="brand">Highest price</label>
+        </div>
+
 
         <!-- Brand Filter -->
         <h6 class="filter-title mt-4">Brand</h6>
         {{#each brands}}
         <div class="form-check mb-2">
-          <input class="form-check-input" value="{{this.name}}" type="checkbox" id="brand-{{@index}}" />
+          <input class="form-check-input" name="FilterBrands" value="{{this.name}}" type="checkbox"
+            id="brand-{{@index}}" />
           <label class="form-check-label" for="brand-{{@index}}">{{this.name}}</label>
         </div>
         {{/each}}
@@ -31,7 +44,8 @@
         <h6 class="filter-title mt-4">Category</h6>
         {{#each categories}}
         <div class="form-check mb-2">
-          <input class="form-check-input" value="{{this.name}}" type="checkbox" id="category-{{@index}}" />
+          <input class="form-check-input" name="FilterCategories" value="{{this.name}}" type="checkbox"
+            id="category-{{@index}}" />
           <label class="form-check-label" for="category-{{@index}}">{{this.name}}</label>
         </div>
         {{/each}}
@@ -40,40 +54,47 @@
         <h6 class="filter-title mt-4">Type</h6>
         {{#each types}}
         <div class="form-check mb-2">
-          <input class="form-check-input" value="{{this.name}}" type="checkbox" id="type-{{@index}}" />
+          <input class="form-check-input" name="FilterTypes" value="{{this.name}}" type="checkbox"
+            id="type-{{@index}}" />
           <label class="form-check-label" for="type-{{@index}}">{{this.name}}</label>
         </div>
         {{/each}}
+
+        <div class="mobile-filter-actions">
+          <button class="desk-save-btn save-btn" id="saveFiltersBtn">Save</button>
+        </div>
       </div>
     </div>
 
     <!-- Accessories Grid -->
-    <div class="col-md-9 col-lg-10">
+    <div class="col-md-9 col-lg-10" id="carList">
       <!-- Mobile Filter Button and Search Input -->
       <div class="mobile-filter-search">
         <button class="mobile-filter-btn" id="filterToggleBtn">Filter</button>
-        <input type="text" class="form-control mobile-search-input"
-          placeholder=" Search by name, brand or category..." />
+        <input type="text" class="form-control mobile-search-input" id="searchInputMob"
+          placeholder=" Search by brand, model or category..." />
       </div>
 
       <!-- Desktop Search Input -->
       <div class="mb-4">
-        <input type="text" class="form-control search-input" placeholder=" Search by name, brand or category..." />
+        <input type="text" id="searchInputDesk" class="form-control search-input"
+          placeholder=" Search by brand, model or category..." />
       </div>
 
       <!-- Accessories List -->
-      <div class="row g-4 car-list">
+      <div class="row g-4 " id="car-list">
         {{#each accessories}}
         <div class="col-md-6 col-lg-4">
-          <div class="card car-card">
+          <div class="card car-card h-100 d-flex flex-column">
             <div class="car-image-wrapper position-relative">
               <img src="{{this.images.[0]}}" alt="{{this.name}}" class="car-image" />
               {{#if this.category_id.name}}
-              <span
-                class="badge category-badge position-absolute top-0 start-0 m-3 text-capitalize">{{this.category_id.name}}</span>
+              <span class="badge category-badge position-absolute top-0 start-0 m-3 text-capitalize">
+                {{this.category_id.name}}
+              </span>
               {{/if}}
             </div>
-            <div class="card-body p-4">
+            <div class="card-body p-4 flex-grow-1">
               <h6 class="brand-name mb-2">{{this.brand_id.name}}</h6>
               <h5 class="car-name">{{this.name}}</h5>
               <div class="d-flex justify-content-between align-items-center mt-3">
@@ -88,17 +109,23 @@
             </div>
           </div>
         </div>
+
         {{/each}}
       </div>
 
       <!-- Pagination -->
-      <nav class="mt-5">
+      <nav class="mt-5" id="paginationSecction">
+
         <ul class="pagination justify-content-center">
-          <li class="page-item active"><a class="page-link" href="#">1</a></li>
+          <li class="page-item active">
+            <a class="page-link" href="#">1</a>
+          </li>
           <li class="page-item"><a class="page-link" href="#">2</a></li>
           <li class="page-item"><a class="page-link" href="#">3</a></li>
         </ul>
+
       </nav>
+
     </div>
   </div>
 </div>
@@ -111,12 +138,23 @@
       <button id="closeFilterBtn" aria-label="Close filter panel"
         style="border:none; background:none; font-size:1.5rem; cursor:pointer;">×</button>
     </div>
+    <h6 class="filter-title mt-4">Price</h6>
+
+    <div class="form-check mb-2">
+      <input class="form-check-input" name="FilterPrice" value="low-price" type="checkbox" id="priceMin" />
+      <label class="form-check-label" for="brand">Lowest price</label>
+    </div>
+    <div class="form-check mb-2">
+      <input class="form-check-input" name="FilterPrice" value="high-price" type="checkbox" id="priceMax" />
+      <label class="form-check-label" for="brand">Highest price</label>
+    </div>
 
     <!-- Brand Filter -->
     <h6 class="filter-title mt-4">Brand</h6>
     {{#each brands}}
     <div class="form-check mb-2">
-      <input class="form-check-input" value="{{this.name}}" type="checkbox" id="mobile-brand-{{@index}}" />
+      <input class="form-check-input" name="FilterBrands" value="{{this.name}}" type="checkbox"
+        id="mobile-brand-{{@index}}" />
       <label class="form-check-label" for="mobile-brand-{{@index}}">{{this.name}}</label>
     </div>
     {{/each}}
@@ -125,7 +163,8 @@
     <h6 class="filter-title mt-4">Category</h6>
     {{#each categories}}
     <div class="form-check mb-2">
-      <input class="form-check-input" type="checkbox" value="{{this.name}}" id="mobile-category-{{@index}}" />
+      <input class="form-check-input" name="FilterCategories" type="checkbox" value="{{this.name}}"
+        id="mobile-category-{{@index}}" />
       <label class="form-check-label" for="mobile-category-{{@index}}">{{this.name}}</label>
     </div>
     {{/each}}
@@ -134,18 +173,20 @@
     <h6 class="filter-title mt-4">Type</h6>
     {{#each types}}
     <div class="form-check mb-2">
-      <input class="form-check-input" type="checkbox" value="{{this.name}}" id="mobile-type-{{@index}}" />
+      <input class="form-check-input" name="FilterTypes" type="checkbox" value="{{this.name}}"
+        id="mobile-type-{{@index}}" />
       <label class="form-check-label" for="mobile-type-{{@index}}">{{this.name}}</label>
     </div>
     {{/each}}
 
     <div class="mobile-filter-actions">
-      <button class="mobile-clear-btn" id="clearFiltersBtn">Clear All</button>
-      <button class="mobile-save-btn" id="saveFiltersBtn">Save</button>
+      <button class="mobile-clear-btn " id="clearFiltersBtn">Clear All</button>
+      <button class="mobile-save-btn save-btn" id="saveFiltersBtnMobile">Save</button>
     </div>
   </div>
 </div>
 
 
-<script src="/js/user/products/products.js"></script>
 <script src="/js/utility/pageloadAnimation.js"></script>
+<script src="/js/utility/renderProducts.js"></script>
+<script src="/js/user/products/accessory/accessoryCollection.js"></script>
