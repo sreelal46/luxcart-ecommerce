@@ -24,9 +24,9 @@
     </div>
   </div>
   <div class="mb-3">
-    <!-- <button id="showAllProduct" class="toggle-btn active">All</button>
+    <button id="showAllProduct" class="toggle-btn active">All</button>
     <button id="showCars" class="toggle-btn">Cars</button>
-    <button id="showAccessories" class="toggle-btn">Accessory</button> -->
+    <button id="showAccessories" class="toggle-btn">Accessory</button>
   </div>
 
   <!-- All products Table -->
@@ -100,10 +100,11 @@
         </tbody>
       </table>
     </div>
+    <nav class="mt-4" id="productPagination"></nav>
   </div>
 
   <!-- Cars Table -->
-  <!-- <div id="carTable" class="card shadow-sm mb-5">
+  <div id="carTable" class="card shadow-sm mb-5">
     <div class="card-body table-responsive">
       <table class="table table-hover align-middle">
         <thead class="table-light">
@@ -153,10 +154,10 @@
         </tbody>
       </table>
     </div>
-  </div> -->
+  </div>
 
   <!-- Accessories Table -->
-  <!-- <div id="accessoryTable" class="card shadow-sm">
+  <div id="accessoryTable" class="card shadow-sm">
     <div class="card-body table-responsive">
       <table class="table table-hover align-middle">
         <thead class="table-light">
@@ -206,13 +207,8 @@
         </tbody>
       </table>
     </div>
-  </div> -->
-  <nav>
-    <ul class="pagination justify-content-center" id="pagination"></ul>
-  </nav>
-
+  </div>
 </div>
-
 
 
 <!-- Product Type Modal -->
@@ -315,23 +311,29 @@
             <label class="form-label">Category</label>
             <select class="form-select">
               <option>All</option>
-              <option>Car</option>
-              <option>Accessories</option>
+
+              {{#each categories}}
+              <option>{{this.name}}</option>
+              {{/each}}
             </select>
           </div>
           <div class="mb-3">
             <label class="form-label">Brand</label>
             <select class="form-select">
               <option>All</option>
-              <option>BMW</option>
-              <option>LuxAuto</option>
+              {{#each brands}}
+              <option>{{this.name}}</option>
+              {{/each}}
             </select>
           </div>
           <div class="mb-3">
             <label class="form-label">Price Range</label>
             <div class="d-flex gap-2">
-              <input type="number" class="form-control" placeholder="Min">
-              <input type="number" class="form-control" placeholder="Max">
+              <input type="radio" class="form-control" placeholder="Min">
+              <label for="red">Min</label><br>
+
+              <input type="radio" class="form-control" placeholder="Max">
+              <label for="red">Max</label><br>
             </div>
           </div>
           <div class="mb-3">

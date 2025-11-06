@@ -101,7 +101,6 @@ document.addEventListener("DOMContentLoaded", () => {
       if (res.data.success) {
         const cars = res.data.result;
         renderProducts(cars);
-        // pagination.style.display = cars.length > 12 ? "block" : "none";
         renderPagination(res.data.currentPage, res.data.totalPages);
       }
     } catch (error) {

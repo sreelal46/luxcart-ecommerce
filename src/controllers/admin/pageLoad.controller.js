@@ -34,6 +34,33 @@ const loadDashboard = (req, res) => {
 //loading brands
 const loadBrands = async (req, res, next) => {
   try {
+    //fetch data
+    let { search, page, limit } = req.query;
+
+    page = parseInt(page) || 1;
+    limit = parseInt(limit) || 12;
+    const skip = (page - 1) * limit;
+
+    const filter = {};
+    if (search && search !== "undefined" && search.trim() !== "") {
+      const regex = new RegExp(search.split("").join("[^a-zA-Z0-9]*"), "i");
+      filter.$or = [{ name: regex }];
+    }
+
+    const [brand, totalBrand] = await Promise.all([
+      Brand.find(filter).sort({ createdAt: -1 }).skip(skip).limit(limit).lean(),
+      Brand.countDocuments(filter),
+    ]);
+
+    if (req.xhr || req.headers.accept.indexOf("application/json") > -1) {
+      return res.json({
+        success: true,
+        result: brand,
+        totalPages: Math.ceil(totalBrand / limit),
+        currentPage: page,
+      });
+    }
+
     const brands = await Brand.find({}).sort({ createdAt: -1 }).lean();
     res.render("admin/brand/brandManagement", { brands });
   } catch (err) {
@@ -46,6 +73,36 @@ const loadBrands = async (req, res, next) => {
 //Loading category
 const loadCategory = async (req, res, next) => {
   try {
+    let { search, page, limit } = req.query;
+
+    page = parseInt(page) || 1;
+    limit = parseInt(limit) || 12;
+    const skip = (page - 1) * limit;
+
+    const filter = {};
+    if (search && search !== "undefined" && search.trim() !== "") {
+      const regex = new RegExp(search.split("").join("[^a-zA-Z0-9]*"), "i");
+      filter.$or = [{ name: regex }];
+    }
+
+    const [category, totalCategory] = await Promise.all([
+      Category.find(filter)
+        .sort({ createdAt: -1 })
+        .skip(skip)
+        .limit(limit)
+        .lean(),
+      Category.countDocuments(filter),
+    ]);
+
+    if (req.xhr || req.headers.accept.indexOf("application/json") > -1) {
+      return res.json({
+        success: true,
+        result: category,
+        totalPages: Math.ceil(totalCategory / limit),
+        currentPage: page,
+      });
+    }
+
     const categories = await Category.find({})
       .sort({
         createdAt: -1,
@@ -61,6 +118,32 @@ const loadCategory = async (req, res, next) => {
 //load Type page
 const loadType = async (req, res, next) => {
   try {
+    let { search, page, limit } = req.query;
+
+    page = parseInt(page) || 1;
+    limit = parseInt(limit) || 12;
+    const skip = (page - 1) * limit;
+
+    const filter = {};
+    if (search && search !== "undefined" && search.trim() !== "") {
+      const regex = new RegExp(search.split("").join("[^a-zA-Z0-9]*"), "i");
+      filter.$or = [{ name: regex }];
+    }
+
+    const [typess, totalType] = await Promise.all([
+      Type.find(filter).sort({ createdAt: -1 }).skip(skip).limit(limit).lean(),
+      Type.countDocuments(filter),
+    ]);
+
+    if (req.xhr || req.headers.accept.indexOf("application/json") > -1) {
+      return res.json({
+        success: true,
+        result: typess,
+        totalPages: Math.ceil(totalType / limit),
+        currentPage: page,
+      });
+    }
+
     //fetch all data
     const types = await Type.find({}).sort({ createdAt: -1 }).lean();
     res.status(OK).render("admin/typeManagement", { types });
@@ -73,7 +156,59 @@ const loadType = async (req, res, next) => {
 //Load Product page
 const loadProduct = async (req, res, next) => {
   try {
-    //car Product
+    const page = parseInt(req.query.page) || 1;
+    const limit = 12;
+    const search = req.query.search?.trim() || "";
+
+    const filter = {};
+    if (search && search !== "undefined") {
+      const regex = new RegExp(search.split("").join("[^a-zA-Z0-9]*"), "i");
+      filter.$or = [{ name: regex }];
+    }
+
+    // Car Products
+    const carsFilter = await Car.find(filter)
+      .sort({ createdAt: -1 })
+      .populate("brand_id", "name")
+      .populate("category_id", "name")
+      .populate("variantIds", "price stock")
+      .skip((page - 1) * limit)
+      .limit(limit)
+      .lean();
+
+    // Accessories
+    const accessoriesFilter = await Accessory.find(filter)
+      .sort({ createdAt: -1 })
+      .populate("brand_id", "name")
+      .populate("category_id", "name")
+      .skip((page - 1) * limit)
+      .limit(limit)
+      .lean();
+
+    const fullProductsFilter = [...carsFilter, ...accessoriesFilter];
+
+    const totalCars = await Car.countDocuments(filter);
+    const totalAccessories = await Accessory.countDocuments(filter);
+    const total = totalCars + totalAccessories;
+    const totalPages = Math.ceil(total / limit);
+
+    if (
+      req.xhr ||
+      (req.headers.accept && req.headers.accept.includes("application/json"))
+    ) {
+      return res.json({
+        success: true,
+        fullProducts: fullProductsFilter, // frontend expects this name
+        totalPages,
+        currentPage: page,
+      });
+    }
+
+    const brands = await Brand.find({ isListed: true }).lean();
+    const categories = await Category.find({ isListed: true }).lean();
+    const types = await Type.find({ isListed: true });
+
+    // Initial full data for first page load
     const cars = await Car.find({})
       .sort({ createdAt: -1 })
       .populate("brand_id", "name")
@@ -82,7 +217,6 @@ const loadProduct = async (req, res, next) => {
       .populate("variantIds", "price stock")
       .lean();
 
-    //Accessories
     const accessories = await Accessory.find({})
       .sort({ createdAt: -1 })
       .populate("brand_id", "name")
@@ -91,9 +225,11 @@ const loadProduct = async (req, res, next) => {
       .lean();
 
     const fullProducts = [...cars, ...accessories];
-    res.status(OK).render("admin/products/productManagement", {
-      cars,
-      accessories,
+
+    res.render("admin/products/productManagement", {
+      brands,
+      categories,
+      types,
       fullProducts,
     });
   } catch (error) {

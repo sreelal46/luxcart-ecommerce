@@ -1,21 +1,3 @@
-// // Prefill Offer Modal
-// const offerModal = document.getElementById("addOfferModal");
-// offerModal.addEventListener("show.bs.modal", (event) => {
-//   const button = event.relatedTarget;
-//   const name = button.getAttribute("data-name");
-//   document.getElementById("offerCategoryName").textContent = name;
-// });
-
-// // Prefill List/Unlist Modal
-// const toggleStatusModal = document.getElementById("toggleStatusModal");
-// toggleStatusModal.addEventListener("show.bs.modal", (event) => {
-//   const button = event.relatedTarget;
-//   const name = button.getAttribute("data-name");
-//   const status = button.getAttribute("data-status");
-//   document.getElementById("toggleStatusName").textContent = name;
-//   document.getElementById("toggleStatusAction").textContent = status;
-// });
-
 document.addEventListener("DOMContentLoaded", () => {
   // -------------------- Add Category --------------------
   const addCategoryForm = document.getElementById("addCategoryForm");
@@ -172,4 +154,150 @@ document.addEventListener("DOMContentLoaded", () => {
         name.includes(query) || type.includes(query) ? "" : "none";
     });
   });
+
+  const paginationSection = document.getElementById("categoryPagination");
+
+  // =============== SEARCH & PAGINATION ===============
+  function debounce(cb, delay = 400) {
+    let timer;
+    return function (...args) {
+      clearTimeout(timer);
+      timer = setTimeout(() => cb(...args), delay);
+    };
+  }
+
+  async function loadCategories(page = 1) {
+    const search = searchInput.value.trim();
+    try {
+      const res = await axios.get("/admin/categorys-management", {
+        params: { search, page, limit: 12 },
+      });
+
+      if (res.data.success) {
+        renderCategories(res.data.result);
+        renderPagination(res.data.currentPage, res.data.totalPages);
+      }
+    } catch (error) {
+      console.error("Error fetching category data:", error);
+    }
+  }
+
+  window.loadCategoryPage = function (page) {
+    loadCategories(page);
+  };
+
+  function renderCategories(categories = []) {
+    const tbody = document.getElementById("categoryTable");
+    if (!tbody) return console.error("categoryTable element not found");
+
+    if (!Array.isArray(categories)) {
+      console.error("renderCategories expects an array");
+      return;
+    }
+
+    if (categories.length === 0) {
+      tbody.innerHTML = `
+        <tr>
+          <td colspan="8" class="text-center text-muted py-4">No Categories Found</td>
+        </tr>
+      `;
+      return;
+    }
+
+    tbody.innerHTML = categories
+      .map((c, index) => {
+        return `
+        <tr>
+          <td>${index + 1}</td>
+          <td>${c.name}</td>
+          <td><span class="badge bg-primary">${c.product}</span></td>
+          <td>${c.description || "-"}</td>
+          <td>total product</td>
+          <td class="${c.isListed ? "text-success" : "text-danger"}">${
+          c.isListed ? "Listed" : "Unlisted"
+        }</td>
+          
+          <td>
+            <button class="btn btn-sm btn-outline-info"
+              data-id="${c._id}" data-name="${c.name}"
+              data-bs-toggle="modal" data-bs-target="#addOfferModal">
+              <i class="bi bi-tags-fill me-1"></i> Add Offer
+            </button>
+          </td>
+
+          <td>
+            <button class="btn btn-sm btn-outline-primary me-2"
+              data-bs-toggle="modal" data-bs-target="#editCategoryModal"
+              data-id="${c._id}" data-name="${c.name}" data-description="${
+          c.description
+        }" data-type="${c.product}">
+              <i class="bi bi-pencil-fill"></i>
+            </button>
+
+            <button class="btn btn-sm ${
+              c.isListed ? "btn-outline-warning" : "btn-outline-success"
+            }"
+              data-bs-toggle="modal" data-bs-target="#confirmListModal"
+              data-id="${c._id}" data-status="${c.isListed}">
+              <i class="bi ${
+                c.isListed ? "bi-eye-slash-fill" : "bi-eye-fill"
+              }"></i>
+            </button>
+          </td>
+        </tr>
+      `;
+      })
+      .join("");
+  }
+
+  function renderPagination(currentPage, totalPages) {
+    if (!paginationSection) return;
+
+    if (totalPages <= 1) {
+      paginationSection.style.display = "none";
+      return;
+    }
+
+    paginationSection.style.display = "block";
+
+    let html = `<ul class="pagination justify-content-center">`;
+
+    html += `
+      <li class="page-item ${currentPage === 1 ? "disabled" : ""}">
+        <a class="page-link" style="cursor:pointer" onclick="loadCategoryPage(${
+          currentPage - 1
+        })">
+          <i class="bi bi-chevron-left"></i>
+        </a>
+      </li>
+    `;
+
+    for (let i = 1; i <= totalPages; i++) {
+      html += `
+        <li class="page-item ${i === currentPage ? "active" : ""}">
+          <a class="page-link" style="cursor:pointer" onclick="loadCategoryPage(${i})">${i}</a>
+        </li>
+      `;
+    }
+
+    html += `
+      <li class="page-item ${currentPage === totalPages ? "disabled" : ""}">
+        <a class="page-link" style="cursor:pointer" onclick="loadCategoryPage(${
+          currentPage + 1
+        })">
+          <i class="bi bi-chevron-right"></i>
+        </a>
+      </li>
+    `;
+
+    html += `</ul>`;
+
+    paginationSection.innerHTML = html;
+  }
+
+  const debouncedSearch = debounce(loadCategories, 400);
+  searchInput.addEventListener("input", debouncedSearch);
+
+  // FIRST LOAD
+  loadCategories(1);
 });
