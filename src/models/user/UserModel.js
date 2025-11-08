@@ -43,7 +43,12 @@ const userSchema = new mongoose.Schema(
     isActive: { type: Boolean, default: true },
     isVerified: { type: Boolean, default: false },
     isReferred: { type: Boolean, default: false },
-    referralCode: { type: String, unique: true, sparse: true },
+    referralCode: {
+      type: String,
+      unique: true,
+      sparse: true, // Allows multiple docs without this field
+      default: null,
+    },
     referredUsers: [{ type: mongoose.Schema.Types.ObjectId, ref: "User" }],
     createdAt: { type: Date, default: Date.now },
   },

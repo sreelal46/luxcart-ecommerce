@@ -51,12 +51,19 @@
           <div class="info-text">Category: {{accessory.category_id.name}}</div>
           <div class="info-text">Type: {{accessory.product_type_id.name}}</div>
           <div class="info-text">Material: {{accessory.material}}</div>
-          <div class="info-text">Stock: {{accessory.stock}}</div>
+          <!-- <div class="info-text">Stock: {{accessory.stock}}</div> -->
           <div class="info-text mb-3">Warranty: {{accessory.warranty}}</div>
 
           <!-- Desktop Buttons -->
+          {{#if accessory.isListed}}
           <button class="btn btn-buy"><i class="bi bi-lightning-charge"></i> Buy Now</button>
           <button class="btn btn-cart"><i class="bi bi-cart"></i> Add to Cart</button>
+          {{else}}
+          <div class="p-3 rounded-3 border border-danger bg-light text-danger mt-2 d-flex align-items-center">
+            <i class="bi bi-exclamation-octagon-fill fs-5 me-2"></i>
+            <span class="fw-semibold">This model is currently unavailable</span>
+          </div>
+          {{/if}}
         </div>
       </div>
     </div>
@@ -135,9 +142,24 @@
   </div>
 
   <!--MOBILE FIXED BUTTONS (visible only on small screens) -->
-  <div class="mobile-bottom-buttons d-md-none">
-    <button class="btn btn-buy"><i class="bi bi-lightning-charge"></i> Buy Now</button>
-    <button class="btn btn-cart"><i class="bi bi-cart"></i> Add to Cart</button>
+  <div class="mobile-bottom-bar d-lg-none">
+
+    {{#if accessory.isListed}}
+    <div class="action-buttons d-flex gap-2">
+      <button class="btn btn-buy flex-fill">
+        <i class="bi bi-lightning-charge me-1"></i> Buy Now
+      </button>
+      <button class="btn btn-cart flex-fill">
+        <i class="bi bi-cart me-1"></i> Add to Cart
+      </button>
+    </div>
+    {{else}}
+    <div class="unavailable-bar d-flex align-items-center justify-content-center">
+      <i class="bi bi-exclamation-octagon-fill fs-6 me-2"></i>
+      <span class="fw-semibold small">This model is currently unavailable</span>
+    </div>
+    {{/if}}
+
   </div>
 </section>
 

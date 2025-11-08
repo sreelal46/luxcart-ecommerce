@@ -2,22 +2,29 @@ const { OK, CONFLICT, NOT_FOUND } = require("../../constant/statusCode");
 const Category = require("../../models/admin/categoryModel");
 
 const addCategory = async (req, res, next) => {
-  //collecting data
-  const { name, description, productType } = req.body;
-  console.log(req.body);
-
   try {
-    //search any duplicate
-    const duplicate = await Category.findOne({
-      name: { $regex: new RegExp(`^/${name}/$`, "i") },
+    const name = req.body.name?.trim();
+    const description = req.body.description?.trim();
+    const productType = req.body.productType?.trim();
+
+    if (!name || !description || !productType) {
+      return res
+        .status(400)
+        .json({ success: false, alert: "All fields are required." });
+    }
+
+    const existingCategory = await Category.findOne({
+      name: { $regex: new RegExp(`^${name}$`, "i") },
+      product: productType,
     }).lean();
 
-    if (duplicate)
-      return res
-        .status(CONFLICT)
-        .json({ success: false, alert: "This category is existing" });
+    if (existingCategory) {
+      return res.status(409).json({
+        success: false,
+        alert: "This category already exists for this product type.",
+      });
+    }
 
-    //creating new category
     const newCategory = new Category({
       name,
       product: productType,
@@ -26,44 +33,67 @@ const addCategory = async (req, res, next) => {
 
     await newCategory.save();
 
-    res.status(OK).json({ success: true, alert: "Successfull" });
+    return res
+      .status(200)
+      .json({ success: true, alert: "Category added successfully" });
   } catch (error) {
-    console.log(error);
+    console.error("Error while adding category:", error);
     next(error);
   }
 };
 
 const editCategory = async (req, res, next) => {
   try {
-    //collecting data
-    const { name, description, product } = req.body;
-    console.log(req.body);
     const categorieId = req.params.id;
+    const name = req.body.name?.trim();
+    const description = req.body.description?.trim();
+    const product = req.body.product?.trim();
+    console.log(req.body);
 
-    //finding duplicate
-    // const duplicate = await Category.findOne({
-    //   name: { $regex: new RegExp(`^${name}$`, "i") },
-    // });
+    if (!name || !description || !product) {
+      return res
+        .status(BAD_REQUEST)
+        .json({ success: false, alert: "All fields are required" });
+    }
 
-    // if (duplicate)
-    //   return res
-    //     .status(CONFLICT)
-    //     .json({ success: false, message: "Brand name already exists." });
-
-    //searching
-    const categoryData = await Category.findById(categorieId);
-    if (!categoryData)
+    const categoryData = await Category.findById(categorieId).lean();
+    if (!categoryData) {
       return res
         .status(NOT_FOUND)
         .json({ success: false, alert: "Category not found" });
+    }
 
-    //updating data
-    const updateData = { name, description, product };
-    await Category.findByIdAndUpdate(categorieId, updateData);
+    // Check duplicates only if name OR product changed
+    if (
+      categoryData.name.toLowerCase() !== name.toLowerCase() ||
+      categoryData.product !== product
+    ) {
+      const duplicate = await Category.findOne({
+        _id: { $ne: categorieId },
+        name: { $regex: new RegExp(`^${name}$`, "i") },
+        product,
+      });
 
-    res.status(OK).json({ success: true });
+      if (duplicate) {
+        return res.status(CONFLICT).json({
+          success: false,
+          alert: "Category already exists for this product type.",
+        });
+      }
+    }
+
+    // Update category
+    await Category.findByIdAndUpdate(categorieId, {
+      name,
+      description,
+      product,
+    });
+
+    return res
+      .status(OK)
+      .json({ success: true, alert: "Category updated successfully!" });
   } catch (error) {
-    console.log(error);
+    console.error("Error updating category:", error);
     next(error);
   }
 };

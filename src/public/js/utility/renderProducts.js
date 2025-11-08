@@ -65,7 +65,7 @@ window.renderProducts = function (products) {
           }
         </div>
         <div class="card-body p-4">
-          <h6 class="brand-name mb-2">${product.brand}</h6>
+          <h6 class="brand-name mb-2">${product.brand_id.name}</h6>
           <h5 class="car-name">${product.name}</h5>
           <div class="d-flex justify-content-between align-items-center mt-3">
             ${

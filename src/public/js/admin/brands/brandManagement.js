@@ -30,6 +30,7 @@ document.addEventListener("DOMContentLoaded", () => {
   const brandCountryError = document.getElementById("brandCountryError");
   const brandImageInput = document.getElementById("brandImageInput");
   const brandImageError = document.getElementById("brandImageError");
+  const editAlert = document.getElementById("editAlert");
 
   //brand name validation
   function brndNameValidation(input, error) {
@@ -115,8 +116,9 @@ document.addEventListener("DOMContentLoaded", () => {
       }
 
       const formData = new FormData();
-      formData.append("name", e.target.name.value);
-      formData.append("country", e.target.country.value);
+
+      formData.append("name", e.target.name.value.trim());
+      formData.append("country", e.target.country.value.trim());
 
       if (cropper) {
         const blob = await new Promise((resolve) =>
@@ -139,17 +141,29 @@ document.addEventListener("DOMContentLoaded", () => {
         );
 
         if (res.data.success) {
-          alertDiv.className = "alert alert-success text-center";
-          alertDiv.textContent = "Brand added successfully!";
-          setTimeout(() => window.location.reload(), 500);
+          Swal.fire({
+            icon: "success",
+            title: "Updated!",
+            text: "Brand Added successfully!",
+            timer: 1500,
+            showConfirmButton: false,
+          }).then(() => {
+            window.location.reload();
+          });
         } else {
-          alertDiv.className = "alert alert-danger text-center";
-          alertDiv.textContent = res.data.message || "Failed to add brand";
+          Swal.fire({
+            icon: "warning",
+            title: "Oops!",
+            text: res.data?.alert || "Failed to add brand",
+          });
         }
-      } catch (err) {
-        console.error(err);
-        alertDiv.className = "alert alert-danger text-center";
-        alertDiv.textContent = "Upload failed";
+      } catch (error) {
+        console.error("Error from brand editing", error);
+        Swal.fire({
+          icon: "error",
+          title: "Oops!",
+          text: error.response?.data?.alert || "Internal server error",
+        });
       }
     });
 
@@ -215,10 +229,13 @@ document.addEventListener("DOMContentLoaded", () => {
       if (!brandCountry) return;
 
       const formData = new FormData();
-      formData.append("name", document.getElementById("editBrandName").value);
+      formData.append(
+        "name",
+        document.getElementById("editBrandName").value.trim()
+      );
       formData.append(
         "country",
-        document.getElementById("editBrandCountry").value
+        document.getElementById("editBrandCountry").value.trim()
       );
 
       // If a new image was cropped
@@ -230,9 +247,9 @@ document.addEventListener("DOMContentLoaded", () => {
       }
 
       const localAlert = e.target.querySelector("#alert");
-      localAlert.className = "alert alert-info text-center";
-      localAlert.textContent = "Updating...";
-      localAlert.classList.remove("d-none");
+      editAlert.className = "alert alert-info text-center";
+      editAlert.textContent = "Updating...";
+      editAlert.classList.remove("d-none");
 
       try {
         const res = await axios.put(
@@ -244,17 +261,29 @@ document.addEventListener("DOMContentLoaded", () => {
         );
 
         if (res.data.success) {
-          localAlert.className = "alert alert-success text-center";
-          localAlert.textContent = "Brand updated successfully!";
-          setTimeout(() => window.location.reload(), 400);
+          Swal.fire({
+            icon: "success",
+            title: "Updated!",
+            text: "Brand updated successfully!",
+            timer: 1500,
+            showConfirmButton: false,
+          }).then(() => {
+            window.location.reload();
+          });
         } else {
-          localAlert.className = "alert alert-danger text-center";
-          localAlert.textContent = res.data.message || "Failed to update brand";
+          Swal.fire({
+            icon: "error",
+            title: "Oops!",
+            text: res.data?.alert || "Failed to update brand",
+          });
         }
-      } catch (err) {
-        console.error(err);
-        localAlert.className = "alert alert-danger text-center";
-        localAlert.textContent = "Update failed";
+      } catch (error) {
+        console.error("Error from brand editing", error);
+        Swal.fire({
+          icon: "error",
+          title: "Oops!",
+          text: error.response?.data?.alert || "Internal server error",
+        });
       }
     });
 
@@ -310,6 +339,9 @@ document.addEventListener("DOMContentLoaded", () => {
       if (res.data.success) {
         renderBrand(res.data.result);
         renderPagination(res.data.currentPage, res.data.totalPages);
+      } else {
+        alertDiv.textContent = res.data.alert || "Invalid email or password.";
+        alertDiv.style.display = "block";
       }
     } catch (error) {
       console.error("Error fetching search results:", error);

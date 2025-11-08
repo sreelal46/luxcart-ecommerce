@@ -156,7 +156,7 @@ const loadCarCollection = async (req, res, next) => {
     const categories = await Category.find({ isListed: true, product: "Car" })
       .sort({ name: 1 })
       .lean();
-    const types = await Type.find({ isListed: true }).sort({ name: 1 });
+    const types = await Type.find({ isListed: true }).sort({ name: 1 }).lean();
 
     res.render("user/products/car/carCollection", {
       cars,

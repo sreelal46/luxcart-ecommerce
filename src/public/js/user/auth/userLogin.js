@@ -69,16 +69,15 @@ document.addEventListener("DOMContentLoaded", () => {
 
     const email = emailInput.value.trim();
     const password = passwordInput.value.trim();
-    function validationRemove() {
-      if (!email || !validateEmail(email)) {
-        emailError.style.display = "block";
-        return;
-      }
 
-      if (!password || password.length < 6) {
-        passwordError.style.display = "block";
-        return;
-      }
+    if (!email || !validateEmail(email)) {
+      emailError.style.display = "block";
+      return;
+    }
+
+    if (!password || password.length < 6) {
+      passwordError.style.display = "block";
+      return;
     }
 
     try {

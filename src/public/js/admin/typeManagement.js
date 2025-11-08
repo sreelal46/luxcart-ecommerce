@@ -2,45 +2,126 @@ document.addEventListener("DOMContentLoaded", () => {
   //add Type
   const addTypeForm = document.getElementById("addTypeForm");
   const addTypeModal = document.getElementById("addTypeModal");
+  const addAlert = document.getElementById("addAlert");
+  const descriptionInput = document.getElementById("description");
+  const descriptionError = document.getElementById("descriptionError");
+  const nameInput = document.getElementById("nameInput");
+  const nameError = document.getElementById("nameError");
+  const editTypeDescriptionInput = document.getElementById(
+    "editTypeDescription"
+  );
+  const editDescriptionError = document.getElementById("editDescriptionError");
+  const editTypeNameInput = document.getElementById("editTypeName");
+  const editNameError = document.getElementById("editNameError");
+
+  //Type name validation
+  function typeNameValidation(input, error) {
+    const typeName = input.value.trim();
+    if (!typeName) {
+      error.textContent = "Type name is Requaierd";
+      error.style.display = "block";
+      return false;
+    } else if (typeName.length < 3) {
+      error.textContent = "Type name length must be greaterthan 3";
+      error.style.display = "block";
+      return false;
+    } else {
+      error.textContent = "";
+      error.style.display = "none";
+      return true;
+    }
+  }
+
+  //Type Country validation
+  function typeDescriptionValidation(input, error) {
+    const TypeDescription = input.value.trim();
+    if (!TypeDescription) {
+      error.textContent = "Type Description Requaierd";
+      error.style.display = "block";
+      return false;
+    } else if (TypeDescription.length < 10) {
+      error.textContent = "Type Description length must be greaterthan 10";
+      error.style.display = "block";
+      return false;
+    } else {
+      error.textContent = "";
+      error.style.display = "none";
+      return true;
+    }
+  }
+
+  //live validation
+  nameInput.addEventListener("input", () =>
+    typeNameValidation(nameInput, nameError)
+  );
+  descriptionInput.addEventListener("input", () =>
+    typeDescriptionValidation(descriptionInput, descriptionError)
+  );
+  editTypeNameInput.addEventListener("input", () =>
+    typeNameValidation(editTypeNameInput, editNameError)
+  );
+  editTypeDescriptionInput.addEventListener("input", () =>
+    typeDescriptionValidation(editTypeDescriptionInput, editDescriptionError)
+  );
+
   addTypeForm.addEventListener("submit", async (e) => {
     e.preventDefault();
-    const formData = new FormData(addTypeForm);
-    const data = Object.fromEntries(formData.entries());
-    try {
-      // Bootstrap way to close modal
-      const modalInstance = bootstrap.Modal.getInstance(addTypeModal);
-      modalInstance.hide();
 
+    const nameValid = typeNameValidation(nameInput, nameError);
+    const descValid = typeDescriptionValidation(
+      descriptionInput,
+      descriptionError
+    );
+
+    if (!nameValid || !descValid) return;
+
+    // build trimmed data safely
+    const data = {};
+    new FormData(addTypeForm).forEach((v, k) => {
+      data[k] = typeof v === "string" ? v.trim() : v;
+    });
+
+    // basic client-side validation
+    if (!data.name) {
+      addAlert.className = "alert alert-warning text-center";
+      addAlert.textContent = "Type name is required.";
+      addAlert.classList.remove("d-none");
+      return;
+    }
+
+    try {
       const res = await axios.post("/admin/types-management/add-type", data);
-      if (res.data.success) {
+
+      if (res.data?.success) {
+        const modalInstance =
+          bootstrap.Modal.getInstance(addTypeModal) ||
+          new bootstrap.Modal(addTypeModal);
+
+        modalInstance.hide();
+
         Swal.fire({
           icon: "success",
           title: "Type Added!",
           text: "The new type has been added successfully.",
-          timer: 1500,
+          timer: 1200,
           showConfirmButton: false,
-        }).then(() => {
-          window.location.reload();
-        });
+        }).then(() => window.location.reload());
       } else {
-        modalInstance.hidden();
         Swal.fire({
-          icon: "error",
-          title: "Failed!",
-          text: res.data.message || "Could not add type.",
+          icon: "warning",
+          title: "Update Failed",
+          text: res.data.alert || "Failed to add Type.",
         });
       }
     } catch (error) {
-      modalInstance.hidden();
-      console.error(error);
+      console.error("Error from type adding", error);
       Swal.fire({
         icon: "error",
-        title: "Error!",
-        text: "Something went wrong while adding the type.",
+        title: "Oops!",
+        text: error.response?.data?.alert || "Internal server error",
       });
     }
   });
-
   // Prefill Edit Type Modal
   const editTypeModal = document.getElementById("editTypeModal");
   editTypeModal.addEventListener("show.bs.modal", (event) => {
@@ -57,9 +138,21 @@ document.addEventListener("DOMContentLoaded", () => {
   const editTypeForm = document.getElementById("editTypeForm");
   editTypeForm.addEventListener("submit", async (e) => {
     e.preventDefault();
+
+    const nameValid = typeNameValidation(editTypeNameInput, editNameError);
+    const descValid = typeDescriptionValidation(
+      editTypeDescriptionInput,
+      editDescriptionError
+    );
+
+    if (!nameValid || !descValid) return;
+
     const id = document.getElementById("editTypeId").value;
-    const formData = new FormData(editTypeForm);
-    const data = Object.fromEntries(formData.entries());
+    // const formData = new FormData(editTypeForm);
+    const data = {};
+    new FormData(editTypeForm).forEach((v, k) => {
+      data[k] = typeof v === "string" ? v.trim() : v;
+    });
 
     try {
       const res = await axios.put(
@@ -78,13 +171,19 @@ document.addEventListener("DOMContentLoaded", () => {
         }).then(() => {
           window.location.reload();
         });
+      } else {
+        Swal.fire({
+          icon: "warning",
+          title: "Update Failed",
+          text: res.data.alert || "Failed to update Type.",
+        });
       }
     } catch (error) {
       console.error("Edit Type Error:", error);
       Swal.fire({
         icon: "error",
         title: "Oops!",
-        text: "Something went wrong. Try again.",
+        text: error.response?.data?.alert || "Something went wrong. Try again.",
       });
     }
   });
@@ -113,7 +212,6 @@ document.addEventListener("DOMContentLoaded", () => {
       );
 
       if (res.data.success) {
-        // Optional: SweetAlert confirmation
         Swal.fire({
           icon: "success",
           title: "Updated!",
@@ -121,9 +219,20 @@ document.addEventListener("DOMContentLoaded", () => {
           timer: 1500,
           showConfirmButton: false,
         }).then(() => window.location.reload());
+      } else {
+        Swal.fire({
+          icon: "warning",
+          title: "Update Failed",
+          text: res.data.alert || "Failed to editing Type.",
+        });
       }
     } catch (error) {
-      console.error("Delete error:", error);
+      console.error("Error from type editing", error);
+      Swal.fire({
+        icon: "error",
+        title: "Oops!",
+        text: error.response?.data?.alert || "Internal server error",
+      });
     }
   });
 

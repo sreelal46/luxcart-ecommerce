@@ -7,18 +7,26 @@ const checkSession = async (req, res, next) => {
       return res.status(FORBIDDEN).redirect("/admin/login");
     }
 
-    if (req.session.success) {
-      console.log(req.session.success);
-      return res.status(FORBIDDEN).redirect("/admin/login");
-    }
+    // if (req.session.success) {
+    //   return res.status(FORBIDDEN).redirect("/admin/login");
+    // }
 
-    console.log("from checkSession", req.session.admin);
     const adminId = req.session.admin._id;
     const admin = await Admin.findById(adminId).lean();
-    if (!admin) return res.status(UNAUTHORIZED).redirect("/admin/login");
+    if (!admin) {
+      return req.session.destroy((err) => {
+        if (err) {
+          return console.error("Error destroying session:", err);
+        }
+        res.clearCookie("admin.sid");
+        res.status(OK).redirect("/admin/login");
+      });
+    }
+
     req.admin = admin;
     next();
   } catch (error) {
+    console.log("Error from admin checksession", error);
     next(error);
   }
 };
@@ -27,11 +35,11 @@ const isLogin = async (req, res, next) => {
   try {
     if (req.session.admin) {
       console.log("from is login admin", req.session.admin);
-      // If logged in, redirect to dashboard
       return res.redirect("/admin/dashboard");
     }
     next();
   } catch (error) {
+    console.log("Error from user islogin", error);
     next(error);
   }
 };

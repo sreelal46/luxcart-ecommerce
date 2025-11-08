@@ -374,3 +374,48 @@ body {
     font-size: 1.3rem;
   }
 }
+
+/* Sticky mobile bottom bar */
+.mobile-bottom-bar {
+  position: fixed;
+  bottom: 0;
+  left: 0;
+  width: 100%;
+  background: #fff;
+  padding: 10px 15px;
+  border-top: 1px solid #ddd;
+  z-index: 999;
+}
+
+/* Buttons */
+.mobile-bottom-bar .btn-buy {
+  background: #fff;
+  color: #000000;
+  font-weight: 600;
+}
+
+.mobile-bottom-bar .btn-buy:hover {
+  background: #000000;
+  color: #ffffff;
+  font-weight: 600;
+}
+.mobile-bottom-bar .btn-cart:hover {
+  background: #0c1115;
+  color: #fff;
+  font-weight: 600;
+}
+.mobile-bottom-bar .btn-cart {
+  background: #ffffff;
+  color: #000000;
+  font-weight: 600;
+}
+
+/* Unavailable State */
+.mobile-bottom-bar .unavailable-bar {
+  background: #f8d7da;
+  color: #b71c1c;
+  border: 1px solid #b71c1c;
+  padding: 10px;
+  border-radius: 8px;
+  font-weight: 600;
+}

@@ -38,12 +38,18 @@ document.addEventListener("DOMContentLoaded", () => {
       'input[type="checkbox"]'
     );
     checkboxes.forEach((cb) => (cb.checked = false));
+
+    searchInput.value = "";
+    applyFilters(searchInput, 1);
   });
 
   const clearBtnDesk = document.getElementById("clearFiltersBtnDesk");
   clearBtnDesk.addEventListener("click", () => {
     const checkboxes = filterSidebar.querySelectorAll('input[type="checkbox"]');
     checkboxes.forEach((cb) => (cb.checked = false));
+
+    searchInput.value = "";
+    applyFilters(searchInput, 1);
   });
 
   //searching

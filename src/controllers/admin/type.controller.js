@@ -8,7 +8,7 @@ const addType = async (req, res, next) => {
 
     //searching any duplicate
     const duplicate = await Type.findOne({
-      name: { $regex: new RegExp(`/${name}/$`, "i") },
+      name: { $regex: new RegExp(`^${name}$`, "i") },
     }).lean();
 
     if (duplicate)
@@ -18,14 +18,14 @@ const addType = async (req, res, next) => {
 
     //new Types
     const newType = await new Type({
-      name,
-      description,
+      name: name.trim(),
+      description: description.trim(),
     });
 
     await newType.save();
     res.status(OK).json({ success: true, alert: "Success" });
   } catch (error) {
-    console.log(error);
+    console.log("Error from adding type", error);
     next(error);
   }
 };
@@ -36,15 +36,21 @@ const editType = async (req, res, next) => {
     const id = req.params.id;
     const { name, description } = req.body;
 
-    //finding duplicate
-    // const duplicate = await Type.findOne({
-    //   name: { $regex: new RegExp(`^${name}$`, "i") },
-    // });
+    //find any duplicate
+    const typeData = await Type.findById(id).lean();
 
-    // if (duplicate)
-    //   return res
-    //     .status(CONFLICT)
-    //     .json({ success: false, message: "Brand name already exists." });
+    if (typeData.name.toLowerCase() !== name.trim().toLowerCase()) {
+      const duplicate = await Type.findOne({
+        _id: { $ne: id },
+        name: { $regex: new RegExp(`^${name}$`, "i") },
+      });
+
+      if (duplicate) {
+        return res
+          .status(CONFLICT)
+          .json({ success: false, alert: "Type already exists." });
+      }
+    }
 
     //finding and updating
     const updateData = { name, description };
@@ -52,7 +58,7 @@ const editType = async (req, res, next) => {
 
     res.status(OK).json({ success: true });
   } catch (error) {
-    console.log(error);
+    console.log("Error from editing type", error);
     next(error);
   }
 };

@@ -64,7 +64,7 @@
   <nav class="mt-4" id="typePagination"></nav>
 </div>
 
-<!-- 🟢 Add Type Modal -->
+<!-- Add Type Modal -->
 <div class="modal fade" id="addTypeModal" tabindex="-1">
   <div class="modal-dialog">
     <div class="modal-content">
@@ -73,14 +73,17 @@
           <h5 class="modal-title fw-bold">Add New Type</h5>
           <button class="btn-close" data-bs-dismiss="modal"></button>
         </div>
+        <div id="addAlert" class="d-none text-center"></div>
         <div class="modal-body">
           <div class="mb-3">
             <label class="form-label">Type Name</label>
-            <input type="text" class="form-control" name="name" required>
+            <input type="text" class="form-control" name="name" id="nameInput" required>
+            <small class="text-danger" id="nameError" style="display: none;"></small>
           </div>
           <div class="mb-3">
             <label class="form-label">Description</label>
-            <textarea class="form-control" name="description" rows="3" required></textarea>
+            <textarea class="form-control" name="description" id="description" rows="3" required></textarea>
+            <small class="text-danger" id="descriptionError" style="display: none;"></small>
           </div>
         </div>
         <div class="modal-footer">
@@ -91,7 +94,7 @@
   </div>
 </div>
 
-<!-- 🟠 Edit Type Modal -->
+<!--  Edit Type Modal -->
 <div class="modal fade" id="editTypeModal" tabindex="-1">
   <div class="modal-dialog">
     <div class="modal-content">
@@ -105,10 +108,12 @@
           <div class="mb-3">
             <label class="form-label">Type Name</label>
             <input type="text" id="editTypeName" name="name" class="form-control" required>
+            <small class="text-danger" id="editNameError" style="display: none;"></small>
           </div>
           <div class="mb-3">
             <label class="form-label">Description</label>
             <textarea id="editTypeDescription" name="description" class="form-control" rows="3" required></textarea>
+            <small class="text-danger" id="editDescriptionError" style="display: none;"></small>
           </div>
         </div>
         <div class="modal-footer">
@@ -119,7 +124,7 @@
   </div>
 </div>
 
-<!-- 🔴 Delete Type Modal -->
+<!--  Delete Type Modal -->
 <div class="modal fade" id="deleteTypeModal" tabindex="-1">
   <div class="modal-dialog modal-dialog-centered">
     <div class="modal-content text-center">

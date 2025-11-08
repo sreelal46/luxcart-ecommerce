@@ -26,11 +26,14 @@ document.addEventListener("DOMContentLoaded", () => {
     if (!name) {
       nameError.textContent = "Name is requierd";
       nameError.style.display = "block";
+      return false;
     } else if (name.length < 3) {
       nameError.textContent = "Name length atleast 3 letters";
       nameError.style.display = "block";
+      return false;
     } else {
       nameError.style.display = "none";
+      return true;
     }
   }
   //email validation
@@ -40,11 +43,14 @@ document.addEventListener("DOMContentLoaded", () => {
     if (!email) {
       emailError.textContent = "Email is requierd.";
       emailError.style.display = "block";
+      return false;
     } else if (!emailRegex.test(email)) {
       emailError.textContent = "Invalid email format.";
       emailError.style.display = "block";
+      return false;
     } else {
       emailError.style.display = "none";
+      return true;
     }
   }
   //password validation
@@ -53,11 +59,14 @@ document.addEventListener("DOMContentLoaded", () => {
     if (!password) {
       passwordError.textContent = "Password is requierd.";
       passwordError.style.display = "block";
+      return false;
     } else if (password.length < 8) {
       passwordError.textContent = "Password length atleast 8 letters.";
       passwordError.style.display = "block";
+      return false;
     } else {
       passwordError.style.display = "none";
+      return true;
     }
   }
   //confirm password validation
@@ -67,16 +76,20 @@ document.addEventListener("DOMContentLoaded", () => {
     if (!confirmPassword) {
       confirmPasswordError.textContent = "Confirm password is requierd.";
       confirmPasswordError.style.display = "block";
+      return false;
     } else if (confirmPassword.length < 8) {
       confirmPasswordError.textContent =
         "Confirm Password length atleast 8 letters.";
       confirmPasswordError.style.display = "block";
+      return false;
     } else if (confirmPassword !== password) {
       confirmPasswordError.textContent =
         "Confirm Password Must Match Password!.";
       confirmPasswordError.style.display = "block";
+      return false;
     } else {
       confirmPasswordError.style.display = "none";
+      return true;
     }
   }
 
@@ -97,25 +110,24 @@ document.addEventListener("DOMContentLoaded", () => {
     const password = passwordInput.value.trim();
     const confirmPassword = confirmPasswordInput.value.trim();
     const referralCode = referralCodeInput.value.trim();
-    function validationRemove() {
-      //final validation
-      if (!name) {
-        nameError.style.display = "block";
-        return;
-      }
-      if (!email || !validateEmail(email)) {
-        emailError.style.display = "block";
-        return;
-      }
-      if (!password || password.length < 8) {
-        passwordError.style.display = "block";
-        return;
-      }
-      if (confirmPassword !== password) {
-        confirmPasswordError.textContent = "Password length atleast 8 letters.";
-        confirmPassword.style.display = "block";
-        return;
-      }
+
+    //final validation
+    if (!name) {
+      nameError.style.display = "block";
+      return;
+    }
+    if (!email || !validateEmail(email)) {
+      emailError.style.display = "block";
+      return;
+    }
+    if (!password || password.length < 8) {
+      passwordError.style.display = "block";
+      return;
+    }
+    if (confirmPassword !== password) {
+      confirmPasswordError.textContent = "Password length atleast 8 letters.";
+      confirmPassword.style.display = "block";
+      return;
     }
 
     try {
@@ -143,10 +155,12 @@ document.addEventListener("DOMContentLoaded", () => {
       if (res.data.success) {
         window.location.href = res.data.redirect;
       } else {
+        Swal.close();
         serverMessage.textContent = res.data.alert || "Somthing worng";
         serverMessage.style.display = "block";
       }
     } catch (error) {
+      Swal.close();
       serverMessage.textContent =
         error.response?.data?.alert || "Somthing went Worng";
       serverMessage.style.display = "block";

@@ -35,7 +35,7 @@ async function saveCarWithVariants(carData, variantFiles) {
     const savedCar = await car.save();
     console.log("Car saved:", savedCar._id);
 
-    // 2️⃣ Save variants
+    // Save variants
     const variantPromises = variantFiles.map((files, index) => {
       const imageUrls = files.map((f) => f.path); // Cloudinary URLs
       return new CarVariant({
@@ -49,7 +49,7 @@ async function saveCarWithVariants(carData, variantFiles) {
 
     const savedVariants = await Promise.all(variantPromises);
 
-    // 3️⃣ Update car document with variant IDs
+    //Update car document with variant IDs
     savedCar.variantIds = savedVariants.map((v) => v._id);
     await savedCar.save();
 

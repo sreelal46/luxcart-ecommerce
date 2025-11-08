@@ -120,10 +120,12 @@
           <div class="mb-3">
             <label class="form-label">Category Name</label>
             <input type="text" class="form-control" name="name" id="addName" required>
+            <small class="text-danger" id="nameError" style="display: none;"></small>
           </div>
           <div class="mb-3">
             <label class="form-label">Description</label>
             <textarea class="form-control" name="description" id="addDescription" rows="3" required></textarea>
+            <small class="text-danger" id="descriptionError" style="display: none;"></small>
           </div>
           <div class="mb-3">
             <label class="form-label d-block">Product Type <span class="text-danger">*</span></label>
@@ -160,10 +162,12 @@
           <div class="mb-3">
             <label class="form-label">Category Name</label>
             <input type="text" id="editCategoryName" name="name" class="form-control" required>
+            <small class="text-danger" id="editNameError" style="display: none;"></small>
           </div>
           <div class="mb-3">
             <label class="form-label">Description</label>
             <textarea id="editCategoryDescription" name="description" class="form-control" rows="3" required></textarea>
+            <small class="text-danger" id="editDescriptionError" style="display: none;"></small>
           </div>
           <div class="mb-3">
             <label class="form-label d-block">Product Type <span class="text-danger">*</span></label>

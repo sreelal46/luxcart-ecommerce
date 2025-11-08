@@ -4,6 +4,70 @@ document.addEventListener("DOMContentLoaded", () => {
   const addAlert = document.getElementById("addAlert");
   const addCategoryModal = document.getElementById("addCategoryModal");
 
+  const descriptionInput = document.getElementById("addDescription");
+  const descriptionError = document.getElementById("descriptionError");
+  const nameInput = document.getElementById("addName");
+  const nameError = document.getElementById("nameError");
+  const editCategoryDescriptionInput = document.getElementById(
+    "editCategoryDescription"
+  );
+  const editDescriptionError = document.getElementById("editDescriptionError");
+  const editCategoryNameInput = document.getElementById("editCategoryName");
+  const editCategoryNameError = document.getElementById("editNameError");
+
+  //category name validation
+  function categoryNameValidation(input, error) {
+    const categoryName = input.value.trim();
+    if (!categoryName) {
+      error.textContent = "Category name is Requaierd";
+      error.style.display = "block";
+      return false;
+    } else if (categoryName.length < 3) {
+      error.textContent = "Category name length must be greaterthan 3";
+      error.style.display = "block";
+      return false;
+    } else {
+      error.textContent = "";
+      error.style.display = "none";
+      return true;
+    }
+  }
+
+  //category Country validation
+  function categoryDescriptionValidation(input, error) {
+    const categoryDescription = input.value.trim();
+    if (!categoryDescription) {
+      error.textContent = "Category Description Requaierd";
+      error.style.display = "block";
+      return false;
+    } else if (categoryDescription.length < 10) {
+      error.textContent = "Category Description length must be greaterthan 10";
+      error.style.display = "block";
+      return false;
+    } else {
+      error.textContent = "";
+      error.style.display = "none";
+      return true;
+    }
+  }
+
+  //live validation
+  nameInput.addEventListener("input", () =>
+    categoryNameValidation(nameInput, nameError)
+  );
+  descriptionInput.addEventListener("input", () =>
+    categoryDescriptionValidation(descriptionInput, descriptionError)
+  );
+  editCategoryNameInput.addEventListener("input", () =>
+    categoryNameValidation(editCategoryNameInput, editCategoryNameError)
+  );
+  editCategoryDescriptionInput.addEventListener("input", () =>
+    categoryDescriptionValidation(
+      editCategoryDescriptionInput,
+      editDescriptionError
+    )
+  );
+
   // Reset form when modal opens
   addCategoryModal.addEventListener("shown.bs.modal", () => {
     addCategoryForm.reset();
@@ -14,8 +78,18 @@ document.addEventListener("DOMContentLoaded", () => {
       .forEach((r) => (r.checked = false));
   });
 
+  // -------------------- Add Category --------------------
+
   addCategoryForm.addEventListener("submit", async (e) => {
     e.preventDefault();
+
+    const nameValid = categoryNameValidation(nameInput, nameError);
+    const descValid = categoryDescriptionValidation(
+      descriptionInput,
+      descriptionError
+    );
+
+    if (!nameValid || !descValid) return;
 
     // Manual validation for radio buttons
     const radioChecked = document.querySelector(
@@ -28,25 +102,41 @@ document.addEventListener("DOMContentLoaded", () => {
       return;
     }
 
-    const data = Object.fromEntries(new FormData(addCategoryForm).entries());
-    addAlert.className = "alert alert-info text-center";
-    addAlert.textContent = "Processing...";
-    addAlert.classList.remove("d-none");
+    const data = Object.fromEntries(
+      [...new FormData(addCategoryForm).entries()].map(([k, v]) => [
+        k,
+        v.trim(),
+      ])
+    );
 
     try {
       const res = await axios.post(
         "/admin/categorys-management/add-category",
         data
       );
+
       if (res.data.success) {
-        addAlert.className = "alert alert-success text-center";
-        addAlert.textContent = "Category added successfully!";
-        setTimeout(() => window.location.reload(), 800);
+        Swal.fire({
+          icon: "success",
+          title: "Category Added!",
+          text: "The category has been added successfully.",
+          timer: 1400,
+          showConfirmButton: false,
+        }).then(() => window.location.reload());
+      } else {
+        Swal.fire({
+          icon: "warning",
+          title: "Failed",
+          text: res.data.alert || "Failed to add category.",
+        });
       }
-    } catch (err) {
-      addAlert.className = "alert alert-danger text-center";
-      addAlert.textContent =
-        err.response?.data?.alert || "Something went wrong";
+    } catch (error) {
+      console.error("Error from category adding", error);
+      Swal.fire({
+        icon: "error",
+        title: "Error",
+        text: error.response?.data?.alert || "Something went wrong.",
+      });
     }
   });
 
@@ -57,13 +147,14 @@ document.addEventListener("DOMContentLoaded", () => {
 
   editCategoryModal.addEventListener("show.bs.modal", (e) => {
     editAlert.classList.add("d-none");
+
     const btn = e.relatedTarget;
+
     document.getElementById("editCategoryId").value = btn.dataset.id;
     document.getElementById("editCategoryName").value = btn.dataset.name;
     document.getElementById("editCategoryDescription").value =
       btn.dataset.description;
 
-    // Set radio buttons
     const type = btn.dataset.type;
     document.getElementById("editTypeCar").checked = type === "Car";
     document.getElementById("editTypeAccessories").checked =
@@ -73,27 +164,53 @@ document.addEventListener("DOMContentLoaded", () => {
   editCategoryForm.addEventListener("submit", async (e) => {
     e.preventDefault();
     const id = document.getElementById("editCategoryId").value;
-    const data = Object.fromEntries(new FormData(editCategoryForm).entries());
-    editAlert.className = "alert alert-info text-center";
-    editAlert.textContent = "Updating...";
-    editAlert.classList.remove("d-none");
+
+    const nameValid = categoryNameValidation(
+      editCategoryNameInput,
+      editCategoryNameError
+    );
+    const descValid = categoryDescriptionValidation(
+      editCategoryDescriptionInput,
+      editDescriptionError
+    );
+
+    if (!nameValid || !descValid) return;
+
+    const data = Object.fromEntries(
+      [...new FormData(editCategoryForm).entries()].map(([k, v]) => [
+        k,
+        v.trim(),
+      ])
+    );
 
     try {
       const res = await axios.put(
         `/admin/categorys-management/edit-category/${id}`,
         data
       );
+      console.log(res.data);
       if (res.data.success) {
-        editAlert.className = "alert alert-success text-center";
-        editAlert.textContent = "Category updated successfully!";
-        setTimeout(() => window.location.reload(), 600);
+        Swal.fire({
+          icon: "success",
+          title: "Updated!",
+          text: "Category updated successfully.",
+          timer: 1400,
+          showConfirmButton: false,
+        }).then(() => window.location.reload());
       } else {
-        editAlert.className = "alert alert-danger text-center";
-        editAlert.textContent = res.data.message || "Failed to update Category";
+        Swal.fire({
+          icon: "warning",
+          title: "Update Failed",
+          text: res.data.alert || "Failed to update category.",
+        });
       }
-    } catch (err) {
-      editAlert.className = "alert alert-danger text-center";
-      editAlert.textContent = "Update failed";
+    } catch (error) {
+      console.error("Error from category editing", error);
+      Swal.fire({
+        icon: "error",
+        title: "Error",
+        text: error.response?.data?.alert || "Something went wrong.",
+      });
     }
   });
 

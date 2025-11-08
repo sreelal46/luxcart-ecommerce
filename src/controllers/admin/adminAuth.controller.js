@@ -40,6 +40,7 @@ const verifyadmin = async (req, res, next) => {
       })
     );
   } catch (error) {
+    console.log("Error from admin verifyadmin", error);
     next(error);
   }
 };
@@ -174,8 +175,6 @@ const PasswordChanging = async (req, res, next) => {
 
     //saving success message
     req.session.passwordChanged = true;
-    // req.session.success = "Password changed successfully";
-    // console.log("session checking in chnage password", req.session.success);
 
     req.session.save(() =>
       res.status(OK).json({

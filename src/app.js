@@ -1,14 +1,12 @@
+require("dotenv").config();
 const path = require("path");
 const express = require("express");
 const app = express();
 const passport = require("passport");
-const session = require("express-session");
+const { userSession, adminSession } = require("./config/session");
 const noCache = require("nocache");
-const FileStore = require("session-file-store")(session);
-require("dotenv").config();
 require("./config/passport")(passport);
 const googleAuthRoutes = require("./routers/googleAuth.routes");
-
 const connectDB = require("./config/db");
 const userRoutes = require("./routers/user.routes");
 const adminRoutes = require("./routers/admin.routes");
@@ -45,24 +43,8 @@ app.use((req, res, next) => {
 });
 
 // SESSION SETUP
-app.use(
-  session({
-    name: "luxcart.sid",
-    secret: process.env.SESSION_SECRET || "mysecretkey",
-    resave: false,
-    saveUninitialized: false,
-    store: new FileStore({
-      path: path.join(__dirname, "../sessions"),
-      retries: 1,
-    }),
-    cookie: {
-      maxAge: 1000 * 60 * 60 * 24,
-      httpOnly: true,
-      secure: false,
-      sameSite: "lax", //for Axios session work properly
-    },
-  })
-);
+app.use("/admin", adminSession);
+app.use("/", userSession);
 
 // Passport Middleware
 app.use(passport.initialize());

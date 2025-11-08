@@ -1,4 +1,9 @@
-const { OK } = require("../../constant/statusCode");
+const {
+  OK,
+  CONFLICT,
+  BAD_REQUEST,
+  INTERNAL_SERVER_ERROR,
+} = require("../../constant/statusCode");
 const Brand = require("../../models/admin/brandModal");
 
 //adding new brand
@@ -15,12 +20,13 @@ const addBrand = async (req, res) => {
     if (duplicate)
       return res
         .status(CONFLICT)
-        .json({ success: false, message: "Brand name already exists." });
+        .json({ success: false, alert: "Brand name already exists." });
+
     //if no image
     if (!imageFile) {
       return res
-        .status(400)
-        .json({ success: false, message: "No image uploaded" });
+        .status(BAD_REQUEST)
+        .json({ success: false, alert: "No image uploaded" });
     }
     //creating new brand
     const newBrand = new Brand({
@@ -33,7 +39,9 @@ const addBrand = async (req, res) => {
     res.json({ success: true, redirect: "/admin/brands-management" });
   } catch (err) {
     console.error("Brand Add Error:", err);
-    res.status(500).json({ success: false, message: "Internal server error" });
+    res
+      .status(INTERNAL_SERVER_ERROR)
+      .json({ success: false, alert: "Internal server error" });
   }
 };
 
@@ -44,16 +52,19 @@ const editBrand = async (req, res, next) => {
     const brandId = req.params.id;
     const { name, country } = req.body;
 
-    // //duplicte finding
-    // const duplicate = await Brand.findOne({
-    //   name: { $regex: new RegExp(`^${name}$`, "i") },
-    // });
+    const barndData = await Brand.findById(brandId).lean();
 
-    // if (duplicate)
-    //   return res
-    //     .status(CONFLICT)
-    //     .json({ success: false, message: "Brand name already exists." });
+    if (barndData.name.toLowerCase() !== name.trim().toLowerCase()) {
+      const duplicate = await Brand.findOne({
+        _id: { $ne: brandId },
+        name: { $regex: new RegExp(`^${name}$`, "i") },
+      });
 
+      if (duplicate)
+        return res
+          .status(CONFLICT)
+          .json({ success: false, alert: "Brand already exists." });
+    }
     //updating data
     const updateData = { name, country };
     if (req.file) updateData.image_url = req.file.path;
@@ -61,11 +72,13 @@ const editBrand = async (req, res, next) => {
     await Brand.findByIdAndUpdate(brandId, updateData);
 
     res
-      .status(200)
+      .status(OK)
       .json({ success: true, redirect: "/admin/brands-management" });
   } catch (err) {
-    console.error(err);
-    res.status(500).json({ success: false, message: "Failed to update brand" });
+    console.error("Error from edidting brand", err);
+    res
+      .status(INTERNAL_SERVER_ERROR)
+      .json({ success: false, alert: "Failed to update brand" });
     next(err);
   }
 };
@@ -85,7 +98,7 @@ const softDeleteBrand = async (req, res, next) => {
 
     res.status(OK).json({ success: true, alert: "success" });
   } catch (error) {
-    console.log(error);
+    console.log("Error from soft delete brand", error);
     next(error);
   }
 };

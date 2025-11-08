@@ -4,22 +4,38 @@ const { OK, UNAUTHORIZED, FORBIDDEN } = require("../../constant/statusCode");
 const checkSession = async (req, res, next) => {
   try {
     if (!req.session.user) {
-      //No session — redirect to login
-      console.log("From user checkSession", req.session.user);
       return res.status(UNAUTHORIZED).redirect("/login");
     }
     const userId = req.session.user._id;
     const user = await User.findById(userId).lean();
 
+    //checking user existing
     if (!user) {
-      req.session.destroy(() => res.redirect("/login"));
-      return;
+      return req.session.destroy((err) => {
+        if (err) {
+          return console.error("Error destroying session:", err);
+        }
+        res.clearCookie("user.sid");
+        res.status(OK).redirect("/login");
+      });
     }
 
-    // req.user = user;
-    // console.log("From checkSession:", req.user);
+    //cheking user is blocked
+    if (user.isBlocked) {
+      return req.session.destroy((err) => {
+        if (err) {
+          return console.error("Error destroying session:", err);
+        }
+        res.clearCookie("user.sid");
+        res.status(OK).redirect("/");
+      });
+    }
+
+    req.user = user;
+
     next();
   } catch (error) {
+    console.log("Error from user check session", error);
     next(error);
   }
 };
@@ -32,19 +48,35 @@ const isLogin = async (req, res, next) => {
 
       //if user not found
       if (!user) {
-        req.session.destroy(() => res.redirect("/login"));
-        return;
+        return req.session.destroy((err) => {
+          if (err) {
+            return console.error("Error destroying session:", err);
+          }
+          res.clearCookie("user.sid");
+          res.status(OK).redirect("/login");
+        });
+      }
+
+      //cheking user is blocked
+      if (user.isBlocked) {
+        return req.session.destroy((err) => {
+          if (err) {
+            return console.error("Error destroying session:", err);
+          }
+          res.clearCookie("user.sid");
+          res.status(OK).redirect("/login");
+        });
       }
 
       //if user found
       if (user) {
         req.user = user;
-        console.log("From isLogin:", req.user);
         return res.redirect("/homepage");
       }
     }
     next();
   } catch (error) {
+    console.log("Error from user isLogin", error);
     next(error);
   }
 };

@@ -42,7 +42,7 @@ const createUser = async (req, res, next) => {
       name,
       email,
       password: hashPassword,
-      referralCode,
+      // referralCode,
     });
     await newUser.save();
 
@@ -57,7 +57,7 @@ const createUser = async (req, res, next) => {
     //sending response status code 201
     res.status(CREATED).json({ success: true, redirect: "/verify-otp" });
   } catch (error) {
-    console.error("Error from creating user");
+    console.error("Error from creating user", error);
     next(error);
   }
 };
@@ -70,6 +70,12 @@ const verifyUser = async (req, res, next) => {
 
     if (!user)
       return res.status(404).json({ success: false, alert: "Email not found" });
+
+    //checking user is blocked
+    if (user.isBlocked)
+      return res
+        .status(404)
+        .json({ success: false, alert: "Your Account Has Been Blocked" });
 
     if (user.authProvider === "google")
       return res.status(403).json({
@@ -97,6 +103,7 @@ const verifyUser = async (req, res, next) => {
       res.status(200).json({ success: true, redirect: "/homepage" });
     });
   } catch (error) {
+    console.error("Error from verifyUser", error);
     next(error);
   }
 };
@@ -104,18 +111,14 @@ const verifyUser = async (req, res, next) => {
 //logout destroying session
 const logoutPage = (req, res) => {
   //session destroying
-  delete req.session.user;
-  res.status(OK).redirect("/");
-  // req.session.destroy((error) => {
-  //   if (error) {
-  //     console.log("Error session destroying:", error);
-  //     next();
-  //   } else {
-  //     res.clearCookie("luxcart.sid");
-  //     console.log("From logout controller session destroy successfully");
-  //     return res.status(OK).redirect("/");
-  //   }
-  // });
+  req.session.destroy((err) => {
+    if (err) {
+      console.error("Error destroying session:", err);
+      return res.redirect("/homepage"); // or admin/dashboard
+    }
+    res.clearCookie("user.sid"); // or "admin.sid"
+    res.status(OK).redirect("/");
+  });
 };
 
 //sending OTP for forgott password
@@ -254,6 +257,7 @@ const forgotPassword = async (req, res, next) => {
       })
     );
   } catch (error) {
+    console.error("Error from forgotPassword", error);
     next(error);
   }
 };
@@ -277,7 +281,7 @@ const resendOTP = async (req, res, next) => {
     req.session.resendOTP = "Your OTP has been resent successfully.";
     res.status(OK).redirect("/forgot-password-otp");
   } catch (error) {
-    console.log("Error fom resend OTP");
+    console.log("Error fom resend OTP", error);
     next(error);
   }
 };

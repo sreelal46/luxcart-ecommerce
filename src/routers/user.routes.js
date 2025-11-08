@@ -66,11 +66,19 @@ route.post("/verify-otp", verifyOTP);
 route.get("/resend-otp", resendOTP);
 
 //car colletions
-route.get("/cars-collection", loadCarCollection);
-route.get("/cars-collection/view-car-product/:id", loadSingleCarProduct);
+route.get("/cars-collection", checkSession, loadCarCollection);
+route.get(
+  "/cars-collection/view-car-product/:id",
+  checkSession,
+  loadSingleCarProduct
+);
 
 //view all accessories
-route.get("/all-accessories", loadAllAccessories);
-route.get("/all-accessories/view-accessory-product/:id", loadSingleAccessories);
+route.get("/all-accessories", checkSession, loadAllAccessories);
+route.get(
+  "/all-accessories/view-accessory-product/:id",
+  checkSession,
+  loadSingleAccessories
+);
 
 module.exports = route;

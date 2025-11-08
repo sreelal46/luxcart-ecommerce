@@ -84,9 +84,15 @@ route.use((req, res, next) => {
 route.get("/login", isLogin, adminLoadLoginPage);
 route.post("/login", verifyadmin);
 route.get("/logout", (req, res) => {
-  delete req.session.admin;
-  res.redirect("/admin/login");
-  // req.session.destroy(() => res.redirect("/admin/login"));
+  //session destroying
+  req.session.destroy((err) => {
+    if (err) {
+      console.error("Error destroying session:", err);
+      return res.redirect("/admin/dashboard");
+    }
+    res.clearCookie("admin.sid");
+    res.status(OK).redirect("/admin/login");
+  });
 });
 
 //forgot-password setup
