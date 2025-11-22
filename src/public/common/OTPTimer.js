@@ -1,4 +1,4 @@
-let time = 3 * 60; // 3 minutes in seconds
+let time = 5 * 60; // 5 minutes in seconds
 const timer = document.getElementById("timer");
 
 const countdown = setInterval(() => {

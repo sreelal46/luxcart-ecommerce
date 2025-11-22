@@ -14,13 +14,43 @@
   <link rel="stylesheet" href="/bootstrap-icons/bootstrap-icons.css">
 
   <title>{{title}}</title>
+
+  <style>
+    .page-title {
+      font-weight: 700;
+      font-size: 28px;
+      margin-bottom: 18px;
+      margin-top: 38px;
+    }
+  </style>
 </head>
 
 <body>
   {{> navbar}}
+  <main class="container-lg mt-4 mb-5">
+
+    <div class="d-flex align-items-center justify-content-between mb-3">
+      <button id="mobileBackBtn" class="btn btn-sm d-md-none" style="display:none"><i
+          class="bi bi-arrow-left"></i></button>
+      <h2 class="page-title">My Account</h2>
+    </div>
+
+    <div class="row g-4">
+
+      <!-- sidebar -->
+      {{> userAccountSidebar}}
+
+      <div class="col-lg-9">
+
+        {{{body}}}
+
+      </div>
+
+    </div>
+
+  </main>
 
 
-  {{{body}}}
 
   {{> footer}}
 
@@ -35,6 +65,7 @@
 
   <!-- axios -->
   <script src="/common/axios.min.js" defer></script>
+
   <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
 </body>
 

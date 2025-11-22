@@ -1,0 +1,215 @@
+<style>
+  .main-card {
+    background: var(--card);
+    padding: 20px;
+    border-radius: 8px;
+  }
+
+  /* Order card container */
+  .order-card {
+    background: transparent;
+    padding: 0;
+    border-radius: 6px;
+  }
+
+  .order-row {
+    background: #fbfbfb;
+    padding: 16px;
+    border-radius: 6px;
+    margin-bottom: 16px;
+    border: 1px solid #eee;
+  }
+
+  /* Pills */
+  .status-pill {
+    display: inline-block;
+    padding: 6px 12px;
+    border-radius: 20px;
+    font-size: 13px;
+  }
+
+  .status-delivered {
+    background: #e8fbef;
+    color: #0a8a3d;
+  }
+
+  .status-processing {
+    background: #fff7df;
+    color: #b78600;
+  }
+
+  /* Desktop layout */
+  .order-row-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 12px;
+  }
+
+  .order-meta {
+    display: flex;
+    gap: 20px;
+    align-items: center;
+  }
+
+  .order-total {
+    text-align: right;
+    min-width: 120px;
+  }
+
+  .order-status {
+    min-width: 140px;
+    text-align: right;
+  }
+
+  .order-items {
+    display: flex;
+    align-items: center;
+    gap: 16px;
+    margin-top: 12px;
+  }
+
+  .order-item-image {
+    width: 260px;
+    height: 120px;
+    object-fit: cover;
+    border-radius: 6px;
+  }
+
+  .order-actions {
+    display: flex;
+    gap: 8px;
+  }
+
+  .order-actions .btn {
+    white-space: nowrap;
+  }
+
+  /* Mobile responsiveness */
+  @media (max-width:575px) {
+    .order-row {
+      padding: 12px;
+      font-size: 14px;
+    }
+
+    .order-row-header {
+      flex-direction: column;
+      align-items: flex-start;
+      gap: 8px;
+    }
+
+    .order-items {
+      flex-direction: column;
+      gap: 12px;
+    }
+
+    .order-item-image {
+      width: 100%;
+      height: 180px;
+      object-fit: cover;
+      border-radius: 6px;
+    }
+
+    .order-actions .btn {
+      width: 100%;
+      display: block;
+    }
+
+    .order-total,
+    .order-status {
+      align-self: flex-start;
+    }
+
+    .status-pill {
+      font-size: 12px;
+      padding: 6px 10px;
+    }
+  }
+</style>
+
+
+<section id="orders" class="main-card">
+  <h5>Order History</h5>
+
+  <!-- Order row (clean responsive structure) -->
+  <div class="order-row mt-3">
+    <div class="order-row-header">
+      <div class="order-meta">
+        <div>
+          <div style="font-size:13px;color:var(--muted)">Order ID</div>
+          <div style="font-weight:700">ORD-12345</div>
+        </div>
+        <div>
+          <div style="font-size:13px;color:var(--muted)">Date</div>
+          <div>May 15, 2023</div>
+        </div>
+      </div>
+
+      <div class="order-total">
+        <div style="font-size:13px;color:var(--muted)">Total</div>
+        <div style="font-weight:700">$165,000</div>
+      </div>
+
+      <div class="order-status">
+        <div style="font-size:13px;color:var(--muted)">Status</div>
+        <div class="status-pill status-delivered">Delivered</div>
+      </div>
+    </div>
+
+    <div class="order-items">
+      <img class="order-item-image" src="images\9264822.jpg" alt="car">
+      <div class="flex-grow-1">
+        <div style="font-weight:600">Mercedes S-Class AMG</div>
+        <div style="font-size:13px;color:var(--muted)" class="mt-1">Quantity: 1</div>
+      </div>
+      <div class="order-actions">
+        <button class="btn btn-outline-dark btn-sm" data-bs-toggle="modal" data-bs-target="#viewDetailModal">View
+          Details</button>
+        <button class="btn btn-warning btn-sm" data-bs-toggle="modal" data-bs-target="#returnModal"><i
+            class="bi bi-bag-plus"></i> Return</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Second order -->
+  <div class="order-row">
+    <div class="order-row-header">
+      <div class="order-meta">
+        <div>
+          <div style="font-size:13px;color:var(--muted)">Order ID</div>
+          <div style="font-weight:700">ORD-12346</div>
+        </div>
+        <div>
+          <div style="font-size:13px;color:var(--muted)">Date</div>
+          <div>April 20, 2023</div>
+        </div>
+      </div>
+
+      <div class="order-total">
+        <div style="font-size:13px;color:var(--muted)">Total</div>
+        <div style="font-weight:700">$189,000</div>
+      </div>
+
+      <div class="order-status">
+        <div style="font-size:13px;color:var(--muted)">Status</div>
+        <div class="status-pill status-processing">Processing</div>
+      </div>
+    </div>
+
+    <div class="order-items">
+      <img class="order-item-image" src="images\9264822.jpg" alt="car">
+      <div class="flex-grow-1">
+        <div style="font-weight:600">Porsche 911 GT3</div>
+        <div style="font-size:13px;color:var(--muted)" class="mt-1">Quantity: 1</div>
+      </div>
+      <div class="order-actions">
+        <button class="btn btn-outline-dark btn-sm" data-bs-toggle="modal" data-bs-target="#viewDetailModal">View
+          Details</button>
+        <button class="btn btn-danger btn-sm" data-bs-toggle="modal" data-bs-target="#cancelModal">Cancel
+          order</button>
+      </div>
+    </div>
+
+  </div>
+
+</section>

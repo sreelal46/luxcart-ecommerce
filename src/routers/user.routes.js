@@ -81,4 +81,9 @@ route.get(
   loadSingleAccessories
 );
 
+//view account details
+route.get("/account", (req, res) => {
+  res.render("user/account/orderHistory", { layout: "userAccountLayout" });
+});
+
 module.exports = route;

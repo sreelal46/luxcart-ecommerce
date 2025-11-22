@@ -53,7 +53,7 @@ app.use(passport.session());
 // Database Connect
 connectDB();
 
-// Make admin available in all views
+//all views
 app.use((req, res, next) => {
   res.locals.admin = req.session.admin || null;
   res.locals.user = req.session.user || null;

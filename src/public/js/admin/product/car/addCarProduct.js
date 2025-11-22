@@ -129,11 +129,11 @@ document.addEventListener("DOMContentLoaded", () => {
       (v && v.trim() !== "") || "Variant color is required.",
     variant_price: (v) =>
       v === "" ||
-      (!isNaN(v) && Number(v) >= 0) ||
-      "Variant price must be a number.",
+      (!isNaN(v) && Number(v) > 0) ||
+      "Variant price must be not equal to Zero.",
     variant_stock: (v) =>
       v === "" ||
-      (Number.isInteger(Number(v)) && Number(v) >= 0) ||
+      (Number.isInteger(Number(v)) && Number(v) > 0) ||
       "Variant stock must be a non-negative integer.",
   };
 
