@@ -4,7 +4,7 @@
   "description": "Luxury car and accessories e-commerce platform with admin dashboard and user website, built using Node.js, Express, HBS, and MongoDB.",
   "main": "app.js",
   "scripts": {
-    "start": "nodemon src/app.js"
+    "start": "nodemon --ext js,hbs src/app.js"
   },
   "repository": {
     "type": "git",

@@ -270,7 +270,7 @@ route.get("/orders-management/return-request-management", (req, res) => {
 //=======================================USER MANAGEMENT==========================
 
 //view all user
-route.get("/users-management", usersManagement);
+route.get("/users-management", checkSession, usersManagement);
 
 //block user
 route.patch("/users-management/block-unblock-user/:id", blockOrUnblockUser);

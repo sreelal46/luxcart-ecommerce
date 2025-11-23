@@ -1,0 +1,122 @@
+<link rel="stylesheet" href="/css/user/account/profile.css">
+<div class="profile-module">
+  <div class="container">
+    <!-- Profile card -->
+    <section id="profile" class="main-card" aria-labelledby="profileHeading">
+      <h5 id="profileHeading">Profile information</h5>
+
+      <div class="profile-grid" style="margin-top:12px;">
+        <!-- AVATAR -->
+        <div class="profile-column-avatar" aria-hidden="false">
+          <div class="profile-preview" id="previewBox" title="Profile photo">
+            <img id="profileImg" src="/mnt/data/9fa43315-59dc-4d8a-9779-c9afcbc3dfc4.png" alt="Profile">
+            <button id="avatarEditIcon" aria-hidden="true"><i class="bi bi-trash text-danger"></i></button>
+          </div>
+        </div>
+
+        <!-- INFO -->
+        <div class="profile-form">
+
+          <!-- Name -->
+          <div class="profile-row">
+            <label class="field-label" for="displayName">Name</label>
+            <div id="displayName" class="field-display" aria-readonly="true" role="textbox">John Doe</div>
+          </div>
+
+          <!-- Email -->
+          <div class="profile-row">
+            <label class="field-label" for="displayEmail">Email</label>
+            <div id="displayEmail" class="field-display" aria-readonly="true" role="textbox">user@example.com</div>
+
+          </div>
+
+          <!-- Phone -->
+          <div class="profile-row">
+            <label class="field-label" for="displayPhone">Phone</label>
+            <div id="displayPhone" class="field-display" aria-readonly="true" role="textbox">+91 98765 43210</div>
+
+          </div>
+
+          <!-- DOB -->
+          <div class="profile-row">
+            <label class="field-label" for="displayDob">Date of Birth</label>
+            <div id="displayDob" class="field-display" aria-readonly="true" role="textbox">1990-01-01</div>
+          </div>
+
+          <div class="profile-actions">
+            <button id="editProfileBtn" class="btn btn-outline">Edit profile</button>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- Addresses section -->
+    <section id="addresses" class="main-card" aria-labelledby="addressesHeading">
+      <h5 id="addressesHeading">Addresses</h5>
+
+      <div class="addresses-list" style="margin-top:12px;">
+        <!-- Address 1 - default -->
+        <div class="address-card">
+          <div class="address-left">
+            <h6>Home <span class="default-badge" style="margin-left:8px;">Default</span></h6>
+            <div class="address-lines" style="margin-top:6px;">
+              John Doe<br>
+              123 Main Street<br>
+              New York, NY 10001<br>
+              United States
+            </div>
+          </div>
+
+          <div class="right-col">
+            <div class="address-actions">
+              <button class="btn btn-small btn-outline address-edit-btn">Edit</button>
+              <button class="btn btn-small btn-outline address-delete-btn">Delete</button>
+            </div>
+          </div>
+        </div>
+
+        <!-- Address 2 -->
+        <div class="address-card">
+          <div class="address-left">
+            <h6>Office <span class="default-badge" style="margin-left:8px;">Default</span></h6>
+
+            <div class="address-lines" style="margin-top:6px;">
+              John Doe<br>
+              456 Business Ave<br>
+              San Francisco, CA 94107<br>
+              United States
+            </div>
+          </div>
+
+          <div class="right-col">
+            <div class="address-actions">
+              <button class="btn btn-small btn-success address-set-default-btn">Set as Default</button>
+              <button class="btn btn-small btn-outline address-delete-btn">Delete</button>
+              <button class="btn btn-small btn-outline address-edit-btn">Edit</button>
+            </div>
+          </div>
+        </div>
+      </div>
+
+    </section>
+
+    <!--  Confirmation Modal  -->
+    <div id="confirmModal" class="modal-backdrop hidden">
+      <div class="modal-box">
+        <h3 id="confirmModalTitle">Are you sure?</h3>
+        <p id="confirmModalText" style="margin-top:6px;">
+          This action cannot be undone.
+        </p>
+
+        <div style="margin-top:14px; display:flex; gap:10px; justify-content:flex-end;">
+          <button id="confirmCancel" class="btn btn-outline">Cancel</button>
+          <button id="confirmOk" class="btn btn-danger">Confirm</button>
+        </div>
+
+      </div>
+    </div>
+
+  </div>
+</div>
+
+<script src="/js/user/account/profile.js"></script>

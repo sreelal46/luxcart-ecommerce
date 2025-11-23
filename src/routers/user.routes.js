@@ -83,6 +83,17 @@ route.get(
 
 //view account details
 route.get("/account", (req, res) => {
+  res.render("user/account/welcome", { layout: "userAccountLayout" });
+});
+
+route.get("/account/profile", (req, res) => {
+  res.render("user/account/profile", { layout: "userAccountLayout" });
+});
+route.get("/account/profile/edit-profile", (req, res) => {
+  res.render("user/account/editProfile", { layout: "userAccountLayout" });
+});
+
+route.get("/account/orders", (req, res) => {
   res.render("user/account/orderHistory", { layout: "userAccountLayout" });
 });
 

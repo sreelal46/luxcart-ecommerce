@@ -16,11 +16,46 @@
   <title>{{title}}</title>
 
   <style>
+    /* Header / page title — replacement styles */
+    .account-header {
+      display: flex;
+      /* same as your d-flex wrapper */
+      align-items: center;
+      justify-content: space-between;
+      gap: 12px;
+      margin-bottom: 18px;
+      /* header spacing controlled here */
+    }
+
+    /* Title */
     .page-title {
+      margin-top: 70px;
+      /* remove top/bottom margins so it's vertically centered */
       font-weight: 700;
       font-size: 28px;
-      margin-bottom: 18px;
-      margin-top: 38px;
+      line-height: 1.05;
+      color: var(--accent);
+    }
+
+    /* Mobile back button (hidden on md and up; visible on small screens) */
+    #mobileBackBtn {
+      display: none;
+      /* default hidden (desktop) */
+      align-items: center;
+      justify-content: center;
+      padding: 6px 8px;
+    }
+
+    /* Show back button on small screens and reduce title size */
+    @media (max-width: 767.98px) {
+      #mobileBackBtn {
+        display: inline-flex;
+        /* visible on small screens */
+      }
+
+      .page-title {
+        font-size: 20px;
+      }
     }
   </style>
 </head>
@@ -28,12 +63,14 @@
 <body>
   {{> navbar}}
   <main class="container-lg mt-4 mb-5">
+    <div class="d-flex align-items-center justify-content-between mb-3 account-header">
+      <button id="mobileBackBtn" class="btn btn-sm d-md-none">
+        <i class="bi bi-arrow-left"></i>
+      </button>
 
-    <div class="d-flex align-items-center justify-content-between mb-3">
-      <button id="mobileBackBtn" class="btn btn-sm d-md-none" style="display:none"><i
-          class="bi bi-arrow-left"></i></button>
       <h2 class="page-title">My Account</h2>
     </div>
+
 
     <div class="row g-4">
 
@@ -65,7 +102,6 @@
 
   <!-- axios -->
   <script src="/common/axios.min.js" defer></script>
-
   <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
 </body>
 

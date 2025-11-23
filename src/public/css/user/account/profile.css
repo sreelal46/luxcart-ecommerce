@@ -1,0 +1,462 @@
+/* Scoped profile styles: only apply inside .profile-module */
+.profile-module:where(:not(pre)) {
+  --_dummy: 0;
+}
+
+/* Crop modal scoped */
+.profile-module .crop-modal {
+  width: 92%;
+  max-width: 720px;
+}
+
+.profile-module .crop-stage {
+  display: flex;
+  justify-content: center;
+  padding: 12px 0;
+}
+
+.profile-module .crop-viewport {
+  width: 320px;
+  height: 320px;
+  /* square crop area */
+  border-radius: 16px;
+  overflow: hidden;
+  position: relative;
+  border: 1px solid var(--border);
+  background: linear-gradient(180deg, #f8fafc, #fff);
+  box-shadow: 0 8px 20px rgba(2, 6, 23, 0.06);
+}
+
+.profile-module .crop-viewport img {
+  position: absolute;
+  left: 50%;
+  top: 50%;
+  transform: translate(-50%, -50%) scale(1) rotate(0deg);
+  transform-origin: center center;
+  user-select: none;
+  -webkit-user-drag: none;
+  will-change: transform;
+  touch-action: none;
+  max-width: none;
+  /* we control size via transform */
+}
+
+/* control rows */
+.profile-module .crop-controls {
+  display: flex;
+  gap: 12px;
+  margin-top: 10px;
+  align-items: center;
+  justify-content: center;
+  flex-wrap: wrap;
+}
+
+.profile-module .crop-controls .ctrl-row {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  min-width: 200px;
+}
+
+.profile-module .crop-controls input[type="range"] {
+  width: 160px;
+}
+
+/* make sure modal z-index high */
+.profile-module #imageCropModal {
+  z-index: 6000;
+}
+
+/* small responsive */
+@media (max-width: 480px) {
+  .profile-module .crop-viewport {
+    width: 86vw;
+    height: 86vw;
+  }
+
+  .profile-module .crop-controls .ctrl-row {
+    min-width: 140px;
+  }
+}
+
+/* Use variables inside scope */
+.profile-module {
+  --bg: #f6f8fa;
+  --card: #ffffff;
+  --muted: #586069;
+  --accent: #0f1724;
+  --border: #e6ebef;
+  --radius: 12px;
+  --gap: 18px;
+  --shadow: 0 8px 24px rgba(15, 23, 36, 0.06);
+  --success: #16a34a;
+  --danger: #ef4444;
+  font-family: Inter, ui-sans-serif, system-ui, -apple-system, "Segoe UI",
+    Roboto, "Helvetica Neue", Arial;
+}
+
+/* Page container (scoped) */
+.profile-module .container {
+  max-width: 980px;
+  margin: 28px auto;
+  padding: 20px;
+  gap: var(--gap);
+  background: transparent;
+}
+
+/* Main card wrapper used on sections */
+.profile-module .main-card {
+  background: var(--card);
+  border-radius: var(--radius);
+  padding: 18px;
+  box-shadow: var(--shadow);
+  border: 1px solid var(--border);
+  margin-bottom: 18px;
+}
+
+/* Section titles */
+.profile-module .main-card h5 {
+  margin: 0;
+  font-size: 1.05rem;
+  color: var(--accent);
+  font-weight: 600;
+}
+
+/* Profile grid layout */
+.profile-module .profile-grid {
+  display: grid;
+  grid-template-columns: 180px 1fr;
+  gap: 20px;
+  align-items: start;
+}
+
+/* Avatar column */
+.profile-module .profile-column-avatar {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+}
+
+/* avatar preview box */
+.profile-module .profile-preview {
+  width: 160px;
+  height: 160px;
+  border-radius: 16px;
+  overflow: hidden;
+  background: linear-gradient(180deg, #f8fafc, #fff);
+  box-shadow: 0 6px 18px rgba(2, 6, 23, 0.04);
+  border: 1px solid var(--border);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  position: relative;
+  cursor: default;
+}
+
+/* profile image fills box */
+.profile-module .profile-preview img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  display: block;
+}
+
+/* small inline edit icon (styled as pill) */
+.profile-module #avatarEditIcon {
+  position: absolute;
+  right: 8px;
+  top: 8px;
+  background: rgba(211, 211, 211, 0.6);
+  color: #fff;
+  border: 0;
+  padding: 6px 10px;
+  border-radius: 999px;
+  font-size: 13px;
+  cursor: pointer;
+  display: none;
+  /* shown only in edit mode by your script */
+  transition: transform 0.12s ease;
+}
+
+.profile-module #avatarEditIcon:focus {
+  outline: 3px solid rgba(16, 185, 129, 0.18);
+}
+
+/* input note */
+.profile-module .input-note {
+  color: var(--muted);
+  font-size: 13px;
+}
+
+/* upload controls center aligned */
+.profile-module #uploadControls {
+  width: 100%;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  align-items: center;
+}
+
+/* Profile form column */
+.profile-module .profile-form {
+  display: block;
+}
+
+/* each profile row */
+.profile-module .profile-row {
+  display: flex;
+  gap: 12px;
+  align-items: center;
+  margin-bottom: 12px;
+  flex-wrap: wrap;
+}
+
+/* labels */
+.profile-module .field-label {
+  width: 120px;
+  min-width: 110px;
+  font-size: 14px;
+  color: var(--muted);
+  font-weight: 600;
+}
+
+/* read-only field that looks like input */
+.profile-module .field-display {
+  flex: 1 1 320px;
+  display: block;
+  padding: 10px 12px;
+  border-radius: 8px;
+  border: 1px solid var(--border);
+  background: #fff;
+  color: var(--accent);
+  min-height: calc(1.4em + 14px);
+  box-sizing: border-box;
+}
+
+/* actual input controls */
+.profile-module .form-control {
+  flex: 1 1 320px;
+  padding: 10px 12px;
+  border-radius: 8px;
+  border: 1px solid #d3d8de;
+  background: #fff;
+  font-size: 14px;
+  box-sizing: border-box;
+}
+
+/* action buttons row */
+.profile-module .profile-actions {
+  margin-top: 10px;
+  display: flex;
+  justify-content: end;
+  gap: 10px;
+  align-items: center;
+}
+
+/* Button system (scoped) */
+.profile-module .btn {
+  padding: 9px 14px;
+  border-radius: 10px;
+  font-weight: 600;
+  font-size: 13px;
+  cursor: pointer;
+  border: 1px solid transparent;
+  background: transparent;
+  color: var(--accent);
+  transition: transform 0.08s ease, box-shadow 0.08s ease;
+}
+
+.profile-module .btn:active {
+  transform: translateY(1px);
+}
+
+.profile-module .btn:focus {
+  outline: 3px solid rgba(14, 165, 233, 0.12);
+}
+
+.profile-module .btn-primary {
+  background: linear-gradient(180deg, #0ea5a1, #0b948f);
+  color: #fff;
+  border: 1px solid rgba(0, 0, 0, 0.06);
+  box-shadow: 0 6px 18px rgba(6, 95, 84, 0.08);
+}
+
+.profile-module .btn-primary:hover {
+  transform: translateY(-1px);
+}
+
+.profile-module .btn-ghost {
+  background: transparent;
+  border: 1px solid var(--border);
+  color: var(--accent);
+}
+
+.profile-module .btn-outline {
+  background: transparent;
+  border: 1px solid #cfd6db;
+  color: var(--accent);
+  padding: 8px 12px;
+}
+
+.profile-module .btn-small {
+  padding: 6px 10px;
+  font-size: 13px;
+  border-radius: 8px;
+}
+
+.profile-module .btn-success {
+  background: rgba(22, 163, 74, 0.12);
+  color: var(--success);
+  border: 1px solid rgba(22, 163, 74, 0.18);
+}
+
+/* Addresses list */
+.profile-module .addresses-list {
+  display: grid;
+  gap: 12px;
+}
+
+/* Address card */
+.profile-module .address-card {
+  display: flex;
+  justify-content: space-between;
+  align-items: start;
+  gap: 16px;
+  padding: 14px;
+  border-radius: 10px;
+  border: 1px solid var(--border);
+  background: linear-gradient(180deg, #fff, #fbfdff);
+  box-shadow: 0 6px 18px rgba(2, 6, 23, 0.03);
+}
+
+.profile-module .address-left h6 {
+  margin: 0;
+  font-size: 14px;
+  color: var(--accent);
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-weight: 700;
+}
+
+.profile-module .default-badge {
+  background: rgba(15, 23, 36, 0.06);
+  color: var(--accent);
+  padding: 4px 8px;
+  border-radius: 999px;
+  font-size: 12px;
+  font-weight: 600;
+}
+
+.profile-module .address-lines {
+  color: var(--muted);
+  font-size: 13px;
+  margin-top: 6px;
+  line-height: 1.45;
+}
+
+/* actions column for addresses */
+.profile-module .right-col {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  min-width: 130px;
+  justify-content: flex-end;
+}
+
+.profile-module .address-actions {
+  display: flex;
+  gap: 8px;
+  flex-wrap: wrap;
+  justify-content: flex-end;
+}
+
+/* small responsive tweaks */
+@media (max-width: 820px) {
+  .profile-module .profile-grid {
+    grid-template-columns: 1fr;
+    align-items: center;
+  }
+
+  .profile-module .field-label {
+    width: 100%;
+  }
+
+  .profile-module .profile-row {
+    flex-direction: column;
+    align-items: stretch;
+  }
+
+  .profile-module .right-col {
+    justify-content: flex-start;
+    min-width: 0;
+  }
+
+  .profile-module .address-card {
+    flex-direction: column;
+    align-items: flex-start;
+  }
+
+  .profile-module .address-actions {
+    width: 100%;
+    justify-content: flex-start;
+  }
+}
+
+/* subtle helper states (scoped) */
+.profile-module .profile-preview:hover {
+  filter: brightness(0.99);
+  transform: translateY(-1px);
+  transition: transform 0.12s ease;
+}
+
+.profile-module .address-card:hover {
+  transform: translateY(-2px);
+  transition: transform 0.12s ease;
+}
+
+/* small utility (scoped) */
+.profile-module .hidden {
+  display: none !important;
+}
+
+.profile-module .mt-3 {
+  margin-top: 12px;
+}
+
+.profile-module .modal-backdrop {
+  position: fixed;
+  inset: 0;
+  background: rgba(0, 0, 0, 0.55);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 5000;
+}
+
+.profile-module .modal-box {
+  background: #fff;
+  padding: 20px;
+  border-radius: 12px;
+  width: 450px;
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.15);
+  animation: modalPop 0.25s ease;
+}
+
+@keyframes modalPop {
+  from {
+    transform: scale(0.92);
+    opacity: 0;
+  }
+
+  to {
+    transform: scale(1);
+    opacity: 1;
+  }
+}
+
+.profile-module .btn-danger {
+  background: #ef4444;
+  border: 1px solid #dc2626;
+  color: #fff;
+}

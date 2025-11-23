@@ -4,12 +4,12 @@
     --card: #fff;
     --muted: #9aa0a6;
     --accent: #111;
-    --soft: #f1f2f3;
+    --soft: #f1f2f3bc;
   }
 
-  /* Left sidebar */
+  /* Sidebar */
   .account-sidebar {
-    background: var(--card);
+    background: var(--bg);
     padding: 18px;
     border-radius: 8px;
     min-height: 320px;
@@ -40,16 +40,37 @@
     display: block;
   }
 
+  /* Links */
   .nav-acc .nav-link {
     color: #222;
     padding: 10px;
     border-radius: 8px;
     margin-bottom: 6px;
+    position: relative;
+    padding-bottom: 12px;
   }
 
+  /* Active state */
   .nav-acc .nav-link.active {
     background: #111;
     color: #fff;
+  }
+
+  /* Hover same as active */
+  .nav-acc .nav-link:hover {
+    background: #111;
+    color: #fff;
+  }
+
+  /* Subtle separator */
+  .nav-acc .nav-link:not(:last-child)::after {
+    content: "";
+    position: absolute;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    height: 1px;
+    background: rgba(0, 0, 0, 0.02);
   }
 
   /* Responsive */
@@ -68,26 +89,50 @@
     }
   }
 </style>
-
-<div class="col-lg-3">
+<div class="col-lg-3 sidebar">
   <aside class="account-sidebar">
     <div class="user-info">
-      <div class="avatar"><img id="sidebarAvatar" src="/mnt/data/Profile-1.png" alt="avatar"></div>
+      <div class="avatar">
+        <img id="sidebarAvatar" src="/mnt/data/Profile-1.png" alt="avatar">
+      </div>
+
       <div>
         <div style="font-weight:600" id="sidebarName">John Doe</div>
         <div style="font-size:13px;color:var(--muted)" id="sidebarEmail">user@example.com</div>
       </div>
     </div>
+
     <nav class="nav flex-column nav-acc">
-      <a class="nav-link active" href="#orders"><i class="bi bi-journal-check me-2"></i> Order History</a>
-      <a class="nav-link" href="#wishlist"><i class="bi bi-heart me-2"></i> Wishlist</a>
-      <a class="nav-link" href="#addresses"><i class="bi bi-geo-alt me-2"></i> Addresses</a>
-      <a class="nav-link" href="#wallet"><i class="bi bi-wallet2 me-2"></i> Wallet</a>
-      <a class="nav-link" href="#coupons"><i class="bi bi-ticket-perforated me-2"></i> My Coupons</a>
-      <a class="nav-link" href="#password"><i class="bi bi-key me-2"></i> Change Password</a>
-      <a class="nav-link" href="#profile"><i class="bi bi-person-circle me-2"></i> Profile</a>
-      <a class="nav-link" href="#referrals"><i class="bi bi-people me-2"></i> Referrals</a>
-      <a class="nav-link" href="#logout"><i class="bi bi-box-arrow-right me-2"></i> Logout</a>
+      <a class="nav-link" href="/account/profile"><i class="bi bi-person-circle me-2"></i> Profile</a>
+      <a class="nav-link" href="/account/orders"><i class="bi bi-journal-check me-2"></i> Orders</a>
+      <a class="nav-link" href="/account/wishlist"><i class="bi bi-heart me-2"></i> Wishlist</a>
+      <a class="nav-link" href="/account/addresses"><i class="bi bi-geo-alt me-2"></i> Addresses</a>
+      <a class="nav-link" href="/account/wallet"><i class="bi bi-wallet2 me-2"></i> Wallet</a>
+      <a class="nav-link" href="/account/coupons"><i class="bi bi-ticket-perforated me-2"></i> My Coupons</a>
+      <a class="nav-link" href="/account/change-password"><i class="bi bi-key me-2"></i> Change Password</a>
+      <a class="nav-link" href="/account/referrals"><i class="bi bi-people me-2"></i> Referrals</a>
+      <a class="nav-link" href="/account/logout"><i class="bi bi-box-arrow-right me-2"></i> Logout</a>
     </nav>
   </aside>
 </div>
+
+<script>
+  document.addEventListener('DOMContentLoaded', () => {
+    const links = document.querySelectorAll('.nav-acc .nav-link');
+
+    // get current path
+    const path = location.pathname.replace(/\/$/, "");
+
+    links.forEach(link => {
+      // extract /account/... from href
+      const linkPath = new URL(link.href).pathname.replace(/\/$/, "");
+
+      // match and activate
+      if (linkPath === path) {
+        link.classList.add('active');
+      } else {
+        link.classList.remove('active');
+      }
+    });
+  });
+</script>
