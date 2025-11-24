@@ -23,8 +23,8 @@
   }
 
   .avatar {
-    width: 56px;
-    height: 56px;
+    width: 46px;
+    height: 46px;
     border-radius: 50%;
     background: var(--soft);
     display: flex;
@@ -93,12 +93,12 @@
   <aside class="account-sidebar">
     <div class="user-info">
       <div class="avatar">
-        <img id="sidebarAvatar" src="/mnt/data/Profile-1.png" alt="avatar">
+        <img id="sidebarAvatar" src="images/people.png" alt="avatar">
       </div>
 
       <div>
-        <div style="font-weight:600" id="sidebarName">John Doe</div>
-        <div style="font-size:13px;color:var(--muted)" id="sidebarEmail">user@example.com</div>
+        <div style="font-weight:600" id="sidebarName">{{user.name}}</div>
+        <div style="font-size:13px;color:var(--muted)" id="sidebarEmail">{{user.email}}</div>
       </div>
     </div>
 
@@ -120,15 +120,14 @@
   document.addEventListener('DOMContentLoaded', () => {
     const links = document.querySelectorAll('.nav-acc .nav-link');
 
-    // get current path
-    const path = location.pathname.replace(/\/$/, "");
+    // normalize path
+    const currentPath = location.pathname.replace(/\/$/, "");
 
     links.forEach(link => {
-      // extract /account/... from href
       const linkPath = new URL(link.href).pathname.replace(/\/$/, "");
 
-      // match and activate
-      if (linkPath === path) {
+      // activate if current path starts with the link path
+      if (currentPath === linkPath || currentPath.startsWith(linkPath + '/')) {
         link.classList.add('active');
       } else {
         link.classList.remove('active');

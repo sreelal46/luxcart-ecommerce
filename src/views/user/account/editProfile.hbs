@@ -1,116 +1,153 @@
-<!-- Cropper.js CDN -->
-<link href="https://unpkg.com/cropperjs@1.5.13/dist/cropper.min.css" rel="stylesheet" />
-
 <link rel="stylesheet" href="/css/user/account/editProfile.css">
 
+<div class="profile-module">
+  <div class="edit-card">
 
+    <h2 class="title">Edit Profile</h2>
 
-<main class="profile-module">
-  <div class="container">
-    <div class="card">
-      <h2>Edit profile</h2>
-      <div class="grid" style="margin-top:12px">
-        <div>
-          <div class="profile-preview" id="previewBox" title="Profile photo">
-            <img id="profileImg"
-              src="data:image/svg+xml;utf8,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 120 120'%3E%3Crect width='120' height='120' rx='20' fill='%23f1f5f9'/%3E%3Ctext x='50%25' y='54%25' text-anchor='middle' font-size='20' fill='%239ca3af' font-family='Arial' dy='.35em'%3EProfile%3C/text%3E%3C/svg%3E"
-              alt="Profile">
-          </div>
-
-          <div class="avatar-actions">
-            <input id="fileInput" type="file" accept="image/png,image/jpeg" style="display:none">
-            <label for="fileInput" class="btn-outline btn">Upload new photo</label>
-            <button id="removeBtn" class="btn btn-outline">Remove photo</button>
-            <div class="note">PNG / JPG — 800×800 recommended</div>
-          </div>
+    <form action="/user/update-profile" method="POST" enctype="multipart/form-data" class="edit-form">
+      <!-- Profile Image -->
+      <div class="img-section">
+        <div class="img-wrapper">
+          <img id="profilePreview" src="{{user.profileImage}}" alt="Profile Image">
         </div>
 
-        <div>
-          <div style="display:flex;flex-direction:column;gap:12px">
-            <div class="row">
-              <div class="label">Name</div>
-              <input id="name" class="input" value="John Doe">
-            </div>
+        <label class="img-btn">
+          Change Photo
+          <input type="file" name="profileImage" id="profileInput" accept="image/*" hidden>
+        </label>
 
-            <div class="row">
-              <div class="label">Email</div>
-              <input id="email" class="input" value="user@example.com">
-            </div>
+        <!-- Delete Button -->
+        <button type="button" id="deleteProfileBtn" class="  img-btn--danger btn btn-danger">
+          Delete Photo
+        </button>
 
-            <div class="row">
-              <div class="label">Phone</div>
-              <input id="phone" class="input" value="+91 98765 43210">
-            </div>
+        <!-- Hidden flag for backend -->
+        <input type="hidden" name="deleteProfileImage" id="deleteProfileImage" value="false">
+      </div>
 
-            <div class="row">
-              <div class="label">Date of birth</div>
-              <input id="dob" type="date" class="input" value="1990-01-01">
-            </div>
 
-            <div class="actions">
-              <button id="cancelBtn" class="btn btn-outline">Cancel</button>
-              <button id="saveBtn" class="btn-primary btn">Save changes</button>
-            </div>
-          </div>
+
+      <!-- Fields -->
+      <div class="grid">
+
+        <div class="form-group">
+          <label>Name</label>
+          <input type="text" name="name" value="{{user.name}}" required>
+        </div>
+
+        <div class="form-group">
+          <label for="emailInput">Email</label>
+          <input id="emailInput" name="email" type="email" required value="{{user.email}}"
+            data-original-email="{{user.email}}" autocomplete="email">
+          <!-- hidden flag set when verification succeeds -->
+          <input type="hidden" name="email_verified" id="emailVerifiedInput" value="true">
+        </div>
+
+        <div class="form-group">
+          <label>Phone Number</label>
+          <input type="text" name="phone" value="{{user.phone}}" required>
+        </div>
+
+        <div class="form-group">
+          <label>Date of Birth</label>
+          <input type="date" name="dob" value="{{user.dob}}">
+        </div>
+
+      </div>
+
+      <button class="submit-btn" type="submit" id="openConfirm">Save Changes</button>
+
+    </form>
+
+    <!-- Confirmation Modal -->
+    <div class="confirm-backdrop" id="confirmModal">
+      <div class="confirm-box">
+        <h3>Confirm Changes</h3>
+        <p>Are you sure you want to update your profile?</p>
+
+        <div class="confirm-actions">
+          <button id="cancelBtn" class="cancel-btn">Cancel</button>
+          <button id="confirmBtn" class="confirm-btn">Yes, Save</button>
         </div>
       </div>
     </div>
 
-    <!-- Crop modal (hidden by default) -->
-    <div id="cropModal" class="backdrop hidden" aria-hidden="true">
-      <div class="modal" role="dialog" aria-modal="true" aria-labelledby="cropTitle">
-        <h3 id="cropTitle" style="margin:0 0 8px 0">Crop photo</h3>
-        <p style="margin:0 0 12px 0;color:var(--muted)">Drag/zoom to adjust. Click Apply when done.</p>
-        <div class="crop-area" id="cropArea">
-          <img id="cropImage" src="" alt="To crop">
-        </div>
 
-        <div style="display:flex;gap:8px;justify-content:flex-end;margin-top:12px">
-          <button id="cropCancel" class="btn btn-outline">Cancel</button>
-          <button id="cropApply" class="btn-primary btn">Apply</button>
-        </div>
+  </div>
+</div>
+
+<!-- Hidden field to hold base64 cropped image (server should decode) -->
+<input type="hidden" name="croppedImage" id="croppedImageInput" />
+
+<!-- ====== Crop Modal (paste near the end of body) ====== -->
+<div class="cropper-backdrop" id="cropperModal" aria-hidden="true">
+  <div class="cropper-box" role="dialog" aria-modal="true" aria-labelledby="cropperTitle">
+    <header class="cropper-header">
+      <h3 id="cropperTitle">Crop Profile Photo</h3>
+      <button id="cropClose" class="icon-btn" title="Close">✕</button>
+    </header>
+
+    <div class="cropper-body">
+      <div class="cropper-stage">
+        <img id="cropImage" alt="To be cropped" src="">
       </div>
-    </div>
 
-    <!-- OTP verification modal (hidden by default) -->
-    <div id="otpModal" class="backdrop hidden" aria-hidden="true">
-      <div class="modal" role="dialog" aria-modal="true" aria-labelledby="otpTitle">
-        <div style="text-align:center;margin-bottom:10px">
-          <h3 id="otpTitle" style="margin:6px 0">Enter Verification Code</h3>
-          <p style="margin:0;color:var(--muted)">We’ve sent a 6-digit code to your email</p>
+      <div class="cropper-controls">
+        <div class="action-row">
+          <button type="button" id="cancelCrop" class="cancel-btn">Cancel</button>
+          <button type="button" id="applyCrop" class="confirm-btn">Apply Crop</button>
         </div>
-
-        <div id="serverMessage" class="server-message"></div>
-
-        <form id="OTPVerificationForm" class="mt-2" autocomplete="off">
-          <input type="hidden" name="email" id="otp_hidden_email" value="">
-          <div style="margin:12px 0;text-align:center">
-            <div class="otp-row">
-              <input type="text" maxlength="1" inputmode="numeric" pattern="[0-9]*" class="otp-input" name="otp1" />
-              <input type="text" maxlength="1" inputmode="numeric" pattern="[0-9]*" class="otp-input" name="otp2" />
-              <input type="text" maxlength="1" inputmode="numeric" pattern="[0-9]*" class="otp-input" name="otp3" />
-              <input type="text" maxlength="1" inputmode="numeric" pattern="[0-9]*" class="otp-input" name="otp4" />
-              <input type="text" maxlength="1" inputmode="numeric" pattern="[0-9]*" class="otp-input" name="otp5" />
-              <input type="text" maxlength="1" inputmode="numeric" pattern="[0-9]*" class="otp-input" name="otp6" />
-            </div>
-          </div>
-
-          <button type="submit" class="btn btn-primary" style="width:100%;">Verify</button>
-
-          <div style="text-align:center;margin-top:10px">
-            <p style="margin:0;font-size:13px;color:var(--muted)">
-              Didn’t receive the code?
-              <a href="#" id="resendOtp"
-                style="font-weight:600;color:var(--accent);text-decoration:none;margin-left:6px">Resend</a>
-              <span id="resendTimer" style="margin-left:8px;color:#666;display:none"></span>
-            </p>
-          </div>
-        </form>
       </div>
     </div>
   </div>
+</div>
 
-</main>
-<!-- JS: Cropper then our script -->
-<script src="https://unpkg.com/cropperjs@1.5.13/dist/cropper.min.js"></script>
-<script src="/js/user/account/editProfile.js" defer></script>
+
+<!-- OTP Confirmation Modal -->
+<div class="otp-backdrop" id="otpModal" aria-hidden="true">
+  <div class="otp-box" role="dialog" aria-modal="true" aria-labelledby="otpTitle">
+    <header class="otp-header">
+      <h3 id="otpTitle">Verify New Email</h3>
+      <button id="otpClose" class="icon-btn" aria-label="Close">✕</button>
+    </header>
+
+    <div class="otp-body">
+      <p class="otp-instruction">We sent a 6-digit code to <strong id="otpTargetEmail"></strong>. Enter it below to
+        confirm your new email.</p>
+
+      <form id="otpForm" onsubmit="return false;">
+        <div class="otp-inputs" id="otpInputs" role="group" aria-label="Enter OTP">
+          <!-- JS will render 6 inputs here -->
+        </div>
+
+        <div class="otp-row">
+          <button type="button" id="verifyOtpBtn" class="confirm-btn">Verify</button>
+          <button type="button" id="cancelOtpBtn" class="cancel-btn">Cancel</button>
+        </div>
+
+        <div class="otp-meta">
+          <button type="button" id="resendBtn" class="text-btn">Resend code</button>
+          <span id="resendTimer" class="muted small"></span>
+        </div>
+
+        <div id="otpMessage" class="otp-message" aria-live="polite"></div>
+      </form>
+    </div>
+  </div>
+</div>
+
+<div id="deletePhotoModal" class="confirm-backdrop">
+  <div class="confirm-box">
+    <h3>Delete Profile Photo?</h3>
+    <p>This action will remove your current profile picture.</p>
+
+    <div class="confirm-actions">
+      <button id="cancelDeletePhoto" class="cancel-btn2">Cancel</button>
+      <button id="confirmDeletePhoto" class="confirm-btn2">Delete</button>
+    </div>
+  </div>
+</div>
+
+
+<script src="/js/user/account/editProfile.js"></script>

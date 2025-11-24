@@ -1,10 +1,6 @@
 document.addEventListener("DOMContentLoaded", () => {
   /* ------------------ Elements ------------------ */
 
-  const profileImg = document.getElementById("profileImg");
-  const fileInput = document.getElementById("profileFileInput");
-  const uploadHint = document.getElementById("uploadHint");
-
   const confirmModal = document.getElementById("confirmModal");
   const confirmTitle = document.getElementById("confirmModalTitle");
   const confirmText = document.getElementById("confirmModalText");
@@ -33,26 +29,6 @@ document.addEventListener("DOMContentLoaded", () => {
     if (confirmCallback) confirmCallback();
     closeConfirmModal();
   });
-
-  /* ------------------ Image Preview ------------------ */
-  if (fileInput) {
-    fileInput.addEventListener("change", (e) => {
-      const file = e.target.files[0];
-      if (!file) return;
-      if (!file.type.startsWith("image/")) {
-        alert("Invalid image.");
-        return;
-      }
-
-      const reader = new FileReader();
-      reader.onload = (ev) => {
-        stagedImage = ev.target.result;
-        profileImg.src = stagedImage;
-        uploadHint.style.display = "block";
-      };
-      reader.readAsDataURL(file);
-    });
-  }
 
   /* ------------------ Edit Profile Info ------------------ */
   document.querySelectorAll("#editProfileBtn").forEach((btn) => {

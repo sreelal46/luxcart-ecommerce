@@ -29,6 +29,7 @@ const userSchema = new mongoose.Schema(
 
     profileImage_url: {
       type: String,
+      default: false,
     },
 
     authProvider: {

@@ -165,13 +165,17 @@
     <div class="welcome-visual">
       <!-- use uploaded image as avatar -->
       <div class="welcome-avatar">
-        <img src="/mnt/data/c3d86212-c8a3-496d-be82-e7b630e8bdb2.png" alt="avatar">
+        {{#if user.profileImage_url}}
+        <img src="images/people.png" alt="avatar">
+        {{else}}
+        <img src="{{user.profileImage_url}}" alt="avatar">
+        {{/if}}
       </div>
     </div>
 
     <div class="welcome-content">
       <h2 class="welcome-title">
-        Welcome back, <small id="welcomeName">John Doe</small> <span aria-hidden="true">👋</span>
+        Welcome back, <small id="welcomeName">{{user.name}}</small> <span aria-hidden="true">👋</span>
       </h2>
 
       <p class="welcome-text">

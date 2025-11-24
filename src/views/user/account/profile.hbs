@@ -9,7 +9,12 @@
         <!-- AVATAR -->
         <div class="profile-column-avatar" aria-hidden="false">
           <div class="profile-preview" id="previewBox" title="Profile photo">
-            <img id="profileImg" src="/mnt/data/9fa43315-59dc-4d8a-9779-c9afcbc3dfc4.png" alt="Profile">
+            {{#if user.profileImage_url}}
+            <img id="profileImg" src="{{user.profileImage_url}}" alt="Profile">
+            {{else}}
+            <img id="profileImg" src="images/people.png" alt="Profile">
+            {{/if}}
+
             <button id="avatarEditIcon" aria-hidden="true"><i class="bi bi-trash text-danger"></i></button>
           </div>
         </div>
@@ -20,27 +25,27 @@
           <!-- Name -->
           <div class="profile-row">
             <label class="field-label" for="displayName">Name</label>
-            <div id="displayName" class="field-display" aria-readonly="true" role="textbox">John Doe</div>
+            <div id="displayName" class="field-display" aria-readonly="true" role="textbox">{{user.name}}</div>
           </div>
 
           <!-- Email -->
           <div class="profile-row">
             <label class="field-label" for="displayEmail">Email</label>
-            <div id="displayEmail" class="field-display" aria-readonly="true" role="textbox">user@example.com</div>
+            <div id="displayEmail" class="field-display" aria-readonly="true" role="textbox">{{user.email}}</div>
 
           </div>
 
           <!-- Phone -->
           <div class="profile-row">
             <label class="field-label" for="displayPhone">Phone</label>
-            <div id="displayPhone" class="field-display" aria-readonly="true" role="textbox">+91 98765 43210</div>
+            <div id="displayPhone" class="field-display" aria-readonly="true" role="textbox"></div>
 
           </div>
 
           <!-- DOB -->
           <div class="profile-row">
             <label class="field-label" for="displayDob">Date of Birth</label>
-            <div id="displayDob" class="field-display" aria-readonly="true" role="textbox">1990-01-01</div>
+            <div id="displayDob" class="field-display" aria-readonly="true" role="textbox"></div>
           </div>
 
           <div class="profile-actions">

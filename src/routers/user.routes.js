@@ -17,6 +17,10 @@ const {
 } = require("../controllers/user/pageLoadController");
 
 const {
+  loadAccountPage,
+} = require("../controllers/user/pageLoadTwo.controller");
+
+const {
   createUser,
   verifyUser,
   logoutPage,
@@ -82,9 +86,7 @@ route.get(
 );
 
 //view account details
-route.get("/account", (req, res) => {
-  res.render("user/account/welcome", { layout: "userAccountLayout" });
-});
+route.get("/account", loadAccountPage);
 
 route.get("/account/profile", (req, res) => {
   res.render("user/account/profile", { layout: "userAccountLayout" });
