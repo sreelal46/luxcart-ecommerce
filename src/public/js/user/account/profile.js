@@ -8,7 +8,6 @@ document.addEventListener("DOMContentLoaded", () => {
   const confirmOk = document.getElementById("confirmOk");
 
   /* ------------------ State ------------------ */
-  let stagedImage = null;
   let confirmCallback = null;
 
   /* ------------------ Confirmation Modal ------------------ */
@@ -31,13 +30,16 @@ document.addEventListener("DOMContentLoaded", () => {
   });
 
   /* ------------------ Edit Profile Info ------------------ */
-  document.querySelectorAll("#editProfileBtn").forEach((btn) => {
-    btn.addEventListener("click", () => {
+  document.querySelectorAll("[data-user-id]").forEach((btn) => {
+    btn.addEventListener("click", (e) => {
+      const userId = e.currentTarget.dataset.userId;
+      console.log(userId);
+
       openConfirmModal(
         "Edit Profile?",
         "Do you want to edit your Profile.",
         () => {
-          window.location.href = "/account/profile/edit-profile";
+          window.location.href = `/account/profile/edit-profile/${userId}`;
         }
       );
     });

@@ -15,6 +15,12 @@ const userSchema = new mongoose.Schema(
       lowercase: true,
       trim: true,
     },
+    phoneNumber: {
+      type: Number,
+    },
+    dob: {
+      type: String,
+    },
 
     password: {
       type: String,
@@ -29,7 +35,8 @@ const userSchema = new mongoose.Schema(
 
     profileImage_url: {
       type: String,
-      default: false,
+      default:
+        "https://res.cloudinary.com/diq1koyry/image/upload/v1764051606/people_z4d5to.png",
     },
 
     authProvider: {

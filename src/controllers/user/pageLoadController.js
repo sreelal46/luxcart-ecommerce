@@ -69,6 +69,9 @@ const loadSend_OTP_Page = (req, res) => {
 };
 
 const loadVerify_OTP_Page = (req, res) => {
+  console.log(req.session.verifyType);
+  // if (req.session.verifyType === "emailChanging")
+  //   return res.json({ success: true });
   res.status(OK).render("user/auth/verify-otp");
 };
 

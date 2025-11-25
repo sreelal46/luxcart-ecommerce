@@ -126,6 +126,7 @@ const sendOTP = async (req, res, next) => {
   try {
     //finding user
     const email = req.body.email;
+    const verification = req.body.verification;
     const user = await User.findOne({ email });
 
     //if user not found
@@ -135,13 +136,22 @@ const sendOTP = async (req, res, next) => {
         .json({ success: false, alert: "Email not Found" });
 
     //send OTP to user
-    await emailSending(email, user.id, "ForgotPassword");
+    await emailSending(
+      email,
+      user.id,
+      verification ? verification : "ForgotPassword"
+    );
 
     //OTP reciver userID and veryfication type
     req.session.userId = user.id;
     req.session.email = email;
-    req.session.verifyType = "ForgotPassword";
+    req.session.verifyType = verification ? verification : "ForgotPassword";
     req.session.userPasswordChanged = false;
+
+    if (verification)
+      return req.session.save(() =>
+        res.status(CREATED).json({ success: true })
+      );
 
     req.session.save(() =>
       res.status(CREATED).json({ success: true, redirect: "/verify-otp" })
@@ -155,8 +165,15 @@ const sendOTP = async (req, res, next) => {
 //verifing otp for creating user and forgott password
 const verifyOTP = async (req, res, next) => {
   try {
-    //object to string OTP
-    const otp = Object.values(req.body).join("");
+    //saving OTP
+    let otp;
+    if (req.body.code) {
+      otp = req.body.code;
+    } else {
+      //object to string OTP
+      otp = Object.values(req.body).join("");
+    }
+    const targetEmail = req.body.targetEmail;
 
     //finding OTP sender
     const userId = req.session.userId;
@@ -206,6 +223,17 @@ const verifyOTP = async (req, res, next) => {
       return res
         .status(OK)
         .json({ success: true, redirect: "/forgot-password" });
+    }
+    if (verifyType === "emailChanging") {
+      const duplicateEmail = User.findOne({ targetEmail });
+      if (duplicateEmail)
+        return res
+          .status(OK)
+          .json({ success: false, alert: "This email is alrady taken" });
+      await User.updateOne({ _id: userId }, { $set: { email: targetEmail } });
+      return res
+        .status(OK)
+        .json({ success: true, redirect: "/account/profile/edit-profile" });
     }
   } catch (error) {
     console.error("Error from OTP verification", error);

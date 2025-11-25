@@ -1,5 +1,6 @@
 const express = require("express");
 const route = express.Router();
+const upload = require("../config/multer");
 
 const {
   loadLandingPage,
@@ -18,7 +19,15 @@ const {
 
 const {
   loadAccountPage,
+  loadProfilePage,
+  loadEditProfilePage,
+  loadAddressPage,
+  loadAddAddressPage,
 } = require("../controllers/user/pageLoadTwo.controller");
+const {
+  editProfile,
+  addAddress,
+} = require("../controllers/user/account.controller");
 
 const {
   createUser,
@@ -86,14 +95,22 @@ route.get(
 );
 
 //view account details
-route.get("/account", loadAccountPage);
-
-route.get("/account/profile", (req, res) => {
-  res.render("user/account/profile", { layout: "userAccountLayout" });
-});
-route.get("/account/profile/edit-profile", (req, res) => {
-  res.render("user/account/editProfile", { layout: "userAccountLayout" });
-});
+route.get("/account", checkSession, loadAccountPage);
+route.get("/account/profile", checkSession, loadProfilePage);
+route.get(
+  "/account/profile/edit-profile/:userId",
+  checkSession,
+  loadEditProfilePage
+);
+route.post(
+  "/account/profile/edit-profile/:userId",
+  checkSession,
+  upload.any(),
+  editProfile
+);
+route.get("/account/addresses", checkSession, loadAddressPage);
+route.get("/account/addresses/add-address", checkSession, loadAddAddressPage);
+route.post("/account/addresses/add-address/:userId", checkSession, addAddress);
 
 route.get("/account/orders", (req, res) => {
   res.render("user/account/orderHistory", { layout: "userAccountLayout" });

@@ -1,0 +1,52 @@
+<link rel="stylesheet" href="/css/user/account/address.css">
+<!-- ADDRESSES -->
+<section id="addresses" class="main-card mt-4">
+  <div class="address-header">
+    <h5>My Addresses</h5>
+    <a href="/account/addresses/add-address">
+      <button class="btn btn-outline btn-sm add-address">Add
+        address</button>
+    </a>
+  </div>
+  {{#each address}}
+  <div class="mt-4 addresses-list">
+    <div class="address-card">
+      <div class="address-left">
+        <h6 class="fw-bold">{{this.label}} <span class="default-badge" style="margin-left:8px;">Default</span></h6>
+        <div class="address-lines">
+          {{this.fullName}}<br>{{this.street}}<br>{{this.landmark}}<br>{{this.label}}
+          {{this.city}}<br>{{this.district}}<br>{{this.state}}<br>{{this.phone}}<br>{{this.pinCode}}
+        </div>
+      </div>
+
+      <div class="address-actions">
+        <button class="address-set-default-btn btn btn-success btn-sm" data-address-id="{{this._id}}">Set
+          Default</button>
+        <button class="address-edit-btn btn btn-outline btn-sm" data-address-id="{{this._id}}">Edit</button>
+        <button class="address-delete-btn btn btn-outline btn-sm" data-address-id="{{this._id}}">Delete</button>
+      </div>
+    </div>
+    {{/each}}
+
+
+
+
+
+  </div>
+</section>
+
+
+<!-- UNIVERSAL CONFIRMATION MODAL -->
+<div id="confirmModal" class="modal-backdrop" aria-hidden="true">
+  <div class="modal-box">
+    <h3 id="confirmTitle">Are you sure?</h3>
+    <p id="confirmText" style="margin-top:6px;">This action cannot be undone.</p>
+
+    <div style="margin-top:14px; display:flex; gap:10px; justify-content:flex-end;">
+      <button id="confirmCancel" class="btn btn-outline">Cancel</button>
+      <button id="confirmOk" class="btn btn-danger">Confirm</button>
+    </div>
+  </div>
+</div>
+
+<script src="/js/user/account/address.js"></script>

@@ -1,0 +1,189 @@
+<style>
+  .main-card {
+    background: #ffffff;
+    box-shadow: 0 8px 24px rgba(15, 23, 36, 0.06);
+    padding: 20px;
+    border-radius: 8px;
+  }
+
+  .error {
+    color: red;
+    font-size: 12px;
+    margin-top: 4px;
+  }
+
+  .invalid {
+    border-color: red !important;
+  }
+</style>
+
+
+<form id="addressForm" class="row g-3 main-card mt-4" novalidate>
+  <div class="col-md-6">
+    <label class="form-label">Full Name*</label>
+    <input id="fullName" class="form-control" placeholder="Enter your full name">
+    <div class="error" id="fullNameError"></div>
+  </div>
+  <div class="col-md-6">
+    <label class="form-label">Email*</label>
+    <input id="email" class="form-control" placeholder="Enter your email">
+    <div class="error" id="emailError"></div>
+  </div>
+  <div class="col-md-6">
+    <label class="form-label">Phone Number*</label>
+    <input id="phone" class="form-control" placeholder="Enter your phone number">
+    <div class="error" id="phoneError"></div>
+  </div>
+  <div class="col-md-6">
+    <label class="form-label">Address Label*</label>
+    <input id="label" class="form-control" placeholder="Home, Office, etc.">
+    <div class="error" id="labelError"></div>
+  </div>
+  <div class="col-12">
+    <label class="form-label">Street Address*</label>
+    <input id="street" class="form-control" placeholder="Street address">
+    <div class="error" id="streetError"></div>
+  </div>
+  <div class="col-md-6">
+    <label class="form-label">Landmark*</label>
+    <input id="landmark" class="form-control" placeholder="Landmark">
+    <div class="error" id="landmarkError"></div>
+  </div>
+  <div class="col-md-6">
+    <label class="form-label">City*</label>
+    <input id="city" class="form-control" placeholder="City">
+    <div class="error" id="cityError"></div>
+  </div>
+  <div class="col-md-6">
+    <label class="form-label">District*</label>
+    <input id="district" class="form-control" placeholder="District">
+    <div class="error" id="districtError"></div>
+  </div>
+  <div class="col-md-6">
+    <label class="form-label">State/Province*</label>
+    <input id="state" class="form-control" placeholder="State/Province">
+    <div class="error" id="stateError"></div>
+  </div>
+
+  <div class="col-md-6">
+    <label class="form-label">ZIP/Postal Code*</label>
+    <input id="zip" class="form-control" placeholder="ZIP/Postal Code">
+    <div class="error" id="zipError"></div>
+  </div>
+  <input id="userId" type="hidden" value="{{user._id}}">
+  <div class="col-md-6 d-flex align-items-end justify-content-end">
+    <button type="button" class="btn btn-outline-dark me-2" id="cancelBtn">Cancel</button>
+    <button type="submit" class="btn btn-dark">Save Address</button>
+  </div>
+</form>
+
+<script>
+  const fields = [
+    'fullName', 'email', 'phone', 'label', 'street', 'landmark', 'city', 'district', 'state', 'zip'
+  ];
+
+  function validateField(id) {
+    const value = document.getElementById(id).value.trim();
+    const error = document.getElementById(id + 'Error');
+    const input = document.getElementById(id);
+
+    // Required field check
+    if (!value) {
+      error.textContent = 'This field is required';
+      input.classList.add('invalid');
+      return false;
+    }
+
+    // Email validation
+    if (id === 'email' && !/^[^@]+@[^@]+\.[^@]+$/.test(value)) {
+      error.textContent = 'Enter a valid email address';
+      input.classList.add('invalid');
+      return false;
+    }
+
+    // Phone validation (10 digits, no repeated digits, numeric only)
+    // Phone validation (Strict Indian phone rules)
+    if (id === 'phone') {
+      const v = value;
+
+      // Required
+      if (!v) {
+        error.textContent = "Phone number is required.";
+        input.classList.add("invalid");
+        return false;
+      }
+
+      // Must start with 6-9 and be 10 digits
+      if (!/^[6-9]\d{9}$/.test(v)) {
+        error.textContent = "Enter valid 10-digit Indian mobile number.";
+        input.classList.add("invalid");
+        return false;
+      }
+
+      // Reject all repeating digits: 0000000000, 1111111111...
+      if (/^(\d)\1{9}$/.test(v)) {
+        error.textContent = "Phone number cannot be all repeating digits.";
+        input.classList.add("invalid");
+        return false;
+      }
+
+      // Valid
+      error.textContent = "";
+      input.classList.remove("invalid");
+      return true;
+    }
+
+
+
+    // ZIP/Postal Code (6 digits only)
+    if (id === 'zip') {
+      if (!/^\d{6}$/.test(value)) {
+        error.textContent = 'ZIP/Postal Code must be exactly 6 digits';
+        input.classList.add('invalid');
+        return false;
+      }
+    }
+
+    // Clear error if valid
+    error.textContent = '';
+    input.classList.remove('invalid');
+    return true;
+  }
+
+
+
+  fields.forEach(id => {
+    document.getElementById(id).addEventListener('input', () => validateField(id));
+  });
+
+  document.getElementById('addressForm').addEventListener('submit', async (e) => {
+    e.preventDefault();
+
+    let valid = true;
+    fields.forEach(id => {
+      if (!validateField(id)) valid = false;
+    });
+
+    if (!valid) return;
+    const userId = document.getElementById("userId").value
+    const data = {};
+    fields.forEach(id => data[id] = document.getElementById(id).value.trim());
+
+    try {
+      const res = await axios.post(`/account/addresses/add-address/${userId}`, data);
+      if (res.data.success) {
+        window.location.href = res.data.redirect
+      }
+    } catch (err) {
+      alert('Error saving address');
+    }
+  });
+
+  document.getElementById('cancelBtn').addEventListener('click', () => {
+    document.getElementById('addressForm').reset();
+    fields.forEach(id => {
+      document.getElementById(id + 'Error').textContent = '';
+      document.getElementById(id).classList.remove('invalid');
+    });
+  });
+</script>

@@ -9,12 +9,7 @@
         <!-- AVATAR -->
         <div class="profile-column-avatar" aria-hidden="false">
           <div class="profile-preview" id="previewBox" title="Profile photo">
-            {{#if user.profileImage_url}}
-            <img id="profileImg" src="{{user.profileImage_url}}" alt="Profile">
-            {{else}}
-            <img id="profileImg" src="images/people.png" alt="Profile">
-            {{/if}}
-
+            <img src="{{user.profileImage_url}}" alt="avatar">
             <button id="avatarEditIcon" aria-hidden="true"><i class="bi bi-trash text-danger"></i></button>
           </div>
         </div>
@@ -38,18 +33,18 @@
           <!-- Phone -->
           <div class="profile-row">
             <label class="field-label" for="displayPhone">Phone</label>
-            <div id="displayPhone" class="field-display" aria-readonly="true" role="textbox"></div>
+            <div id="displayPhone" class="field-display" aria-readonly="true" role="textbox">{{user.phoneNumber}}</div>
 
           </div>
 
           <!-- DOB -->
           <div class="profile-row">
             <label class="field-label" for="displayDob">Date of Birth</label>
-            <div id="displayDob" class="field-display" aria-readonly="true" role="textbox"></div>
+            <div id="displayDob" class="field-display" aria-readonly="true" role="textbox">{{user.dob}}</div>
           </div>
 
           <div class="profile-actions">
-            <button id="editProfileBtn" class="btn btn-outline">Edit profile</button>
+            <button id="editProfileBtn" data-user-id="{{user._id}}" class="btn btn-outline">Edit profile</button>
           </div>
         </div>
       </div>

@@ -5,11 +5,12 @@
 
     <h2 class="title">Edit Profile</h2>
 
-    <form action="/user/update-profile" method="POST" enctype="multipart/form-data" class="edit-form">
+    <form action="/account/profile/edit-profile" method="POST" enctype="multipart/form-data" class="edit-form">
       <!-- Profile Image -->
       <div class="img-section">
         <div class="img-wrapper">
-          <img id="profilePreview" src="{{user.profileImage}}" alt="Profile Image">
+          <img id="profilePreview" src="{{user.profileImage_url}}" alt="Profile Image">
+          <div id="profileImageError"></div>
         </div>
 
         <label class="img-btn">
@@ -41,12 +42,13 @@
           <input id="emailInput" name="email" type="email" required value="{{user.email}}"
             data-original-email="{{user.email}}" autocomplete="email">
           <!-- hidden flag set when verification succeeds -->
+          <input type="hidden" id="userId" value="{{user._id}}">
           <input type="hidden" name="email_verified" id="emailVerifiedInput" value="true">
         </div>
 
         <div class="form-group">
           <label>Phone Number</label>
-          <input type="text" name="phone" value="{{user.phone}}" required>
+          <input type="text" name="phone" value="{{user.phoneNumber}}" required>
         </div>
 
         <div class="form-group">
@@ -65,7 +67,6 @@
       <div class="confirm-box">
         <h3>Confirm Changes</h3>
         <p>Are you sure you want to update your profile?</p>
-
         <div class="confirm-actions">
           <button id="cancelBtn" class="cancel-btn">Cancel</button>
           <button id="confirmBtn" class="confirm-btn">Yes, Save</button>
@@ -80,7 +81,7 @@
 <!-- Hidden field to hold base64 cropped image (server should decode) -->
 <input type="hidden" name="croppedImage" id="croppedImageInput" />
 
-<!-- ====== Crop Modal (paste near the end of body) ====== -->
+<!-- ====== Crop Modal ====== -->
 <div class="cropper-backdrop" id="cropperModal" aria-hidden="true">
   <div class="cropper-box" role="dialog" aria-modal="true" aria-labelledby="cropperTitle">
     <header class="cropper-header">
@@ -103,7 +104,6 @@
   </div>
 </div>
 
-
 <!-- OTP Confirmation Modal -->
 <div class="otp-backdrop" id="otpModal" aria-hidden="true">
   <div class="otp-box" role="dialog" aria-modal="true" aria-labelledby="otpTitle">
@@ -118,7 +118,6 @@
 
       <form id="otpForm" onsubmit="return false;">
         <div class="otp-inputs" id="otpInputs" role="group" aria-label="Enter OTP">
-          <!-- JS will render 6 inputs here -->
         </div>
 
         <div class="otp-row">
@@ -146,6 +145,15 @@
       <button id="cancelDeletePhoto" class="cancel-btn2">Cancel</button>
       <button id="confirmDeletePhoto" class="confirm-btn2">Delete</button>
     </div>
+  </div>
+</div>
+
+<!-- Custom Swal Loader -->
+<div id="customSwal" class="custom-swal-backdrop">
+  <div class="custom-swal-box">
+    <h3 id="customSwalTitle">Please Wait</h3>
+    <p id="customSwalText">Processing...</p>
+    <div class="loader"></div>
   </div>
 </div>
 

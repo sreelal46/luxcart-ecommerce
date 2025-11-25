@@ -30,7 +30,7 @@ const checkSession = async (req, res, next) => {
         res.status(OK).redirect("/");
       });
     }
-
+    req.session.user = user;
     req.user = user;
 
     next();

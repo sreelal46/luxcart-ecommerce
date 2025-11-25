@@ -45,7 +45,7 @@ module.exports = function (passport) {
             googleId: profile.id,
             name: profile.displayName,
             email,
-            image_url: profile.photos?.[0]?.value || null,
+            profileImage_url: profile.photos?.[0]?.value || null,
             authProvider: "google",
           });
 
