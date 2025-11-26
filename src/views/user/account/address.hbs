@@ -8,31 +8,56 @@
         address</button>
     </a>
   </div>
+
+  {{#if address.length}}
   {{#each address}}
   <div class="mt-4 addresses-list">
     <div class="address-card">
       <div class="address-left">
-        <h6 class="fw-bold">{{this.label}} <span class="default-badge" style="margin-left:8px;">Default</span></h6>
+
+        <h6 class="fw-bold">
+          {{this.label}}
+          {{#if this.defaultAddress}}
+          <span class="default-badge" style="margin-left:8px;">Default</span>
+          {{/if}}
+        </h6>
+
         <div class="address-lines">
-          {{this.fullName}}<br>{{this.street}}<br>{{this.landmark}}<br>{{this.label}}
-          {{this.city}}<br>{{this.district}}<br>{{this.state}}<br>{{this.phone}}<br>{{this.pinCode}}
+          {{this.fullName}}<br>
+          {{this.street}}<br>
+          {{this.landmark}}<br>
+          {{this.label}}<br>
+          {{this.city}}<br>
+          {{this.district}}<br>
+          {{this.state}}<br>
+          {{this.pinCode}}<br>
+          {{this.email}}<br>
+          {{this.phone}}
         </div>
       </div>
 
       <div class="address-actions">
-        <button class="address-set-default-btn btn btn-success btn-sm" data-address-id="{{this._id}}">Set
-          Default</button>
+
+        {{#unless this.defaultAddress}}
+        <button class="address-set-default-btn btn btn-success btn-sm" data-address-id="{{this._id}}">
+          Set Default
+        </button>
+        {{/unless}}
+
         <button class="address-edit-btn btn btn-outline btn-sm" data-address-id="{{this._id}}">Edit</button>
         <button class="address-delete-btn btn btn-outline btn-sm" data-address-id="{{this._id}}">Delete</button>
       </div>
     </div>
-    {{/each}}
-
-
-
-
-
   </div>
+  {{/each}}
+  {{else}}
+  <div class="mt-4 text-center p-4">
+    <h6>No saved addresses.</h6>
+    <p>Add an address to continue.</p>
+  </div>
+  {{/if}}
+
+
 </section>
 
 
@@ -49,4 +74,14 @@
   </div>
 </div>
 
+<!-- ==========================
+       CUSTOM ERROR SWAL 
+     ==========================-->
+<div id="customSwalError" class="custom-swal-backdrop">
+  <div class="custom-swal-box error">
+    <h3 id="customSwalErrorTitle">Error</h3>
+    <p id="customSwalErrorText">Something went wrong.</p>
+    <button id="customSwalErrorBtn" class="error-btn">OK</button>
+  </div>
+</div>
 <script src="/js/user/account/address.js"></script>

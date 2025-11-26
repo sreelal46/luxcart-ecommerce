@@ -94,12 +94,12 @@ const verifyUser = async (req, res, next) => {
       _id: user._id,
       name: user.name,
       email: user.email,
+      profileImage_url: user.profileImage_url,
       authProvider: user.authProvider,
     };
 
     req.session.save((err) => {
       if (err) return next(err);
-
       res.status(200).json({ success: true, redirect: "/homepage" });
     });
   } catch (error) {
@@ -121,7 +121,7 @@ const logoutPage = (req, res) => {
   });
 };
 
-//sending OTP for forgott password
+//sending OTP for forgott password/changing email
 const sendOTP = async (req, res, next) => {
   try {
     //finding user
@@ -152,12 +152,11 @@ const sendOTP = async (req, res, next) => {
       return req.session.save(() =>
         res.status(CREATED).json({ success: true })
       );
-
     req.session.save(() =>
       res.status(CREATED).json({ success: true, redirect: "/verify-otp" })
     );
   } catch (error) {
-    console.error("Error from forgot password email otp", error);
+    console.error("Error from changin email/forgot password email otp", error);
     next(error);
   }
 };
@@ -211,8 +210,10 @@ const verifyOTP = async (req, res, next) => {
         _id: user._id,
         name: user.name,
         email: user.email,
+        profileImage_url: user.profileImage_url,
         authProvider: user.authProvider,
       };
+
       return req.session.save(() =>
         res.status(CREATED).json({ success: true, redirect: "/homepage" })
       );
@@ -225,11 +226,6 @@ const verifyOTP = async (req, res, next) => {
         .json({ success: true, redirect: "/forgot-password" });
     }
     if (verifyType === "emailChanging") {
-      const duplicateEmail = User.findOne({ targetEmail });
-      if (duplicateEmail)
-        return res
-          .status(OK)
-          .json({ success: false, alert: "This email is alrady taken" });
       await User.updateOne({ _id: userId }, { $set: { email: targetEmail } });
       return res
         .status(OK)
@@ -247,7 +243,6 @@ const forgotPassword = async (req, res, next) => {
     //finding user
     const userId = req.session.userId;
     const user = await User.findById({ _id: userId });
-    console.log(user);
 
     //if user not found
     if (!user)

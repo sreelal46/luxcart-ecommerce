@@ -1,5 +1,5 @@
 const mongoose = require("mongoose");
-
+const defaultImage = process.env.DEFAULT_PROFILE_IMAGE_URL;
 const userSchema = new mongoose.Schema(
   {
     name: {
@@ -35,8 +35,7 @@ const userSchema = new mongoose.Schema(
 
     profileImage_url: {
       type: String,
-      default:
-        "https://res.cloudinary.com/diq1koyry/image/upload/v1764051606/people_z4d5to.png",
+      default: defaultImage,
     },
 
     authProvider: {

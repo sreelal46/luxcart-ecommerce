@@ -23,10 +23,17 @@ const {
   loadEditProfilePage,
   loadAddressPage,
   loadAddAddressPage,
+  loadEditAddressPage,
+  loadChangePassword,
 } = require("../controllers/user/pageLoadTwo.controller");
 const {
+  editEmail,
   editProfile,
   addAddress,
+  editAddress,
+  deleteAddress,
+  setDeafaultAddress,
+  changePassword,
 } = require("../controllers/user/account.controller");
 
 const {
@@ -94,7 +101,7 @@ route.get(
   loadSingleAccessories
 );
 
-//view account details
+//view account profile details
 route.get("/account", checkSession, loadAccountPage);
 route.get("/account/profile", checkSession, loadProfilePage);
 route.get(
@@ -102,17 +109,42 @@ route.get(
   checkSession,
   loadEditProfilePage
 );
+route.post("/check-email", editEmail);
 route.post(
   "/account/profile/edit-profile/:userId",
   checkSession,
   upload.any(),
   editProfile
 );
+//view account address details
 route.get("/account/addresses", checkSession, loadAddressPage);
 route.get("/account/addresses/add-address", checkSession, loadAddAddressPage);
 route.post("/account/addresses/add-address/:userId", checkSession, addAddress);
+route.get(
+  "/account/addresses/edit-address/:addressId",
+  checkSession,
+  loadEditAddressPage
+);
+route.put(
+  "/account/addresses/edit-address/:addressId",
+  checkSession,
+  editAddress
+);
+route.patch(
+  "/account/addresses/set-default-address/:addressId",
+  checkSession,
+  setDeafaultAddress
+);
+route.delete(
+  "/account/addresses/delete-address/:addressId",
+  checkSession,
+  deleteAddress
+);
 
-route.get("/account/orders", (req, res) => {
+route.get("/account/change-password", checkSession, loadChangePassword);
+route.post("/account/change-password/:userId", checkSession, changePassword);
+
+route.get("/account/orders", checkSession, (req, res) => {
   res.render("user/account/orderHistory", { layout: "userAccountLayout" });
 });
 

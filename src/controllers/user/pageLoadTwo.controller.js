@@ -1,5 +1,5 @@
 const { OK } = require("../../constant/statusCode");
-const Address = require("../../models/user/AddressModel");
+const Address = require("../../models/user/addressModel");
 const User = require("../../models/user/UserModel");
 
 //load account page
@@ -20,12 +20,18 @@ const loadAccountPage = async (req, res, next) => {
 //load profile page
 const loadProfilePage = async (req, res, next) => {
   try {
+    // finding user
     const userId = req.session.user._id;
     const user = await User.findById(userId).lean();
 
-    res
-      .status(OK)
-      .render("user/account/profile", { layout: "userAccountLayout", user });
+    //find user address
+    const address = await Address.find({ userId }).lean();
+
+    res.status(OK).render("user/account/profile", {
+      layout: "userAccountLayout",
+      user,
+      address,
+    });
   } catch (error) {
     console.log("Error from account profile page", error);
     next(error);
@@ -49,11 +55,12 @@ const loadEditProfilePage = async (req, res, next) => {
   }
 };
 
+//load address page
 const loadAddressPage = async (req, res, next) => {
   try {
+    // finding address
     const userId = req.session.user._id;
-    const address = await Address.find({ user: userId });
-    console.log("nice addresssssssss", address);
+    const address = await Address.find({ userId });
 
     res
       .status(OK)
@@ -64,10 +71,31 @@ const loadAddressPage = async (req, res, next) => {
   }
 };
 
+//load add address page
 const loadAddAddressPage = (req, res) => {
   res
     .status(OK)
     .render("user/account/addAddress", { layout: "userAccountLayout" });
+};
+
+//load edit address
+const loadEditAddressPage = async (req, res, next) => {
+  try {
+    const addressId = req.params.addressId;
+    const address = await Address.findById(addressId).lean();
+
+    res.status(OK).render("user/account/editAddress", {
+      layout: "userAccountLayout",
+      address,
+    });
+  } catch (error) {}
+};
+
+//load change password
+const loadChangePassword = (req, res) => {
+  res
+    .status(OK)
+    .render("user/account/changePassword", { layout: "userAccountLayout" });
 };
 
 module.exports = {
@@ -76,4 +104,6 @@ module.exports = {
   loadEditProfilePage,
   loadAddressPage,
   loadAddAddressPage,
+  loadEditAddressPage,
+  loadChangePassword,
 };

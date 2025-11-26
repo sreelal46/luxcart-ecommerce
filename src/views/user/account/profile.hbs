@@ -53,51 +53,45 @@
     <!-- Addresses section -->
     <section id="addresses" class="main-card" aria-labelledby="addressesHeading">
       <h5 id="addressesHeading">Addresses</h5>
-
+      {{#if address.length}}
+      {{#each address}}
       <div class="addresses-list" style="margin-top:12px;">
         <!-- Address 1 - default -->
         <div class="address-card">
           <div class="address-left">
-            <h6>Home <span class="default-badge" style="margin-left:8px;">Default</span></h6>
+            <h6>{{this.label}} {{#if this.defaultAddress}}
+              <span class="default-badge" style="margin-left:8px;">Default</span>
+              {{/if}}
+            </h6>
             <div class="address-lines" style="margin-top:6px;">
-              John Doe<br>
-              123 Main Street<br>
-              New York, NY 10001<br>
-              United States
+              {{this.fullName}}<br>{{this.street}}<br>{{this.landmark}}<br>{{this.label}}
+              {{this.city}}<br>{{this.district}}<br>{{this.state}}<br>{{this.pinCode}}<br>{{this.email}}<br>{{this.phone}}
             </div>
           </div>
 
           <div class="right-col">
             <div class="address-actions">
-              <button class="btn btn-small btn-outline address-edit-btn">Edit</button>
-              <button class="btn btn-small btn-outline address-delete-btn">Delete</button>
-            </div>
-          </div>
-        </div>
-
-        <!-- Address 2 -->
-        <div class="address-card">
-          <div class="address-left">
-            <h6>Office <span class="default-badge" style="margin-left:8px;">Default</span></h6>
-
-            <div class="address-lines" style="margin-top:6px;">
-              John Doe<br>
-              456 Business Ave<br>
-              San Francisco, CA 94107<br>
-              United States
-            </div>
-          </div>
-
-          <div class="right-col">
-            <div class="address-actions">
-              <button class="btn btn-small btn-success address-set-default-btn">Set as Default</button>
-              <button class="btn btn-small btn-outline address-delete-btn">Delete</button>
-              <button class="btn btn-small btn-outline address-edit-btn">Edit</button>
+              {{#unless this.defaultAddress}}
+              <button class="btn btn-small btn-success address-set-default-btn " data-address-id="{{this._id}}">Set as
+                Default</button>
+              {{/unless}}
+              <button class="btn btn-small btn-outline address-edit-btn" data-address-id="{{this._id}}">Edit</button>
+              <button class="btn btn-small btn-outline address-delete-btn"
+                data-address-id="{{this._id}}">Delete</button>
             </div>
           </div>
         </div>
       </div>
-
+      {{/each}}
+      {{else}}
+      <div class="mt-4 text-center p-4">
+        <h6>No saved addresses.</h6>
+        <p>Add an address to continue.</p>
+        <a href="/account/addresses/add-address">
+          <button class="btn btn-outline btn-sm add-address">Add Address</button>
+        </a>
+      </div>
+      {{/if}}
     </section>
 
     <!--  Confirmation Modal  -->
@@ -116,6 +110,18 @@
       </div>
     </div>
 
+  </div>
+</div>
+
+
+<!-- ==========================
+       CUSTOM ERROR SWAL 
+     ==========================-->
+<div id="customSwalError" class="custom-swal-backdrop">
+  <div class="custom-swal-box error">
+    <h3 id="customSwalErrorTitle">Error</h3>
+    <p id="customSwalErrorText">Something went wrong.</p>
+    <button id="customSwalErrorBtn" class="error-btn">OK</button>
   </div>
 </div>
 

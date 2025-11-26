@@ -29,6 +29,24 @@ document.addEventListener("DOMContentLoaded", () => {
     closeConfirmModal();
   });
 
+  /* ==========================
+    CUSTOM ERROR POPUP
+  ========================== */
+  const CustomSwal = {};
+
+  CustomSwal.error = (title = "Error", text = "Something went wrong.") => {
+    const box = document.getElementById("customSwalError");
+    document.getElementById("customSwalErrorTitle").textContent = title;
+    document.getElementById("customSwalErrorText").textContent = text;
+
+    box.classList.add("show");
+
+    document.getElementById("customSwalErrorBtn").onclick = () => {
+      box.classList.remove("show");
+      window.location.reload(); // <-- reload after closing
+    };
+  };
+
   /* ------------------ Edit Profile Info ------------------ */
   document.querySelectorAll("[data-user-id]").forEach((btn) => {
     btn.addEventListener("click", (e) => {
@@ -51,16 +69,35 @@ document.addEventListener("DOMContentLoaded", () => {
       openConfirmModal(
         "Delete Address?",
         "This address will be permanently removed.",
-        () => console.log("Address deleted")
+        async () => {
+          try {
+            const res = await axios.delete(
+              `/account/addresses/delete-address/${btn.dataset.addressId}`
+            );
+            if (res.data.success) {
+              window.location.reload();
+            } else {
+              CustomSwal.error(
+                "Save Failed",
+                res.data.alert || "Server error occurred."
+              );
+            }
+          } catch (error) {
+            CustomSwal.error(
+              "Save Failed",
+              error.response?.data.alert || "Server error occurred."
+            );
+          }
+        }
       );
     });
   });
 
   document.querySelectorAll(".address-edit-btn").forEach((btn) => {
     btn.addEventListener("click", () => {
-      openConfirmModal("Edit Address?", "Proceed to edit this address?", () =>
-        console.log("Open edit modal")
-      );
+      openConfirmModal("Edit Address?", "Proceed to edit this address?", () => {
+        window.location.href = `/account/addresses/edit-address/${btn.dataset.addressId}`;
+      });
     });
   });
 
@@ -69,7 +106,26 @@ document.addEventListener("DOMContentLoaded", () => {
       openConfirmModal(
         "Set as Default?",
         "This address will become your default.",
-        () => console.log("Set default")
+        async () => {
+          try {
+            const res = await axios.patch(
+              `/account/addresses/set-default-address/${btn.dataset.addressId}`
+            );
+            if (res.data.success) {
+              window.location.reload();
+            } else {
+              CustomSwal.error(
+                "Save Failed",
+                res.data.alert || "Server error occurred."
+              );
+            }
+          } catch (error) {
+            CustomSwal.error(
+              "Save Failed",
+              error.response?.data.alert || "Server error occurred."
+            );
+          }
+        }
       );
     });
   });

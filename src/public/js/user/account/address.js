@@ -48,6 +48,23 @@ document.addEventListener("DOMContentLoaded", () => {
       closeConfirmModal();
     }
   });
+  /* ==========================
+    CUSTOM ERROR POPUP
+  ========================== */
+  const CustomSwal = {};
+
+  CustomSwal.error = (title = "Error", text = "Something went wrong.") => {
+    const box = document.getElementById("customSwalError");
+    document.getElementById("customSwalErrorTitle").textContent = title;
+    document.getElementById("customSwalErrorText").textContent = text;
+
+    box.classList.add("show");
+
+    document.getElementById("customSwalErrorBtn").onclick = () => {
+      box.classList.remove("show");
+      window.location.reload(); // <-- reload after closing
+    };
+  };
 
   /* =============================
          ADDRESS BUTTON HANDLERS
@@ -59,11 +76,25 @@ document.addEventListener("DOMContentLoaded", () => {
       openConfirmModal(
         "Delete Address?",
         "This address will be permanently removed.",
-        () => {
-          axios
-            .delete(`/account/address/delete/${btn.dataset.addressId}`)
-            .then(() => location.reload())
-            .catch((err) => console.error(err));
+        async () => {
+          try {
+            const res = await axios.delete(
+              `/account/addresses/delete-address/${btn.dataset.addressId}`
+            );
+            if (res.data.success) {
+              window.location.reload();
+            } else {
+              CustomSwal.error(
+                "Save Failed",
+                res.data.alert || "Server error occurred."
+              );
+            }
+          } catch (error) {
+            CustomSwal.error(
+              "Save Failed",
+              error.response?.data.alert || "Server error occurred."
+            );
+          }
         }
       );
     });
@@ -76,7 +107,7 @@ document.addEventListener("DOMContentLoaded", () => {
         "Edit Address?",
         "Do you want to edit this address?",
         () => {
-          window.location.href = `/account/address/edit/${btn.dataset.addressId}`;
+          window.location.href = `/account/addresses/edit-address/${btn.dataset.addressId}`;
         }
       );
     });
@@ -88,11 +119,25 @@ document.addEventListener("DOMContentLoaded", () => {
       openConfirmModal(
         "Set As Default?",
         "This address will become your default address.",
-        () => {
-          axios
-            .post(`/account/address/set-default/${btn.dataset.addressId}`)
-            .then(() => location.reload())
-            .catch((err) => console.error(err));
+        async () => {
+          try {
+            const res = await axios.patch(
+              `/account/addresses/set-default-address/${btn.dataset.addressId}`
+            );
+            if (res.data.success) {
+              window.location.reload();
+            } else {
+              CustomSwal.error(
+                "Save Failed",
+                res.data.alert || "Server error occurred."
+              );
+            }
+          } catch (error) {
+            CustomSwal.error(
+              "Save Failed",
+              error.response?.data.alert || "Server error occurred."
+            );
+          }
         }
       );
     });

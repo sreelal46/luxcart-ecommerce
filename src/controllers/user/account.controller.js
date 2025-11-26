@@ -1,6 +1,14 @@
+const { json } = require("express");
 const { OK, FORBIDDEN } = require("../../constant/statusCode");
 const User = require("../../models/user/UserModel");
-const Address = require("../../models/user/AddressModel");
+const Address = require("../../models/user/addressModel");
+
+//email check
+const editEmail = async (req, res) => {
+  const { email } = req.body;
+  const user = await User.findOne({ email });
+  res.json({ exists: !!user });
+};
 
 //edit profile
 const editProfile = async (req, res, next) => {
@@ -15,8 +23,18 @@ const editProfile = async (req, res, next) => {
 
     //collecting Data
     const { deleteProfileImage, name, email, phone, dob } = req.body;
-    const image_Url = req.files.map((p) => p.path)[0];
 
+    //seting default profile image
+    if (deleteProfileImage === "true") {
+      const defaultImage = User.schema.path("profileImage_url").defaultValue;
+
+      await User.findByIdAndUpdate(req.session.user._id, {
+        profileImage_url: defaultImage,
+      });
+    }
+
+    // saving data
+    const image_Url = req.files.map((p) => p.path)[0];
     await User.findByIdAndUpdate(
       userId,
       {
@@ -64,7 +82,7 @@ const addAddress = async (req, res, next) => {
     } = req.body;
 
     await Address.create({
-      user: userId,
+      userId,
       fullName,
       email,
       phone,
@@ -84,7 +102,116 @@ const addAddress = async (req, res, next) => {
   }
 };
 
+//edit address
+const editAddress = async (req, res, next) => {
+  try {
+    //collecting data
+    const {
+      fullName,
+      email,
+      phone,
+      label,
+      street,
+      landmark,
+      city,
+      district,
+      state,
+      zip,
+    } = req.body;
+    const addressId = req.params.addressId;
+
+    const address = await Address.findById(addressId);
+
+    if (!address)
+      return res.status(FORBIDDEN).json({
+        success: false,
+        alert: "Address not found please try again later",
+      });
+
+    await Address.findOneAndUpdate(
+      { _id: addressId },
+      {
+        fullName,
+        email,
+        phone,
+        label,
+        street,
+        landmark,
+        city,
+        district,
+        state,
+        pinCode: zip,
+      }
+    );
+
+    res.status(OK).json({ success: true, redirect: "/account/addresses" });
+  } catch (error) {
+    console.log("Error from edit address", error);
+    next(error);
+  }
+};
+
+//set as default
+const setDeafaultAddress = async (req, res, next) => {
+  try {
+    //find address
+    const addressId = req.params.addressId;
+    const userId = req.session.user._id;
+    const address = await Address.findById(addressId);
+
+    if (!address)
+      return res
+        .status(FORBIDDEN)
+        .json({ success: false, alert: "Address not found" });
+
+    //updating
+    await Address.updateMany({ userId }, { $set: { defaultAddress: false } });
+    await Address.findByIdAndUpdate(addressId, { defaultAddress: true });
+
+    res.status(OK).json({ success: true });
+  } catch (error) {
+    console.log("Error from set as default", error);
+    next(error);
+  }
+};
+
+//delete address
+const deleteAddress = async (req, res, next) => {
+  try {
+    //find address
+    const addressId = req.params.addressId;
+    const address = await Address.findById(addressId);
+    if (!address)
+      return res
+        .status(FORBIDDEN)
+        .json({ success: false, alert: "Address not found" });
+    await Address.deleteOne({ _id: addressId });
+    res.status(OK).json({ success: true });
+  } catch (error) {
+    console.log("Error from delete address", error);
+    next(error);
+  }
+};
+
+//change password
+const changePassword = async (req, res, next) => {
+  try {
+    const userId = req.params.userId;
+    const {} = req.body;
+    console.log(req.body);
+    res.status(OK).json({ success: true });
+  } catch (error) {
+    console.log("Error from chnage password in account", error);
+    next(error);
+  }
+};
+
 module.exports = {
+  editEmail,
   editProfile,
   addAddress,
+  editAddress,
+  deleteAddress,
+  setDeafaultAddress,
+  changePassword,
 };
