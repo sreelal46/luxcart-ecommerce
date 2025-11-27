@@ -1,10 +1,12 @@
-const { json } = require("express");
 const {
   OK,
   FORBIDDEN,
   NOT_FOUND,
   UNAUTHORIZED,
 } = require("../../constant/statusCode");
+const Accessory = require("../../models/admin/productAccessoryModal");
+const Car = require("../../models/admin/productCarModal");
+const Cart = require("../../models/user/CartModel");
 const User = require("../../models/user/UserModel");
 const Address = require("../../models/user/addressModel");
 const bcrypt = require("bcrypt");
@@ -234,6 +236,72 @@ const changePassword = async (req, res, next) => {
   }
 };
 
+//Cart management
+const addToCart = async (req, res, next) => {
+  try {
+    const userId = req.session.user._id;
+    const { productType, productId, variantId } = req.body;
+    console.log(variantId);
+
+    let product;
+    if (productType === "car") {
+      product = await Car.findById(productId);
+    } else if (productType === "accessory") {
+      product = await Accessory.findById(productId);
+    }
+
+    if (!product) {
+      return res
+        .status(NOT_FOUND)
+        .json({ success: false, alert: "Product not found" });
+    }
+
+    //finding cart user and updating
+    let cart = await Cart.findOne({ userId });
+    if (!cart) {
+      cart = new Cart({
+        userId,
+        items: [
+          {
+            carId: productType === "car" ? productId : null,
+            accessoryId: productType === "accessory" ? productId : null,
+            variantId: variantId || null,
+            quantity: 1,
+            price: product.price,
+          },
+        ],
+      });
+    } else {
+      const item = cart.items.find(
+        (item) =>
+          item.carId?.toString() === productId ||
+          item.accessoryId?.toString() === productId
+      );
+
+      if (item) {
+        if (productType === "accessory") {
+          item.quantity += 1;
+        }
+      } else {
+        cart.items.push({
+          carId: productType === "car" ? productId : null,
+          accessoryId: productType === "accessory" ? productId : null,
+          variantId: variantId || null,
+          quantity: 1,
+          price: product.price,
+        });
+      }
+    }
+
+    await cart.save();
+
+    res.status(OK).json({ success: true });
+  } catch (error) {
+    console.log("Error from add to cart", error);
+    next(error);
+  }
+};
+
 module.exports = {
   editEmail,
   editProfile,
@@ -242,4 +310,5 @@ module.exports = {
   deleteAddress,
   setDeafaultAddress,
   changePassword,
+  addToCart,
 };

@@ -1,5 +1,5 @@
 //storing variant id
-let variantId;
+let changingVariantId;
 
 // Change variant - update price and carousel images
 function changeVariant(button) {
@@ -13,7 +13,7 @@ function changeVariant(button) {
 
   const rawPrice = button.getAttribute("data-price");
   const images = JSON.parse(button.getAttribute("data-images"));
-  variantId = button.getAttribute("data-variantid");
+  changingVariantId = button.getAttribute("data-variantid");
 
   // Animate price update
   gsap.fromTo(
@@ -193,4 +193,70 @@ document.addEventListener("DOMContentLoaded", () => {
       }
     );
   }
+});
+
+document.addEventListener("DOMContentLoaded", () => {
+  const changeButton = document.getElementById("changeButton");
+  const changeButtonMob = document.getElementById("changeButtonMob");
+  const addToCartDesk = document.getElementById("addToCartDesk");
+  const buyProductDesk = document.getElementById("buyProductDesk");
+  const addToCartMob = document.getElementById("addToCartMob");
+  const buyProductMob = document.getElementById("buyProductMob");
+
+  function showMobileAlert(message, notification) {
+    const alertBox = document.getElementById("mobileAlert");
+    if (notification === "success") {
+      alertBox.innerHTML = `<i class="bi bi-check-circle-fill success-icon"></i><span class="message-green">${message}</span>`;
+      alertBox.classList.add("show");
+    } else if (notification === "error") {
+      alertBox.innerHTML = `<i class="bi bi-x-circle-fill error-icon"></i><span class="message-red">${message}</span>`;
+      alertBox.classList.add("show");
+    } else if (notification === "warning") {
+      alertBox.innerHTML = `<i class="bi bi-exclamation-triangle-fill yellow-icon"></i><span class="message-yellow">${message}</span>`;
+      alertBox.classList.add("show");
+    }
+
+    setTimeout(() => {
+      alertBox.classList.remove("show");
+    }, 2000);
+  }
+
+  // Read product & variant ID from button
+  const productId = addToCartDesk.dataset.accessoryid;
+  const variantId = addToCartDesk.dataset.variantid;
+  console.log(productId);
+
+  //add to cart axios call function
+  function addToCartAxios(
+    element,
+    outsideChangeBtnId,
+    productType,
+    productId,
+    variantId
+  ) {
+    element.addEventListener("click", async () => {
+      try {
+        const res = await axios.post("/cart/add", {
+          productType,
+          productId,
+          variantId: changingVariantId || variantId,
+        });
+
+        if (res.data.success) {
+          showMobileAlert("Product added to cart!", "success");
+          outsideChangeBtnId.innerHTML = `<a href="/cart" class="btn btn-cart"><i class="bi bi-cart"></i> Go to Cart</a>`;
+        } else {
+          const msg = res.data.alert || "Somthing went worng";
+          showMobileAlert(msg, "error");
+        }
+      } catch (error) {
+        console.log("Error from add to cart FRONTEND", error);
+        const msg = error.response?.data.alert || "INTERNAL SERVER ERROR";
+        showMobileAlert(msg, "error");
+      }
+    });
+  }
+
+  addToCartAxios(addToCartDesk, changeButton, "car", productId, variantId);
+  addToCartAxios(addToCartMob, addToCartMob, "car", productId, variantId);
 });

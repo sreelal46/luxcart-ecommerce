@@ -177,7 +177,6 @@ const loadCarCollection = async (req, res, next) => {
 
 const loadSingleCarProduct = async (req, res, next) => {
   try {
-    console.log(req.params.id);
     const carId = req.params.id;
     const singleCar = await Car.findById(carId)
       .populate("brand_id", "name")
@@ -185,7 +184,6 @@ const loadSingleCarProduct = async (req, res, next) => {
       .populate("product_type_id", "name")
       .populate("variantIds", "image_url stock color price")
       .lean();
-    console.log(singleCar);
     const relatedCars = await Car.find({
       brand_id: singleCar.brand_id._id,
       _id: { $ne: singleCar._id },

@@ -36,6 +36,7 @@ const {
   deleteAddress,
   setDeafaultAddress,
   changePassword,
+  addToCart,
 } = require("../controllers/user/account.controller");
 
 const {
@@ -149,5 +150,6 @@ route.post("/account/change-password/:userId", checkSession, changePassword);
 
 //cart management
 route.get("/cart", checkSession, loadCartPage);
+route.post("/cart/add", checkSession, addToCart);
 
 module.exports = route;

@@ -1,6 +1,9 @@
 <!-- Custom stylesheet -->
 <link rel="stylesheet" href="/css/user/products/car/viewCarProduct.css">
 
+<!-- Slide-in Toast MSG -->
+<div id="mobileAlert" class="mobile-alert"></div>
+
 <section class="car-page">
   <div class="container">
     <div class="row g-4">
@@ -66,11 +69,14 @@
 
           <!-- Desktop Buttons -->
           {{#if singleCar.isListed}}
-          <button class="btn btn-buy" id="buyProduct" data-variantId="{{getFirstVariantId singleCar}}"><i
-              class="bi bi-lightning-charge"></i> Buy
+          <button class="btn btn-buy" id="buyProductDesk" data-accessoryId="{{singleCar._id}}"
+            data-variantId="{{getFirstVariantId singleCar}}"><i class="bi bi-lightning-charge"></i> Buy
             Now</button>
-          <button class="btn btn-cart" id="addToCart" data-variantId="{{getFirstVariantId singleCar}}"><i
-              class="bi bi-cart"></i> Add to Cart</button>
+          <div id="changeButton">
+            <button class="btn btn-cart" id="addToCartDesk" data-accessoryId="{{singleCar._id}}"
+              data-variantId="{{getFirstVariantId singleCar}}"><i class="bi bi-cart"></i> Add to Cart</button>
+          </div>
+
           {{else}}
           <div class="p-3 rounded-3 border border-danger bg-light text-danger mt-2 d-flex align-items-center">
             <i class="bi bi-exclamation-octagon-fill fs-5 me-2"></i>
@@ -196,13 +202,15 @@
   <div class="mobile-bottom-bar d-lg-none">
 
     {{#if singleCar.isListed}}
-    <div class="action-buttons d-flex gap-2">
-      <button class="btn btn-buy flex-fill">
+    <div class="action-buttons d-flex gap-2" id="buyProductMob">
+      <button class="btn btn-buy flex-fill" data-accessoryId="{{singleCar._id}}"
+        data-variantId="{{getFirstVariantId singleCar}}">
         <i class="bi bi-lightning-charge me-1"></i> Buy Now
       </button>
-      <button class="btn btn-cart flex-fill">
+      <a class="btn btn-cart flex-fill" id="addToCartMob" data-accessoryId="{{singleCar._id}}"
+        data-variantId="{{getFirstVariantId singleCar}}">
         <i class="bi bi-cart me-1"></i> Add to Cart
-      </button>
+      </a>
     </div>
     {{else}}
     <div class="unavailable-bar d-flex align-items-center justify-content-center">

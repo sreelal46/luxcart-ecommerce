@@ -1,152 +1,109 @@
-<!DOCTYPE html>
-<html lang="en">
+<style>
+  /* ===============================
+   Slide-in Toast MSG
+=============================== */
 
-<head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Your Cart</title>
+  .mobile-alert {
+    position: fixed;
+    bottom: 20px;
+    left: 50%;
+    transform: translateX(-50%) translateY(100px);
+    background: #111;
+    color: #fff;
+    padding: 12px 20px;
+    border-radius: 14px;
+    font-size: 14px;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    opacity: 0;
+    pointer-events: none;
+    transition: all 0.35s ease;
+    box-shadow: 0 6px 22px rgba(0, 0, 0, 0.25);
+    z-index: 9999;
+  }
 
-  <!-- Bootstrap 5 -->
-  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
+  .mobile-alert.show {
+    opacity: 1;
+    transform: translateX(-50%) translateY(0);
+  }
 
-  <style>
-    .cart-item-img {
-      width: 110px;
-      height: 110px;
-      border-radius: 8px;
-      object-fit: cover;
+  button {
+    padding: 10px 20px;
+    background: #000;
+    color: #fff;
+    border: none;
+    border-radius: 10px;
+    cursor: pointer;
+    font-size: 16px;
+  }
+
+  @media (min-width: 768px) {
+    .mobile-alert {
+      top: 20px;
+      bottom: auto;
+      transform: translateX(-50%) translateY(-100px);
     }
 
-    .qty-btn {
-      width: 32px;
-      height: 32px;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      border: 1px solid #ddd;
-      border-radius: 4px;
-      cursor: pointer;
-      user-select: none;
+    .mobile-alert.show {
+      transform: translateX(-50%) translateY(0);
+    }
+  }
+
+  .message-green {
+    color: #00ff7f;
+  }
+
+  .message-red {
+    color: #ff4d4d;
+  }
+
+  .message-yellow {
+    color: #ffcc00;
+  }
+
+  .success-icon,
+  .error-icon {
+    font-size: 16px;
+    /* same size */
+    margin-right: 6px;
+    /* space */
+    vertical-align: middle;
+  }
+
+  .success-icon {
+    color: #00ff7f;
+    /* green */
+  }
+
+  .error-icon {
+    color: #dc3545;
+    /* red */
+  }
+
+  .yellow-icon {
+    color: #ffcc00;
+    /* red */
+  }
+</style>
+<!-- Slide-in Toast MSG -->
+<div id="mobileAlert" class="mobile-alert"></div>
+<script>
+  function showMobileAlert(message, notification) {
+    const alertBox = document.getElementById("mobileAlert");
+    if (notification === "success") {
+      alertBox.innerHTML = `<i class="bi bi-check-circle-fill success-icon"></i><span class="message-green">${message}</span>`;
+      alertBox.classList.add("show");
+    } else if (notification === "error") {
+      alertBox.innerHTML = `<i class="bi bi-x-circle-fill error-icon"></i><span class="message-red">${message}</span>`;
+      alertBox.classList.add("show");
+    } else if (notification === "warning") {
+      alertBox.innerHTML = `<i class="bi bi-exclamation-triangle-fill yellow-icon"></i><span class="message-yellow">${message}</span>`;
+      alertBox.classList.add("show");
     }
 
-    .order-box {
-      border-radius: 12px;
-      box-shadow: 0 8px 24px rgba(0, 0, 0, 0.06);
-      padding: 25px;
-      background: #fff;
-    }
-
-    .btn-orange {
-      background: #f36923;
-      color: #fff;
-      font-weight: 500;
-      padding: 12px;
-      border-radius: 8px;
-    }
-
-    .btn-orange:hover {
-      background: #d65a1b;
-      color: #fff;
-    }
-
-    .btn-black {
-      background: #1c1c1c;
-      color: #fff;
-      font-weight: 500;
-      padding: 12px;
-      border-radius: 8px;
-    }
-
-    .btn-black:hover {
-      background: #000;
-      color: #fff;
-    }
-  </style>
-</head>
-
-<body class="bg-light">
-
-  <div class="container py-4">
-
-    <!-- Top Header -->
-    <div class="d-flex justify-content-between align-items-center mb-4">
-      <h2 class="fw-bold">Your Cart</h2>
-      <a href="#" class="text-decoration-none">
-        <i class="bi bi-arrow-left"></i> Continue Shopping
-      </a>
-    </div>
-
-    <div class="row">
-
-      <!-- Left Side: Cart Items -->
-      <div class="col-lg-8">
-
-        <div class="bg-white p-4 rounded shadow-sm mb-4 d-flex align-items-center">
-
-          <img src="https://i.pinimg.com/564x/4b/42/59/4b4259a781c8fc9a92e4c4aa1f263c03.jpg"
-            class="cart-item-img me-4" />
-
-          <div class="flex-grow-1">
-            <h5 class="mb-1">Rolls-Royce Ghost</h5>
-            <small class="text-muted">2023</small>
-          </div>
-
-          <!-- Quantity -->
-          <div class="d-flex align-items-center mx-4">
-            <div class="qty-btn">−</div>
-            <span class="mx-3 fw-semibold">1</span>
-            <div class="qty-btn">+</div>
-          </div>
-
-          <!-- Price -->
-          <h6 class="fw-bold me-4">₹ 350,000</h6>
-
-          <!-- Delete -->
-          <i class="bi bi-trash fs-5 text-danger" style="cursor:pointer;"></i>
-
-        </div>
-
-        <a href="#" class="text-danger fw-semibold">Clear Cart</a>
-
-      </div>
-
-      <!-- Right Side: Order Summary -->
-      <div class="col-lg-4">
-
-        <div class="order-box">
-          <h5 class="fw-bold mb-3">Order Summary</h5>
-          <div class="d-flex justify-content-between mb-2">
-            <span class="text-muted">Subtotal</span>
-            <span class="fw-semibold">₹ 350,000</span>
-          </div>
-          <div class="d-flex justify-content-between mb-2">
-            <span class="text-muted">Shipping</span>
-            <span class="fw-semibold">Free</span>
-          </div>
-          <div class="d-flex justify-content-between mb-3">
-            <span class="text-muted">Tax</span>
-            <span class="fw-semibold">₹ 350,00</span>
-          </div>
-          <hr>
-          <div class="d-flex justify-content-between mb-3">
-            <h6 class="fw-bold">Total</h6>
-            <h6 class="fw-bold">₹ 378,000</h6>
-          </div>
-          <button class="btn btn-orange w-100 mb-3">Apply coupen</button>
-          <button class="btn btn-black w-100">Proceed to Checkout</button>
-          <p class="text-center text-muted small mt-3">
-            By proceeding to checkout, you agree to our <br>
-            <a href="#" class="text-decoration-none">Terms of Service</a> and <a href="#"
-              class="text-decoration-none">Privacy Policy</a>
-          </p>
-        </div>
-      </div>
-    </div>
-  </div>
-
-  <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
-  <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.1/font/bootstrap-icons.css" rel="stylesheet">
-
-</body>
-
-</html>
+    setTimeout(() => {
+      alertBox.classList.remove("show");
+    }, 2000);
+  }
+</script>
