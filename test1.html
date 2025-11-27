@@ -1,703 +1,152 @@
-<!doctype html>
+<!DOCTYPE html>
 <html lang="en">
 
 <head>
-  <meta charset="utf-8" />
-  <title>Edit profile — cropper demo</title>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Your Cart</title>
 
-  <!-- Cropper.js CSS -->
-  <link href="https://unpkg.com/cropperjs@1.5.13/dist/cropper.min.css" rel="stylesheet" />
+  <!-- Bootstrap 5 -->
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
 
   <style>
-    /* Scoped profile CSS — everything inside .profile-module */
-    .profile-module {
-      --bg: #f6f8fa;
-      --card: #fff;
-      --muted: #586069;
-      --accent: #0f1724;
-      --border: #e6ebef;
-      --radius: 12px;
-      font-family: Inter, system-ui, "Segoe UI", Roboto, Arial, sans-serif;
-      color: var(--accent);
-      background: var(--bg);
-      padding: 24px;
-      min-height: 100vh;
-      box-sizing: border-box;
-    }
-
-    .profile-module .container {
-      max-width: 980px;
-      margin: 0 auto;
-    }
-
-    .profile-module .card {
-      background: var(--card);
-      border-radius: 12px;
-      padding: 18px;
-      border: 1px solid var(--border);
-      box-shadow: 0 8px 24px rgba(15, 23, 36, 0.06);
-    }
-
-    .profile-module h2 {
-      margin: 0 0 12px 0;
-    }
-
-    .profile-module .grid {
-      display: grid;
-      grid-template-columns: 200px 1fr;
-      gap: 20px;
-    }
-
-    @media (max-width: 820px) {
-      .profile-module .grid {
-        grid-template-columns: 1fr;
-      }
-    }
-
-    .profile-module .profile-preview {
-      width: 160px;
-      height: 160px;
-      border-radius: 12px;
-      overflow: hidden;
-      background: linear-gradient(180deg, #fff, #fbfdff);
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      border: 1px solid var(--border);
-    }
-
-    .profile-module .profile-preview img {
-      width: 100%;
-      height: 100%;
+    .cart-item-img {
+      width: 110px;
+      height: 110px;
+      border-radius: 8px;
       object-fit: cover;
-      display: block;
     }
 
-    .profile-module .avatar-actions {
+    .qty-btn {
+      width: 32px;
+      height: 32px;
       display: flex;
-      flex-direction: column;
-      gap: 8px;
-      margin-top: 10px;
       align-items: center;
-    }
-
-    .profile-module .btn {
-      padding: 9px 14px;
-      border-radius: 10px;
-      font-weight: 600;
+      justify-content: center;
+      border: 1px solid #ddd;
+      border-radius: 4px;
       cursor: pointer;
-      border: 1px solid transparent;
-      background: transparent;
-      color: var(--accent);
+      user-select: none;
     }
 
-    .profile-module .btn-outline {
-      background: transparent;
-      border: 1px solid #cfd6db;
-      padding: 8px 12px;
+    .order-box {
+      border-radius: 12px;
+      box-shadow: 0 8px 24px rgba(0, 0, 0, 0.06);
+      padding: 25px;
+      background: #fff;
     }
 
-    .profile-module .btn-primary {
-      background: #0b948f;
+    .btn-orange {
+      background: #f36923;
       color: #fff;
-      border: 1px solid rgba(0, 0, 0, 0.06);
-    }
-
-    .profile-module .label {
-      width: 120px;
-      min-width: 110px;
-      color: var(--muted);
-      font-weight: 600;
-    }
-
-    .profile-module .input {
-      flex: 1;
-      padding: 10px;
+      font-weight: 500;
+      padding: 12px;
       border-radius: 8px;
-      border: 1px solid #d3d8de;
-      background: #fff;
     }
 
-    .profile-module .row {
-      display: flex;
-      gap: 12px;
-      align-items: center;
-      flex-wrap: wrap;
-      margin-bottom: 8px;
+    .btn-orange:hover {
+      background: #d65a1b;
+      color: #fff;
     }
 
-    .profile-module .actions {
-      display: flex;
-      gap: 10px;
-      justify-content: flex-end;
-      margin-top: 8px;
-    }
-
-    .profile-module .note {
-      font-size: 13px;
-      color: var(--muted);
-      text-align: center;
-    }
-
-    /* Backdrop / modal (scoped) */
-    .profile-module .backdrop {
-      position: fixed;
-      inset: 0;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      background: rgba(0, 0, 0, 0.56);
-      z-index: 12000;
-    }
-
-    .profile-module .modal {
-      background: #fff;
+    .btn-black {
+      background: #1c1c1c;
+      color: #fff;
+      font-weight: 500;
+      padding: 12px;
       border-radius: 8px;
-      padding: 20px;
-      max-width: 520px;
-      width: 92%;
-      box-shadow: 0 8px 30px rgba(2, 6, 23, 0.2);
     }
 
-    /* hidden helper */
-    .profile-module .hidden {
-      display: none !important;
-    }
-
-    /* crop area */
-    .profile-module .crop-area {
-      width: min(80vw, 520px);
-      height: min(80vw, 520px);
-      border: 1px solid var(--border);
-      border-radius: 8px;
-      background: linear-gradient(180deg, #fff, #fbfdff);
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      overflow: hidden;
-    }
-
-    .profile-module .crop-area img {
-      max-width: none;
-      display: block;
-    }
-
-    /* OTP inputs */
-    .profile-module .otp-row {
-      display: flex;
-      justify-content: center;
-      gap: 8px;
-    }
-
-    .profile-module .otp-row input {
-      width: 50px;
-      height: 48px;
-      font-size: 20px;
-      text-align: center;
-      border-radius: 6px;
-      border: 1px solid #dfe3e8;
-    }
-
-    .profile-module .server-message {
-      color: #d63333;
-      font-weight: 700;
-      text-align: center;
-      display: none;
-      margin-bottom: 6px;
-    }
-
-    /* Debug helper: only active if you add .debug-visible class to #cropModal */
-    #cropModal.debug-visible {
-      position: fixed;
-      inset: 0;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      z-index: 120001;
-      background: rgba(0, 0, 0, 0.56);
+    .btn-black:hover {
+      background: #000;
+      color: #fff;
     }
   </style>
 </head>
 
-<body>
-  <main class="profile-module">
-    <div class="container">
-      <div class="card">
-        <h2>Edit profile</h2>
-        <div class="grid" style="margin-top:12px">
-          <div>
-            <div class="profile-preview" id="previewBox" title="Profile photo">
-              <img id="profileImg"
-                src="data:image/svg+xml;utf8,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 120 120'%3E%3Crect width='120' height='120' rx='20' fill='%23f1f5f9'/%3E%3Ctext x='50%25' y='54%25' text-anchor='middle' font-size='20' fill='%239ca3af' font-family='Arial' dy='.35em'%3EProfile%3C/text%3E%3C/svg%3E"
-                alt="Profile">
-            </div>
+<body class="bg-light">
 
-            <div class="avatar-actions">
-              <input id="fileInput" type="file" accept="image/png,image/jpeg" style="display:none">
-              <label for="fileInput" class="btn-outline btn">Upload new photo</label>
-              <button id="removeBtn" class="btn btn-outline">Remove photo</button>
-              <div class="note">PNG / JPG — 800×800 recommended</div>
-            </div>
+  <div class="container py-4">
+
+    <!-- Top Header -->
+    <div class="d-flex justify-content-between align-items-center mb-4">
+      <h2 class="fw-bold">Your Cart</h2>
+      <a href="#" class="text-decoration-none">
+        <i class="bi bi-arrow-left"></i> Continue Shopping
+      </a>
+    </div>
+
+    <div class="row">
+
+      <!-- Left Side: Cart Items -->
+      <div class="col-lg-8">
+
+        <div class="bg-white p-4 rounded shadow-sm mb-4 d-flex align-items-center">
+
+          <img src="https://i.pinimg.com/564x/4b/42/59/4b4259a781c8fc9a92e4c4aa1f263c03.jpg"
+            class="cart-item-img me-4" />
+
+          <div class="flex-grow-1">
+            <h5 class="mb-1">Rolls-Royce Ghost</h5>
+            <small class="text-muted">2023</small>
           </div>
 
-          <div>
-            <div style="display:flex;flex-direction:column;gap:12px">
-              <div class="row">
-                <div class="label">Name</div>
-                <input id="name" class="input" value="John Doe">
-              </div>
-
-              <div class="row">
-                <div class="label">Email</div>
-                <input id="email" class="input" value="user@example.com">
-              </div>
-
-              <div class="row">
-                <div class="label">Phone</div>
-                <input id="phone" class="input" value="+91 98765 43210">
-              </div>
-
-              <div class="row">
-                <div class="label">Date of birth</div>
-                <input id="dob" type="date" class="input" value="1990-01-01">
-              </div>
-
-              <div class="actions">
-                <button id="cancelBtn" class="btn btn-outline">Cancel</button>
-                <button id="saveBtn" class="btn-primary btn">Save changes</button>
-              </div>
-            </div>
+          <!-- Quantity -->
+          <div class="d-flex align-items-center mx-4">
+            <div class="qty-btn">−</div>
+            <span class="mx-3 fw-semibold">1</span>
+            <div class="qty-btn">+</div>
           </div>
+
+          <!-- Price -->
+          <h6 class="fw-bold me-4">₹ 350,000</h6>
+
+          <!-- Delete -->
+          <i class="bi bi-trash fs-5 text-danger" style="cursor:pointer;"></i>
+
         </div>
+
+        <a href="#" class="text-danger fw-semibold">Clear Cart</a>
+
       </div>
 
-      <!-- Crop modal (hidden by default) -->
-      <div id="cropModal" class="backdrop hidden" aria-hidden="true">
-        <div class="modal" role="dialog" aria-modal="true" aria-labelledby="cropTitle">
-          <h3 id="cropTitle" style="margin:0 0 8px 0">Crop photo</h3>
-          <p style="margin:0 0 12px 0;color:var(--muted)">Drag/zoom to adjust. Click Apply when done.</p>
-          <div class="crop-area" id="cropArea">
-            <img id="cropImage" src="" alt="To crop">
+      <!-- Right Side: Order Summary -->
+      <div class="col-lg-4">
+
+        <div class="order-box">
+          <h5 class="fw-bold mb-3">Order Summary</h5>
+          <div class="d-flex justify-content-between mb-2">
+            <span class="text-muted">Subtotal</span>
+            <span class="fw-semibold">₹ 350,000</span>
           </div>
-
-          <div style="display:flex;gap:8px;justify-content:flex-end;margin-top:12px">
-            <button id="cropCancel" class="btn btn-outline">Cancel</button>
-            <button id="cropApply" class="btn-primary btn">Apply</button>
+          <div class="d-flex justify-content-between mb-2">
+            <span class="text-muted">Shipping</span>
+            <span class="fw-semibold">Free</span>
           </div>
-        </div>
-      </div>
-
-      <!-- OTP verification modal (hidden by default) -->
-      <div id="otpModal" class="backdrop hidden" aria-hidden="true">
-        <div class="modal" role="dialog" aria-modal="true" aria-labelledby="otpTitle">
-          <div style="text-align:center;margin-bottom:10px">
-            <h3 id="otpTitle" style="margin:6px 0">Enter Verification Code</h3>
-            <p style="margin:0;color:var(--muted)">We’ve sent a 6-digit code to your email</p>
+          <div class="d-flex justify-content-between mb-3">
+            <span class="text-muted">Tax</span>
+            <span class="fw-semibold">₹ 350,00</span>
           </div>
-
-          <div id="serverMessage" class="server-message"></div>
-
-          <form id="OTPVerificationForm" class="mt-2" autocomplete="off">
-            <input type="hidden" name="email" id="otp_hidden_email" value="">
-            <div style="margin:12px 0;text-align:center">
-              <div class="otp-row">
-                <input type="text" maxlength="1" inputmode="numeric" pattern="[0-9]*" class="otp-input" name="otp1" />
-                <input type="text" maxlength="1" inputmode="numeric" pattern="[0-9]*" class="otp-input" name="otp2" />
-                <input type="text" maxlength="1" inputmode="numeric" pattern="[0-9]*" class="otp-input" name="otp3" />
-                <input type="text" maxlength="1" inputmode="numeric" pattern="[0-9]*" class="otp-input" name="otp4" />
-                <input type="text" maxlength="1" inputmode="numeric" pattern="[0-9]*" class="otp-input" name="otp5" />
-                <input type="text" maxlength="1" inputmode="numeric" pattern="[0-9]*" class="otp-input" name="otp6" />
-              </div>
-            </div>
-
-            <button type="submit" class="btn btn-primary" style="width:100%;">Verify</button>
-
-            <div style="text-align:center;margin-top:10px">
-              <p style="margin:0;font-size:13px;color:var(--muted)">
-                Didn’t receive the code?
-                <a href="#" id="resendOtp"
-                  style="font-weight:600;color:var(--accent);text-decoration:none;margin-left:6px">Resend</a>
-                <span id="resendTimer" style="margin-left:8px;color:#666;display:none"></span>
-              </p>
-            </div>
-          </form>
+          <hr>
+          <div class="d-flex justify-content-between mb-3">
+            <h6 class="fw-bold">Total</h6>
+            <h6 class="fw-bold">₹ 378,000</h6>
+          </div>
+          <button class="btn btn-orange w-100 mb-3">Apply coupen</button>
+          <button class="btn btn-black w-100">Proceed to Checkout</button>
+          <p class="text-center text-muted small mt-3">
+            By proceeding to checkout, you agree to our <br>
+            <a href="#" class="text-decoration-none">Terms of Service</a> and <a href="#"
+              class="text-decoration-none">Privacy Policy</a>
+          </p>
         </div>
       </div>
     </div>
-  </main>
+  </div>
 
-  <!-- Dependencies -->
-  <script src="https://cdn.jsdelivr.net/npm/axios/dist/axios.min.js"></script>
-  <script src="https://unpkg.com/cropperjs@1.5.13/dist/cropper.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.1/font/bootstrap-icons.css" rel="stylesheet">
 
-  <!-- Script: robust editProfile flow -->
-  <script>
-    document.addEventListener('DOMContentLoaded', () => {
-      // Safety warnings
-      if (typeof Cropper === 'undefined') console.warn('Cropper.js missing.');
-      if (typeof axios === 'undefined') console.warn('axios missing.');
-
-      // state
-      let cropper = null;
-      let stagedAvatarBlob = null;
-      const avatarMime = 'image/png';
-
-      // DOM
-      const profileImg = document.getElementById('profileImg');
-      const fileInput = document.getElementById('fileInput');
-      const cropModal = document.getElementById('cropModal');
-      const cropImage = document.getElementById('cropImage');
-      const cropApply = document.getElementById('cropApply');
-      const cropCancel = document.getElementById('cropCancel');
-      const removeBtn = document.getElementById('removeBtn');
-
-      const nameInput = document.getElementById('name');
-      const emailInput = document.getElementById('email');
-      const phoneInput = document.getElementById('phone');
-      const dobInput = document.getElementById('dob');
-
-      const saveBtn = document.getElementById('saveBtn');
-      const cancelBtn = document.getElementById('cancelBtn');
-
-      const otpModal = document.getElementById('otpModal');
-      const otpForm = document.getElementById('OTPVerificationForm');
-      const otpInputs = Array.from(document.querySelectorAll('.otp-input'));
-      const serverMessage = document.getElementById('serverMessage');
-      const otpHiddenEmail = document.getElementById('otp_hidden_email');
-      const resendOtp = document.getElementById('resendOtp');
-      const resendTimerEl = document.getElementById('resendTimer');
-
-      // endpoints (replace with your own)
-      const VERIFY_OTP_URL = '/verify-otp';
-      const PROFILE_UPDATE_URL = '/api/profile/update';
-
-      // Initial fallback checks
-      const required = { profileImg, fileInput, cropModal, cropImage, cropApply, cropCancel, removeBtn, nameInput, emailInput, saveBtn, cancelBtn };
-      for (const [k, el] of Object.entries(required)) if (!el) console.error(`Missing required element: ${k}`);
-
-      const initialState = {
-        name: nameInput ? nameInput.value : '',
-        email: emailInput ? emailInput.value : '',
-        phone: phoneInput ? phoneInput.value : '',
-        dob: dobInput ? dobInput.value : '',
-        avatar: profileImg ? profileImg.src : ''
-      };
-
-      // helpers
-      function openCropModal() {
-        if (!cropModal) return;
-        cropModal.classList.remove('hidden');
-        cropModal.setAttribute('aria-hidden', 'false');
-      }
-      function closeCropModal() {
-        if (!cropModal) return;
-        cropModal.classList.add('hidden');
-        cropModal.setAttribute('aria-hidden', 'true');
-        if (cropper) {
-          try { cropper.destroy(); } catch (e) { }
-          cropper = null;
-        }
-        if (cropImage) cropImage.src = '';
-      }
-      function openOtpModal(email) {
-        if (!otpModal || !otpHiddenEmail) return;
-        otpHiddenEmail.value = email;
-        otpInputs.forEach(i => i.value = '');
-        if (serverMessage) serverMessage.style.display = 'none';
-        otpModal.classList.remove('hidden');
-        otpModal.setAttribute('aria-hidden', 'false');
-        setTimeout(() => { if (otpInputs.length) otpInputs[0].focus(); }, 120);
-      }
-      function closeOtpModal() {
-        if (!otpModal) return;
-        otpModal.classList.add('hidden');
-        otpModal.setAttribute('aria-hidden', 'true');
-        if (serverMessage) serverMessage.style.display = 'none';
-      }
-
-      // File input -> load image -> open modal after image load -> init cropper
-      if (fileInput) {
-        fileInput.addEventListener('change', (e) => {
-          const f = e.target.files && e.target.files[0];
-          if (!f) return;
-          if (!f.type.startsWith('image/')) {
-            alert('Please choose an image file');
-            fileInput.value = '';
-            return;
-          }
-
-          const reader = new FileReader();
-          reader.onload = () => {
-            if (!cropImage) return;
-            // set src
-            cropImage.src = reader.result;
-
-            // only open modal and init cropper after image has loaded
-            cropImage.onload = () => {
-              // tear down previous cropper
-              if (cropper) { try { cropper.destroy(); } catch (e) { } cropper = null; }
-
-              openCropModal();
-
-              if (typeof Cropper !== 'undefined') {
-                cropper = new Cropper(cropImage, {
-                  viewMode: 1,
-                  aspectRatio: 1,
-                  autoCropArea: 1,
-                  background: false,
-                  movable: true,
-                  zoomable: true,
-                  rotatable: false,
-                  scalable: false,
-                  responsive: true
-                });
-              } else {
-                console.error('Cropper.js not loaded.');
-              }
-            };
-          };
-          reader.onerror = () => {
-            alert('Failed to read file');
-            fileInput.value = '';
-          };
-          reader.readAsDataURL(f);
-        });
-      }
-
-      // Apply crop
-      if (cropApply) {
-        cropApply.addEventListener('click', async () => {
-          if (!cropper) { closeCropModal(); return; }
-          try {
-            const canvas = cropper.getCroppedCanvas({ width: 800, height: 800, imageSmoothingQuality: 'high' });
-            if (!canvas) { alert('Crop failed'); return; }
-            const blob = await new Promise(resolve => canvas.toBlob(b => resolve(b), avatarMime, 0.9));
-            if (!blob) { alert('Failed to produce image'); return; }
-
-            stagedAvatarBlob = blob;
-            const url = URL.createObjectURL(blob);
-            if (profileImg) profileImg.src = url;
-            closeCropModal();
-            setTimeout(() => URL.revokeObjectURL(url), 60 * 1000);
-          } catch (err) {
-            console.error('Crop apply error', err);
-            alert('An error occurred while processing the image.');
-          }
-        });
-      }
-
-      // Cancel crop
-      if (cropCancel) {
-        cropCancel.addEventListener('click', () => {
-          stagedAvatarBlob = null;
-          if (fileInput) fileInput.value = '';
-          closeCropModal();
-        });
-      }
-
-      // backdrop click closes crop modal (if clicked on the backdrop)
-      if (cropModal) {
-        cropModal.addEventListener('click', (ev) => {
-          if (ev.target === cropModal) {
-            stagedAvatarBlob = null;
-            if (fileInput) fileInput.value = '';
-            closeCropModal();
-          }
-        });
-      }
-
-      // remove avatar
-      if (removeBtn) {
-        removeBtn.addEventListener('click', () => {
-          stagedAvatarBlob = null;
-          if (fileInput) fileInput.value = '';
-          const placeholder = "data:image/svg+xml;utf8,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 120 120'%3E%3Crect width='120' height='120' rx='20' fill='%23f1f5f9'/%3E%3Ctext x='50%25' y='54%25' text-anchor='middle' font-size='20' fill='%239ca3af' font-family='Arial' dy='.35em'%3EProfile%3C/text%3E%3C/svg%3E";
-          if (profileImg) profileImg.src = placeholder;
-        });
-      }
-
-      // Cancel button reverts
-      if (cancelBtn) {
-        cancelBtn.addEventListener('click', () => {
-          if (nameInput) nameInput.value = initialState.name;
-          if (emailInput) emailInput.value = initialState.email;
-          if (phoneInput) phoneInput.value = initialState.phone;
-          if (dobInput) dobInput.value = initialState.dob;
-          stagedAvatarBlob = null;
-          if (profileImg) profileImg.src = initialState.avatar;
-          if (fileInput) fileInput.value = '';
-        });
-      }
-
-      // Save button: if email changed -> open OTP, else submit directly
-      if (saveBtn) {
-        saveBtn.addEventListener('click', async () => {
-          const newEmail = emailInput ? emailInput.value.trim() : '';
-          const emailChanged = newEmail !== initialState.email;
-          if (emailChanged) {
-            openOtpModal(newEmail);
-            return;
-          }
-          await submitProfile();
-        });
-      }
-
-      // OTP inputs handlers (auto-advance, paste)
-      if (otpInputs && otpInputs.length > 0) {
-        otpInputs[0].focus();
-        otpInputs.forEach((input, idx) => {
-          input.addEventListener('input', () => {
-            input.value = input.value.replace(/\D/g, '');
-            if (input.value && idx < otpInputs.length - 1) otpInputs[idx + 1].focus();
-            const allFilled = otpInputs.every(i => i.value);
-            if (allFilled && otpForm) otpForm.requestSubmit();
-          });
-          input.addEventListener('keydown', (e) => {
-            if (e.key === 'Backspace' && !input.value && idx > 0) otpInputs[idx - 1].focus();
-          });
-          input.addEventListener('paste', (e) => {
-            e.preventDefault();
-            const paste = (e.clipboardData || window.clipboardData).getData('text').trim().replace(/\D/g, '');
-            if (!paste) return;
-            otpInputs.forEach((oi, i) => oi.value = paste[i] || '');
-            const nextEmpty = otpInputs.find(i => !i.value);
-            if (nextEmpty) nextEmpty.focus();
-            else if (otpForm) otpForm.requestSubmit();
-          });
-        });
-      }
-
-      // OTP form submit -> verify OTP then submit profile
-      if (otpForm) {
-        otpForm.addEventListener('submit', async (ev) => {
-          ev.preventDefault();
-          if (serverMessage) serverMessage.style.display = 'none';
-          const otp = otpInputs.map(i => i.value.trim()).join('');
-          if (!/^\d{6}$/.test(otp)) {
-            if (serverMessage) { serverMessage.textContent = 'Please enter a valid 6-digit OTP'; serverMessage.style.display = 'block'; }
-            return;
-          }
-
-          const payload = { email: otpHiddenEmail.value, otp };
-
-          try {
-            const res = await axios.post(VERIFY_OTP_URL, payload, { withCredentials: true });
-            if (res.data && res.data.success) {
-              closeOtpModal();
-              await submitProfile(true);
-            } else {
-              if (serverMessage) { serverMessage.textContent = res.data?.alert || 'Invalid code'; serverMessage.style.display = 'block'; }
-            }
-          } catch (err) {
-            console.error('OTP verify error', err);
-            if (serverMessage) { serverMessage.textContent = err?.response?.data?.alert || 'Verification failed'; serverMessage.style.display = 'block'; }
-          }
-        });
-      }
-
-      // Resend OTP
-      if (resendOtp) {
-        resendOtp.addEventListener('click', async (ev) => {
-          ev.preventDefault();
-          try {
-            await axios.post('/resend-otp', { email: otpHiddenEmail.value }, { withCredentials: true });
-            startResendCountdown(30);
-            alert('A new code was sent (simulated).');
-          } catch (err) {
-            console.error('Resend OTP failed', err);
-            alert('Resend failed (check endpoint).');
-          }
-        });
-      }
-
-      // Submit profile to backend
-      async function submitProfile(fromOtp = false) {
-        const name = nameInput ? nameInput.value.trim() : '';
-        const email = emailInput ? emailInput.value.trim() : '';
-        const phone = phoneInput ? phoneInput.value.trim() : '';
-        const dob = dobInput ? dobInput.value : '';
-
-        if (!name) { alert('Please enter a name'); if (nameInput) nameInput.focus(); return; }
-        if (!email) { alert('Please enter an email'); if (emailInput) emailInput.focus(); return; }
-
-        const formData = new FormData();
-        formData.append('name', name);
-        formData.append('email', email);
-        formData.append('phone', phone);
-        formData.append('dob', dob);
-
-        if (stagedAvatarBlob) {
-          try {
-            const file = new File([stagedAvatarBlob], 'avatar.png', { type: stagedAvatarBlob.type || avatarMime });
-            formData.append('avatar', file);
-          } catch (err) {
-            formData.append('avatar', stagedAvatarBlob, 'avatar.png');
-          }
-        } else {
-          // optional: signal avatar removed
-          // if (profileImg && profileImg.src !== initialState.avatar) formData.append('avatarRemoved', '1');
-        }
-
-        try {
-          const res = await axios.post(PROFILE_UPDATE_URL, formData, { headers: { 'Content-Type': 'multipart/form-data' }, withCredentials: true });
-          if (res.data && res.data.success) {
-            alert(res.data.message || 'Profile saved successfully');
-            initialState.name = name;
-            initialState.email = email;
-            initialState.phone = phone;
-            initialState.dob = dob;
-            if (stagedAvatarBlob && profileImg) {
-              const avatarUrl = URL.createObjectURL(stagedAvatarBlob);
-              profileImg.src = avatarUrl;
-              initialState.avatar = avatarUrl;
-              setTimeout(() => URL.revokeObjectURL(avatarUrl), 60 * 1000);
-              stagedAvatarBlob = null;
-            }
-            if (res.data.redirect) window.location.href = res.data.redirect;
-          } else {
-            alert(res.data?.alert || 'Save failed');
-          }
-        } catch (err) {
-          console.error('Profile update failed', err);
-          alert(err?.response?.data?.alert || 'Profile update failed');
-        }
-      }
-
-      // resend countdown UI
-      let resendTimer = 0;
-      let resendInterval = null;
-      function startResendCountdown(sec) {
-        resendTimer = sec;
-        if (!resendTimerEl) return;
-        resendTimerEl.style.display = '';
-        resendTimerEl.textContent = `${resendTimer}s`;
-        clearInterval(resendInterval);
-        resendInterval = setInterval(() => {
-          resendTimer--;
-          if (resendTimer <= 0) { clearInterval(resendInterval); resendTimerEl.style.display = 'none'; }
-          else resendTimerEl.textContent = `${resendTimer}s`;
-        }, 1000);
-      }
-
-      // Accessibility: Escape closes modals
-      window.addEventListener('keydown', (e) => {
-        if (e.key === 'Escape') {
-          if (cropModal && !cropModal.classList.contains('hidden')) closeCropModal();
-          if (otpModal && !otpModal.classList.contains('hidden')) closeOtpModal();
-        }
-      });
-
-      // backdrop click on otp modal to close
-      if (otpModal) {
-        otpModal.addEventListener('click', (ev) => {
-          if (ev.target === otpModal) closeOtpModal();
-        });
-      }
-
-      // quick runtime debug prints (helpful while integrating)
-      console.log('editProfile initialized — cropModal hidden?', cropModal ? cropModal.classList.contains('hidden') : 'missing');
-    });
-  </script>
 </body>
 
 </html>

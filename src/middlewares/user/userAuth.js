@@ -4,6 +4,9 @@ const { OK, UNAUTHORIZED, FORBIDDEN } = require("../../constant/statusCode");
 const checkSession = async (req, res, next) => {
   try {
     if (!req.session.user) {
+      return next();
+    }
+    if (!req.session.user) {
       return res.status(UNAUTHORIZED).redirect("/login");
     }
     const userId = req.session.user._id;
@@ -27,7 +30,7 @@ const checkSession = async (req, res, next) => {
           return console.error("Error destroying session:", err);
         }
         res.clearCookie("user.sid");
-        res.status(OK).redirect("/");
+        res.status(OK).redirect("/login");
       });
     }
     req.user = user;

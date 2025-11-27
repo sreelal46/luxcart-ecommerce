@@ -152,4 +152,18 @@ document.addEventListener("DOMContentLoaded", () => {
 
     isExpanded = !isExpanded;
   });
+
+  const buyProduct = document.getElementById("buyProduct");
+  const addToCart = document.getElementById("addToCart");
+
+  addToCart.addEventListener("click", async () => {
+    const accessoryId = addToCart.dataset.productId;
+    try {
+      const res = await axios.post(
+        `/all-accessories/view-accessory-product/add-to-cart/${accessoryId}`
+      );
+    } catch (error) {
+      console.log("Error from accesory add to cart");
+    }
+  });
 });

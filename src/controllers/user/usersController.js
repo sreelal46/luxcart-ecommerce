@@ -69,25 +69,27 @@ const verifyUser = async (req, res, next) => {
     const user = await User.findOne({ email });
 
     if (!user)
-      return res.status(404).json({ success: false, alert: "Email not found" });
+      return res
+        .status(NOT_FOUND)
+        .json({ success: false, alert: "Email not found." });
 
     //checking user is blocked
     if (user.isBlocked)
       return res
         .status(404)
-        .json({ success: false, alert: "Your Account Has Been Blocked" });
+        .json({ success: false, alert: "Your account has been Blocked." });
 
     if (user.authProvider === "google")
-      return res.status(403).json({
+      return res.status(FORBIDDEN).json({
         success: false,
         alert:
-          "This email is registered with Google. Please use 'Sign in with Google'.",
+          "This email is registered with Google. Please use 'Continue with Google'.",
       });
 
     const compare = await bcrypt.compare(password, user.password);
     if (!compare)
       return res
-        .status(401)
+        .status(UNAUTHORIZED)
         .json({ success: false, alert: "Invalid email or password" });
 
     req.session.user = {
@@ -134,6 +136,13 @@ const sendOTP = async (req, res, next) => {
       return res
         .status(NOT_FOUND)
         .json({ success: false, alert: "Email not Found" });
+
+    if (user.authProvider === "google")
+      return res.status(NOT_FOUND).json({
+        success: false,
+        alert:
+          "This email is registered with Google. Please use 'Continue with Google'.",
+      });
 
     //send OTP to user
     await emailSending(

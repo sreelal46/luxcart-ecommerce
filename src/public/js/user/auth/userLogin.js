@@ -6,6 +6,23 @@ document.addEventListener("DOMContentLoaded", () => {
   const passwordError = document.getElementById("passwordError");
   const serverMessage = document.getElementById("serverMessage");
 
+  /* =====================================
+                 EYE TOGGLE LOGIC
+       ===================================== */
+  document.querySelectorAll(".toggle-eye").forEach((eye) => {
+    eye.addEventListener("click", () => {
+      const input = document.getElementById(eye.dataset.target);
+
+      if (input.type === "password") {
+        input.type = "text";
+        eye.innerHTML = '<i class="bi bi-eye"></i>';
+      } else {
+        input.type = "password";
+        eye.innerHTML = '<i class="bi bi-eye-slash"></i>';
+      }
+    });
+  });
+
   // Helper function to validate email
   const validateEmail = (email) => /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email);
 
@@ -34,8 +51,8 @@ document.addEventListener("DOMContentLoaded", () => {
     if (!password) {
       passwordError.textContent = "Password is required";
       passwordError.style.display = "block";
-    } else if (password.length < 6) {
-      passwordError.textContent = "Password must be at least 6 characters";
+    } else if (password.length < 8) {
+      passwordError.textContent = "Password must be at least 8 characters";
       passwordError.style.display = "block";
     } else {
       passwordError.textContent = "";

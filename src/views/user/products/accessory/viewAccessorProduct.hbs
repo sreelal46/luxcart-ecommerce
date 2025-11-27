@@ -54,10 +54,13 @@
           <!-- <div class="info-text">Stock: {{accessory.stock}}</div> -->
           <div class="info-text mb-3">Warranty: {{accessory.warranty}}</div>
 
+
           <!-- Desktop Buttons -->
           {{#if accessory.isListed}}
-          <button class="btn btn-buy"><i class="bi bi-lightning-charge"></i> Buy Now</button>
-          <button class="btn btn-cart"><i class="bi bi-cart"></i> Add to Cart</button>
+          <button class="btn btn-buy" id="buyProduct" data-product-id="{{accessory._id}}"><i
+              class="bi bi-lightning-charge"></i> Buy
+            Now</button>
+          <button class="btn btn-cart" id="addToCart"><i class="bi bi-cart"></i> Add to Cart</button>
           {{else}}
           <div class="p-3 rounded-3 border border-danger bg-light text-danger mt-2 d-flex align-items-center">
             <i class="bi bi-exclamation-octagon-fill fs-5 me-2"></i>
@@ -143,7 +146,6 @@
 
   <!--MOBILE FIXED BUTTONS (visible only on small screens) -->
   <div class="mobile-bottom-bar d-lg-none">
-
     {{#if accessory.isListed}}
     <div class="action-buttons d-flex gap-2">
       <button class="btn btn-buy flex-fill">
@@ -159,7 +161,6 @@
       <span class="fw-semibold small">This model is currently unavailable</span>
     </div>
     {{/if}}
-
   </div>
 </section>
 

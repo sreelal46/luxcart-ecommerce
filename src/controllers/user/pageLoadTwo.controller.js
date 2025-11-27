@@ -98,6 +98,28 @@ const loadChangePassword = (req, res) => {
     .render("user/account/changePassword", { layout: "userAccountLayout" });
 };
 
+//load order page
+const loadOrderPage = async (req, res, next) => {
+  try {
+    res
+      .status(OK)
+      .render("user/account/orderHistory", { layout: "userAccountLayout" });
+  } catch (error) {
+    console.log("Error from order page load", error);
+    next(error);
+  }
+};
+
+//load cart page
+const loadCartPage = async (req, res, next) => {
+  try {
+    res.status(OK).render("user/account/cart");
+  } catch (error) {
+    console.log("Error from cart page load", error);
+    next(error);
+  }
+};
+
 module.exports = {
   loadAccountPage,
   loadProfilePage,
@@ -106,4 +128,6 @@ module.exports = {
   loadAddAddressPage,
   loadEditAddressPage,
   loadChangePassword,
+  loadOrderPage,
+  loadCartPage,
 };

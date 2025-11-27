@@ -1,3 +1,6 @@
+//storing variant id
+let variantId;
+
 // Change variant - update price and carousel images
 function changeVariant(button) {
   const priceBox = document.querySelector(".price");
@@ -10,6 +13,7 @@ function changeVariant(button) {
 
   const rawPrice = button.getAttribute("data-price");
   const images = JSON.parse(button.getAttribute("data-images"));
+  variantId = button.getAttribute("data-variantid");
 
   // Animate price update
   gsap.fromTo(

@@ -50,8 +50,9 @@
             <h5 class="fw-semibold mb-3">Variants</h5>
             <div class="variant-section-button d-flex flex-wrap gap-2">
               {{#each singleCar.variantIds}}
-              <button class="variant-btn btn btn-outline-dark" data-color="{{this.color}}" data-price="{{this.price}}"
-                data-images='{{{json this.image_url}}}' onclick="changeVariant(this)">
+              <button class="variant-btn btn btn-outline-dark {{#if @first}}active{{/if}} " data-color="{{this.color}}"
+                data-price="{{this.price}}" data-images='{{{json this.image_url}}}' data-variantId="{{this._id}}"
+                onclick="changeVariant(this)">
                 {{this.color}}
               </button>
               {{/each}}
@@ -65,8 +66,11 @@
 
           <!-- Desktop Buttons -->
           {{#if singleCar.isListed}}
-          <button class="btn btn-buy"><i class="bi bi-lightning-charge"></i> Buy Now</button>
-          <button class="btn btn-cart"><i class="bi bi-cart"></i> Add to Cart</button>
+          <button class="btn btn-buy" id="buyProduct" data-variantId="{{getFirstVariantId singleCar}}"><i
+              class="bi bi-lightning-charge"></i> Buy
+            Now</button>
+          <button class="btn btn-cart" id="addToCart" data-variantId="{{getFirstVariantId singleCar}}"><i
+              class="bi bi-cart"></i> Add to Cart</button>
           {{else}}
           <div class="p-3 rounded-3 border border-danger bg-light text-danger mt-2 d-flex align-items-center">
             <i class="bi bi-exclamation-octagon-fill fs-5 me-2"></i>

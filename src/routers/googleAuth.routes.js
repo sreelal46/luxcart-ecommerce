@@ -33,12 +33,19 @@ router.get("/google/callback", (req, res, next) => {
       return res.redirect(`/login?alert=${message}`);
     }
 
+    if (user.isBlocked) {
+      const message = encodeURIComponent(
+        info?.message || "Your Google account has been Blocked."
+      );
+      return res.redirect(`/login?alert=${message}`);
+    }
+
     // Success create session
     req.session.user = {
       _id: user._id,
       name: user.name,
       email: user.email,
-      profileImage_url: user.image_url,
+      profileImage_url: user.profileImage_url,
       authProvider: user.authProvider,
     };
 

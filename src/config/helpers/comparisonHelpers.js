@@ -37,4 +37,7 @@ module.exports = {
         return options.inverse(this);
     }
   },
+  getFirstVariantId: (car) => {
+    return car.variantIds[0]._id;
+  },
 };

@@ -1,0 +1,64 @@
+.main-card {
+  background: #ffffff;
+  box-shadow: 0 8px 24px rgba(15, 23, 36, 0.06);
+  padding: 20px;
+  border-radius: 8px;
+}
+
+.error {
+  color: red;
+  font-size: 12px;
+  margin-top: 4px;
+}
+
+.invalid {
+  border-color: red !important;
+}
+
+/* =======================
+        CUSTOM SWAL POPUP
+    ======================== */
+.custom-swal-backdrop {
+  position: fixed;
+  inset: 0;
+  background: rgba(0, 0, 0, 0.45);
+  backdrop-filter: blur(3px);
+  display: none;
+  align-items: center;
+  justify-content: center;
+  z-index: 99999;
+}
+
+.custom-swal-backdrop.show {
+  display: flex;
+}
+
+.custom-swal-box {
+  width: 820px;
+  background: #fff;
+  padding: 24px 30px;
+  border-radius: 12px;
+  width: 330px;
+  text-align: center;
+  box-shadow: 0 8px 25px rgba(0, 0, 0, 0.25);
+  animation: popIn 0.25s ease-out;
+}
+
+.custom-swal-box.error {
+  border-top: 6px solid #e74c3c;
+}
+
+.error-btn {
+  margin-top: 20px;
+  padding: 10px 20px;
+  background: #e74c3c;
+  color: #fff;
+  border: none;
+  border-radius: 6px;
+  font-size: 14px;
+  cursor: pointer;
+}
+
+.error-btn:hover {
+  background: #c0392b;
+}

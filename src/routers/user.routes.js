@@ -25,6 +25,8 @@ const {
   loadAddAddressPage,
   loadEditAddressPage,
   loadChangePassword,
+  loadOrderPage,
+  loadCartPage,
 } = require("../controllers/user/pageLoadTwo.controller");
 const {
   editEmail,
@@ -116,6 +118,8 @@ route.post(
   upload.any(),
   editProfile
 );
+//order details
+route.get("/account/orders", checkSession, loadOrderPage);
 //view account address details
 route.get("/account/addresses", checkSession, loadAddressPage);
 route.get("/account/addresses/add-address", checkSession, loadAddAddressPage);
@@ -140,12 +144,10 @@ route.delete(
   checkSession,
   deleteAddress
 );
-
 route.get("/account/change-password", checkSession, loadChangePassword);
 route.post("/account/change-password/:userId", checkSession, changePassword);
 
-route.get("/account/orders", checkSession, (req, res) => {
-  res.render("user/account/orderHistory", { layout: "userAccountLayout" });
-});
+//cart management
+route.get("/cart", checkSession, loadCartPage);
 
 module.exports = route;

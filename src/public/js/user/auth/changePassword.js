@@ -6,6 +6,23 @@ document.addEventListener("DOMContentLoaded", () => {
   const confirmPasswordError = document.getElementById("confirmPasswordError");
   const serverMessage = document.getElementById("serverMessage");
 
+  /* =====================================
+                 EYE TOGGLE LOGIC
+       ===================================== */
+  document.querySelectorAll(".toggle-eye").forEach((eye) => {
+    eye.addEventListener("click", () => {
+      const input = document.getElementById(eye.dataset.target);
+
+      if (input.type === "password") {
+        input.type = "text";
+        eye.innerHTML = '<i class="bi bi-eye"></i>';
+      } else {
+        input.type = "password";
+        eye.innerHTML = '<i class="bi bi-eye-slash"></i>';
+      }
+    });
+  });
+
   //reset message
   newPasswordError.textContent = "";
   confirmPasswordError.textContent = "";

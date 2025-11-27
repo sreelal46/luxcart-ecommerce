@@ -1,7 +1,13 @@
 const { json } = require("express");
-const { OK, FORBIDDEN } = require("../../constant/statusCode");
+const {
+  OK,
+  FORBIDDEN,
+  NOT_FOUND,
+  UNAUTHORIZED,
+} = require("../../constant/statusCode");
 const User = require("../../models/user/UserModel");
 const Address = require("../../models/user/addressModel");
+const bcrypt = require("bcrypt");
 
 //email check
 const editEmail = async (req, res) => {
@@ -196,9 +202,31 @@ const deleteAddress = async (req, res, next) => {
 //change password
 const changePassword = async (req, res, next) => {
   try {
+    //colleting data
     const userId = req.params.userId;
-    const {} = req.body;
-    console.log(req.body);
+    const { currentPassword, newPassword } = req.body;
+
+    //finding user
+    const user = await User.findById(userId);
+    if (!user)
+      return res
+        .status(NOT_FOUND)
+        .json({ success: false, alert: "User not Found" });
+
+    //compare hash password
+    const compare = await bcrypt.compare(currentPassword, user.password);
+    if (!compare)
+      return res
+        .status(UNAUTHORIZED)
+        .json({ success: false, alert: "Current Password not Matching" });
+
+    //hashing password
+    const salt = await bcrypt.genSalt(parseInt(process.env.BCRYPT_SALT_ROUNDS));
+    const hashNewPassword = await bcrypt.hash(newPassword, salt);
+
+    user.password = hashNewPassword;
+    await user.save();
+
     res.status(OK).json({ success: true });
   } catch (error) {
     console.log("Error from chnage password in account", error);

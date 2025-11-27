@@ -1,0 +1,158 @@
+<style>
+  .container {
+    margin-top: 100px;
+  }
+
+  .cart-item-img {
+    width: 110px;
+    height: 110px;
+    border-radius: 8px;
+    object-fit: cover;
+  }
+
+  .qty-btn {
+    width: 32px;
+    height: 32px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border: 1px solid #ddd;
+    border-radius: 4px;
+    cursor: pointer;
+    user-select: none;
+  }
+
+  .order-box {
+    border-radius: 12px;
+    box-shadow: 0 8px 24px rgba(0, 0, 0, 0.06);
+    padding: 25px;
+    background: #fff;
+  }
+
+  .btn-orange {
+    background: #f36923;
+    color: #fff;
+    font-weight: 500;
+    padding: 12px;
+    border-radius: 8px;
+  }
+
+  .btn-orange:hover {
+    background: #d65a1b;
+    color: #fff;
+  }
+
+  .btn-black {
+    background: #1c1c1c;
+    color: #fff;
+    font-weight: 500;
+    padding: 12px;
+    border-radius: 8px;
+  }
+
+  .btn-black:hover {
+    background: #000;
+    color: #fff;
+  }
+</style>
+
+
+
+<div class="container py-4">
+  <!-- Top Header -->
+  <div class="d-flex justify-content-between align-items-center mb-4">
+    <h2 class="fw-bold">Your Cart</h2>
+  </div>
+
+  <div class="row">
+    <!-- Left Side: Cart Items -->
+    <div class="col-lg-8">
+      <div class="bg-white p-4 rounded shadow-sm mb-4 d-flex align-items-center">
+        <img src="https://i.pinimg.com/564x/4b/42/59/4b4259a781c8fc9a92e4c4aa1f263c03.jpg" class="cart-item-img me-4" />
+        <div class="flex-grow-1">
+          <h5 class="mb-1">Rolls-Royce Ghost</h5>
+          <small class="text-muted">2023</small>
+        </div>
+        <!-- Quantity -->
+        <div class="d-flex align-items-center mx-4">
+          <div class="qty-btn">−</div>
+          <span class="mx-3 fw-semibold">1</span>
+          <div class="qty-btn">+</div>
+        </div>
+        <!-- Price -->
+        <h6 class="fw-bold me-4">₹ 350,000</h6>
+        <!-- Delete -->
+        <i class="bi bi-trash fs-5 text-danger" style="cursor:pointer;"></i>
+      </div>
+      <div class="bg-white p-4 rounded shadow-sm mb-4 d-flex align-items-center">
+        <img src="https://i.pinimg.com/564x/4b/42/59/4b4259a781c8fc9a92e4c4aa1f263c03.jpg" class="cart-item-img me-4" />
+        <div class="flex-grow-1">
+          <h5 class="mb-1">Rolls-Royce Ghost</h5>
+          <small class="text-muted">2023</small>
+        </div>
+        <!-- Quantity -->
+        <div class="d-flex align-items-center mx-4">
+          <div class="qty-btn">−</div>
+          <span class="mx-3 fw-semibold">1</span>
+          <div class="qty-btn">+</div>
+        </div>
+        <!-- Price -->
+        <h6 class="fw-bold me-4">₹ 350,000</h6>
+        <!-- Delete -->
+        <i class="bi bi-trash fs-5 text-danger" style="cursor:pointer;"></i>
+      </div>
+
+      <div class="bg-white p-4 rounded shadow-sm mb-4 d-flex align-items-center">
+        <img src="https://i.pinimg.com/564x/4b/42/59/4b4259a781c8fc9a92e4c4aa1f263c03.jpg" class="cart-item-img me-4" />
+        <div class="flex-grow-1">
+          <h5 class="mb-1">Rolls-Royce Ghost</h5>
+          <small class="text-muted">2023</small>
+        </div>
+        <!-- Quantity -->
+        <div class="d-flex align-items-center mx-4">
+          <div class="qty-btn">−</div>
+          <span class="mx-3 fw-semibold">1</span>
+          <div class="qty-btn">+</div>
+        </div>
+        <!-- Price -->
+        <h6 class="fw-bold me-4">₹ 350,000</h6>
+        <!-- Delete -->
+        <i class="bi bi-trash fs-5 text-danger" style="cursor:pointer;"></i>
+      </div>
+
+      <a href="#" class="text-danger fw-semibold">Clear Cart</a>
+    </div>
+
+    <!-- Right Side: Order Summary -->
+    <div class="col-lg-4">
+      <div class="order-box">
+        <h5 class="fw-bold mb-3">Order Summary</h5>
+        <div class="d-flex justify-content-between mb-2">
+          <span class="text-muted">Subtotal</span>
+          <span class="fw-semibold">₹ 350,000</span>
+        </div>
+        <div class="d-flex justify-content-between mb-2">
+          <span class="text-muted">Shipping</span>
+          <span class="fw-semibold">Free</span>
+        </div>
+        <div class="d-flex justify-content-between mb-3">
+          <span class="text-muted">Tax</span>
+          <span class="fw-semibold">₹ 350,00</span>
+        </div>
+        <hr>
+        <div class="d-flex justify-content-between mb-3">
+          <h6 class="fw-bold">Total</h6>
+          <h6 class="fw-bold">₹ 378,000</h6>
+        </div>
+        <button class="btn btn-orange w-100 mb-3">Apply coupen</button>
+        <button class="btn btn-black w-100">Proceed to Checkout</button>
+        <p class="text-center text-muted small mt-3">
+          By proceeding to checkout, you agree to our <br>
+          <a href="#" class="text-decoration-none">Terms of Service</a> and <a href="#"
+            class="text-decoration-none">Privacy Policy</a>
+        </p>
+      </div>
+    </div>
+  </div>
+
+</div>
