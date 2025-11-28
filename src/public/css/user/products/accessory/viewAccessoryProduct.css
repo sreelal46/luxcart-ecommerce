@@ -281,3 +281,80 @@ body {
     padding: 20px !important;
   }
 }
+
+/* ===============================
+   Slide-in Toast MSG
+=============================== */
+
+.mobile-alert {
+  position: fixed;
+  bottom: 75px;
+  left: 0;
+  right: 0;
+  margin: 0 auto;
+  width: fit-content;
+  max-width: 90%;
+  background: #111;
+  color: #fff;
+  padding: 12px 20px;
+  border-radius: 14px;
+  font-size: 14px;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+
+  opacity: 0;
+  pointer-events: none;
+  transform: translateY(120%);
+  transition: all 0.35s ease;
+
+  box-shadow: 0 6px 22px rgba(0, 0, 0, 0.25);
+  z-index: 9999;
+
+  white-space: normal;
+  word-break: break-word;
+}
+
+.mobile-alert.show {
+  opacity: 1;
+  transform: translateY(0);
+}
+
+/* Desktop */
+@media (min-width: 768px) {
+  .mobile-alert {
+    top: 75px;
+    bottom: auto;
+    transform: translateY(-120%);
+  }
+
+  .mobile-alert.show {
+    transform: translateY(0);
+  }
+}
+
+/* Colors */
+.message-green {
+  color: #00ff7f;
+}
+.message-red {
+  color: #ff4d4d;
+}
+.message-yellow {
+  color: #ffcc00;
+}
+
+.success-icon,
+.error-icon {
+  font-size: 16px;
+  margin-right: 6px;
+}
+.success-icon {
+  color: #00ff7f;
+}
+.error-icon {
+  color: #dc3545;
+}
+.yellow-icon {
+  color: #ffcc00;
+}

@@ -1,5 +1,6 @@
 const { OK } = require("../../constant/statusCode");
 const Address = require("../../models/user/addressModel");
+const Cart = require("../../models/user/CartModel");
 const User = require("../../models/user/UserModel");
 
 //load account page
@@ -113,7 +114,14 @@ const loadOrderPage = async (req, res, next) => {
 //load cart page
 const loadCartPage = async (req, res, next) => {
   try {
-    res.status(OK).render("user/account/cart");
+    const userId = req.session.user._id;
+    const cart = await Cart.findOne({ userId })
+      .populate("items.carId")
+      .populate("items.variantId")
+      .populate("items.accessoryId")
+      .lean();
+
+    res.status(OK).render("user/account/cart", { cart });
   } catch (error) {
     console.log("Error from cart page load", error);
     next(error);

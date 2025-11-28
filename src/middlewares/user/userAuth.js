@@ -4,9 +4,6 @@ const { OK, UNAUTHORIZED, FORBIDDEN } = require("../../constant/statusCode");
 const checkSession = async (req, res, next) => {
   try {
     if (!req.session.user) {
-      return next();
-    }
-    if (!req.session.user) {
       return res.status(UNAUTHORIZED).redirect("/login");
     }
     const userId = req.session.user._id;

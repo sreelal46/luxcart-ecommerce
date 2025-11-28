@@ -1,7 +1,8 @@
-//storing variant id
-let changingVariantId;
+let changingVariantId = null;
+let cartItems = [];
+let singleCarId;
 
-// Change variant - update price and carousel images
+// Change variant
 function changeVariant(button) {
   const priceBox = document.querySelector(".price");
   const carouselInner = document.querySelector(
@@ -13,35 +14,34 @@ function changeVariant(button) {
 
   const rawPrice = button.getAttribute("data-price");
   const images = JSON.parse(button.getAttribute("data-images"));
-  changingVariantId = button.getAttribute("data-variantid");
 
-  // Animate price update
+  // cartItems = ["variantId1", "variantId2", ...]
+  cartItems = JSON.parse(button.getAttribute("data-cartitems"));
+
+  changingVariantId = button.getAttribute("data-variantid");
+  singleCarId = button.getAttribute("data-carid");
+
+  // Animate price
   gsap.fromTo(
     priceBox,
     { scale: 0.9, opacity: 0.6 },
     { scale: 1, opacity: 1, duration: 0.3 }
   );
 
+  // Format price
   const formattedPrice = rawPrice
     ? rawPrice.toString().replace(/\B(?=(\d{3})+(?!\d))/g, ",")
     : "";
 
   priceBox.textContent = "₹" + formattedPrice;
 
-  gsap.from("#carImageCarousel", {
-    opacity: 0,
-    x: -60,
-    duration: 1,
-    delay: 0.2,
-    ease: "power2.out",
-  });
-
-  // Update carousel images
+  // Replace images
   if (carouselInner) {
     carouselInner.innerHTML = "";
     images.forEach((img, i) => {
       const div = document.createElement("div");
       div.className = "carousel-item" + (i === 0 ? " active" : "");
+
       const zoomDiv = document.createElement("div");
       zoomDiv.className = "zoom-container";
 
@@ -54,14 +54,49 @@ function changeVariant(button) {
       div.appendChild(zoomDiv);
       carouselInner.appendChild(div);
     });
+
     carousel.to(0);
   }
 
-  // Highlight active variant button
+  // Highlight selected variant
   document
     .querySelectorAll(".variant-btn")
     .forEach((btn) => btn.classList.remove("active"));
+
   button.classList.add("active");
+
+  updateCartButton();
+}
+
+// Update Add-to-Cart / Go-to-Cart button
+function updateCartButton() {
+  const cartBtnDesk = document.getElementById("addToCartDesk");
+
+  if (!cartBtnDesk) return;
+
+  const currentVariant = changingVariantId;
+
+  // Prevent crash on page load
+  const inCart =
+    Array.isArray(cartItems) &&
+    currentVariant &&
+    cartItems.includes(currentVariant);
+
+  if (inCart) {
+    cartBtnDesk.innerHTML = `<i class="bi bi-cart"></i> Go to Cart`;
+    cartBtnDesk.setAttribute("href", "/cart");
+    cartBtnDesk.removeAttribute("data-carid");
+    cartBtnDesk.removeAttribute("data-variantId");
+  } else {
+    cartBtnDesk.innerHTML = `<i class="bi bi-cart"></i> Add to Cart`;
+    cartBtnDesk.removeAttribute("href");
+
+    if (currentVariant) {
+      cartBtnDesk.setAttribute("data-variantId", currentVariant);
+    }
+
+    cartBtnDesk.setAttribute("data-carid", singleCarId);
+  }
 }
 
 // Zoom feature (Desktop only)
@@ -196,8 +231,6 @@ document.addEventListener("DOMContentLoaded", () => {
 });
 
 document.addEventListener("DOMContentLoaded", () => {
-  const changeButton = document.getElementById("changeButton");
-  const changeButtonMob = document.getElementById("changeButtonMob");
   const addToCartDesk = document.getElementById("addToCartDesk");
   const buyProductDesk = document.getElementById("buyProductDesk");
   const addToCartMob = document.getElementById("addToCartMob");
@@ -218,22 +251,15 @@ document.addEventListener("DOMContentLoaded", () => {
 
     setTimeout(() => {
       alertBox.classList.remove("show");
-    }, 2000);
+    }, 3000);
   }
 
   // Read product & variant ID from button
-  const productId = addToCartDesk.dataset.accessoryid;
+  const productId = addToCartDesk.dataset.carid;
   const variantId = addToCartDesk.dataset.variantid;
-  console.log(productId);
 
   //add to cart axios call function
-  function addToCartAxios(
-    element,
-    outsideChangeBtnId,
-    productType,
-    productId,
-    variantId
-  ) {
+  function addToCartAxios(element, productType, productId, variantId) {
     element.addEventListener("click", async () => {
       try {
         const res = await axios.post("/cart/add", {
@@ -244,7 +270,9 @@ document.addEventListener("DOMContentLoaded", () => {
 
         if (res.data.success) {
           showMobileAlert("Product added to cart!", "success");
-          outsideChangeBtnId.innerHTML = `<a href="/cart" class="btn btn-cart"><i class="bi bi-cart"></i> Go to Cart</a>`;
+          // Change text
+          element.innerHTML = `<i class="bi bi-cart"></i> Go to Cart`;
+          element.href = "/cart";
         } else {
           const msg = res.data.alert || "Somthing went worng";
           showMobileAlert(msg, "error");
@@ -257,6 +285,6 @@ document.addEventListener("DOMContentLoaded", () => {
     });
   }
 
-  addToCartAxios(addToCartDesk, changeButton, "car", productId, variantId);
-  addToCartAxios(addToCartMob, addToCartMob, "car", productId, variantId);
+  addToCartAxios(addToCartDesk, "car", productId, variantId);
+  addToCartAxios(addToCartMob, "car", productId, variantId);
 });

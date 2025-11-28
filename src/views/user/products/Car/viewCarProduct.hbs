@@ -53,9 +53,9 @@
             <h5 class="fw-semibold mb-3">Variants</h5>
             <div class="variant-section-button d-flex flex-wrap gap-2">
               {{#each singleCar.variantIds}}
-              <button class="variant-btn btn btn-outline-dark {{#if @first}}active{{/if}} " data-color="{{this.color}}"
-                data-price="{{this.price}}" data-images='{{{json this.image_url}}}' data-variantId="{{this._id}}"
-                onclick="changeVariant(this)">
+              <button class="variant-btn btn btn-outline-dark {{#if @first}}active{{/if}} "
+                data-carid="{{singleCar._id}}" data-color="{{this.color}}" data-price="{{this.price}}"
+                data-images='{{{json this.image_url}}}' data-variantId="{{this._id}}" onclick="changeVariant(this)">
                 {{this.color}}
               </button>
               {{/each}}
@@ -69,13 +69,22 @@
 
           <!-- Desktop Buttons -->
           {{#if singleCar.isListed}}
-          <button class="btn btn-buy" id="buyProductDesk" data-accessoryId="{{singleCar._id}}"
+          <button class="btn btn-buy" id="buyProductDesk" data-carid="{{singleCar._id}}"
             data-variantId="{{getFirstVariantId singleCar}}"><i class="bi bi-lightning-charge"></i> Buy
             Now</button>
-          <div id="changeButton">
-            <button class="btn btn-cart" id="addToCartDesk" data-accessoryId="{{singleCar._id}}"
-              data-variantId="{{getFirstVariantId singleCar}}"><i class="bi bi-cart"></i> Add to Cart</button>
-          </div>
+          {{#if inCart}}
+          <a class="btn btn-cart" href="/cart">
+            <i class="bi bi-cart"></i> Go to Cart
+          </a>
+          {{else}}
+          <a class="btn btn-cart" id="addToCartDesk" data-carid="{{singleCar._id}}"
+            data-variantId="{{getFirstVariantId singleCar}}">
+            <i class="bi bi-cart"></i> Add to Cart
+          </a>
+          {{/if}}
+
+
+
 
           {{else}}
           <div class="p-3 rounded-3 border border-danger bg-light text-danger mt-2 d-flex align-items-center">
@@ -203,10 +212,10 @@
 
     {{#if singleCar.isListed}}
     <div class="action-buttons d-flex gap-2" id="buyProductMob">
-      <button class="btn btn-buy flex-fill" data-accessoryId="{{singleCar._id}}"
+      <a class="btn btn-buy flex-fill" data-accessoryId="{{singleCar._id}}"
         data-variantId="{{getFirstVariantId singleCar}}">
         <i class="bi bi-lightning-charge me-1"></i> Buy Now
-      </button>
+      </a>
       <a class="btn btn-cart flex-fill" id="addToCartMob" data-accessoryId="{{singleCar._id}}"
         data-variantId="{{getFirstVariantId singleCar}}">
         <i class="bi bi-cart me-1"></i> Add to Cart

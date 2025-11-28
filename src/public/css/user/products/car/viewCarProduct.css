@@ -426,9 +426,12 @@ body {
 
 .mobile-alert {
   position: fixed;
-  bottom: 20px;
-  left: 50%;
-  transform: translateX(-50%) translateY(100px);
+  bottom: 75px;
+  left: 0;
+  right: 0;
+  margin: 0 auto;
+  width: fit-content;
+  max-width: 90%;
   background: #111;
   color: #fff;
   padding: 12px 20px;
@@ -437,38 +440,38 @@ body {
   display: flex;
   align-items: center;
   gap: 10px;
+
   opacity: 0;
   pointer-events: none;
+  transform: translateY(120%);
   transition: all 0.35s ease;
+
   box-shadow: 0 6px 22px rgba(0, 0, 0, 0.25);
   z-index: 9999;
+
+  white-space: normal;
+  word-break: break-word;
 }
 
 .mobile-alert.show {
   opacity: 1;
-  transform: translateX(-50%) translateY(0);
+  transform: translateY(0);
 }
 
-button {
-  padding: 10px 20px;
-  background: #000;
-  color: #fff;
-  border: none;
-  border-radius: 10px;
-  cursor: pointer;
-  font-size: 16px;
-}
+/* Desktop */
 @media (min-width: 768px) {
   .mobile-alert {
-    top: 20px;
-    bottom: 80px !important;
-    transform: translateX(-50%) translateY(-100px);
+    top: 75px;
+    bottom: auto;
+    transform: translateY(-120%);
   }
 
   .mobile-alert.show {
-    transform: translateX(-50%) translateY(0);
+    transform: translateY(0);
   }
 }
+
+/* Colors */
 .message-green {
   color: #00ff7f;
 }
@@ -481,31 +484,15 @@ button {
 
 .success-icon,
 .error-icon {
-  font-size: 16px; /* same size */
-  margin-right: 6px; /* space */
-  vertical-align: middle;
+  font-size: 16px;
+  margin-right: 6px;
 }
-
 .success-icon {
-  color: #00ff7f; /* green */
+  color: #00ff7f;
 }
-
 .error-icon {
-  color: #dc3545; /* red */
+  color: #dc3545;
 }
 .yellow-icon {
-  color: #ffcc00; /* red */
-}
-
-#changeButtonMob .btn-cart {
-  display: flex;
-  justify-content: center;
-  align-items: center;
-  gap: 6px;
-  background: #000 !important;
-  color: #fff !important;
-  padding: 12px 0;
-  border-radius: 10px;
-  font-size: 1rem;
-  width: 100%;
+  color: #ffcc00;
 }

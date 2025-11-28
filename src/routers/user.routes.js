@@ -37,6 +37,7 @@ const {
   setDeafaultAddress,
   changePassword,
   addToCart,
+  deleteFromCart,
 } = require("../controllers/user/account.controller");
 
 const {
@@ -47,7 +48,7 @@ const {
   verifyOTP,
   forgotPassword,
   resendOTP,
-} = require("../controllers/user/usersController");
+} = require("../controllers/user/users.Auth.Controller");
 
 const {
   isLogin,
@@ -91,7 +92,7 @@ route.get("/resend-otp", resendOTP);
 //car colletions
 route.get("/cars-collection", checkSession, loadCarCollection);
 route.get(
-  "/cars-collection/view-car-product/:id",
+  "/cars-collection/view-car-product/:carId",
   checkSession,
   loadSingleCarProduct
 );
@@ -151,5 +152,6 @@ route.post("/account/change-password/:userId", checkSession, changePassword);
 //cart management
 route.get("/cart", checkSession, loadCartPage);
 route.post("/cart/add", checkSession, addToCart);
+route.delete("/cart/remove-product/:itemId", checkSession, deleteFromCart);
 
 module.exports = route;

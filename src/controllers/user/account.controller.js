@@ -241,7 +241,7 @@ const addToCart = async (req, res, next) => {
   try {
     const userId = req.session.user._id;
     const { productType, productId, variantId } = req.body;
-    console.log(variantId);
+    console.log("req.body", req.body);
 
     let product;
     if (productType === "car") {
@@ -249,7 +249,6 @@ const addToCart = async (req, res, next) => {
     } else if (productType === "accessory") {
       product = await Accessory.findById(productId);
     }
-
     if (!product) {
       return res
         .status(NOT_FOUND)
@@ -274,14 +273,12 @@ const addToCart = async (req, res, next) => {
     } else {
       const item = cart.items.find(
         (item) =>
-          item.carId?.toString() === productId ||
+          item.variantId?.toString() === variantId ||
           item.accessoryId?.toString() === productId
       );
 
       if (item) {
-        if (productType === "accessory") {
-          item.quantity += 1;
-        }
+        item.quantity += 1;
       } else {
         cart.items.push({
           carId: productType === "car" ? productId : null,
@@ -302,6 +299,31 @@ const addToCart = async (req, res, next) => {
   }
 };
 
+const deleteFromCart = async (req, res, next) => {
+  try {
+    const itemId = req.params.itemId;
+    const userId = req.session.user._id;
+
+    if (!userId) return res.status(FORBIDDEN).redirect("/login");
+
+    await Cart.updateOne(
+      { userId },
+      {
+        $pull: {
+          items: {
+            _id: itemId,
+          },
+        },
+      }
+    );
+
+    res.status(OK).json({ success: true });
+  } catch (error) {
+    console.log("Error from delete product from cart", error);
+    next(error);
+  }
+};
+
 module.exports = {
   editEmail,
   editProfile,
@@ -311,4 +333,5 @@ module.exports = {
   setDeafaultAddress,
   changePassword,
   addToCart,
+  deleteFromCart,
 };

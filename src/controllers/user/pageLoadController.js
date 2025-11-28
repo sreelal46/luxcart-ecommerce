@@ -15,6 +15,7 @@ const Category = require("../../models/admin/categoryModel");
 const Type = require("../../models/admin/typeModal");
 const Car = require("../../models/admin/productCarModal");
 const Accessory = require("../../models/admin/productAccessoryModal");
+const Cart = require("../../models/user/CartModel");
 
 //loading login page
 const loadLandingPage = async (req, res, next) => {
@@ -160,7 +161,7 @@ const loadCarCollection = async (req, res, next) => {
       .sort({ name: 1 })
       .lean();
     const types = await Type.find({ isListed: true }).sort({ name: 1 }).lean();
-
+    console.log(cars);
     res.render("user/products/car/carCollection", {
       cars,
       brands,
@@ -177,13 +178,32 @@ const loadCarCollection = async (req, res, next) => {
 
 const loadSingleCarProduct = async (req, res, next) => {
   try {
-    const carId = req.params.id;
+    const userId = req.session.user._id;
+    const carId = req.params.carId;
+    // const variantId = req.params.variantId;
+    // console.log("id from sigle page car varient id ", req.params);
+    const cart = await Cart.findOne({ userId });
+
     const singleCar = await Car.findById(carId)
       .populate("brand_id", "name")
       .populate("category_id", "name")
       .populate("product_type_id", "name")
       .populate("variantIds", "image_url stock color price")
       .lean();
+    //this product is in cart or not
+    let inCart = false;
+    let inCartVariants;
+    if (cart && cart.items.length > 0) {
+      // Check if first variant is in cart
+      const firstVariantId = singleCar.variantIds[0]._id;
+      const isIn = cart.items.find(
+        (item) => String(item.variantId) === String(firstVariantId)
+      );
+      inCart = !!isIn;
+      // Array of all variantIds in cart
+      inCartVariants = cart.items.map((item) => String(item.variantId));
+    }
+
     const relatedCars = await Car.find({
       brand_id: singleCar.brand_id._id,
       _id: { $ne: singleCar._id },
@@ -192,9 +212,12 @@ const loadSingleCarProduct = async (req, res, next) => {
       .populate("brand_id product_type_id variantIds")
       .lean();
 
-    res
-      .status(OK)
-      .render("user/products/car/viewCarProduct", { singleCar, relatedCars });
+    res.status(OK).render("user/products/car/viewCarProduct", {
+      singleCar,
+      relatedCars,
+      inCart,
+      inCartVariants,
+    });
   } catch (error) {
     console.log("Error from Loading single Car Product", error);
     next(error);
@@ -303,7 +326,6 @@ const loadSingleAccessories = async (req, res, next) => {
     const accessory = await Accessory.findById(req.params.id)
       .populate("brand_id category_id product_type_id")
       .lean();
-    console.log(accessory);
     res
       .status(OK)
       .render("user/products/accessory/viewAccessorProduct", { accessory });

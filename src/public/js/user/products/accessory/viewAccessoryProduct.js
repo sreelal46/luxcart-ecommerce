@@ -152,18 +152,61 @@ document.addEventListener("DOMContentLoaded", () => {
 
     isExpanded = !isExpanded;
   });
+});
 
-  const buyProduct = document.getElementById("buyProduct");
-  const addToCart = document.getElementById("addToCart");
+document.addEventListener("DOMContentLoaded", () => {
+  const addToCartDesk = document.getElementById("addToCartDesk");
+  const buyProductDesk = document.getElementById("buyProductDesk");
+  const addToCartMob = document.getElementById("addToCartMob");
+  const buyProductMob = document.getElementById("buyProductMob");
 
-  addToCart.addEventListener("click", async () => {
-    const accessoryId = addToCart.dataset.productId;
-    try {
-      const res = await axios.post(
-        `/all-accessories/view-accessory-product/add-to-cart/${accessoryId}`
-      );
-    } catch (error) {
-      console.log("Error from accesory add to cart");
+  function showMobileAlert(message, notification) {
+    const alertBox = document.getElementById("mobileAlert");
+    if (notification === "success") {
+      alertBox.innerHTML = `<i class="bi bi-check-circle-fill success-icon"></i><span class="message-green">${message}</span>`;
+      alertBox.classList.add("show");
+    } else if (notification === "error") {
+      alertBox.innerHTML = `<i class="bi bi-x-circle-fill error-icon"></i><span class="message-red">${message}</span>`;
+      alertBox.classList.add("show");
+    } else if (notification === "warning") {
+      alertBox.innerHTML = `<i class="bi bi-exclamation-triangle-fill yellow-icon"></i><span class="message-yellow">${message}</span>`;
+      alertBox.classList.add("show");
     }
-  });
+
+    setTimeout(() => {
+      alertBox.classList.remove("show");
+    }, 3000);
+  }
+
+  // Read product
+  const productId = addToCartDesk.dataset.accessoryid;
+
+  //add to cart axios call function
+  function addToCartAxios(element, productType, productId) {
+    element.addEventListener("click", async () => {
+      try {
+        const res = await axios.post("/cart/add", {
+          productType,
+          productId,
+        });
+
+        if (res.data.success) {
+          showMobileAlert("Product added to cart!", "success");
+          // Change text
+          element.innerHTML = `<i class="bi bi-cart"></i> Go to Cart`;
+          element.href = "/cart";
+        } else {
+          const msg = res.data.alert || "Somthing went worng";
+          showMobileAlert(msg, "error");
+        }
+      } catch (error) {
+        console.log("Error from add to cart FRONTEND", error);
+        const msg = error.response?.data.alert || "INTERNAL SERVER ERROR";
+        showMobileAlert(msg, "error");
+      }
+    });
+  }
+
+  addToCartAxios(addToCartDesk, "accessory", productId);
+  addToCartAxios(addToCartMob, "accessory", productId);
 });

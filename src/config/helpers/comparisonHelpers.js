@@ -40,4 +40,7 @@ module.exports = {
   getFirstVariantId: (car) => {
     return car.variantIds[0]._id;
   },
+  getFirstVariantIdInCollection: (variants) => {
+    return variants[0]?._id;
+  },
 };
