@@ -1,9 +1,9 @@
 let changingVariantId = null;
 let cartItems = [];
 let singleCarId;
+const productId = document.getElementById("productId").value;
 
-// Change variant
-function changeVariant(button) {
+async function changeVariantReq(button) {
   const priceBox = document.querySelector(".price");
   const carouselInner = document.querySelector(
     "#carImageCarousel .carousel-inner"
@@ -12,58 +12,71 @@ function changeVariant(button) {
     document.getElementById("carImageCarousel")
   );
 
-  const rawPrice = button.getAttribute("data-price");
-  const images = JSON.parse(button.getAttribute("data-images"));
+  const variantId = button.getAttribute("data-variantid");
+  changingVariantId = variantId;
+  singleCarId = productId;
 
-  // cartItems = ["variantId1", "variantId2", ...]
-  cartItems = JSON.parse(button.getAttribute("data-cartitems"));
+  const formatPrice = (price) => {
+    if (!price) return "";
+    return price.toString().replace(/\B(?=(\d{3})+(?!\d))/g, ",");
+  };
 
-  changingVariantId = button.getAttribute("data-variantid");
-  singleCarId = button.getAttribute("data-carid");
+  try {
+    const res = await axios.get(
+      `/cars-collection/view-car-product/${productId}?variantId=${variantId}`
+    );
 
-  // Animate price
-  gsap.fromTo(
-    priceBox,
-    { scale: 0.9, opacity: 0.6 },
-    { scale: 1, opacity: 1, duration: 0.3 }
-  );
+    if (res.data.success) {
+      cartItems = res.data.inCartVariants;
 
-  // Format price
-  const formattedPrice = rawPrice
-    ? rawPrice.toString().replace(/\B(?=(\d{3})+(?!\d))/g, ",")
-    : "";
+      // Price animation
+      gsap.fromTo(
+        priceBox,
+        { scale: 0.9, opacity: 0.7 },
+        { scale: 1, opacity: 1, duration: 0.3 }
+      );
 
-  priceBox.textContent = "₹" + formattedPrice;
+      priceBox.textContent = "₹ " + formatPrice(res.data.variant.price);
 
-  // Replace images
-  if (carouselInner) {
-    carouselInner.innerHTML = "";
-    images.forEach((img, i) => {
-      const div = document.createElement("div");
-      div.className = "carousel-item" + (i === 0 ? " active" : "");
+      // Image animation
+      gsap.from("#carImageCarousel", {
+        opacity: 0,
+        x: -60,
+        duration: 1,
+        ease: "power2.out",
+      });
 
-      const zoomDiv = document.createElement("div");
-      zoomDiv.className = "zoom-container";
+      if (carouselInner) {
+        carouselInner.innerHTML = "";
+        res.data.variant.image_url.forEach((img, i) => {
+          const div = document.createElement("div");
+          div.className = "carousel-item" + (i === 0 ? " active" : "");
 
-      const imageElem = document.createElement("img");
-      imageElem.src = img;
-      imageElem.className = "d-block w-100 car-main-img";
-      imageElem.alt = button.getAttribute("data-color");
+          const zoomDiv = document.createElement("div");
+          zoomDiv.className = "zoom-container";
 
-      zoomDiv.appendChild(imageElem);
-      div.appendChild(zoomDiv);
-      carouselInner.appendChild(div);
-    });
+          const imageElem = document.createElement("img");
+          imageElem.src = img;
+          imageElem.className = "d-block w-100 car-main-img";
+          imageElem.alt = button.getAttribute("data-color");
 
-    carousel.to(0);
+          zoomDiv.appendChild(imageElem);
+          div.appendChild(zoomDiv);
+          carouselInner.appendChild(div);
+        });
+
+        carousel.to(0);
+      }
+
+      // Highlight selected variant
+      document
+        .querySelectorAll(".variant-btn")
+        .forEach((btn) => btn.classList.remove("active"));
+      button.classList.add("active");
+    }
+  } catch (error) {
+    console.log("Error from changing variant", error);
   }
-
-  // Highlight selected variant
-  document
-    .querySelectorAll(".variant-btn")
-    .forEach((btn) => btn.classList.remove("active"));
-
-  button.classList.add("active");
 
   updateCartButton();
 }
@@ -71,12 +84,10 @@ function changeVariant(button) {
 // Update Add-to-Cart / Go-to-Cart button
 function updateCartButton() {
   const cartBtnDesk = document.getElementById("addToCartDesk");
-
   if (!cartBtnDesk) return;
 
   const currentVariant = changingVariantId;
 
-  // Prevent crash on page load
   const inCart =
     Array.isArray(cartItems) &&
     currentVariant &&
@@ -94,7 +105,6 @@ function updateCartButton() {
     if (currentVariant) {
       cartBtnDesk.setAttribute("data-variantId", currentVariant);
     }
-
     cartBtnDesk.setAttribute("data-carid", singleCarId);
   }
 }

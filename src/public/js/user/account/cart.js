@@ -40,3 +40,48 @@ document.addEventListener("DOMContentLoaded", () => {
     removeCart(btn);
   });
 });
+const errorQuantity = document.getElementById("errorQuantity");
+document.addEventListener("click", (e) => {
+  if (e.target.classList.contains("delete-btn")) {
+    e.preventDefault();
+    e.stopPropagation();
+  }
+  if (e.target.classList.contains("plus")) {
+    e.preventDefault();
+    e.stopPropagation();
+
+    const itemId = e.target.dataset.itemid;
+    const qtyEl = document.querySelector(`.qty-value[data-itemid="${itemId}"]`);
+    let qty = parseInt(qtyEl.dataset.qty);
+
+    qty++;
+    if (qty > 5) {
+      errorQuantity.textContent = "Maximum reached";
+      errorQuantity.style.display = "block";
+      return;
+    }
+    if (qty < 5) {
+      errorQuantity.textContent = "";
+      errorQuantity.style.display = "none";
+    }
+    qtyEl.dataset.qty = qty;
+    qtyEl.textContent = qty;
+  }
+
+  if (e.target.classList.contains("minus")) {
+    e.preventDefault();
+    e.stopPropagation();
+
+    const itemId = e.target.dataset.itemid;
+    const qtyEl = document.querySelector(`.qty-value[data-itemid="${itemId}"]`);
+    let qty = parseInt(qtyEl.dataset.qty);
+
+    if (qty > 1) {
+      errorQuantity.textContent = "";
+      errorQuantity.style.display = "none";
+      qty--;
+    }
+    qtyEl.dataset.qty = qty;
+    qtyEl.textContent = qty;
+  }
+});

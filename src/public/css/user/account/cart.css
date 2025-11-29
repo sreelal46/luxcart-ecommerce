@@ -45,6 +45,11 @@
   border-radius: 12px;
   background: #fff;
   margin-bottom: 15px;
+  text-decoration: none;
+}
+.cart-item-card:hover {
+  transform: translateY(-3px);
+  box-shadow: 0 8px 20px rgba(0, 0, 0, 0.12);
 }
 
 .cart-item-img {
@@ -100,7 +105,7 @@
 
 /* Delete Button */
 .delete-btn {
-  background: #ffe9e9;
+  /* background: #ffe9e9; */
   color: #d52222;
   padding: 6px 12px;
   border-radius: 8px;

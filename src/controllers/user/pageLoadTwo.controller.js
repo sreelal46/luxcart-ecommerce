@@ -1,4 +1,5 @@
 const { OK } = require("../../constant/statusCode");
+const carVariantModel = require("../../models/admin/carVariantModel");
 const Address = require("../../models/user/addressModel");
 const Cart = require("../../models/user/CartModel");
 const User = require("../../models/user/UserModel");
@@ -120,8 +121,37 @@ const loadCartPage = async (req, res, next) => {
       .populate("items.variantId")
       .populate("items.accessoryId")
       .lean();
+    if (cart) {
+      for (let item of cart.items) {
+        // Variant price update
+        if (item.variantId) {
+          const newPrice = item.variantId.price;
 
-    res.status(OK).render("user/account/cart", { cart });
+          // Update DB
+          await Cart.updateOne(
+            { userId, "items.variantId": item.variantId._id },
+            { $set: { "items.$.price": newPrice } }
+          );
+
+          // Update the returned object too
+          item.price = newPrice;
+        }
+
+        // Accessory price update
+        if (item.accessoryId) {
+          const newPrice = item.accessoryId.price;
+
+          await Cart.updateOne(
+            { userId, "items.accessoryId": item.accessoryId._id },
+            { $set: { "items.$.price": newPrice } }
+          );
+
+          item.price = newPrice;
+        }
+      }
+    }
+    const taxRate = parseInt(process.env.ACCESSORY_TAX_RATE);
+    res.status(OK).render("user/account/cart", { cart, taxRate });
   } catch (error) {
     console.log("Error from cart page load", error);
     next(error);

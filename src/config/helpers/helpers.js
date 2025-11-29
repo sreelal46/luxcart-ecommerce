@@ -40,7 +40,18 @@ module.exports = {
   getFirstVariantId: (car) => {
     return car.variantIds[0]._id;
   },
-  getFirstVariantIdInCollection: (variants) => {
-    return variants[0]?._id;
+  includes: (arr, value) => {
+    if (!arr) return false;
+    return arr.includes(String(value));
+  },
+  getId: (obj) => {
+    try {
+      if (!obj) return "";
+      if (typeof obj === "string") return obj;
+      if (obj._id) return obj._id.toString();
+      return "";
+    } catch (err) {
+      return "";
+    }
   },
 };

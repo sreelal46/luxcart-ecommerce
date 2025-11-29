@@ -16,6 +16,7 @@ const Type = require("../../models/admin/typeModal");
 const Car = require("../../models/admin/productCarModal");
 const Accessory = require("../../models/admin/productAccessoryModal");
 const Cart = require("../../models/user/CartModel");
+const carVariantModel = require("../../models/admin/carVariantModel");
 
 //loading login page
 const loadLandingPage = async (req, res, next) => {
@@ -29,11 +30,12 @@ const loadLandingPage = async (req, res, next) => {
       .lean();
     res.status(OK).render("user/landingPage", { brands, types, accessories });
   } catch (error) {
-    console.error("Error from loading page");
+    console.error("Error from loading page", error);
+    next(error);
   }
 };
 
-const loadHomePage = async (req, res) => {
+const loadHomePage = async (req, res, next) => {
   try {
     const brands = await Brand.find({ isListed: true }).lean();
     const types = await Type.find({ isListed: true }).lean();
@@ -45,7 +47,8 @@ const loadHomePage = async (req, res) => {
 
     res.status(OK).render("user/landingPage", { brands, types, accessories });
   } catch (error) {
-    console.error("Error from loading page");
+    console.error("Error from loading page", error);
+    next(error);
   }
 };
 
@@ -70,9 +73,6 @@ const loadSend_OTP_Page = (req, res) => {
 };
 
 const loadVerify_OTP_Page = (req, res) => {
-  console.log(req.session.verifyType);
-  // if (req.session.verifyType === "emailChanging")
-  //   return res.json({ success: true });
   res.status(OK).render("user/auth/verify-otp");
 };
 
@@ -161,7 +161,6 @@ const loadCarCollection = async (req, res, next) => {
       .sort({ name: 1 })
       .lean();
     const types = await Type.find({ isListed: true }).sort({ name: 1 }).lean();
-    console.log(cars);
     res.render("user/products/car/carCollection", {
       cars,
       brands,
@@ -178,32 +177,44 @@ const loadCarCollection = async (req, res, next) => {
 
 const loadSingleCarProduct = async (req, res, next) => {
   try {
+    // Get data
     const userId = req.session.user._id;
     const carId = req.params.carId;
-    // const variantId = req.params.variantId;
-    // console.log("id from sigle page car varient id ", req.params);
+    let selectedVariantId = req.query.variantId; // from axios
     const cart = await Cart.findOne({ userId });
 
+    // Load Car + variants
     const singleCar = await Car.findById(carId)
       .populate("brand_id", "name")
       .populate("category_id", "name")
       .populate("product_type_id", "name")
       .populate("variantIds", "image_url stock color price")
       .lean();
-    //this product is in cart or not
-    let inCart = false;
-    let inCartVariants;
-    if (cart && cart.items.length > 0) {
-      // Check if first variant is in cart
-      const firstVariantId = singleCar.variantIds[0]._id;
-      const isIn = cart.items.find(
-        (item) => String(item.variantId) === String(firstVariantId)
-      );
-      inCart = !!isIn;
-      // Array of all variantIds in cart
-      inCartVariants = cart.items.map((item) => String(item.variantId));
+
+    // Active variant
+    if (!selectedVariantId) {
+      selectedVariantId = singleCar.variantIds[0]._id.toString();
     }
 
+    // Load active variant
+    const variant = await carVariantModel.findById(selectedVariantId).lean();
+
+    // CART CHECKING (correct and dynamic)
+    let inCart = false;
+    let inCartVariants = [];
+
+    if (cart) {
+      // get all variantIds in cart
+      inCartVariants = cart.items
+        .filter((item) => item.variantId != null) // accessory items removed
+        .map((item) => String(item.variantId)); // safe string conversion
+
+      // check if SELECTED variant in cart
+      const isIn = inCartVariants.includes(selectedVariantId);
+      inCart = !!isIn;
+    }
+
+    // Related cars
     const relatedCars = await Car.find({
       brand_id: singleCar.brand_id._id,
       _id: { $ne: singleCar._id },
@@ -212,9 +223,23 @@ const loadSingleCarProduct = async (req, res, next) => {
       .populate("brand_id product_type_id variantIds")
       .lean();
 
-    res.status(OK).render("user/products/car/viewCarProduct", {
+    // If frontend requested JSON (axios)
+    if (req.xhr || req.headers.accept.indexOf("application/json") > -1) {
+      return res.json({
+        success: true,
+        singleCar,
+        relatedCars,
+        inCart,
+        inCartVariants,
+        variant,
+      });
+    }
+
+    // Normal page load
+    res.render("user/products/car/viewCarProduct", {
       singleCar,
       relatedCars,
+      selectedVariantId,
       inCart,
       inCartVariants,
     });
@@ -302,7 +327,7 @@ const loadAllAccessories = async (req, res, next) => {
     const accessories = await Accessory.find({ isListed: true })
       .sort({ createdAt: -1 })
       .lean();
-    // console.log(accessories);
+
     const brands = await Brand.find({ isListed: true }).lean();
     const categories = await Category.find({
       isListed: true,
@@ -323,14 +348,35 @@ const loadAllAccessories = async (req, res, next) => {
 
 const loadSingleAccessories = async (req, res, next) => {
   try {
-    const accessory = await Accessory.findById(req.params.id)
+    const userId = req.session.user._id;
+    const productId = req.params.id;
+    const cart = await Cart.findOne({ userId });
+
+    const accessory = await Accessory.findById(productId)
       .populate("brand_id category_id product_type_id")
       .lean();
-    res
-      .status(OK)
-      .render("user/products/accessory/viewAccessorProduct", { accessory });
+
+    // CART CHECKING
+    let inCart = false;
+
+    if (cart && cart.items.length > 0) {
+      const accessoryItems = cart.items.filter(
+        (item) => item.accessoryId != null
+      );
+
+      const inCartAccessoryIds = accessoryItems.map((item) =>
+        String(item.accessoryId)
+      );
+
+      inCart = inCartAccessoryIds.includes(String(productId));
+    }
+
+    res.status(OK).render("user/products/accessory/viewAccessorProduct", {
+      accessory,
+      inCart,
+    });
   } catch (error) {
-    console.log("Error from loadAllAccessories", error);
+    console.log("Error from loadSingleAccessories", error);
     next(error);
   }
 };

@@ -4,6 +4,7 @@ const {
   NOT_FOUND,
   UNAUTHORIZED,
 } = require("../../constant/statusCode");
+const carVariantModel = require("../../models/admin/carVariantModel");
 const Accessory = require("../../models/admin/productAccessoryModal");
 const Car = require("../../models/admin/productCarModal");
 const Cart = require("../../models/user/CartModel");
@@ -241,58 +242,53 @@ const addToCart = async (req, res, next) => {
   try {
     const userId = req.session.user._id;
     const { productType, productId, variantId } = req.body;
-    console.log("req.body", req.body);
 
-    let product;
-    if (productType === "car") {
-      product = await Car.findById(productId);
-    } else if (productType === "accessory") {
+    let product = null;
+    if (productType === "car") product = await Car.findById(productId);
+    if (productType === "accessory")
       product = await Accessory.findById(productId);
-    }
+
     if (!product) {
       return res
-        .status(NOT_FOUND)
+        .status(404)
         .json({ success: false, alert: "Product not found" });
     }
 
-    //finding cart user and updating
+    let variantCar = null;
+    if (productType === "car") {
+      variantCar = await carVariantModel.findById(variantId);
+    }
+
     let cart = await Cart.findOne({ userId });
     if (!cart) {
       cart = new Cart({
         userId,
-        items: [
-          {
-            carId: productType === "car" ? productId : null,
-            accessoryId: productType === "accessory" ? productId : null,
-            variantId: variantId || null,
-            quantity: 1,
-            price: product.price,
-          },
-        ],
+        items: [],
       });
-    } else {
-      const item = cart.items.find(
-        (item) =>
-          item.variantId?.toString() === variantId ||
-          item.accessoryId?.toString() === productId
-      );
+    }
 
-      if (item) {
-        item.quantity += 1;
-      } else {
-        cart.items.push({
-          carId: productType === "car" ? productId : null,
-          accessoryId: productType === "accessory" ? productId : null,
-          variantId: variantId || null,
-          quantity: 1,
-          price: product.price,
-        });
-      }
+    let item = null;
+
+    if (productType === "car") {
+      item = cart.items.find((i) => i.variantId?.toString() === variantId);
+    }
+
+    if (productType === "accessory") {
+      item = cart.items.find((i) => i.accessoryId?.toString() === productId);
+    }
+
+    if (!item) {
+      cart.items.push({
+        carId: productType === "car" ? productId : null,
+        accessoryId: productType === "accessory" ? productId : null,
+        variantId: productType === "car" ? variantId : null,
+        quantity: 1,
+        price: variantCar?.price || product.price,
+      });
     }
 
     await cart.save();
-
-    res.status(OK).json({ success: true });
+    return res.json({ success: true });
   } catch (error) {
     console.log("Error from add to cart", error);
     next(error);
@@ -304,22 +300,41 @@ const deleteFromCart = async (req, res, next) => {
     const itemId = req.params.itemId;
     const userId = req.session.user._id;
 
-    if (!userId) return res.status(FORBIDDEN).redirect("/login");
+    if (!userId) {
+      return res.status(403).redirect("/login");
+    }
 
-    await Cart.updateOne(
-      { userId },
-      {
-        $pull: {
-          items: {
-            _id: itemId,
-          },
-        },
-      }
+    // Load user's cart document
+    const cart = await Cart.findOne({ userId });
+
+    if (!cart) {
+      return res
+        .status(NOT_FOUND)
+        .json({ success: false, alert: "Cart not found" });
+    }
+
+    // Remove the item
+    cart.items = cart.items.filter((item) =>
+      item._id.toString() === itemId ? false : true
     );
+
+    // Save to trigger pre('save')
+    await cart.save();
+
+    res.status(200).json({ success: true });
+  } catch (error) {
+    console.log("Error from delete product from cart", error);
+    next(error);
+  }
+};
+
+const changeQuantity = async (req, res, next) => {
+  try {
+    console.log(req.params);
 
     res.status(OK).json({ success: true });
   } catch (error) {
-    console.log("Error from delete product from cart", error);
+    console.log("Error from Change Quantity", error);
     next(error);
   }
 };
@@ -334,4 +349,5 @@ module.exports = {
   changePassword,
   addToCart,
   deleteFromCart,
+  changeQuantity,
 };

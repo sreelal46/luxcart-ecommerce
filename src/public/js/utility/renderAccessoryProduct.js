@@ -1,4 +1,11 @@
 window.renderAccessories = function (accessories) {
+  const formatPrice = (price) => {
+    if (!price) return "";
+    return price
+      .toString()
+      .replace(/\B(?=(\d{3})+(?!\d))/g, ",")
+      .toLocaleString("en-IN");
+  };
   const container = document.getElementById("car-list");
 
   container.innerHTML = "";
@@ -55,9 +62,7 @@ window.renderAccessories = function (accessories) {
           <h6 class="brand-name mb-2">${item?.brand_id?.name || ""}</h6>
           <h5 class="car-name">${item.name}</h5>
           <div class="d-flex justify-content-between align-items-center mt-3">
-            <span class="price-tag">₹${Number(item.price).toLocaleString(
-              "en-IN"
-            )}</span>
+            <span class="price-tag">₹ ${formatPrice(item.price)}</span>
             <span class="year-badge">${item.production_year || ""}</span>
           </div>
         </div>

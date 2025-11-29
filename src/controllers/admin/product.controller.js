@@ -8,7 +8,6 @@ const addCarProduct = async (req, res, next) => {
     //collecting data
     const carData = req.body;
     const name = carData.name?.trim();
-    console.log(carData);
     //finding duplicate
     const duplicate = await Car.findOne({
       name: { $regex: new RegExp(`^${name}$`, "i") },
@@ -51,7 +50,9 @@ const editCarProduct = async (req, res) => {
     //finding car
     const existingCar = await Car.findById(id).populate("variantIds");
     if (!existingCar)
-      return res.status(404).json({ success: false, message: "Car not found" });
+      return res
+        .status(NOT_FOUND)
+        .json({ success: false, message: "Car not found" });
 
     //finding duplicate
     // const name = existingCar.name;
@@ -138,6 +139,7 @@ const editCarProduct = async (req, res) => {
   }
 };
 
+//car and accessory
 const softDelete = async (req, res, next) => {
   try {
     //collecting data
@@ -182,7 +184,7 @@ const softDelete = async (req, res, next) => {
 
     res.status(OK).json({ success: true });
   } catch (error) {
-    console.log(error);
+    console.log("Error from softDelete car and accessory", error);
     next(error);
   }
 };

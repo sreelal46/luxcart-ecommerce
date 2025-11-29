@@ -38,6 +38,7 @@ const {
   changePassword,
   addToCart,
   deleteFromCart,
+  changeQuantity,
 } = require("../controllers/user/account.controller");
 
 const {
@@ -153,5 +154,6 @@ route.post("/account/change-password/:userId", checkSession, changePassword);
 route.get("/cart", checkSession, loadCartPage);
 route.post("/cart/add", checkSession, addToCart);
 route.delete("/cart/remove-product/:itemId", checkSession, deleteFromCart);
+route.delete("/cart/change-quantity/:itemId", checkSession, changeQuantity);
 
 module.exports = route;

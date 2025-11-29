@@ -3,6 +3,7 @@ const { Schema } = mongoose;
 const Car = require("../admin/productCarModal");
 const CarVariant = require("../admin/carVariantModel");
 const Accessory = require("../admin/productAccessoryModal");
+const taxRate = parseInt(process.env.ACCESSORY_TAX_RATE);
 
 const cartItemSchema = new Schema(
   {
@@ -37,39 +38,56 @@ const cartSchema = new Schema(
     },
     items: [cartItemSchema],
     discountedPrice: { type: Number },
+    carTotal: { type: Number, default: 0 },
+    accessoryTotal: { type: Number, default: 0 },
+    accessoryTax: { type: Number, default: 0 },
     totalAmount: { type: Number, default: 0 },
+    totalAfterAll: { type: Number, default: 0 },
   },
   { timestamps: true }
 );
 
 // Recalculate totalAmount before every save (keeps cart totals consistent)
-// cartSchema.pre("save", async function (next) {
-//   try {
-//     let total = 0;
+cartSchema.pre("save", async function (next) {
+  try {
+    let carTotal = 0;
+    let accessoryTotal = 0;
 
-//     for (const item of this.items) {
-//       let product = null;
+    for (const item of this.items) {
+      // ACCESSORY PRICE
+      if (item.accessoryId) {
+        const accessory = await Accessory.findById(item.accessoryId).lean();
+        if (accessory && accessory.isListed !== false) {
+          accessoryTotal += (item.price || 0) * (item.quantity || 0);
+        }
+      }
 
-//       if (item.carId) {
-//         product = await Car.findById(item.carId).lean();
-//       } else if (item.variantId) {
-//         product = await CarVariant.findById(item.variantId).lean();
-//       } else if (item.accessoryId) {
-//         product = await Accessory.findById(item.accessoryId).lean();
-//       }
+      // CAR PRICE (variant)
+      if (item.variantId) {
+        const variant = await CarVariant.findById(item.variantId).lean();
+        if (variant && variant.isListed !== false) {
+          carTotal += (item.price || 0) * (item.quantity || 0);
+        }
+      }
+    }
 
-//       // Skip if product not found or unlisted
-//       if (!product || product.isListed === false) continue;
+    // SAVE base totals
+    this.carTotal = carTotal;
+    this.accessoryTotal = accessoryTotal;
 
-//       total += (item.price || 0) * (item.quantity || 0);
-//     }
+    // CALCULATE TAX
+    const accessoryTax = accessoryTotal * (taxRate / 100);
+    this.accessoryTax = accessoryTax;
 
-//     this.totalAmount = total;
-//     next();
-//   } catch (err) {
-//     next(err);
-//   }
-// });
+    // GRAND TOTAL (Car + Accessory + Tax)
+    this.totalAmount = carTotal + accessoryTotal;
+    this.totalAfterAll = carTotal + accessoryTotal + this.accessoryTax;
+
+    next();
+  } catch (err) {
+    next(err);
+  }
+});
 
 const Cart = mongoose.model("Cart", cartSchema);
 

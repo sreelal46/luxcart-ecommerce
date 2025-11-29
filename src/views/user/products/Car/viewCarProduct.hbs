@@ -1,6 +1,8 @@
 <!-- Custom stylesheet -->
 <link rel="stylesheet" href="/css/user/products/car/viewCarProduct.css">
 
+<input type="hidden" id="productId" value="{{singleCar._id}}">
+
 <!-- Slide-in Toast MSG -->
 <div id="mobileAlert" class="mobile-alert"></div>
 
@@ -53,11 +55,13 @@
             <h5 class="fw-semibold mb-3">Variants</h5>
             <div class="variant-section-button d-flex flex-wrap gap-2">
               {{#each singleCar.variantIds}}
-              <button class="variant-btn btn btn-outline-dark {{#if @first}}active{{/if}} "
+              <!-- <button class="variant-btn btn btn-outline-dark {{#if @first}}active{{/if}} "
                 data-carid="{{singleCar._id}}" data-color="{{this.color}}" data-price="{{this.price}}"
                 data-images='{{{json this.image_url}}}' data-variantId="{{this._id}}" onclick="changeVariant(this)">
                 {{this.color}}
-              </button>
+              </button> -->
+              <button class="variant-btn btn btn-outline-dark {{#if @first}}active{{/if}}" data-variantid="{{this._id}}"
+                data-carid="{{singleCar._id}}" onclick="changeVariantReq(this)">{{this.color}} </button>
               {{/each}}
             </div>
           </div>
@@ -72,16 +76,25 @@
           <button class="btn btn-buy" id="buyProductDesk" data-carid="{{singleCar._id}}"
             data-variantId="{{getFirstVariantId singleCar}}"><i class="bi bi-lightning-charge"></i> Buy
             Now</button>
-          {{#if inCart}}
-          <a class="btn btn-cart" href="/cart">
+          <a class="btn btn-cart" id="addToCartDesk" data-carid="{{singleCar._id}}"
+            data-variantid="{{selectedVariantId}}">
+            {{#if (includes inCartVariants selectedVariantId)}}
+            <i class="bi bi-cart"></i> Go to Cart
+            {{else}}
+            <i class="bi bi-cart"></i> Add to Cart
+            {{/if}}
+          </a>
+
+          <!-- {{#if (includes inCartVariants selectedVariantId)}}
+          <a class="btn btn-cart" id="inCart" href="/cart">
             <i class="bi bi-cart"></i> Go to Cart
           </a>
           {{else}}
           <a class="btn btn-cart" id="addToCartDesk" data-carid="{{singleCar._id}}"
-            data-variantId="{{getFirstVariantId singleCar}}">
+            data-variantId="{{selectedVariantId}}">
             <i class="bi bi-cart"></i> Add to Cart
           </a>
-          {{/if}}
+          {{/if}} -->
 
 
 
