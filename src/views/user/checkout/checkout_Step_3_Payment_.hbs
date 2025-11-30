@@ -1,0 +1,79 @@
+<link rel="stylesheet" href="/css/user/checkout/checkout.css" />
+
+<div class="wrap-container">
+  <div class="container">
+    <h1>Checkout</h1>
+
+    <div class="stepper-wrapper">
+      <div class="stepper">
+        <div class="step-item">
+          <div class="step active-step">1</div>
+          <div class="step-label">Address</div>
+        </div>
+        <div class="step-item">
+          <div class="step active-step">2</div>
+          <div class="step-label">Payment</div>
+        </div>
+        <div class="step-item">
+          <div class="step active-step">3</div>
+          <div class="step-label">{{paymentMethod}}</div>
+        </div>
+        <div class="step-item">
+          <div class="step">4</div>
+          <div class="step-label">Confirm</div>
+        </div>
+      </div>
+    </div>
+
+    <div class="grid">
+
+      <!-- LEFT SIDE -->
+      <div>
+        <div class="card">
+          <h2>Cash on Delivery (Advance Required)</h2>
+
+          <p style="color:#555; margin-bottom:14px;">
+            A small advance amount must be paid now. Remaining amount will be collected on delivery.
+          </p>
+
+          <label>Advance Amount *</label>
+
+          <div id="advanceAmountBox"
+            style="background:#f7f7f7; padding:12px; border-radius:8px; font-weight:600; margin-bottom:16px;">
+            ₹ {{formatPrice advanceAmount}}
+          </div>
+        </div>
+
+      </div>
+
+      <!-- RIGHT SIDE -->
+      <div>
+        <div class="card summary-card">
+          <h3>Order Summary</h3>
+
+          <!-- <div style="display:flex; align-items:center; margin-top:10px;">
+            <div><strong>Seat Cover</strong><br><small>Qty: 1</small></div>
+          </div> -->
+
+          <div class="summary-row"><span>Price ({{cart.items.length}} items)</span><span>{{formatPrice
+              cart.totalAmount}}</span></div>
+          <!-- <div class="summary-row"><span>Discount</span><span>₹28,000</span></div> -->
+          <div class="summary-row"><span>Shipping</span><span>Free</span></div>
+          <div class="summary-row"><span>Tax<span class="fw-semibold">(GST {{taxRate}}% Only for
+                Accessory)</span></span><span>₹ {{formatPrice cart.accessoryTax}}</span></div>
+          <hr>
+          <div class="summary-row" style="font-weight:700"><span>Total</span><span>₹ {{formatPrice
+              cart.totalAfterAll}}</span></div>
+          <button class="btn" id="continueBtn" data-cartid="{{cart._id}}" onclick="step3(this)">Continue</button>
+        </div>
+      </div>
+
+    </div>
+  </div>
+</div>
+<script>
+  function step3(div) {
+    const cartId = div.getAttribute("data-cartid");
+    window.location.href = `/cart/checkout-step-4/${cartId}`;
+  }
+</script>

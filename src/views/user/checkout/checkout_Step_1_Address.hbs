@@ -1,0 +1,93 @@
+<link rel="stylesheet" href="/css/user/checkout/checkout.css">
+
+<div class="wrap-container">
+  <div class="container">
+    <h1>Checkout</h1>
+
+    <div class="stepper-wrapper">
+      <div class="stepper">
+        <div class="step-item">
+          <div class="step active-step">1</div>
+          <div class="step-label">Address</div>
+        </div>
+        <div class="step-item">
+          <div class="step">2</div>
+          <div class="step-label">Payment</div>
+        </div>
+        <div class="step-item">
+          <div class="step">3</div>
+          <div class="step-label">UPI</div>
+        </div>
+        <div class="step-item">
+          <div class="step">4</div>
+          <div class="step-label">Confirm</div>
+        </div>
+      </div>
+    </div>
+
+    <div class="grid">
+      <div>
+        <div class="card">
+          <h2>Delivery Address</h2>
+          <a href="/account/addresses/add-address?from=checkout" class="add-address-btn mb-4">
+            + Add Address
+          </a>
+
+          {{#each address}}
+          <label class="address-card mb-4">
+            <input type="radio" id="addressId" name="selectedAddress" value="{{this._id}}" {{#if
+              this.defaultAddress}}checked {{/if}} />
+
+            <div class="address-content ">
+              <div class="address-title">
+                <span class="dot"></span>
+                <strong>{{this.fullName}}<span class="default-badge"
+                    style="margin-left:8px;">{{this.label}}</span></strong>
+              </div>
+
+              <p class="address-text">
+                {{this.landmark}} {{this.street}}<br>
+                <small>Phone:</small> {{this.phone}}<br>
+                <small>PIN:</small> {{this.pinCode}}
+              </p>
+            </div>
+
+            <span class="checkmark"></span>
+          </label>
+          {{/each}}
+        </div>
+      </div>
+
+      <div>
+        <div class="card summary-card">
+          <h3>Order Summary</h3>
+
+          <!-- <div style="display:flex; align-items:center; margin-top:10px;">
+            <div><strong>Seat Cover</strong><br><small>Qty: 1</small></div>
+          </div> -->
+
+          <div class="summary-row"><span>Price ({{cart.items.length}} items)</span><span>{{formatPrice
+              cart.totalAmount}}</span></div>
+          <!-- <div class="summary-row"><span>Discount</span><span>₹28,000</span></div> -->
+          <div class="summary-row"><span>Shipping</span><span>Free</span></div>
+          <div class="summary-row"><span>Tax<span class="fw-semibold">(GST {{taxRate}}% Only for
+                Accessory)</span></span><span>₹ {{formatPrice cart.accessoryTax}}</span></div>
+          <hr>
+          <div class="summary-row" style="font-weight:700"><span>Total</span><span>₹ {{formatPrice
+              cart.totalAfterAll}}</span></div>
+          <button class="btn" id="continueBtn">Continue</button>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+<script>
+  document.addEventListener("DOMContentLoaded", () => {
+    const continueBtn = document.getElementById("continueBtn")
+    continueBtn.addEventListener("click", () => {
+      const addressId = document.querySelector("input[name='selectedAddress']:checked").value;
+      window.location.href = `/cart/checkout-step-2/${addressId}`;
+    });
+
+  })
+</script>

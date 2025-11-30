@@ -3,6 +3,7 @@ const {
   FORBIDDEN,
   NOT_FOUND,
   UNAUTHORIZED,
+  CONFLICT,
 } = require("../../constant/statusCode");
 const carVariantModel = require("../../models/admin/carVariantModel");
 const Accessory = require("../../models/admin/productAccessoryModal");
@@ -72,9 +73,9 @@ const addAddress = async (req, res, next) => {
     // Check if user exists
     const userExists = await User.findById(userId);
     if (!userExists) {
-      return res.status(404).json({
+      return res.status(NOT_FOUND).json({
         success: false,
-        message: "User not found",
+        alert: "User not found",
       });
     }
     const {
@@ -330,8 +331,51 @@ const deleteFromCart = async (req, res, next) => {
 
 const changeQuantity = async (req, res, next) => {
   try {
-    console.log(req.params);
+    const itemId = req.params.itemId;
+    const userId = req.session.user._id;
+    const { quantityIncrease, quantityDecrease } = req.body;
+    const cart = await Cart.findOne({ userId });
+    const item = cart.items.find((i) => i._id.toString() === itemId);
+    const accessoryId = item ? item.accessoryId : null;
+    const accessory = await Accessory.findById(accessoryId.toString());
 
+    if (!cart)
+      return res
+        .status(NOT_FOUND)
+        .json({ success: false, alert: "Cart not fount" });
+
+    if (!item) {
+      return res.status(NOT_FOUND).json({
+        success: false,
+        alert: "Item not found in cart",
+      });
+    }
+
+    if (!accessory)
+      return res
+        .status(NOT_FOUND)
+        .json({ success: false, alert: "Accessory not found" });
+
+    //Calculate new quantity
+    let newQty = item.quantity;
+    if (quantityIncrease !== null) newQty = quantityIncrease;
+    if (quantityDecrease !== null) newQty = quantityDecrease;
+
+    //Validate stock
+    if (newQty > accessory.stock) {
+      return res.status(CONFLICT).json({
+        success: false,
+        alert: `Only ${accessory.stock} items available`,
+      });
+    }
+
+    //Update quantity safely
+    cart.items = cart.items.map((i) => {
+      if (i._id.toString() === itemId) i.quantity = newQty;
+      return i;
+    });
+
+    await cart.save();
     res.status(OK).json({ success: true });
   } catch (error) {
     console.log("Error from Change Quantity", error);

@@ -1,0 +1,303 @@
+/* -------- LOCAL VARIABLES (NO ROOT USED) -------- */
+.wrap-container {
+  --max-width: 1400px;
+  --muted: #8b8b8b;
+  --card-bg: #fff;
+  --accent: #f37021;
+  --black: #000;
+}
+
+/* -------- BASE -------- */
+body {
+  margin: 0;
+  font-family: Inter, Arial, sans-serif;
+  background: #fafafa;
+  color: #111;
+}
+
+.container {
+  width: 92%;
+  max-width: var(--max-width);
+  margin: 20px auto 60px;
+  padding: 12px 0 40px;
+}
+
+h1 {
+  font-size: 32px;
+  margin: 12px 0 28px;
+}
+
+/* -------- STEPPER -------- */
+.stepper-wrapper {
+  position: relative;
+  margin-bottom: 40px;
+}
+
+.stepper {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  position: relative;
+  gap: 20px;
+}
+
+.stepper::before {
+  content: "";
+  position: absolute;
+  top: 34%;
+  left: 0;
+  right: 0;
+  height: 3px;
+  background: #e9e9e9;
+  z-index: 1;
+  transform: translateY(-50%);
+}
+
+.step-item {
+  z-index: 2;
+  text-align: center;
+  width: 80px;
+}
+
+.step {
+  width: 46px;
+  height: 46px;
+  margin: 0 auto;
+  background: #e9e9e9;
+  border-radius: 50%;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  font-size: 15px;
+  color: var(--muted);
+  border: 2px solid transparent;
+  font-weight: 600;
+}
+
+.step.active-step {
+  background: var(--black);
+  color: #fff;
+  border-color: var(--black);
+}
+
+.step-label {
+  font-size: 13px;
+  color: var(--muted);
+  margin-top: 6px;
+}
+
+/* -------- LAYOUT -------- */
+.grid {
+  display: grid;
+  grid-template-columns: 1fr 360px;
+  gap: 30px;
+  align-items: start;
+}
+
+.card {
+  background: var(--card-bg);
+  padding: 26px;
+  border-radius: 12px;
+  box-shadow: 0 6px 18px rgba(18, 18, 18, 0.06);
+  margin-bottom: 20px;
+}
+
+.btn {
+  padding: 12px 18px;
+  background: var(--black);
+  color: #fff;
+  border: none;
+  border-radius: 6px;
+  cursor: pointer;
+  font-size: 15px;
+}
+
+.btn:hover {
+  border: #000 1px solid;
+}
+
+/* -------- ADDRESS -------- */
+.address-box {
+  display: flex;
+  gap: 14px;
+  padding: 16px;
+  border-radius: 10px;
+  border: 1px dashed #e6e6e6;
+  margin-bottom: 20px;
+  align-items: center;
+  box-shadow: 0 4px 14px rgba(0, 0, 0, 0.03);
+}
+
+.dot {
+  width: 14px;
+  height: 14px;
+  background: var(--accent);
+  border-radius: 50%;
+  flex-shrink: 0;
+}
+
+/* -------- SUMMARY -------- */
+.summary-card img {
+  width: 66px;
+  height: 66px;
+  object-fit: cover;
+  border-radius: 8px;
+  margin-right: 12px;
+}
+
+.summary-row {
+  display: flex;
+  justify-content: space-between;
+  margin: 10px 0;
+  font-size: 15px;
+  color: #333;
+}
+
+.summary-card hr {
+  border: none;
+  height: 1px;
+  background: #eee;
+  margin: 12px 0;
+}
+
+/* -------- PAYMENT OPTION -------- */
+.payment-option {
+  border: 1px solid #eee;
+  padding: 18px;
+  border-radius: 10px;
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  margin-bottom: 12px;
+  cursor: pointer;
+  transition: background 0.15s, transform 0.08s;
+}
+
+.payment-option:hover {
+  background: #fafafa;
+}
+
+input[type="text"] {
+  width: 100%;
+  padding: 12px;
+  border-radius: 8px;
+  border: 1px solid #ddd;
+  margin-top: 12px;
+}
+
+/* -------- CONFIRM PAGE -------- */
+.confirm-box {
+  padding: 44px 24px;
+  text-align: center;
+}
+
+.tick {
+  width: 74px;
+  display: block;
+  margin: 0 auto 12px;
+}
+
+/* -------- RESPONSIVE -------- */
+@media (max-width: 920px) {
+  .grid {
+    grid-template-columns: 1fr;
+  }
+
+  .stepper::before {
+    left: 12px;
+    right: 12px;
+  }
+}
+/* radio button */
+.address-list {
+  display: flex;
+  flex-direction: column;
+  gap: 15px;
+}
+
+.address-card {
+  display: flex;
+  align-items: center;
+  gap: 15px;
+  padding: 18px 20px;
+  border: 2px solid #e5e5e5;
+  border-radius: 12px;
+  cursor: pointer;
+  background: #fff;
+  transition: all 0.25s ease;
+  position: relative;
+}
+
+.address-card:hover {
+  border-color: #f37021;
+  box-shadow: 0px 3px 10px rgba(0, 0, 0, 0.08);
+}
+
+.address-card input[type="radio"] {
+  display: none;
+}
+
+/* Custom dot */
+.dot {
+  width: 8px;
+  height: 8px;
+  background: #f37021;
+  border-radius: 50%;
+}
+
+/* Right-side circular indicator */
+.checkmark {
+  position: absolute;
+  right: 20px;
+  width: 15px;
+  height: 15px;
+  border: 2px solid #bbb;
+  border-radius: 50%;
+  transition: all 0.25s ease;
+}
+
+/* Selected state */
+.address-card input[type="radio"]:checked ~ .checkmark {
+  border-color: #f37021;
+  background: #f37021;
+  box-shadow: 0 0 0 4px rgba(243, 112, 33, 0.2);
+}
+
+.address-title {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.address-text {
+  margin: 5px 0 0;
+  color: #555;
+  line-height: 1.4;
+}
+.add-address-btn {
+  display: inline-block;
+  padding: 10px 18px;
+  border: 2px dashed #f37021;
+  border-radius: 10px;
+  color: #f37021;
+  font-size: 14px;
+  font-weight: 600;
+  text-decoration: none;
+  transition: all 0.3s ease;
+  margin-top: 10px;
+}
+
+.add-address-btn:hover {
+  background-color: #f37021;
+  color: #fff;
+  border-style: solid;
+  box-shadow: 0 4px 10px rgba(243, 112, 33, 0.25);
+}
+.default-badge {
+  background: rgba(15, 23, 36, 0.06);
+  color: #0f1724;
+  padding: 4px 8px;
+  border-radius: 999px;
+  font-size: 12px;
+  font-weight: 600;
+}

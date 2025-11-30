@@ -40,6 +40,25 @@ document.addEventListener("DOMContentLoaded", () => {
     removeCart(btn);
   });
 });
+
+function showMobileAlert(message, notification) {
+  const alertBox = document.getElementById("mobileAlert");
+  if (notification === "success") {
+    alertBox.innerHTML = `<i class="bi bi-check-circle-fill success-icon"></i><span class="message-green">${message}</span>`;
+    alertBox.classList.add("show");
+  } else if (notification === "error") {
+    alertBox.innerHTML = `<i class="bi bi-x-circle-fill error-icon"></i><span class="message-red">${message}</span>`;
+    alertBox.classList.add("show");
+  } else if (notification === "warning") {
+    alertBox.innerHTML = `<i class="bi bi-exclamation-triangle-fill yellow-icon"></i><span class="message-yellow">${message}</span>`;
+    alertBox.classList.add("show");
+  }
+
+  setTimeout(() => {
+    alertBox.classList.remove("show");
+  }, 2000);
+}
+
 const errorQuantity = document.getElementById("errorQuantity");
 document.addEventListener("click", (e) => {
   if (e.target.classList.contains("delete-btn")) {
@@ -66,6 +85,27 @@ document.addEventListener("click", (e) => {
     }
     qtyEl.dataset.qty = qty;
     qtyEl.textContent = qty;
+    setTimeout(async () => {
+      try {
+        const res = await axios.put(`/cart/change-quantity/${itemId}`, {
+          quantityIncrease: qty,
+          quantityDecrease: null,
+        });
+        if (res.data.success) {
+          showMobileAlert("Quantity updated!", "success");
+          setTimeout(() => window.location.reload(), 2000);
+        } else {
+          const msg = res.data.alert || "Somthing went wrong!";
+          showMobileAlert(msg, "error");
+          setTimeout(() => window.location.reload(), 2000);
+        }
+      } catch (error) {
+        console.log("Error from change Quantity", error);
+        const msg = error.response?.data.alert || "INTERNAL SERVER ISSUE";
+        showMobileAlert(msg, "error");
+        setTimeout(() => window.location.reload(), 2000);
+      }
+    }, 2000);
   }
 
   if (e.target.classList.contains("minus")) {
@@ -83,5 +123,27 @@ document.addEventListener("click", (e) => {
     }
     qtyEl.dataset.qty = qty;
     qtyEl.textContent = qty;
+
+    setTimeout(async () => {
+      try {
+        const res = await axios.put(`/cart/change-quantity/${itemId}`, {
+          quantityDecrease: qty,
+          quantityIncrease: null,
+        });
+        if (res.data.success) {
+          showMobileAlert("Quantity updated!", "success");
+          setTimeout(() => window.location.reload(), 2000);
+        } else {
+          const msg = res.data.alert || "Somthing went wrong!";
+          showMobileAlert(msg, "error");
+          setTimeout(() => window.location.reload(), 2000);
+        }
+      } catch (error) {
+        console.log("Error from change Quantity", error);
+        const msg = error.response?.data.alert || "INTERNAL SERVER ISSUE";
+        showMobileAlert(msg, "error");
+        setTimeout(() => window.location.reload(), 2000);
+      }
+    }, 2000);
   }
 });

@@ -1,0 +1,533 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Checkout UI</title>
+
+  <style>
+    :root {
+      --max-width: 1400px;
+      --muted: #8b8b8b;
+      --card-bg: #fff;
+      --accent: #f37021;
+      /* orange */
+      --black: #000;
+    }
+
+    body {
+      margin: 0;
+      font-family: Inter, Arial, sans-serif;
+      background: #fafafa;
+      color: #111;
+    }
+
+    .container {
+      width: 92%;
+      max-width: var(--max-width);
+      margin: 18px auto 60px;
+      padding: 10px 0 40px;
+    }
+
+    h1 {
+      font-size: 32px;
+      margin: 12px 0 28px
+    }
+
+    /* ---------- STEPPER ---------- */
+    .stepper-wrapper {
+      position: relative;
+      margin-bottom: 34px
+    }
+
+    .stepper {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      position: relative;
+      gap: 20px;
+    }
+
+    .stepper::before {
+      content: '';
+      position: absolute;
+      top: 50%;
+      left: 24px;
+      right: 24px;
+      height: 3px;
+      background: #e9e9e9;
+      z-index: 1;
+      transform: translateY(-50%);
+    }
+
+    .step {
+      width: 44px;
+      height: 44px;
+      background: #e9e9e9;
+      border-radius: 50%;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      font-size: 15px;
+      z-index: 2;
+      border: 2px solid transparent;
+      color: var(--muted);
+    }
+
+    .step.active-step {
+      background: var(--black);
+      color: #fff;
+      border-color: var(--black);
+    }
+
+    /* ---------- LAYOUT ---------- */
+    .grid {
+      display: grid;
+      grid-template-columns: 1fr 360px;
+      gap: 30px;
+      align-items: start;
+    }
+
+    .card {
+      background: var(--card-bg);
+      padding: 26px;
+      border-radius: 12px;
+      box-shadow: 0 6px 18px rgba(18, 18, 18, 0.06);
+      margin-bottom: 20px;
+    }
+
+    .btn {
+      padding: 12px 18px;
+      background: var(--black);
+      color: #fff;
+      border: none;
+      border-radius: 6px;
+      cursor: pointer;
+      font-size: 15px;
+    }
+
+    .address-box {
+      display: flex;
+      gap: 14px;
+      padding: 16px;
+      border-radius: 10px;
+      border: 1px dashed #e6e6e6;
+      margin-bottom: 20px;
+      align-items: center;
+      box-shadow: 0 4px 14px rgba(0, 0, 0, 0.03);
+    }
+
+    .dot {
+      width: 14px;
+      height: 14px;
+      background: var(--accent);
+      border-radius: 50%;
+      flex-shrink: 0;
+    }
+
+    .summary-card img {
+      width: 66px;
+      height: 66px;
+      object-fit: cover;
+      border-radius: 8px;
+      margin-right: 12px;
+    }
+
+    .summary-row {
+      display: flex;
+      justify-content: space-between;
+      margin: 10px 0;
+      font-size: 15px;
+      color: #333;
+    }
+
+    .summary-card hr {
+      border: none;
+      height: 1px;
+      background: #eee;
+      margin: 12px 0
+    }
+
+    .payment-option {
+      border: 1px solid #eee;
+      padding: 18px;
+      border-radius: 10px;
+      display: flex;
+      align-items: center;
+      gap: 14px;
+      margin-bottom: 12px;
+      cursor: pointer;
+      transition: background .15s, transform .08s;
+    }
+
+    .payment-option:hover {
+      background: #fafafa
+    }
+
+    input[type=text],
+    textarea {
+      padding: 12px;
+      border-radius: 8px;
+      border: 1px solid #ddd;
+      width: 100%;
+      box-sizing: border-box
+    }
+
+    .confirm-box {
+      padding: 44px 24px;
+      text-align: center
+    }
+
+    .tick {
+      width: 74px;
+      display: block;
+      margin: 0 auto 12px
+    }
+
+    /* small screens */
+    @media (max-width:920px) {
+      .grid {
+        grid-template-columns: 1fr;
+      }
+
+      .stepper::before {
+        left: 12px;
+        right: 12px
+      }
+    }
+  </style>
+</head>
+
+<body>
+
+  <!-- PAGE: 1 - ADDRESS -->
+  <div class="container page" id="page1">
+    <h1>Checkout</h1>
+    <div class="stepper-wrapper">
+      <div class="stepper" data-stepper>
+        <div class="step" data-step="1">1</div>
+        <div class="step" data-step="2">2</div>
+        <div class="step" data-step="3">3</div>
+        <div class="step" data-step="4">4</div>
+      </div>
+    </div>
+
+    <div class="grid">
+      <div>
+        <div class="card">
+          <h2>Delivery Address</h2>
+
+          <div class="address-box">
+            <div class="dot"></div>
+            <div>
+              <strong>John Doe</strong><br>
+              123 Luxury Lane, Mumbai, Maharashtra - 400001<br>
+              <small style="color:var(--muted)">Phone:</small> +91 9876543210
+            </div>
+          </div>
+
+          <div style="margin-top:12px">
+            <button class="btn" onclick="nextPage(2)">Continue</button>
+          </div>
+        </div>
+      </div>
+
+      <div>
+        <div class="card summary-card">
+          <h3>Order Summary</h3>
+          <div style="display:flex; align-items:center; margin-top:10px;">
+            <img
+              src="https://images.unsplash.com/photo-1606813902867-7b0c0d6f6f4d?q=80&w=400&auto=format&fit=crop&ixlib=rb-4.0.3&s=2f7d0d177c4a3b6f3f4b2b3b1c3a1a0d"
+              alt="product">
+            <div>
+              <strong>Seat cover</strong><br>
+              <small style="color:var(--muted)">Qty: 1</small>
+            </div>
+          </div>
+
+          <div class="summary-row"><span>Subtotal</span> <span>₹350,000</span></div>
+          <div class="summary-row"><span>Shipping</span> <span>Free</span></div>
+          <div class="summary-row"><span>Tax</span> <span>₹28,000</span></div>
+          <hr>
+          <div class="summary-row" style="font-weight:700"><span>Total</span> <span>₹378,000</span></div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+
+  <!-- PAGE: 2 - PAYMENT OPTIONS -->
+  <div class="container page" id="page2" style="display:none;">
+    <h1>Checkout</h1>
+    <div class="stepper-wrapper">
+      <div class="stepper" data-stepper>
+        <div class="step" data-step="1">1</div>
+        <div class="step" data-step="2">2</div>
+        <div class="step" data-step="3">3</div>
+        <div class="step" data-step="4">4</div>
+      </div>
+    </div>
+
+    <div class="grid">
+      <div>
+        <div class="card">
+          <h2>Payment Method</h2>
+
+          <div class="payment-option" onclick="nextPage(3)">
+            <div
+              style="width:36px; height:36px; border-radius:8px; background:#fff; display:flex; align-items:center; justify-content:center; border:1px solid #eee">
+              🔶</div>
+            <div>
+              <strong>UPI</strong><br>
+              <small style="color:var(--muted)">Pay instantly via UPI</small>
+            </div>
+          </div>
+
+          <div class="payment-option">
+            <div
+              style="width:36px; height:36px; border-radius:8px; background:#fff; display:flex; align-items:center; justify-content:center; border:1px solid #eee">
+              💳</div>
+            <div>
+              <strong>Credit / Debit Card</strong><br>
+              <small style="color:var(--muted)">All major cards accepted</small>
+            </div>
+          </div>
+
+          <div class="payment-option">
+            <div
+              style="width:36px; height:36px; border-radius:8px; background:#fff; display:flex; align-items:center; justify-content:center; border:1px solid #eee">
+              🏦</div>
+            <div>
+              <strong>Net Banking</strong><br>
+              <small style="color:var(--muted)">All major banks supported</small>
+            </div>
+          </div>
+
+          <div class="payment-option">
+            <div
+              style="width:36px; height:36px; border-radius:8px; background:#fff; display:flex; align-items:center; justify-content:center; border:1px solid #eee">
+              🚚</div>
+            <div>
+              <strong>Cash on Delivery</strong><br>
+              <small style="color:var(--muted)">Advance payment required</small>
+            </div>
+          </div>
+
+          <div style="margin-top:14px">
+            <button class="btn" onclick="nextPage(3)">Continue</button>
+          </div>
+        </div>
+      </div>
+
+      <div>
+        <div class="card summary-card">
+          <h3>Order Summary</h3>
+          <div style="display:flex; align-items:center; margin-top:10px;">
+            <img
+              src="https://images.unsplash.com/photo-1606813902867-7b0c0d6f6f4d?q=80&w=400&auto=format&fit=crop&ixlib=rb-4.0.3&s=2f7d0d177c4a3b6f3f4b2b3b1c3a1a0d"
+              alt="product">
+            <div>Seat Cover<br><small style="color:var(--muted)">Qty: 1</small></div>
+          </div>
+          <div class="summary-row"><span>Subtotal</span> <span>₹350,000</span></div>
+          <div class="summary-row"><span>Shipping</span> <span>Free</span></div>
+          <div class="summary-row"><span>Tax</span> <span>₹28,000</span></div>
+          <hr>
+          <div class="summary-row" style="font-weight:700"><span>Total</span> <span>₹378,000</span></div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+
+  <!-- PAGE: 3 - UPI FORM / PAYMENT -->
+  <div class="container page" id="page3" style="display:none;">
+    <h1>Checkout</h1>
+    <div class="stepper-wrapper">
+      <div class="stepper" data-stepper>
+        <div class="step" data-step="1">1</div>
+        <div class="step" data-step="2">2</div>
+        <div class="step" data-step="3">3</div>
+        <div class="step" data-step="4">4</div>
+      </div>
+    </div>
+
+    <div class="grid">
+      <div>
+        <div class="card">
+          <h2>Payment Method</h2>
+          <a href="#" onclick="nextPage(2); return false;"
+            style="color:var(--accent); display:inline-block; margin-bottom:8px">← Change Payment Method</a>
+
+          <label style="display:block; margin-top:8px;">UPI ID *</label>
+          <input id="upiId" type="text" placeholder="username@bank" style="margin:12px 0 18px;">
+          <button class="btn" onclick="confirmPurchase()" style="width:100%">Confirm Purchase</button>
+
+          <p style="margin-top:12px; color:var(--muted); font-size:13px">🔒 Your payment is secure with 256-bit SSL
+            encryption.</p>
+        </div>
+      </div>
+
+      <div>
+        <div class="card summary-card">
+          <h3>Order Summary</h3>
+          <div style="display:flex; align-items:center; margin-top:10px;">
+            <img
+              src="https://images.unsplash.com/photo-1606813902867-7b0c0d6f6f4d?q=80&w=400&auto=format&fit=crop&ixlib=rb-4.0.3&s=2f7d0d177c4a3b6f3f4b2b3b1c3a1a0d"
+              alt="product">
+            <div>Seat Cover<br><small style="color:var(--muted)">Qty: 1</small></div>
+          </div>
+          <div class="summary-row"><span>Subtotal</span> <span>₹350,000</span></div>
+          <div class="summary-row"><span>Shipping</span> <span>Free</span></div>
+          <div class="summary-row"><span>Tax</span> <span>₹28,000</span></div>
+          <hr>
+          <div class="summary-row" style="font-weight:700"><span>Total</span> <span>₹378,000</span></div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+
+  <!-- PAGE: 4 - CONFIRMATION -->
+  <div class="container page" id="page4" style="display:none;">
+    <h1>Checkout</h1>
+    <div class="stepper-wrapper">
+      <div class="stepper" data-stepper>
+        <div class="step" data-step="1">1</div>
+        <div class="step" data-step="2">2</div>
+        <div class="step" data-step="3">3</div>
+        <div class="step" data-step="4">4</div>
+      </div>
+    </div>
+
+    <div class="card confirm-box">
+      <img class="tick"
+        src="data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='72' height='72'><circle cx='36' cy='36' r='34' fill='%23f3f3f3'/><path d='M26 36l6 6 14-14' stroke='%23000' stroke-width='4' stroke-linecap='round' stroke-linejoin='round' fill='none'/></svg>"
+        alt="tick">
+      <h2>Thank You For Your Order!</h2>
+      <p style="color:var(--muted); margin-top:8px">Your order has been placed and is being processed.</p>
+
+      <div style="margin-top:26px; text-align:left">
+        <div class="card" style="background:#fafafa">
+          <strong>Order Summary</strong>
+          <div style="display:flex; justify-content:space-between; margin-top:12px; color:#333">
+            <div>1 x Seat cover</div>
+            <div>₹350,000</div>
+          </div>
+          <div style="margin-top:12px; font-weight:700; display:flex; justify-content:space-between">
+            <div>Total</div>
+            <div>₹378,000</div>
+          </div>
+        </div>
+
+        <div class="card" style="margin-top:14px; background:#fafafa">
+          <strong>Shipping Information</strong>
+          <div style="display:grid; grid-template-columns: 1fr 1fr; gap:20px; margin-top:12px; color:var(--muted)">
+            <div>
+              <div><strong>Name</strong>
+                <div>sreelal pv</div>
+              </div>
+              <div style="margin-top:8px"><strong>Phone</strong>
+                <div>9778195652</div>
+              </div>
+            </div>
+            <div>
+              <div><strong>Email</strong>
+                <div>sreelalpv1234@gmail.com</div>
+              </div>
+              <div style="margin-top:8px"><strong>Address</strong>
+                <div>kerala, ponnani, thavanoor, ponnani, kerala 123456, United States</div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <div style="margin-top:18px; display:flex; gap:12px">
+          <button class="btn" onclick="goHome()" style="background:#fff; color:#111; border:1px solid #ddd">Return to
+            Home</button>
+          <button class="btn" onclick="downloadInvoice()">Download Invoice</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+
+  <script>
+    // Utility: show the requested page (1..4) and update stepper visuals
+    function nextPage(pageNumber) {
+      if (!pageNumber || pageNumber < 1) pageNumber = 1;
+      const pages = document.querySelectorAll('.page');
+      pages.forEach(p => p.style.display = 'none');
+
+      const show = document.getElementById('page' + pageNumber);
+      if (!show) return console.warn('page not found: ', pageNumber);
+      show.style.display = 'block';
+
+      // update all steppers inside the shown page (there's one per page)
+      const steppers = show.querySelectorAll('[data-stepper]');
+      steppers.forEach(stepper => {
+        const steps = stepper.querySelectorAll('.step');
+        steps.forEach(s => s.classList.remove('active-step'));
+        for (let i = 0; i < steps.length; i++) {
+          const stepIndex = Number(steps[i].getAttribute('data-step')) || (i + 1);
+          if (stepIndex <= pageNumber) steps[i].classList.add('active-step');
+        }
+      });
+
+      // Also update stepper visuals on *other* pages so if user navigates back, their steppers look correct.
+      document.querySelectorAll('.stepper [data-step]').forEach(el => {
+        const stepIdx = Number(el.getAttribute('data-step')) || 0;
+        if (stepIdx <= pageNumber) el.classList.add('active-step'); else el.classList.remove('active-step');
+      });
+
+      // Scroll to top of container for better UX
+      window.scrollTo({ top: 0, behavior: 'smooth' });
+    }
+
+    // confirmPurchase: validate UPI and proceed
+    function confirmPurchase() {
+      try {
+        const upiEl = document.getElementById('upiId');
+        if (!upiEl) {
+          console.error('UPI input not found in DOM');
+          alert('UPI field is missing. Reload the page.');
+          return;
+        }
+        const upi = upiEl.value.trim();
+        // basic validation: must contain '@' and at least 3 characters before it
+        const valid = /^[^@\s]{1,}@[^@\s]{1,}$/.test(upi);
+        if (!valid) {
+          alert('Please enter a valid UPI ID (e.g. username@bank)');
+          upiEl.focus();
+          return;
+        }
+
+        // simulate payment processing, then go to confirmation
+        document.querySelectorAll('.btn').forEach(b => b.disabled = true);
+        setTimeout(() => {
+          document.querySelectorAll('.btn').forEach(b => b.disabled = false);
+          nextPage(4);
+        }, 700);
+      } catch (err) {
+        console.error(err);
+        alert('An error occurred while processing payment.');
+      }
+    }
+
+    function goHome() {
+      alert('Returning to home (placeholder)');
+      // location.href = '/'; // uncomment for real navigation
+    }
+
+    function downloadInvoice() {
+      alert('Download invoice (placeholder)');
+      // implement real invoice generation when needed
+    }
+
+    // initialize first page on DOM ready
+    document.addEventListener('DOMContentLoaded', () => nextPage(1));
+  </script>
+
+</body>
+
+</html>

@@ -22,7 +22,14 @@ const cartItemSchema = new Schema(
       ref: "Accessory",
       default: null,
     },
-    quantity: { type: Number, default: 1 },
+    quantity: {
+      type: Number,
+      default: 1,
+      min: 1,
+      max: 5,
+      set: (value) => Math.min(5, Math.max(1, value)),
+    },
+    lineTotal: { type: Number, default: 0 },
     price: { type: Number, required: true },
   },
   { _id: true }
@@ -59,6 +66,7 @@ cartSchema.pre("save", async function (next) {
         const accessory = await Accessory.findById(item.accessoryId).lean();
         if (accessory && accessory.isListed !== false) {
           accessoryTotal += (item.price || 0) * (item.quantity || 0);
+          item.lineTotal = (item.price || 0) * (item.quantity || 0);
         }
       }
 

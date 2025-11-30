@@ -44,11 +44,19 @@
             {{/if}}
 
             {{!-- PRICE --}}
+            {{#if carId}}
             <div class="price-box">
               <span class="offer-price">₹ {{formatPrice this.price}}</span>
               <span class="original-price">₹ {{formatPrice this.price}}</span>
               <span class="discount">(50% OFF)</span>
             </div>
+            {{else}}
+            <div class="price-box">
+              <span class="offer-price">₹ {{formatPrice this.lineTotal}}</span>
+              <span class="original-price">₹ {{formatPrice this.lineTotal}}</span>
+              <span class="discount">(50% OFF)</span>
+            </div>
+            {{/if}}
             <div class="price-box">
               <span class="cart-item-meta">Quantity : </span>
               <span class="cart-item-meta">{{this.quantity}}</span>
@@ -65,7 +73,6 @@
               <button class="qty-btn minus" data-itemid="{{this._id}}">-</button>
               <span class="qty-value" data-itemid="{{this._id}}" data-qty="{{this.quantity}}">{{this.quantity}}</span>
               <button class="qty-btn plus" data-itemid="{{this._id}}">+</button>
-
             </div>
 
 
@@ -91,10 +98,10 @@
           <span class="fw-semibold">₹ {{formatPrice cart.totalAmount}}</span>
         </div>
 
-        <div class="d-flex justify-content-between mb-2">
+        <!-- <div class="d-flex justify-content-between mb-2">
           <span class="text-muted">Discount</span>
-          <span class="fw-semibold">Free</span>
-        </div>
+          <span class="fw-semibold"></span>
+        </div> -->
 
         <div class="d-flex justify-content-between mb-2">
           <span class="text-muted">Shipping</span>
@@ -114,7 +121,7 @@
         </div>
 
         <button class="btn btn-orange w-100 mb-3">Apply Coupon</button>
-        <button class="btn btn-black w-100">Proceed to Checkout</button>
+        <a href="/cart/checkout-step-1/{{cart._id}}" class="btn btn-black w-100">Proceed to Checkout</a>
 
         <p class="text-center text-muted small mt-3">
           By proceeding to checkout, you agree to our <br>

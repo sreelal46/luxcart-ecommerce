@@ -27,7 +27,12 @@ const {
   loadChangePassword,
   loadOrderPage,
   loadCartPage,
+  loadCheckoutStep1,
+  loadCheckoutStep2,
+  loadCheckoutStep3,
+  loadCheckoutStep4,
 } = require("../controllers/user/pageLoadTwo.controller");
+
 const {
   editEmail,
   editProfile,
@@ -154,6 +159,16 @@ route.post("/account/change-password/:userId", checkSession, changePassword);
 route.get("/cart", checkSession, loadCartPage);
 route.post("/cart/add", checkSession, addToCart);
 route.delete("/cart/remove-product/:itemId", checkSession, deleteFromCart);
-route.delete("/cart/change-quantity/:itemId", checkSession, changeQuantity);
+route.put("/cart/change-quantity/:itemId", checkSession, changeQuantity);
+
+// checkout management
+route.get("/cart/checkout-step-1/:cartId", checkSession, loadCheckoutStep1);
+route.get("/cart/checkout-step-2/:addressId", checkSession, loadCheckoutStep2);
+route.get(
+  "/cart/checkout-step-3/:paymentMethod",
+  checkSession,
+  loadCheckoutStep3
+);
+route.get("/cart/checkout-step-4/:cartId", checkSession, loadCheckoutStep4);
 
 module.exports = route;
