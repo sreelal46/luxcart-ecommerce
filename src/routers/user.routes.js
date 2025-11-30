@@ -44,6 +44,7 @@ const {
   addToCart,
   deleteFromCart,
   changeQuantity,
+  downloadInvoice,
 } = require("../controllers/user/account.controller");
 
 const {
@@ -171,4 +172,10 @@ route.get(
 );
 route.get("/cart/checkout-step-4/:cartId", checkSession, loadCheckoutStep4);
 
+//download invoice
+route.get(
+  "/cart/checkout-success/download-invoice/:orderId",
+  checkSession,
+  downloadInvoice
+);
 module.exports = route;

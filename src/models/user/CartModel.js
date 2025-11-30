@@ -32,7 +32,7 @@ const cartItemSchema = new Schema(
     lineTotal: { type: Number, default: 0 },
     price: { type: Number, required: true },
   },
-  { _id: true }
+  { _id: true, timestamps: true }
 );
 
 const cartSchema = new Schema(
@@ -57,6 +57,9 @@ const cartSchema = new Schema(
 // Recalculate totalAmount before every save (keeps cart totals consistent)
 cartSchema.pre("save", async function (next) {
   try {
+    //sorting
+    this.items.sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt));
+
     let carTotal = 0;
     let accessoryTotal = 0;
 

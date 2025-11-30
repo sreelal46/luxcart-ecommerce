@@ -19,4 +19,14 @@ module.exports = {
       .join("");
     return new Handlebars.SafeString(formatted);
   },
+  formattedDate: (date) => {
+    const formatDate = new Date(date);
+    return formatDate
+      .toLocaleDateString("en-US", {
+        month: "short",
+        day: "numeric",
+        year: "numeric",
+      })
+      .replace(",", "");
+  },
 };

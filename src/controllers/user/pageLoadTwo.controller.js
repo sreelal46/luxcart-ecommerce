@@ -1,7 +1,9 @@
-const { OK } = require("../../constant/statusCode");
-const carVariantModel = require("../../models/admin/carVariantModel");
+const { OK, FORBIDDEN } = require("../../constant/statusCode");
+const CarVariant = require("../../models/admin/carVariantModel");
+const Accessory = require("../../models/admin/productAccessoryModal");
 const Address = require("../../models/user/addressModel");
 const Cart = require("../../models/user/CartModel");
+const Order = require("../../models/user/OrderModel");
 const User = require("../../models/user/UserModel");
 const taxRate = parseInt(process.env.ACCESSORY_TAX_RATE);
 
@@ -117,7 +119,10 @@ const loadOrderPage = async (req, res, next) => {
 const loadCartPage = async (req, res, next) => {
   try {
     const userId = req.session.user._id;
-    const cart = await Cart.findOne({ userId })
+    console.log(userId);
+    const cart = await Cart.findOne({ userId }, null, {
+      sort: { createdAt: -1 },
+    })
       .populate("items.carId")
       .populate("items.variantId")
       .populate("items.accessoryId")
@@ -162,10 +167,11 @@ const loadCartPage = async (req, res, next) => {
 const loadCheckoutStep1 = async (req, res, next) => {
   try {
     const userId = req.session.user._id;
-
     const cartId = req.params.cartId;
     const cart = await Cart.findById(cartId);
     const address = await Address.find({ userId });
+
+    if (!cartId) return res.status(FORBIDDEN).redirect("/cart");
 
     res.status(OK).render("user/checkout/checkout_Step_1_Address", {
       address,
@@ -184,8 +190,8 @@ const loadCheckoutStep2 = async (req, res, next) => {
     const addressId = req.params.addressId;
     const cart = await Cart.findOne({ userId });
     req.session.user.addressId = addressId;
-    console.log("User Id", userId);
-    console.log("Address ID", addressId);
+
+    if (!addressId) return res.status(FORBIDDEN).redirect("/cart");
 
     res.status(OK).render("user/checkout/checkout_Step_2_Select_Payment", {
       cart,
@@ -203,6 +209,8 @@ const loadCheckoutStep3 = async (req, res, next) => {
     const paymentMethod = req.params.paymentMethod;
     req.session.user.paymentMethod = paymentMethod;
     const cart = await Cart.findOne({ userId });
+
+    if (!paymentMethod) return res.status(FORBIDDEN).redirect("/cart");
 
     const advancePercentage = parseInt(process.env.ADVANCE_PAYMENT_PERCENTAGE);
 
@@ -252,8 +260,7 @@ const loadCheckoutStep4 = async (req, res) => {
         totalItemAmount: item.lineTotal,
       };
     });
-
-    const order = {
+    const order = new Order({
       userId,
       items: orderItem,
       address: address,
@@ -262,11 +269,36 @@ const loadCheckoutStep4 = async (req, res) => {
       taxAmount: cart.accessoryTax,
       discount: cart.discount,
       totalAmount: cart.totalAfterAll,
-    };
+    });
 
     await order.save();
     cart.items = [];
-    await art.save();
+    await cart.save();
+
+    // Reduce product stock for each item
+    for (const item of order.items) {
+      // Accessory Stock Update
+      if (item.accessoryId) {
+        const accessory = await Accessory.findById(item.accessoryId);
+        if (accessory && accessory.stock > 0) {
+          await Accessory.findByIdAndUpdate(
+            item.accessoryId,
+            { $inc: { stock: -item.quantity } } // reduce stock
+          );
+        }
+      }
+
+      // Car Variant Stock Update
+      if (item.variantId) {
+        const variant = await CarVariant.findById(item.variantId);
+        if (variant && variant.stock) {
+          await CarVariant.findByIdAndUpdate(item.variantId, {
+            $inc: { stock: -item.quantity },
+          });
+        }
+      }
+    }
+
     const advancePercentage = process.env.ADVANCE_PAYMENT_PERCENTAGE || 10;
     let advanceAmount = 0;
     let remainingAmount = 0;
@@ -275,15 +307,10 @@ const loadCheckoutStep4 = async (req, res) => {
       advanceAmount = Math.round((cart.totalAmount * advancePercentage) / 100);
       remainingAmount = cart.totalAmount - advanceAmount;
     }
-
+    console.log(order);
     res.render("user/checkout/checkout_Step_4_Confirmation", {
       cart,
-      selectedAddress,
-      paymentMethod,
-      isCOD: paymentMethod === "COD",
-      advanceAmount,
-      remainingAmount,
-      orderStatus: "Pending",
+      order,
     });
   } catch (error) {
     console.log("Error loading Step 4", error);

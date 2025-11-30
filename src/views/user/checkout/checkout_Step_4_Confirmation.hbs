@@ -48,10 +48,82 @@
     background-color: #f37021;
     color: #fff;
   }
+
+  /* ===============================
+   Slide-in Toast Message (Clean UI)
+================================*/
+
+  .mobile-alert {
+    position: fixed;
+    left: 50%;
+    bottom: 40px;
+    transform: translateX(-50%) translateY(150%);
+    background: #111;
+    color: #fff;
+    padding: 12px 20px;
+    border-radius: 14px;
+    font-size: 15px;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    max-width: 90%;
+    width: max-content;
+
+    opacity: 0;
+    pointer-events: none;
+    transition: all 0.4s cubic-bezier(0.16, 1, 0.3, 1);
+
+    box-shadow: 0 8px 26px rgba(0, 0, 0, 0.25);
+    z-index: 9999;
+    white-space: normal;
+    word-break: break-word;
+  }
+
+  /* Toast visible */
+  .mobile-alert.show {
+    opacity: 1;
+    transform: translateX(-50%) translateY(0);
+    pointer-events: auto;
+  }
+
+  /* Desktop version (toast appears at top) */
+  @media (min-width: 768px) {
+    .mobile-alert {
+      top: 20px;
+      bottom: auto;
+      transform: translateX(-50%) translateY(-140%);
+    }
+
+    .mobile-alert.show {
+      transform: translateX(-50%) translateY(0);
+    }
+  }
+
+  /* Colors */
+  .message-green {
+    color: #00ff7f;
+  }
+
+  .message-red {
+    color: #ff4d4d;
+  }
+
+  .message-yellow {
+    color: #ffcc00;
+  }
+
+  /* Icons */
+  .success-icon,
+  .error-icon,
+  .yellow-icon {
+    font-size: 18px;
+  }
 </style>
 
-
+<!-- Slide-in Toast MSG -->
+<div id="mobileAlert" class="mobile-alert"></div>
 <div class="container py-5">
+
 
   <div class="row justify-content-center">
     <div class="col-lg-6">
@@ -74,32 +146,32 @@
 
           <div class="d-flex justify-content-between mb-2">
             <span>Order ID</span>
-            <strong>#LCX00982</strong>
+            <strong>{{order.orderId}}</strong>
           </div>
 
           <div class="d-flex justify-content-between mb-2">
             <span>Date</span>
-            <strong>30 Nov 2025</strong>
+            <strong>{{formattedDate order.createdAt}}</strong>
           </div>
 
           <div class="d-flex justify-content-between mb-2">
             <span>Total Items</span>
-            <strong>2</strong>
+            <strong>{{order.items.length}}</strong>
           </div>
 
           <div class="d-flex justify-content-between mb-2">
             <span>Subtotal</span>
-            <strong>₹34,500</strong>
+            <strong>₹ {{formatPrice order.subtotal}}</strong>
           </div>
 
           <div class="d-flex justify-content-between mb-3">
             <span>Tax</span>
-            <strong>₹850</strong>
+            <strong>₹ {{formatPrice order.taxAmount}}</strong>
           </div>
 
           <div class="d-flex justify-content-between total-row pt-3">
             <span class="fw-bold">Grand Total</span>
-            <strong class="price">₹35,350</strong>
+            <strong class="price">₹ {{formatPrice order.totalAmount}}</strong>
           </div>
 
         </div>
@@ -109,16 +181,26 @@
         <!-- Address -->
         <div class="mb-4">
           <h5 class="fw-semibold mb-2">Delivery Address</h5>
+
           <p class="text-muted small mb-0">
-            Luxcart Ecommerce<br>
-            15, Anna Nagar, Chennai<br>
-            Tamil Nadu
+            <strong>{{order.address.name}}</strong><br>
+            Phone: {{order.address.phone}}<br>
+            Email: {{order.address.email}}<br>
+            {{order.address.label}}<br>
+            {{order.address.street}}<br>
+            Landmark: {{order.address.landmark}}<br>
+            City: {{order.address.city}}<br>
+            District: {{order.address.district}}<br>
+            State: {{order.address.state}}<br>
+            Pincode: {{order.address.pincode}}
           </p>
         </div>
 
+
         <!-- Buttons -->
         <div class="text-center">
-          <a href="/" class="btn btn-primary w-100 py-2 mb-2">Go to Home</a>
+          <button id="downloadInvoice" data-orderid="{{order._id}}" class="btn btn-primary w-100 py-2 mb-2">Download
+            Invoice</button>
           <a href="/orders" class="btn btn-outline-primary w-100 py-2">View Orders</a>
         </div>
 
@@ -127,3 +209,47 @@
   </div>
 
 </div>
+
+<script>
+  document.addEventListener("DOMContentLoaded", () => {
+
+    function showMobileAlert(message, notification) {
+      const alertBox = document.getElementById("mobileAlert");
+
+      if (notification === "success") {
+        alertBox.innerHTML = `<i class="bi bi-check-circle-fill success-icon"></i><span class="message-green">${message}</span>`;
+      } else if (notification === "error") {
+        alertBox.innerHTML = `<i class="bi bi-x-circle-fill error-icon"></i><span class="message-red">${message}</span>`;
+      } else if (notification === "warning") {
+        alertBox.innerHTML = `<i class="bi bi-exclamation-triangle-fill yellow-icon"></i><span class="message-yellow">${message}</span>`;
+      }
+
+      alertBox.classList.add("show");
+
+      setTimeout(() => alertBox.classList.remove("show"), 3000);
+    }
+
+
+
+
+
+
+    const downloadInvoice = document.getElementById("downloadInvoice");
+    const orderId = downloadInvoice.dataset.orderid;
+
+    downloadInvoice.addEventListener("click", async () => {
+      try {
+        const res = await axios.get(`/cart/checkout-success/download-invoice/${orderId}`);
+
+        if (res.data.success) {
+          showMobileAlert("Invoice Downloading...", "success");
+          setTimeout(() => window.open(res.data.file, "_blank"), 2000)
+
+        }
+      } catch (error) {
+        const msg = error.response?.data.alert || "INTERNAL SERVER ERROR";
+        showMobileAlert(msg, "error");
+      }
+    });
+  });
+</script>

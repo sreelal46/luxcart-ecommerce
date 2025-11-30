@@ -1,3 +1,5 @@
+const path = require("path");
+const fs = require("fs");
 const {
   OK,
   FORBIDDEN,
@@ -12,6 +14,8 @@ const Cart = require("../../models/user/CartModel");
 const User = require("../../models/user/UserModel");
 const Address = require("../../models/user/addressModel");
 const bcrypt = require("bcrypt");
+const generateInvoice = require("../../services/invoiceGenerator");
+const Order = require("../../models/user/OrderModel");
 
 //email check
 const editEmail = async (req, res) => {
@@ -242,7 +246,7 @@ const changePassword = async (req, res, next) => {
 const addToCart = async (req, res, next) => {
   try {
     const userId = req.session.user._id;
-    const { productType, productId, variantId } = req.body;
+    const { productType, productId, variantId, directBuy } = req.body;
 
     let product = null;
     if (productType === "car") product = await Car.findById(productId);
@@ -289,7 +293,8 @@ const addToCart = async (req, res, next) => {
     }
 
     await cart.save();
-    return res.json({ success: true });
+    req.session.directBuy = null;
+    res.status(OK).json({ success: true });
   } catch (error) {
     console.log("Error from add to cart", error);
     next(error);
@@ -382,6 +387,75 @@ const changeQuantity = async (req, res, next) => {
     next(error);
   }
 };
+const downloadInvoice = async (req, res, next) => {
+  try {
+    const orderId = req.params.orderId;
+
+    const order = await Order.findById(orderId).populate(
+      "items.carId items.variantId items.accessoryId"
+    );
+
+    // Full address
+    const fullAddress =
+      `${order.address.street}, ${order.address.landmark}, ` +
+      `${order.address.city}, ${order.address.district}, ` +
+      `${order.address.state} - ${order.address.pincode}`;
+
+    // Format items
+    const formattedItems = order.items.map((item) => ({
+      description:
+        item.accessoryId?.name ||
+        item.variantId?.name ||
+        item.carId?.name ||
+        "Product",
+      qty: item.quantity,
+      price: item.price,
+      total: item.totalItemAmount,
+    }));
+
+    // Data sent to PDF generator
+    const invoiceData = {
+      orderId: order.orderId,
+      createdAt: order.createdAt,
+      customerName: order.address.name,
+      customerAddress: fullAddress,
+      items: formattedItems,
+      subtotal: order.subtotal,
+      taxPercent: order.taxAmount
+        ? Math.round((order.taxAmount / order.subtotal) * 100)
+        : 0,
+      taxAmount: order.taxAmount,
+      discount: order.discount || 0,
+      totalAmount: order.totalAmount,
+    };
+
+    // Invoice folder path
+    const invoiceDir = path.join(__dirname, "../../public/invoices");
+
+    if (!fs.existsSync(invoiceDir)) {
+      fs.mkdirSync(invoiceDir, { recursive: true });
+    }
+
+    // File path
+    const filePath = path.join(invoiceDir, `invoice_${orderId}.pdf`);
+
+    // Generate PDF
+    await generateInvoice(invoiceData, filePath);
+
+    setTimeout(() => {
+      res.status(200).json({
+        success: true,
+        alert: "Invoice generated",
+        file: `/invoices/invoice_${orderId}.pdf`,
+      });
+    }, 2000);
+  } catch (error) {
+    console.log("Error download invoice:", error);
+    next(error);
+  }
+};
+
+module.exports = { downloadInvoice };
 
 module.exports = {
   editEmail,
@@ -394,4 +468,5 @@ module.exports = {
   addToCart,
   deleteFromCart,
   changeQuantity,
+  downloadInvoice,
 };

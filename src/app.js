@@ -25,6 +25,9 @@ app.set("view cache", true);
 // Static Folder
 app.use(express.static(path.join(__dirname, "public")));
 
+//invoice download path
+app.use("/invoices", express.static(path.join(__dirname, "public/invoices")));
+
 // Bootstrap Icons
 app.use(
   "/bootstrap-icons",

@@ -209,4 +209,30 @@ document.addEventListener("DOMContentLoaded", () => {
 
   addToCartAxios(addToCartDesk, "accessory", productId);
   addToCartAxios(addToCartMob, "accessory", productId);
+
+  function directBuyAxios(element, productType, productId) {
+    element.addEventListener("click", async () => {
+      console.log("bue item clicked");
+      try {
+        const res = await axios.post("/cart/add", {
+          productType,
+          productId,
+          directBuy: true,
+        });
+
+        if (res.data.success) {
+          window.location.href = res.data.redirect;
+        } else {
+          const msg = res.data.alert || "Somthing went worng";
+          showMobileAlert(msg, "error");
+        }
+      } catch (error) {
+        console.log("Error from add to cart FRONTEND", error);
+        const msg = error.response?.data.alert || "INTERNAL SERVER ERROR";
+        showMobileAlert(msg, "error");
+      }
+    });
+  }
+
+  directBuyAxios(buyProductDesk, "accessory", productId);
 });

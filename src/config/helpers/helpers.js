@@ -8,6 +8,9 @@ module.exports = {
   gt: function (a, b) {
     return a > b;
   },
+  and: (a, b) => {
+    return a && b;
+  },
   length: function (arr) {
     if (Array.isArray(arr)) return arr.length;
     return 0;

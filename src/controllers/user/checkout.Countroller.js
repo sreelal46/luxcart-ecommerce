@@ -1,107 +1,69 @@
-const Order = require("../models/orderModel");
-const Cart = require("../models/cartModel");
-const Address = require("../models/addressModel");
-const mongoose = require("mongoose");
+const { NOT_FOUND } = require("../../constant/statusCode");
+const carVariantModel = require("../../models/admin/carVariantModel");
+const Accessory = require("../../models/admin/productAccessoryModal");
+const Car = require("../../models/admin/productCarModal");
+const Cart = require("../../models/user/CartModel");
 
-const createOrder = async (req, res) => {
+const directBuy = async (req, res, next) => {
   try {
     const userId = req.session.user._id;
-    const { addressId, paymentMethod } = req.body;
+    const { productType, productId, variantId, directBuy } = req.body;
 
-    // Load user cart
-    const cart = await Cart.findOne({ userId }).populate([
-      { path: "items.carId" },
-      { path: "items.variantId" },
-      { path: "items.accessoryId" },
-    ]);
+    let product = null;
+    if (productType === "car") product = await Car.findById(productId);
+    if (productType === "accessory")
+      product = await Accessory.findById(productId);
 
-    if (!cart || cart.items.length === 0) {
-      return res.status(400).json({ success: false, message: "Cart is empty" });
-    }
-
-    // Load selected address snapshot
-    const selectedAddress = await Address.findOne({
-      _id: addressId,
-      userId,
-    });
-
-    if (!selectedAddress) {
+    if (!product) {
       return res
-        .status(400)
-        .json({ success: false, message: "Invalid address" });
+        .status(NOT_FOUND)
+        .json({ success: false, alert: "Product not found" });
     }
 
-    // ---- Convert address to snapshot ----
-    const addressSnapshot = {
-      name: selectedAddress.name,
-      phone: selectedAddress.phone,
-      email: selectedAddress.email,
-      addressLine: selectedAddress.addressLine,
-      city: selectedAddress.city,
-      state: selectedAddress.state,
-      pincode: selectedAddress.pincode,
-      landmark: selectedAddress.landmark,
-    };
+    let variantCar = null;
+    if (productType === "car") {
+      variantCar = await carVariantModel.findById(variantId);
+    }
 
-    // ---- Calculate order totals ----
-    let subtotal = 0;
-    let taxAmount = 0;
+    let cart = await Cart.findOne({ userId });
+    if (!cart) {
+      cart = new Cart({
+        userId,
+        items: [],
+      });
+    }
 
-    const orderItems = cart.items.map((item) => {
-      const price = item.price;
-      const tax = item.tax || 0;
-      const totalItemAmount = price + tax;
+    let item = null;
 
-      subtotal += price;
-      taxAmount += tax;
+    if (productType === "car") {
+      item = cart.items.find((i) => i.variantId?.toString() === variantId);
+    }
 
-      return {
-        carId: item.carId || null,
-        variantId: item.variantId || null,
-        accessoryId: item.accessoryId || null,
-        quantity: item.quantity,
-        price,
-        tax,
-        totalItemAmount,
-      };
-    });
+    if (productType === "accessory") {
+      item = cart.items.find((i) => i.accessoryId?.toString() === productId);
+    }
 
-    const shippingCharges = 0; // car delivery free? change if needed
-    const discount = cart.discount || 0;
+    if (!item) {
+      cart.items.push({
+        carId: productType === "car" ? productId : null,
+        accessoryId: productType === "accessory" ? productId : null,
+        variantId: productType === "car" ? variantId : null,
+        quantity: 1,
+        price: variantCar?.price || product.price,
+      });
+    }
 
-    const totalAmount = subtotal + taxAmount + shippingCharges - discount;
-
-    // ---- Create Order ----
-    const newOrder = new Order({
-      userId,
-      items: orderItems,
-      address: addressSnapshot,
-      paymentMethod,
-      subtotal,
-      taxAmount,
-      discount,
-      shippingCharges,
-      totalAmount,
-      paymentStatus: paymentMethod === "ONLINE" ? "pending" : "paid",
-      orderStatus: "pending",
-    });
-
-    await newOrder.save();
-
-    // ---- Clear cart after order ----
-    cart.items = [];
-    cart.discount = 0;
     await cart.save();
 
-    return res.status(200).json({
-      success: true,
-      message: "Order placed successfully",
-      orderId: newOrder._id,
-    });
+    //direct buy
+    if (directBuy)
+      return res.status(OK).json({
+        success: true,
+        redirect: `/cart/checkout-step-1/${cart._id}`,
+      });
+    res.status(OK).json({ success: true });
   } catch (error) {
-    console.log("Error creating order:", error);
-    return res.status(500).json({ success: false, message: "Server error" });
+    console.log("Error from add to cart", error);
+    next(error);
   }
 };
-
-module.exports = { createOrder };

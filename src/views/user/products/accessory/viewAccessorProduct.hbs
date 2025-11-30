@@ -59,10 +59,11 @@
 
 
           <!-- Desktop Buttons -->
+          {{#if accessory.stock}}
           {{#if accessory.isListed}}
-          <button class="btn btn-buy" id="buyProductDesk" data-accessoryId="{{accessory._id}}"><i
+          <!-- <button class="btn btn-buy" id="buyProductDesk" data-accessoryId="{{accessory._id}}"><i
               class="bi bi-lightning-charge"></i> Buy
-            Now</button>
+            Now</button> -->
 
           {{#if inCart}}
           <a class="btn btn-cart" href="/cart"><i class="bi bi-cart"></i> Go to Cart</a>
@@ -75,6 +76,12 @@
           <div class="p-3 rounded-3 border border-danger bg-light text-danger mt-2 d-flex align-items-center">
             <i class="bi bi-exclamation-octagon-fill fs-5 me-2"></i>
             <span class="fw-semibold">This model is currently unavailable</span>
+          </div>
+          {{/if}}
+          {{else}}
+          <div class="p-3 rounded-3 border border-danger bg-light text-danger mt-2 d-flex align-items-center">
+            <i class="bi bi-exclamation-octagon-fill fs-5 me-2"></i>
+            <span class="fw-semibold">Out of Stock</span>
           </div>
           {{/if}}
         </div>
