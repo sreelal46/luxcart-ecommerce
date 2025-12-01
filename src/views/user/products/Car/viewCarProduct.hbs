@@ -2,6 +2,7 @@
 <link rel="stylesheet" href="/css/user/products/car/viewCarProduct.css">
 
 <input type="hidden" id="productId" value="{{singleCar._id}}">
+<input type="hidden" id="variantId" value="{{singleCar.variantIds.[0]._id}}">
 
 <!-- Slide-in Toast MSG -->
 <div id="mobileAlert" class="mobile-alert"></div>
@@ -46,7 +47,12 @@
         <div class="price-box">
           <div class="d-flex justify-content-between align-items-center mb-3">
             <div class="price">₹ {{formatPrice singleCar.variantIds.[0].price}}</div>
-            <i class="bi bi-heart fs-5 text-muted"></i>
+            <button id="wishlistBtn" data-carid="{{singleCar._id}}" data-variantId="{{singleCar.variantIds.[0]._id}}"
+              style="border: none; background-color: transparent;">
+              <i id="heartIcon" class="bi bi-heart fs-5 text-muted"></i>
+            </button>
+
+
           </div>
 
           <!-- VARIANT BUTTONS -->
@@ -70,6 +76,7 @@
           <div class="info-text">Year: {{singleCar.year}}</div>
           <div class="info-text">Region: {{singleCar.region}}</div>
           <div class="info-text mb-3">Warranty: {{singleCar.warranty}}</div>
+
 
           <!-- Desktop Buttons -->
           {{#if singleCar.isListed}}

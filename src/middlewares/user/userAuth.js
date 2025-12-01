@@ -30,6 +30,13 @@ const checkSession = async (req, res, next) => {
         res.status(OK).redirect("/login");
       });
     }
+    req.session.user = {
+      _id: user._id,
+      name: user.name,
+      email: user.email,
+      profileImage_url: user.profileImage_url,
+      authProvider: user.authProvider,
+    };
     req.user = user;
 
     next();

@@ -28,6 +28,24 @@ function toggleAccordion(header) {
     });
   }
 }
+//notification
+function showMobileAlert(message, notification) {
+  const alertBox = document.getElementById("mobileAlert");
+  if (notification === "success") {
+    alertBox.innerHTML = `<i class="bi bi-check-circle-fill success-icon"></i><span class="message-green">${message}</span>`;
+    alertBox.classList.add("show");
+  } else if (notification === "error") {
+    alertBox.innerHTML = `<i class="bi bi-x-circle-fill error-icon"></i><span class="message-red">${message}</span>`;
+    alertBox.classList.add("show");
+  } else if (notification === "warning") {
+    alertBox.innerHTML = `<i class="bi bi-exclamation-triangle-fill yellow-icon"></i><span class="message-yellow">${message}</span>`;
+    alertBox.classList.add("show");
+  }
+
+  setTimeout(() => {
+    alertBox.classList.remove("show");
+  }, 3000);
+}
 
 // Page Animations
 document.addEventListener("DOMContentLoaded", () => {
@@ -180,7 +198,6 @@ document.addEventListener("DOMContentLoaded", () => {
 
   // Read product
   const productId = addToCartDesk.dataset.accessoryid;
-
   //add to cart axios call function
   function addToCartAxios(element, productType, productId) {
     element.addEventListener("click", async () => {
@@ -235,4 +252,45 @@ document.addEventListener("DOMContentLoaded", () => {
   }
 
   directBuyAxios(buyProductDesk, "accessory", productId);
+});
+
+document.addEventListener("DOMContentLoaded", () => {
+  const btn = document.getElementById("wishlistBtn");
+  const heart = document.getElementById("heartIcon");
+  const productId = btn.dataset.accessoryid;
+  btn.addEventListener("click", async (e) => {
+    e.stopPropagation();
+    e.preventDefault();
+    const isFilled = heart.classList.contains("bi-heart-fill");
+
+    try {
+      console.log("button cliced", productId);
+      const res = await axios.post(`/account/wishlist/add/${productId}`, {
+        variantId: null,
+        productType: "accessory",
+      });
+
+      if (res.data.success) {
+        // ---- UI TOGGLE FIXED ----
+        if (isFilled) {
+          // currently filled → set to unfilled
+          heart.classList.remove("bi-heart-fill", "text-danger");
+          heart.classList.add("bi-heart", "text-muted");
+        } else {
+          // currently unfilled → set to filled
+          heart.classList.remove("bi-heart", "text-muted");
+          heart.classList.add("bi-heart-fill", "text-danger");
+        }
+
+        showMobileAlert("Product added to Wishlist!", "success");
+      } else {
+        const msg = res.data.alert || "Something went wrong";
+        showMobileAlert(msg, "error");
+      }
+    } catch (err) {
+      console.error("Error from add to wishlist:", err);
+      const msg = err.response?.data.alert || "INTERNAL SERVER ERROR";
+      showMobileAlert(msg, "error");
+    }
+  });
 });

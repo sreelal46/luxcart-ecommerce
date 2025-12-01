@@ -106,9 +106,18 @@ const loadChangePassword = (req, res) => {
 //load order page
 const loadOrderPage = async (req, res, next) => {
   try {
-    res
-      .status(OK)
-      .render("user/account/orderHistory", { layout: "userAccountLayout" });
+    const userId = req.session.user._id;
+    const orders = await Order.find({ userId })
+      .sort({ createdAt: -1 })
+      .populate("items.carId")
+      .populate("items.variantId")
+      .populate("items.accessoryId")
+      .lean();
+
+    res.status(OK).render("user/account/orderHistory", {
+      layout: "userAccountLayout",
+      orders,
+    });
   } catch (error) {
     console.log("Error from order page load", error);
     next(error);
@@ -189,7 +198,8 @@ const loadCheckoutStep2 = async (req, res, next) => {
     const userId = req.session.user._id;
     const addressId = req.params.addressId;
     const cart = await Cart.findOne({ userId });
-    req.session.user.addressId = addressId;
+    req.session.addressId = addressId;
+    console.log("Address id", addressId);
 
     if (!addressId) return res.status(FORBIDDEN).redirect("/cart");
 
@@ -207,7 +217,7 @@ const loadCheckoutStep3 = async (req, res, next) => {
   try {
     const userId = req.session.user._id;
     const paymentMethod = req.params.paymentMethod;
-    req.session.user.paymentMethod = paymentMethod;
+    req.session.paymentMethod = paymentMethod;
     const cart = await Cart.findOne({ userId });
 
     if (!paymentMethod) return res.status(FORBIDDEN).redirect("/cart");
@@ -229,15 +239,16 @@ const loadCheckoutStep3 = async (req, res, next) => {
     next(error);
   }
 };
-const loadCheckoutStep4 = async (req, res) => {
+const loadCheckoutStep4 = async (req, res, next) => {
   try {
     const userId = req.session.user._id;
-    const paymentMethod = req.session.user.paymentMethod;
-    const addressId = req.session.user.addressId;
+    const paymentMethod = req.session.paymentMethod;
+    const addressId = req.session.addressId;
     const cart = await Cart.findOne({ userId }).populate(
       "items.carId items.accessoryId"
     );
     const selectedAddress = await Address.findById(addressId);
+
     const address = {
       name: selectedAddress.fullName,
       phone: selectedAddress.phone,
@@ -257,7 +268,7 @@ const loadCheckoutStep4 = async (req, res) => {
         accessoryId: item.accessoryId || null,
         quantity: item.quantity || 0,
         price: item.price,
-        totalItemAmount: item.lineTotal,
+        totalItemAmount: item.carId ? item.price : item.lineTotal,
       };
     });
     const order = new Order({

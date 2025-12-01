@@ -8,9 +8,9 @@
           <i class="bi bi-arrow-counterclockwise me-2"></i> Return Request
         </button>
       </a>
-      <button class="btn btn-success btn-md shadow-sm">
+      <!-- <button class="btn btn-success btn-md shadow-sm">
         <i class="bi bi-download me-2"></i> Export Orders
-      </button>
+      </button> -->
     </div>
   </div>
 
@@ -32,61 +32,34 @@
             <th>#</th>
             <th>Order ID</th>
             <th>Customer</th>
-            <th>Product</th>
+            <!-- <th>Product</th> -->
             <th>Date</th>
             <th>Amount (₹)</th>
             <th>Status</th>
             <th>Action</th>
           </tr>
         </thead>
+
         <tbody id="ordersTableBody">
           <!-- Example Order 1 -->
+          {{#each orders}}
           <tr>
-            <td>1</td>
-            <td class="fw-bold">ORD1001</td>
-            <td>John Doe</td>
-            <td>Car Accessories Kit</td>
-            <td>2025-10-15</td>
-            <td>₹4500</td>
-            <td><span class="badge bg-success">Shipped</span></td>
+            <td>{{inc @index}}</td>
+            <td class="fw-bold">{{this.orderId}}</td>
+            <td>{{this.address.name}}</td>
+            <!-- <td>Car Accessories Kit</td> -->
+            <td>{{formattedDate this.createdAt}}</td>
+            <td>₹ {{formatPrice this.totalAmount}}</td>
+            <td><span class="badge bg-success">{{this.orderStatus}}</span></td>
             <td>
-              <a href="/admin/orders-management/view-order"> <button class="btn btn-sm btn-info">
+              <a href="/admin/orders-management/view-order/{{this._id}}"> <button class="btn btn-sm btn-info">
                   <i class="bi bi-eye-fill"></i> View
                 </button>
               </a>
 
             </td>
           </tr>
-          <!-- Example Order 2 -->
-          <tr>
-            <td>2</td>
-            <td class="fw-bold">ORD1002</td>
-            <td>Jane Smith</td>
-            <td>Car Seat Cover</td>
-            <td>2025-10-16</td>
-            <td>₹1200</td>
-            <td><span class="badge bg-warning text-dark">Processing</span></td>
-            <td>
-              <button class="btn btn-sm btn-info">
-                <i class="bi bi-eye-fill"></i> View
-              </button>
-            </td>
-          </tr>
-          <!-- Example Order 3 -->
-          <tr>
-            <td>3</td>
-            <td class="fw-bold">ORD1003</td>
-            <td>Mark Wilson</td>
-            <td>Car Cleaning Kit</td>
-            <td>2025-10-17</td>
-            <td>₹800</td>
-            <td><span class="badge bg-secondary">Pending</span></td>
-            <td>
-              <button class="btn btn-sm btn-info">
-                <i class="bi bi-eye-fill"></i> View
-              </button>
-            </td>
-          </tr>
+          {{/each}}
         </tbody>
       </table>
     </div>
@@ -129,3 +102,71 @@
     </div>
   </div>
 </div>
+<script src="https://cdn.jsdelivr.net/npm/axios/dist/axios.min.js"></script>
+
+<script>
+  const tableBody = document.getElementById("ordersTableBody");
+  const searchInput = document.getElementById("searchOrderInput");
+
+  // 🔄 Render orders dynamically
+  function renderOrders(orders) {
+    tableBody.innerHTML = "";
+
+    if (!orders.length) {
+      tableBody.innerHTML = `<tr><td colspan="7">No orders found</td></tr>`;
+      return;
+    }
+
+    orders.forEach((order, index) => {
+      tableBody.innerHTML += `
+        <tr>
+          <td>${index + 1}</td>
+          <td class="fw-bold">${order.orderId}</td>
+          <td>${order.address?.name || "-"}</td>
+          <td>${new Date(order.createdAt).toLocaleDateString()}</td>
+          <td>₹ ${order.totalAmount.toLocaleString()}</td>
+          <td><span class="badge bg-success">${order.orderStatus}</span></td>
+          <td>
+            <a href="/admin/orders-management/view-order/${order._id}">
+              <button class="btn btn-sm btn-info">
+                <i class="bi bi-eye-fill"></i> View
+              </button>
+            </a>
+          </td>
+        </tr>
+      `;
+    });
+  }
+
+  // Live Search
+  searchInput.addEventListener("keyup", async () => {
+    let search = searchInput.value.trim();
+
+    const response = await axios.get("/admin/orders-management", {
+      params: { search, ajax: 1 }
+    });
+
+    renderOrders(response.data.orders);
+  });
+
+  // Apply Filter
+  document.getElementById("filterOrderForm").addEventListener("submit", async (e) => {
+    e.preventDefault();
+
+    const form = new FormData(e.target);
+
+    const status = form.get("status");
+    const dateFrom = form.get("dateFrom");
+    const dateTo = form.get("dateTo");
+
+    const response = await axios.get("/admin/orders-management", {
+      params: { status, dateFrom, dateTo, ajax: 1 }
+    });
+
+    renderOrders(response.data.orders);
+
+    // close modal
+    const modal = bootstrap.Modal.getInstance(document.getElementById("filterOrderModal"));
+    modal.hide();
+  });
+</script>

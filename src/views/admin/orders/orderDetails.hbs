@@ -1,7 +1,159 @@
+<style>
+  .order-summary-card {
+    border-radius: 16px;
+  }
+
+  .order-summary-card .list-group-item {
+    background: #fff;
+    border: none;
+    border-bottom: 1px solid #f1f1f1;
+  }
+
+  .order-summary-card .list-group-item:last-child {
+    border-bottom: none;
+  }
+
+  .item-info .fw-semibold {
+    font-size: 15px;
+  }
+
+  .item-price {
+    font-size: 16px;
+  }
+
+  .total-row {
+    background: #f7faff;
+    padding: 12px 0;
+    border-radius: 8px;
+  }
+
+  .summary-row span {
+    font-size: 15px;
+  }
+
+  #orderStatusSelect {
+    border-radius: 12px;
+  }
+
+  .badge {
+    font-size: 15px;
+    border-radius: 10px;
+  }
+
+  .card {
+    border-radius: 16px;
+  }
+
+  .timeline li {
+    position: relative;
+    padding-left: 25px;
+    margin-bottom: 8px;
+  }
+
+  .timeline li::before {
+    content: "";
+    position: absolute;
+    left: 8px;
+    top: 8px;
+    height: 6px;
+    width: 6px;
+    background-color: #6c757d;
+    border-radius: 50%;
+  }
+
+  /* ===============================
+   Slide-in Toast MSG
+=============================== */
+
+  .mobile-alert {
+    position: fixed;
+    bottom: 20px;
+    left: 50%;
+    transform: translateX(-50%) translateY(100px);
+    background: #111;
+    color: #fff;
+    padding: 12px 20px;
+    border-radius: 14px;
+    font-size: 14px;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    opacity: 0;
+    pointer-events: none;
+    transition: all 0.35s ease;
+    box-shadow: 0 6px 22px rgba(0, 0, 0, 0.25);
+    z-index: 9999;
+  }
+
+  .mobile-alert.show {
+    opacity: 1;
+    transform: translateX(-50%) translateY(0);
+  }
+
+  button {
+    padding: 10px 20px;
+    background: #000;
+    color: #fff;
+    border: none;
+    border-radius: 10px;
+    cursor: pointer;
+    font-size: 16px;
+  }
+
+  @media (min-width: 768px) {
+    .mobile-alert {
+      top: 20px;
+      bottom: auto;
+      transform: translateX(-50%) translateY(-100px);
+    }
+
+    .mobile-alert.show {
+      transform: translateX(-50%) translateY(0);
+    }
+  }
+
+  .message-green {
+    color: #00ff7f;
+  }
+
+  .message-red {
+    color: #ff4d4d;
+  }
+
+  .message-yellow {
+    color: #ffcc00;
+  }
+
+  .success-icon,
+  .error-icon {
+    font-size: 16px;
+    /* same size */
+    margin-right: 6px;
+    /* space */
+    vertical-align: middle;
+  }
+
+  .success-icon {
+    color: #00ff7f;
+    /* green */
+  }
+
+  .error-icon {
+    color: #dc3545;
+    /* red */
+  }
+
+  .yellow-icon {
+    color: #ffcc00;
+    /* red */
+  }
+</style>
+<!-- Slide-in Toast MSG -->
+<div id="mobileAlert" class="mobile-alert"></div>
 <div class="container py-4">
   <div class="d-flex justify-content-between align-items-center mb-4">
     <h3 class="fw-bold"><i class="bi bi-box-seam me-2"></i>Order Details</h3>
-    <a href="/admin/orders" class="btn btn-outline-secondary">
+    <a href="/admin/orders-management" class="btn btn-outline-secondary">
       <i class="bi bi-arrow-left me-1"></i>Back
     </a>
   </div>
@@ -12,36 +164,39 @@
       <div class="card shadow-sm mb-4">
         <div class="card-body">
           <h5 class="fw-bold mb-3">Order Information</h5>
-          <p><strong>Order ID:</strong> #ORD12345</p>
-          <p><strong>Placed On:</strong> 18 Oct 2025, 03:45 PM</p>
+          <p><strong>Order ID:</strong> {{order.orderId}}</p>
+          <p><strong>Placed On:</strong> {{formattedDate order.createdAt}}</p>
         </div>
       </div>
+
 
       <div class="card shadow-sm mb-4">
         <div class="card-body">
           <h5 class="fw-bold mb-3">Customer Information</h5>
-          <p><i class="bi bi-person-circle me-2"></i><strong>Name:</strong> Rahul Sharma</p>
-          <p><i class="bi bi-envelope me-2"></i><strong>Email:</strong> rahul.sharma@example.com</p>
-          <p><i class="bi bi-telephone me-2"></i><strong>Phone:</strong> +91 9876543210</p>
+          <p><i class="bi bi-person-circle me-2"></i><strong>Name:</strong> {{order.address.name}}</p>
+          <p><i class="bi bi-envelope me-2"></i><strong>Email:</strong> {{order.address.email}}</p>
+          <p><i class="bi bi-telephone me-2"></i><strong>Phone:</strong> {{order.address.phone}}</p>
         </div>
       </div>
 
       <div class="card shadow-sm mb-4">
         <div class="card-body">
           <h5 class="fw-bold mb-3">Shipping Address</h5>
-          <p><i class="bi bi-geo-alt me-2"></i>Flat 203, Green Residency, MG Road, Kochi, Kerala - 682001</p>
+          <p><i class="bi bi-geo-alt me-2"></i>{{order.address.label}},
+            {{order.address.street}},{{order.address.landmark}},{{order.address.city}},
+            {{order.address.district}},{{order.address.state}},{{order.address.pincode}},</p>
         </div>
       </div>
 
       <div class="card shadow-sm mb-4">
         <div class="card-body">
           <h5 class="fw-bold mb-3">Payment Method</h5>
-          <p><i class="bi bi-credit-card me-2"></i>Credit Card (HDFC Bank)</p>
+          <p><i class="bi bi-credit-card me-2"></i>{{order.paymentMethod}}</p>
         </div>
       </div>
 
       <!-- Order Timeline -->
-      <div class="card shadow-sm">
+      <!-- <div class="card shadow-sm">
         <div class="card-body">
           <h5 class="fw-bold mb-3">Order Timeline</h5>
           <ul class="timeline list-unstyled">
@@ -51,50 +206,102 @@
             <li><i class="bi bi-house-door text-primary me-2"></i>Delivered - 19 Oct 2025, 05:15 PM</li>
           </ul>
         </div>
-      </div>
+      </div> -->
     </div>
 
     <!-- Right Side -->
     <div class="col-lg-4">
       <div class="card shadow-sm mb-4">
         <div class="card-body">
+
           <h5 class="fw-bold mb-3">Order Status</h5>
-          <span class="badge bg-success px-3 py-2 fs-6">Delivered</span>
+
+          <div class="row align-items-center">
+
+            <!-- Left: Current Status Badge -->
+            <div class="col-md-4 mb-3">
+              <span class="badge bg-primary text-light px-4 py-2 fs-6 text-capitalize">
+                {{order.orderStatus}}
+              </span>
+            </div>
+
+            <!-- Right: Dropdown -->
+            <div class="col-md-8">
+              <label class="form-label fw-semibold">Change Status</label>
+              <select id="orderStatusSelect" class="form-select fs-6 py-2" data-orderid="{{order._id}}">
+                <option value="pending" {{#ifEquals order.orderStatus "pending" }}selected{{/ifEquals}}>Pending</option>
+                <option value="confirmed" {{#ifEquals order.orderStatus "confirmed" }}selected{{/ifEquals}}>Confirmed
+                </option>
+                <option value="shipped" {{#ifEquals order.orderStatus "shipped" }}selected{{/ifEquals}}>Shipped</option>
+                <option value="out_for_delivery" {{#ifEquals order.orderStatus "out_for_delivery"
+                  }}selected{{/ifEquals}}>Out for Delivery</option>
+                <option value="delivered" {{#ifEquals order.orderStatus "delivered" }}selected{{/ifEquals}}>Delivered
+                </option>
+                <option value="cancelled" {{#ifEquals order.orderStatus "cancelled" }}selected{{/ifEquals}}>Cancelled
+                </option>
+              </select>
+            </div>
+
+          </div>
+
         </div>
       </div>
 
-      <div class="card shadow-sm mb-4">
+
+
+      <div class="card shadow-sm border-0 mb-4 order-summary-card">
         <div class="card-body">
+
           <h5 class="fw-bold mb-3">Order Summary</h5>
-          <ul class="list-group list-group-flush">
-            <li class="list-group-item d-flex justify-content-between align-items-center">
-              <span>Wireless Earbuds (x1)</span>
-              <strong>₹1,499</strong>
+
+          <ul class="list-group list-group-flush mb-3">
+            {{#each order.items}}
+            <li class="list-group-item d-flex justify-content-between align-items-center py-3">
+              <div class="item-info">
+                <div class="fw-semibold text-dark">
+                  {{#if this.carId}}
+                  {{this.carId.name}}
+                  {{else}}
+                  {{this.accessoryId.name}}
+                  {{/if}}
+                </div>
+                <small class="text-muted">Qty: {{this.quantity}}</small>
+              </div>
+
+              <div class="item-price fw-semibold">
+                {{#if this.carId}}
+                ₹ {{formatPrice this.variantId.price}}
+                {{else}}
+                ₹ {{formatPrice this.accessoryId.price}}
+                {{/if}}
+              </div>
             </li>
-            <li class="list-group-item d-flex justify-content-between align-items-center">
-              <span>Leather Wallet (x2)</span>
-              <strong>₹1,800</strong>
-            </li>
-            <li class="list-group-item d-flex justify-content-between align-items-center">
-              <span>Smartwatch (x1)</span>
-              <strong>₹2,999</strong>
-            </li>
+            {{/each}}
           </ul>
-          <hr>
-          <div class="d-flex justify-content-between">
-            <strong>Total:</strong>
-            <strong>₹6,298</strong>
+
+          <div class="summary-row d-flex justify-content-between mb-2">
+            <span class="text-muted">Tax</span>
+            <strong>₹ {{formatPrice order.taxAmount}}</strong>
           </div>
+
+          <hr>
+
+          <div class="summary-row d-flex justify-content-between total-row">
+            <span class="fw-bold fs-5">Total</span>
+            <span class="fw-bold fs-5 text-primary">₹ {{formatPrice order.totalAmount}}</span>
+          </div>
+
         </div>
       </div>
+
 
       <div class="d-flex justify-content-between">
         <button class="btn btn-outline-secondary" onclick="window.history.back()">
           <i class="bi bi-arrow-left me-1"></i>Back
         </button>
-        <button class="btn btn-danger" data-bs-toggle="modal" data-bs-target="#cancelModal">
+        <!-- <button class="btn btn-danger" data-bs-toggle="modal" data-bs-target="#cancelModal">
           <i class="bi bi-x-circle me-1"></i>Cancel Order
-        </button>
+        </button> -->
       </div>
     </div>
   </div>
@@ -114,7 +321,7 @@
       </div>
       <div class="modal-footer">
         <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">No, Go Back</button>
-        <form action="/admin/orders/ORD12345/cancel" method="POST">
+        <form action="/admin/orders-management/cancel-order/{{orders._id}}" method="POST">
           <button type="submit" class="btn btn-danger">Yes, Cancel Order</button>
         </form>
       </div>
@@ -122,21 +329,58 @@
   </div>
 </div>
 
-<style>
-  .timeline li {
-    position: relative;
-    padding-left: 25px;
-    margin-bottom: 8px;
-  }
 
-  .timeline li::before {
-    content: "";
-    position: absolute;
-    left: 8px;
-    top: 8px;
-    height: 6px;
-    width: 6px;
-    background-color: #6c757d;
-    border-radius: 50%;
-  }
-</style>
+
+<script>
+  document.addEventListener("DOMContentLoaded", () => {
+
+
+    function showMobileAlert(message, notification) {
+      const alertBox = document.getElementById("mobileAlert");
+      if (notification === "success") {
+        alertBox.innerHTML = `<i class="bi bi-check-circle-fill success-icon"></i><span class="message-green">${message}</span>`;
+        alertBox.classList.add("show");
+      } else if (notification === "error") {
+        alertBox.innerHTML = `<i class="bi bi-x-circle-fill error-icon"></i><span class="message-red">${message}</span>`;
+        alertBox.classList.add("show");
+      } else if (notification === "warning") {
+        alertBox.innerHTML = `<i class="bi bi-exclamation-triangle-fill yellow-icon"></i><span class="message-yellow">${message}</span>`;
+        alertBox.classList.add("show");
+      }
+
+      setTimeout(() => {
+        alertBox.classList.remove("show");
+      }, 2000);
+    }
+
+
+
+    const select = document.getElementById("orderStatusSelect");
+    const orderId = select.dataset.orderid;
+
+    select.addEventListener("change", async () => {
+      const newStatus = select.value;
+
+      setTimeout(async () => {
+        try {
+          const res = await axios.patch(`/admin/orders-management/update-status/${orderId}`, {
+            status: newStatus
+          });
+
+          if (res.data.success) {
+            showMobileAlert("Order status updated!", "success");
+            setTimeout(() => window.location.reload(), 1500)
+          } else {
+            showMobileAlert(res.data.alert || "Something went wrong", "error");
+          }
+
+        } catch (err) {
+          console.error("Error updating order:", err);
+          showMobileAlert(res.data.alert || "INTERNAL SERVER ERROR", "error");
+        }
+      }, 2000)
+
+
+    });
+  });
+</script>

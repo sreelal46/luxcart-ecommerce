@@ -1,0 +1,96 @@
+<style>
+  .table td,
+  .table th {
+    vertical-align: middle;
+  }
+
+  .badge {
+    border-radius: 10px;
+  }
+
+  .card {
+    border-radius: 16px;
+  }
+
+  #editStockModal .modal-content {
+    border-radius: 14px;
+  }
+</style>
+
+<!-- STOCK MANAGEMENT PAGE -->
+<div class="container py-4">
+
+  <div class="d-flex justify-content-between align-items-center mb-4">
+    <h3 class="fw-bold">Stock Management</h3>
+    <a href="/admin/products/add" class="btn btn-primary">
+      <i class="bi bi-plus-circle me-2"></i>Add New Product
+    </a>
+  </div>
+
+  <!-- Table -->
+  <div class="card shadow-sm border-0">
+    <div class="card-body">
+
+      <div class="table-responsive">
+        <table class="table align-middle">
+          <thead class="table-light">
+            <tr>
+              <th>#</th>
+              <th>Product</th>
+              <th>Category</th>
+              <th>Variant / Stock</th>
+              <th>Status</th>
+              <th class="text-end">Actions</th>
+            </tr>
+          </thead>
+
+          <tbody>
+            {{#each fullProducts}}
+            <tr>
+              <td>{{inc @index}}</td>
+
+              <td class="fw-semibold">{{this.name}}</td>
+
+              <td>{{this.category_id.name}}</td>
+
+              <td>
+                {{#if this.variantIds}}
+                {{#each this.variantIds}}
+                <div class="mb-1">
+                  <strong>{{this.color}}:</strong> {{this.stock}}
+                </div>
+                {{/each}}
+                {{else}}
+                <strong>{{this.stock}}</strong>
+                {{/if}}
+              </td>
+
+              <td>
+                {{{stockStatus (getMainStock this)}}}
+              </td>
+
+              <td class="text-end">
+                {{#if this.variantIds}}
+                <a href="/admin/products-management/edit-car-product/{{this._id}}"
+                  class="btn btn-sm btn-outline-primary editStockBtn">
+                  <i class="bi bi-pencil-square"></i>
+                </a>
+                {{else}}
+                <a href="/admin/products-management/edit-accessories-product/{{this._id}}"
+                  class="btn btn-sm btn-outline-primary editStockBtn">
+                  <i class="bi bi-pencil-square"></i>
+                </a>
+                {{/if}}
+              </td>
+
+            </tr>
+            {{/each}}
+          </tbody>
+
+        </table>
+      </div>
+
+    </div>
+  </div>
+
+</div>

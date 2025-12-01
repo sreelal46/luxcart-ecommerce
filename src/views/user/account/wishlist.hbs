@@ -1,0 +1,249 @@
+<style>
+  /* ===============================
+   WISHLIST PAGE - SCOPED STYLES
+   ===============================*/
+  .wrap-wishlist {
+    --bg: #f8f8f8;
+    --card: #fff;
+    --muted: #9aa0a6;
+    --accent: #111;
+    --soft: #f1f2f3;
+  }
+
+  /* Container background */
+  .wrap-wishlist body,
+  .wrap-wishlist {
+    background: var(--bg);
+    font-family: Inter, system-ui, -apple-system, 'Segoe UI', Roboto, 'Helvetica Neue', Arial;
+  }
+
+  /* Main card wrapper */
+  .wrap-wishlist .main-card {
+    background: var(--card);
+    padding: 20px;
+    border-radius: 8px;
+  }
+
+  /* ===============================
+   WISHLIST CARDS
+   ===============================*/
+  .wrap-wishlist .wishlist-card {
+    display: flex;
+    gap: 12px;
+    padding: 12px;
+    border-radius: 6px;
+    border: 1px solid #eee;
+    margin-bottom: 12px;
+    align-items: center;
+    background: #fff;
+  }
+
+  .wrap-wishlist .wishlist-card img {
+    width: 260px;
+    height: 120px;
+    object-fit: cover;
+    border-radius: 6px;
+  }
+
+  .wrap-wishlist .wishlist-card h6 {
+    font-size: 16px;
+    font-weight: 600;
+    margin-bottom: 4px;
+  }
+
+  /* ===============================
+   RESPONSIVE
+   ===============================*/
+
+  @media (max-width: 991px) {
+    .wrap-wishlist .wishlist-card img {
+      width: 160px;
+      height: 100px;
+    }
+  }
+
+  @media (max-width: 575px) {
+    .wrap-wishlist .wishlist-card {
+      flex-direction: column;
+      align-items: stretch;
+    }
+
+    .wrap-wishlist .wishlist-card img {
+      width: 100%;
+      height: 180px;
+    }
+
+    .wrap-wishlist .main-card h5 {
+      font-size: 18px;
+    }
+  }
+
+  /* ===============================
+   Slide-in Toast MSG
+=============================== */
+
+  .mobile-alert {
+    position: fixed;
+    bottom: 75px;
+    left: 0;
+    right: 0;
+    margin: 0 auto;
+    width: fit-content;
+    max-width: 90%;
+    background: #111;
+    color: #fff;
+    padding: 12px 20px;
+    border-radius: 14px;
+    font-size: 14px;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+
+    opacity: 0;
+    pointer-events: none;
+    transform: translateY(120%);
+    transition: all 0.35s ease;
+
+    box-shadow: 0 6px 22px rgba(0, 0, 0, 0.25);
+    z-index: 9999;
+
+    white-space: normal;
+    word-break: break-word;
+  }
+
+  .mobile-alert.show {
+    opacity: 1;
+    transform: translateY(0);
+  }
+
+  /* Desktop */
+  @media (min-width: 768px) {
+    .mobile-alert {
+      top: 75px;
+      bottom: auto;
+      transform: translateY(-120%);
+    }
+
+    .mobile-alert.show {
+      transform: translateY(0);
+    }
+  }
+
+  /* Colors */
+  .message-green {
+    color: #00ff7f;
+  }
+
+  .message-red {
+    color: #ff4d4d;
+  }
+
+  .message-yellow {
+    color: #ffcc00;
+  }
+
+  .success-icon,
+  .error-icon {
+    font-size: 16px;
+    margin-right: 6px;
+  }
+
+  .success-icon {
+    color: #00ff7f;
+  }
+
+  .error-icon {
+    color: #dc3545;
+  }
+
+  .yellow-icon {
+    color: #ffcc00;
+  }
+</style>
+<!-- Slide-in Toast MSG -->
+<div id="mobileAlert" class="mobile-alert"></div>
+
+<div class="wrap-wishlist">
+  <section id="wishlist" class="main-card mt-4">
+    <h5>Wishlist</h5>
+    {{#each wishlist.items}}
+    <div class="wishlist-card mt-3">
+      {{#if this.variantId}}
+      <img src="{{this.variantId.image_url.[0]}}" alt="car">
+      {{else}}
+      <img src="{{this.accessoryId.images.[0]}}" alt="accessory">
+      {{/if}}
+
+      <div class="flex-grow-1 d-flex flex-column justify-content-between">
+        <div>
+          {{#if this.variantId}}
+          <h6>{{this.carId.name}}</h6>
+          <div style="font-weight:700">₹ {{formatPrice this.variantId.price}}</div>
+          {{else}}
+          <h6>{{this.accessoryId.name}}</h6>
+          <div style="font-weight:700">₹ {{formatPrice this.accessoryId.price}}</div>
+          {{/if}}
+        </div>
+
+        <div>
+          {{#if this.variantId}}
+          <a href="/cars-collection/view-car-product/{{this.carId._id}}" class="btn btn-dark btn-sm me-2">View
+            Details</a>
+          {{else}}
+          <a href="/all-accessories/view-accessory-product/{{this.accessoryId._id}}"
+            class="btn btn-dark btn-sm me-2">View Details</a>
+          {{/if}}
+          <button id="removeBtn" data-itemid="{{this._id}}"
+            class="btn btn-link btn-sm btn-remove-wishlist">Remove</button>
+        </div>
+      </div>
+    </div>
+    {{/each}}
+
+
+  </section>
+</div>
+
+<script>
+  document.addEventListener("DOMContentLoaded", () => {
+
+    function showMobileAlert(message, notification) {
+      const alertBox = document.getElementById("mobileAlert");
+      if (notification === "success") {
+        alertBox.innerHTML = `<i class="bi bi-check-circle-fill success-icon"></i><span class="message-green">${message}</span>`;
+        alertBox.classList.add("show");
+      } else if (notification === "error") {
+        alertBox.innerHTML = `<i class="bi bi-x-circle-fill error-icon"></i><span class="message-red">${message}</span>`;
+        alertBox.classList.add("show");
+      } else if (notification === "warning") {
+        alertBox.innerHTML = `<i class="bi bi-exclamation-triangle-fill yellow-icon"></i><span class="message-yellow">${message}</span>`;
+        alertBox.classList.add("show");
+      }
+
+      setTimeout(() => {
+        alertBox.classList.remove("show");
+      }, 3000);
+    }
+
+
+    const removeBtn = document.getElementById("removeBtn")
+    const itemId = removeBtn.dataset.itemid
+
+    removeBtn.addEventListener("click", async () => {
+      try {
+        const res = await axios.delete(`/account/wishlist/delete/${itemId}`)
+        if (res.data.success) {
+          showMobileAlert("Product deleted from Wishlist!", "success");
+          setTimeout(() => window.location.reload(), 2000)
+        } else {
+          const msg = res.data.alert || "Something went wrong";
+          showMobileAlert(msg, "error");
+        }
+      } catch (err) {
+        console.error("Error from add to wishlist:", err);
+        const msg = err.response?.data.alert || "INTERNAL SERVER ERROR";
+        showMobileAlert(msg, "error");
+      }
+    })
+  })
+</script>

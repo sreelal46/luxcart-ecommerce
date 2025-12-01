@@ -2,6 +2,7 @@ let changingVariantId = null;
 let cartItems = [];
 let singleCarId;
 const productId = document.getElementById("productId").value;
+const variantId = document.getElementById("variantId").value;
 
 async function changeVariantReq(button) {
   const priceBox = document.querySelector(".price");
@@ -297,4 +298,45 @@ document.addEventListener("DOMContentLoaded", () => {
 
   addToCartAxios(addToCartDesk, "car", productId, variantId);
   addToCartAxios(addToCartMob, "car", productId, variantId);
+
+  const btn = document.getElementById("wishlistBtn");
+  const heart = document.getElementById("heartIcon");
+
+  btn.addEventListener("click", async () => {
+    const isFilled = heart.classList.contains("bi-heart-fill");
+
+    try {
+      console.log("first variant Id", variantId);
+
+      const res = await axios.post(
+        `/account/wishlist/add/${singleCarId ? singleCarId : productId}`,
+        {
+          variantId: changingVariantId || variantId,
+          productType: "car",
+        }
+      );
+
+      if (res.data.success) {
+        // ---- UI TOGGLE FIXED ----
+        if (isFilled) {
+          // currently filled → set to unfilled
+          heart.classList.remove("bi-heart-fill", "text-danger");
+          heart.classList.add("bi-heart", "text-muted");
+        } else {
+          // currently unfilled → set to filled
+          heart.classList.remove("bi-heart", "text-muted");
+          heart.classList.add("bi-heart-fill", "text-danger");
+        }
+
+        showMobileAlert("Product added to Wishlist!", "success");
+      } else {
+        const msg = res.data.alert || "Something went wrong";
+        showMobileAlert(msg, "error");
+      }
+    } catch (err) {
+      console.error("Error from add to wishlist:", err);
+      const msg = err.response?.data.alert || "INTERNAL SERVER ERROR";
+      showMobileAlert(msg, "error");
+    }
+  });
 });

@@ -255,7 +255,7 @@ const addToCart = async (req, res, next) => {
 
     if (!product) {
       return res
-        .status(404)
+        .status(NOT_FOUND)
         .json({ success: false, alert: "Product not found" });
     }
 
@@ -387,10 +387,11 @@ const changeQuantity = async (req, res, next) => {
     next(error);
   }
 };
+
 const downloadInvoice = async (req, res, next) => {
   try {
     const orderId = req.params.orderId;
-
+    console.log(orderId);
     const order = await Order.findById(orderId).populate(
       "items.carId items.variantId items.accessoryId"
     );

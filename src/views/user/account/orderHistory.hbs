@@ -5,7 +5,6 @@
     border-radius: 8px;
   }
 
-  /* Order card container */
   .order-card {
     background: transparent;
     padding: 0;
@@ -20,7 +19,6 @@
     border: 1px solid #eee;
   }
 
-  /* Pills */
   .status-pill {
     display: inline-block;
     padding: 6px 12px;
@@ -38,7 +36,6 @@
     color: #b78600;
   }
 
-  /* Desktop layout */
   .order-row-header {
     display: flex;
     align-items: center;
@@ -70,8 +67,8 @@
   }
 
   .order-item-image {
-    width: 260px;
-    height: 120px;
+    width: 240px;
+    height: 100px;
     object-fit: cover;
     border-radius: 6px;
   }
@@ -85,8 +82,7 @@
     white-space: nowrap;
   }
 
-  /* Mobile responsiveness */
-  @media (max-width:575px) {
+  @media(max-width:575px) {
     .order-row {
       padding: 12px;
       font-size: 14px;
@@ -106,8 +102,6 @@
     .order-item-image {
       width: 100%;
       height: 180px;
-      object-fit: cover;
-      border-radius: 6px;
     }
 
     .order-actions .btn {
@@ -119,97 +113,296 @@
     .order-status {
       align-self: flex-start;
     }
-
-    .status-pill {
-      font-size: 12px;
-      padding: 6px 10px;
-    }
   }
 </style>
-
 
 <section id="orders" class="main-card">
   <h5>Order History</h5>
 
-  <!-- Order row (clean responsive structure) -->
+  {{!-- LOOP ALL ORDERS --}}
+  {{#each orders}}
   <div class="order-row mt-3">
+
+    {{!-- TOP ROW --}}
     <div class="order-row-header">
       <div class="order-meta">
+
         <div>
+
           <div style="font-size:13px;color:var(--muted)">Order ID</div>
-          <div style="font-weight:700">ORD-12345</div>
+          <div style="font-weight:700">{{this.orderId}}</div>
         </div>
+
         <div>
           <div style="font-size:13px;color:var(--muted)">Date</div>
-          <div>May 15, 2023</div>
+          <div>{{formattedDate this.createdAt}}</div>
         </div>
       </div>
 
       <div class="order-total">
         <div style="font-size:13px;color:var(--muted)">Total</div>
-        <div style="font-weight:700">$165,000</div>
+        <div style="font-weight:700">₹ {{formatPrice this.totalAmount}}</div>
       </div>
 
       <div class="order-status">
         <div style="font-size:13px;color:var(--muted)">Status</div>
-        <div class="status-pill status-delivered">Delivered</div>
+        <div class="status-pill status-delivered">{{this.orderStatus}}</div>
       </div>
     </div>
 
+    {{!-- LOOP ALL ITEMS OF THE ORDER --}}
+    {{#each this.items}}
     <div class="order-items">
-      <img class="order-item-image" src="images\9264822.jpg" alt="car">
+
+      {{!-- CAR ITEM --}}
+      {{#if this.carId}}
+      <img class="order-item-image" src="{{this.variantId.image_url.[0]}}" alt="car">
       <div class="flex-grow-1">
-        <div style="font-weight:600">Mercedes S-Class AMG</div>
-        <div style="font-size:13px;color:var(--muted)" class="mt-1">Quantity: 1</div>
-      </div>
-      <div class="order-actions">
-        <button class="btn btn-outline-dark btn-sm" data-bs-toggle="modal" data-bs-target="#viewDetailModal">View
-          Details</button>
-        <button class="btn btn-warning btn-sm" data-bs-toggle="modal" data-bs-target="#returnModal"><i
-            class="bi bi-bag-plus"></i> Return</button>
-      </div>
-    </div>
-  </div>
+        <div style="font-weight:600">{{this.carId.name}}</div>
 
-  <!-- Second order -->
-  <div class="order-row">
-    <div class="order-row-header">
-      <div class="order-meta">
-        <div>
-          <div style="font-size:13px;color:var(--muted)">Order ID</div>
-          <div style="font-weight:700">ORD-12346</div>
+        {{!-- ACCESSORY ITEM --}}
+        {{else}}
+        <img class="order-item-image" src="{{this.accessoryId.images.[0]}}" alt="accessory">
+        <div class="flex-grow-1">
+          <div style="font-weight:600">{{this.accessoryId.name}}</div>
+          {{/if}}
+
+          <div style="font-size:13px;color:var(--muted)" class="mt-1">
+            Quantity: {{this.quantity}}
+          </div>
         </div>
-        <div>
-          <div style="font-size:13px;color:var(--muted)">Date</div>
-          <div>April 20, 2023</div>
+
+        <div class="order-actions">
+          <a href="/account/orders/order-details/{{../_id}}" class="btn btn-outline-dark btn-sm" id="viewDetailBtn">
+            View Details
+          </a>
+          {{#if (eqTwo this.orderStatus "delivered")}}
+          <button class="btn btn-warning btn-sm returnBtn" data-orderid="{{../_id}}" data-itemid="{{this._id}}"
+            data-bs-toggle="modal" data-bs-target="#returnModal">
+            <i class="bi bi-bag-plus"></i> Return
+          </button>
+
+          {{else}}
+          <button class="btn btn-danger btn-sm cancelBtn" data-orderid="{{../_id}}" data-itemid="{{this._id}}"
+            data-bs-toggle="modal" data-bs-target="#cancelModal">
+            Cancel Order
+          </button>
+
+          {{/if}}
         </div>
-      </div>
 
-      <div class="order-total">
-        <div style="font-size:13px;color:var(--muted)">Total</div>
-        <div style="font-weight:700">$189,000</div>
       </div>
+      {{/each}}
 
-      <div class="order-status">
-        <div style="font-size:13px;color:var(--muted)">Status</div>
-        <div class="status-pill status-processing">Processing</div>
-      </div>
     </div>
-
-    <div class="order-items">
-      <img class="order-item-image" src="images\9264822.jpg" alt="car">
-      <div class="flex-grow-1">
-        <div style="font-weight:600">Porsche 911 GT3</div>
-        <div style="font-size:13px;color:var(--muted)" class="mt-1">Quantity: 1</div>
-      </div>
-      <div class="order-actions">
-        <button class="btn btn-outline-dark btn-sm" data-bs-toggle="modal" data-bs-target="#viewDetailModal">View
-          Details</button>
-        <button class="btn btn-danger btn-sm" data-bs-toggle="modal" data-bs-target="#cancelModal">Cancel
-          order</button>
-      </div>
-    </div>
-
-  </div>
+    {{/each}}
 
 </section>
+
+<div class="modal fade" id="returnModal" tabindex="-1" aria-hidden="true">
+  <div class="modal-dialog modal-lg modal-dialog-centered">
+    <div class="modal-content">
+      <div class="modal-body">
+        <h5>Product Return</h5>
+
+        <form id="returnForm" class="mt-3">
+          <input type="hidden" name="request" value="return">
+
+          <div class="mb-3">
+            <label class="form-label">Subject</label>
+            <input class="form-control" name="subject" placeholder="subject">
+            <small class="text-danger error-subject d-none">Subject is required</small>
+          </div>
+
+          <div class="mb-3">
+            <label class="form-label">Message</label>
+            <textarea class="form-control" rows="6" name="message"></textarea>
+            <small class="text-danger error-message d-none">Message is required</small>
+          </div>
+
+          <div class="d-flex justify-content-end">
+            <button type="submit" class="btn btn-dark">
+              <i class="bi bi-send"></i> Request
+            </button>
+          </div>
+        </form>
+
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- cancel order -->
+<div class="modal fade" id="cancelModal" tabindex="-1" aria-hidden="true">
+  <div class="modal-dialog modal-lg modal-dialog-centered">
+    <div class="modal-content">
+      <div class="modal-body">
+        <h5>Product Cancel</h5>
+
+        <form id="cancelForm" class="mt-3">
+          <input type="hidden" name="request" value="cancel">
+
+          <div class="mb-3">
+            <label class="form-label">Subject</label>
+            <input class="form-control" name="subject">
+            <small class="text-danger error-subject d-none">Subject is required</small>
+          </div>
+
+          <div class="mb-3">
+            <label class="form-label">Message</label>
+            <textarea class="form-control" rows="6" name="message"></textarea>
+            <small class="text-danger error-message d-none">Message is required</small>
+          </div>
+
+          <div class="d-flex justify-content-end">
+            <button type="submit" class="btn btn-dark">
+              <i class="bi bi-send"></i> Request
+            </button>
+          </div>
+        </form>
+
+      </div>
+    </div>
+  </div>
+</div>
+
+
+<!-- Success Modal -->
+<div class="modal fade" id="successModal" tabindex="-1" aria-hidden="true">
+  <div class="modal-dialog modal-sm modal-dialog-centered">
+    <div class="modal-content text-center p-3">
+      <h5 class="mb-2">Request Sent</h5>
+      <p class="text-muted mb-2" id="responsMsg"></p>
+      <i class="bi bi-check-circle-fill text-success" style="font-size:32px;"></i>
+    </div>
+  </div>
+</div>
+
+<script>
+  let orderId = null;
+  let itemId = null;
+
+  document.addEventListener("DOMContentLoaded", () => {
+
+    // ========== SET IDS WHEN BUTTON CLICKED ==========
+    document.querySelectorAll(".cancelBtn").forEach(btn => {
+      btn.addEventListener("click", () => {
+        orderId = btn.dataset.orderid;
+        itemId = btn.dataset.itemid;
+      });
+    });
+
+    document.querySelectorAll(".returnBtn").forEach(btn => {
+      btn.addEventListener("click", () => {
+        orderId = btn.dataset.orderid;
+        itemId = btn.dataset.itemid;
+      });
+    });
+
+
+    // ========== VALIDATION ==========
+    function validateForm(form) {
+      let valid = true;
+
+      const subject = form.querySelector('input[name="subject"]');
+      const message = form.querySelector('textarea[name="message"]');
+
+      const subjectError = form.querySelector(".error-subject");
+      const messageError = form.querySelector(".error-message");
+
+      if (!subject.value.trim()) {
+        subject.classList.add("is-invalid");
+        subjectError.classList.remove("d-none");
+        valid = false;
+      } else {
+        subject.classList.remove("is-invalid");
+        subjectError.classList.add("d-none");
+      }
+
+      if (!message.value.trim()) {
+        message.classList.add("is-invalid");
+        messageError.classList.remove("d-none");
+        valid = false;
+      } else {
+        message.classList.remove("is-invalid");
+        messageError.classList.add("d-none");
+      }
+
+      return valid;
+    }
+
+    const responsMsg = document.getElementById("responsMsg")
+    // ========== SHOW SUCCESS MODAL ==========
+    function showSuccessModal(msg = "Processing") {
+      const successModal = new bootstrap.Modal(document.getElementById("successModal"));
+      responsMsg.textContent = msg
+      successModal.show();
+
+      setTimeout(() => {
+        successModal.hide();
+      }, 2000); // auto-close in 2 sec
+    }
+
+
+    // ========== CANCEL FORM SUBMIT ==========
+    document.getElementById("cancelForm").addEventListener("submit", async function (e) {
+      e.preventDefault();
+      if (!validateForm(this)) return;
+
+      const data = Object.fromEntries(new FormData(this).entries());
+      try {
+        const res = await axios.post(`/account/orders/order-details/cancel-request/${orderId}/${itemId}`, data)
+        if (res.data.success) {
+          bootstrap.Modal.getInstance(document.getElementById("cancelModal")).hide();
+          this.reset();
+          showSuccessModal("We received your request");
+        }
+        else {
+          bootstrap.Modal.getInstance(document.getElementById("cancelModal")).hide();
+          this.reset();
+          const msg = res.data.alert || "Somthing went wrong"
+          showSuccessModal(msg);
+        }
+      } catch (error) {
+        console.log("Error from cencel order", error)
+        bootstrap.Modal.getInstance(document.getElementById("cancelModal")).hide();
+        this.reset();
+        const msg = error.response?.data.alert || "Somthing went wrong"
+        showSuccessModal(msg);
+      }
+
+    });
+
+
+    // ========== RETURN FORM SUBMIT ==========
+    document.getElementById("returnForm").addEventListener("submit", async function (e) {
+      e.preventDefault();
+      if (!validateForm(this)) return;
+
+      const data = Object.fromEntries(new FormData(this).entries());
+
+      try {
+        const res = await axios.post(`/account/orders/order-details/return-request/${orderId}/${itemId}`, data)
+        if (res.data.success) {
+          bootstrap.Modal.getInstance(document.getElementById("cancelModal")).hide();
+          this.reset();
+          showSuccessModal("We received your request");
+        }
+        else {
+          bootstrap.Modal.getInstance(document.getElementById("cancelModal")).hide();
+          this.reset();
+          const msg = res.data.alert || "Somthing went wrong"
+          showSuccessModal(msg);
+        }
+      } catch (error) {
+        console.log("Error from return order", error)
+        bootstrap.Modal.getInstance(document.getElementById("cancelModal")).hide();
+        this.reset();
+        const msg = error.response?.data.alert || "Somthing went wrong"
+        showSuccessModal(msg);
+      }
+    });
+
+
+  });
+</script>

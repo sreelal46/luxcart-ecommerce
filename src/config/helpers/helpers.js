@@ -57,4 +57,23 @@ module.exports = {
       return "";
     }
   },
+  ifEquals: (a, b, options) => {
+    return a === b ? options.fn(this) : options.inverse(this);
+  },
+  stockStatus: (stock) => {
+    if (stock === 0)
+      return `<span class="badge bg-danger px-3 py-2">Out of Stock</span>`;
+    if (stock < 10)
+      return `<span class="badge bg-warning px-3 py-2">Low Stock</span>`;
+    return `<span class="badge bg-success px-3 py-2">In Stock</span>`;
+  },
+  getMainStock: (product) => {
+    if (product.variantIds && product.variantIds.length > 0) {
+      return product.variantIds[0].stock; // main variant stock
+    }
+    return product.stock; // accessory or non-variant product
+  },
+  eqTwo: (a, b) => {
+    return a === b;
+  },
 };

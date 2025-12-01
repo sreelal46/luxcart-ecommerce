@@ -56,7 +56,10 @@ document.addEventListener("DOMContentLoaded", () => {
 
   const validators = {
     name: (v) => (v && v.trim() !== "") || "Name is required.",
-    price: (v) => (v && v.trim() !== "") || "Price is required.",
+    price: (v) =>
+      v === "" ||
+      (!isNaN(v) && Number(v) > 0) ||
+      "Variant price must be a not equal to Zero.",
     material: (v) => (v && v.trim() !== "") || "Material is required.",
     stock: (v) => (v && v.trim() !== "") || "Stock is required.",
     category_id: (v) => (v && v.trim() !== "") || "Category is required.",

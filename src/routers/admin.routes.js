@@ -29,7 +29,11 @@ const {
   loadEditAccessories,
   usersManagement,
 } = require("../controllers/admin/pageLoad.controller");
-
+const {
+  loadOrderManagement,
+  loadOneOrder,
+  loadStockPage,
+} = require("../controllers/admin/pageLoadTwo.controller");
 //auth controller
 const {
   verifyadmin,
@@ -72,6 +76,8 @@ const {
   editAccessories,
 } = require("../controllers/admin/product.controller");
 
+//Order controller
+const { updateOrderStatus } = require("../controllers/admin/order.Controller");
 //=========================================code section=======================================================
 
 // Setup for admin layout for these routes only
@@ -219,6 +225,21 @@ route.put(
   editAccessories
 );
 
+//=======================================ORDER MANAGEMENT==========================
+
+route.get("/orders-management", checkSession, loadOrderManagement);
+
+route.get("/orders-management/view-order/:orderId", checkSession, loadOneOrder);
+route.patch(
+  "/orders-management/update-status/:orderId",
+  checkSession,
+  updateOrderStatus
+);
+route.get("/stock-management", checkSession, loadStockPage);
+route.get("/orders-management/return-request-management", (req, res) => {
+  res.render("admin/returnRequestManagement");
+});
+
 //
 route.get("/products-management/view-categories-product", (req, res) => {
   res.render("admin/products/accessories/view-accessories-product");
@@ -253,18 +274,6 @@ route.get("/wallet", (req, res) => {
 
 route.get("/coupons-management", (req, res) => {
   res.render("admin/couponsManagement");
-});
-
-route.get("/orders-management", (req, res) => {
-  res.render("admin/orders/ordersManagement");
-});
-
-route.get("/orders-management/view-order", (req, res) => {
-  res.render("admin/orders/orderDetails");
-});
-
-route.get("/orders-management/return-request-management", (req, res) => {
-  res.render("admin/returnRequestManagement");
 });
 
 //=======================================USER MANAGEMENT==========================

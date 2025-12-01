@@ -31,6 +31,23 @@ const orderItemSchema = new Schema({
     type: Number,
     required: true,
   },
+  requestInfo: {
+    requested: { type: Boolean, default: false },
+    requestedType: {
+      type: String,
+      enum: ["none", "cancel", "return"],
+      default: "none",
+    },
+    reason: { type: String, default: "" },
+    description: { type: String, default: "" },
+    status: {
+      type: String,
+      enum: ["none", "requested", "approved", "rejected", "refunded"],
+      default: "none",
+    },
+    requestedAt: Date,
+    processedAt: Date,
+  },
 });
 
 const addressSchema = new Schema({

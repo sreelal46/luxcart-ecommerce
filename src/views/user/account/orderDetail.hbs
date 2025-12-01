@@ -1,0 +1,238 @@
+<style>
+  /* WRAPPER */
+  .wrap-orderdetail {
+    --card: #ffffff;
+    --muted: #9aa0a6;
+    --border: #e5e5e5;
+    --soft-bg: #fafafa;
+    font-family: Inter, sans-serif;
+    padding-bottom: 40px;
+  }
+
+  /* Back Link */
+  .wrap-orderdetail .back-link {
+    display: inline-block;
+    margin-bottom: 12px;
+    color: #222;
+    text-decoration: none;
+    font-size: 14px;
+  }
+
+  /* Page Title */
+  .wrap-orderdetail .page-title {
+    margin-bottom: 20px;
+    font-weight: 700;
+  }
+
+  /* Order Summary Header */
+  .wrap-orderdetail .order-summary-box {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    background: var(--soft-bg);
+    border-radius: 8px;
+    padding: 18px;
+    border: 1px solid var(--border);
+    margin-bottom: 30px;
+  }
+
+  .wrap-orderdetail .os-label {
+    color: var(--muted);
+    font-size: 13px;
+  }
+
+  .wrap-orderdetail .os-value {
+    font-weight: 600;
+    margin-top: 2px;
+  }
+
+  /* Status Pills */
+  .status-pill {
+    padding: 5px 12px;
+    font-size: 12px;
+    border-radius: 20px;
+  }
+
+  .status-processing {
+    background: #fff7df;
+    color: #b78600;
+  }
+
+  .status-pending {
+    background: #f4f4f4;
+    color: #222;
+  }
+
+  .status-delivered {
+    background: #e8fbef;
+    color: #0a8a3d;
+  }
+
+  /* Shipping Address */
+  .wrap-orderdetail .address-box {
+    padding: 16px;
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    background: var(--card);
+    margin-bottom: 30px;
+    line-height: 1.6em;
+  }
+
+  /* Items */
+  .wrap-orderdetail .item-box {
+    padding: 16px;
+    border-radius: 8px;
+    border: 1px solid var(--border);
+    background: var(--card);
+    margin-bottom: 30px;
+  }
+
+  .wrap-orderdetail .item-row {
+    display: flex;
+    align-items: center;
+    gap: 15px;
+    padding: 12px 0;
+    border-bottom: 1px solid #eee;
+  }
+
+  .wrap-orderdetail .item-row:last-child {
+    border-bottom: none;
+  }
+
+  .wrap-orderdetail .item-img {
+    width: 120px;
+    height: 80px;
+    border-radius: 6px;
+    object-fit: cover;
+  }
+
+  .wrap-orderdetail .item-title {
+    font-weight: 600;
+  }
+
+  .wrap-orderdetail .item-price {
+    margin-left: auto;
+    font-weight: 700;
+  }
+
+  /* Tracking */
+  .wrap-orderdetail .tracking-box {
+    padding: 16px;
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    background: var(--card);
+  }
+
+  .wrap-orderdetail .track-step {
+    display: flex;
+    align-items: flex-start;
+    gap: 12px;
+    margin-bottom: 18px;
+  }
+
+  .wrap-orderdetail .track-dot {
+    width: 12px;
+    height: 12px;
+    background: #111;
+    border-radius: 50%;
+    margin-top: 4px;
+  }
+
+  .wrap-orderdetail .track-title {
+    font-weight: 600;
+  }
+
+  .wrap-orderdetail .track-date {
+    font-size: 13px;
+    color: var(--muted);
+  }
+
+  @media(max-width:768px) {
+    .wrap-orderdetail .order-summary-box {
+      grid-template-columns: 1fr 1fr;
+      gap: 12px;
+    }
+  }
+</style>
+<div class="order-detail-page wrap-orderdetail">
+  <a href="/account/orders" class="back-link">← Back to Orders</a>
+  <div class="os-item">
+    <button id="downloadInvoice" data-orderid="{{order._id}}" class="btn btn-warning btn-sm returnBtn">
+      <i class="bi bi-bag-plus"></i> Download Invoice
+    </button>
+  </div>
+
+
+  <h3 class="page-title">Order Details</h3>
+
+  <!-- Order Summary Header -->
+  <div class="order-summary-box">
+
+    <div class="os-item">
+      <div class="os-label">Order ID</div>
+      <div class="os-value" id="od-id">{{order.orderId}}</div>
+    </div>
+
+    <div class="os-item">
+      <div class="os-label">Date</div>
+      <div class="os-value" id="od-date">{{formattedDate order.createdAt}}</div>
+    </div>
+
+    <div class="os-item">
+      <div class="os-label">Total</div>
+      <div class="os-value" id="od-total">₹ {{formatPrice order.totalAmount}}</div>
+    </div>
+
+    <div class="os-item">
+      <div class="os-label">Status</div>
+      <span class="status-pill" id="od-status">{{order.orderStatus}}</span>
+    </div>
+
+  </div>
+
+  <!-- Shipping Address -->
+  <h5 class="section-title">Shipping Address</h5>
+  <div class="address-box" id="od-address">
+    {{order.address.name}}<br>{{order.address.phone}}<br>{{order.address.email}}<br>
+    {{order.address.label}}<br>{{order.address.street}}<br>{{order.address.landmark}}<br>{{order.address.city}}
+    <br>{{order.address.district}}<br>{{order.address.state}}<br>{{order.address.pincode}}<br>
+  </div>
+
+  <!-- Order Items -->
+  <h5 class="section-title">Order Items</h5>
+  {{#each order.items}}
+  {{#if this.carId}}
+  <div class="item-box" id="od-items">
+    {{this.carId.name}}
+  </div>
+  {{else}}
+  <div class="item-box" id="od-items">
+    {{this.accessoryId.name}}
+  </div>
+  {{/if}}
+  {{/each}}
+
+
+  <!-- Tracking History -->
+  <h5 class="section-title">Tracking History</h5>
+  <div class="tracking-box" id="od-track">
+    <p style="color:#aaa">No tracking updates yet.</p>
+  </div>
+
+</div>
+<script>
+  const downloadInvoice = document.getElementById("downloadInvoice");
+  const orderId = downloadInvoice.dataset.orderid;
+
+  downloadInvoice.addEventListener("click", async () => {
+    try {
+      const res = await axios.get(`/cart/checkout-success/download-invoice/${orderId}`);
+
+      if (res.data.success) {
+        setTimeout(() => window.open(res.data.file, "_blank"), 2000)
+
+      }
+    } catch (error) {
+      const msg = error.response?.data.alert || "INTERNAL SERVER ERROR";
+    }
+  });
+</script>

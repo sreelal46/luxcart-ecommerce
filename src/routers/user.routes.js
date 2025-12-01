@@ -34,6 +34,11 @@ const {
 } = require("../controllers/user/pageLoadTwo.controller");
 
 const {
+  loadWishlistPage,
+  loadOrderDetailPage,
+} = require("../controllers/user/pageLoadThree.controller");
+
+const {
   editEmail,
   editProfile,
   addAddress,
@@ -46,6 +51,13 @@ const {
   changeQuantity,
   downloadInvoice,
 } = require("../controllers/user/account.controller");
+
+const {
+  cancelOrder,
+  returnOrder,
+  addToWishlist,
+  deleteFromWishlist,
+} = require("../controllers/user/accountTwo.Countroller");
 
 const {
   createUser,
@@ -129,6 +141,30 @@ route.post(
 );
 //order details
 route.get("/account/orders", checkSession, loadOrderPage);
+route.get(
+  "/account/orders/order-details/:orderId",
+  checkSession,
+  loadOrderDetailPage
+);
+route.post(
+  "/account/orders/order-details/cancel-request/:orderId/:itemId",
+  checkSession,
+  cancelOrder
+);
+route.post(
+  "/account/orders/order-details/return-request/:orderId/:itemId",
+  checkSession,
+  returnOrder
+);
+//wishlist
+route.get("/account/wishlist", checkSession, loadWishlistPage);
+route.post("/account/wishlist/add/:productId", checkSession, addToWishlist);
+route.delete(
+  "/account/wishlist/delete/:itemId",
+  checkSession,
+  deleteFromWishlist
+);
+
 //view account address details
 route.get("/account/addresses", checkSession, loadAddressPage);
 route.get("/account/addresses/add-address", checkSession, loadAddAddressPage);
@@ -178,4 +214,5 @@ route.get(
   checkSession,
   downloadInvoice
 );
+
 module.exports = route;
