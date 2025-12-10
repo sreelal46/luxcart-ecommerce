@@ -244,10 +244,18 @@ const loadCheckoutStep4 = async (req, res, next) => {
     const userId = req.session.user._id;
     const paymentMethod = req.session.paymentMethod;
     const addressId = req.session.addressId;
+
     const cart = await Cart.findOne({ userId }).populate(
-      "items.carId items.accessoryId"
+      "items.carId items.accessoryId items.variantId"
     );
+    if (!cart || !cart.items.length) {
+      return res.redirect("/cart"); // or handle properly
+    }
+
     const selectedAddress = await Address.findById(addressId);
+    if (!selectedAddress) {
+      return res.redirect("/checkout/address");
+    }
 
     const address = {
       name: selectedAddress.fullName,
@@ -261,70 +269,76 @@ const loadCheckoutStep4 = async (req, res, next) => {
       state: selectedAddress.state,
       pincode: selectedAddress.pinCode,
     };
-    const orderItem = cart.items.map((item) => {
-      return {
-        carId: item.carId || null,
-        variantId: item.variantId || null,
-        accessoryId: item.accessoryId || null,
-        quantity: item.quantity || 0,
-        price: item.price,
-        totalItemAmount: item.carId ? item.price : item.lineTotal,
-      };
-    });
+
+    const orderItems = cart.items.map((item) => ({
+      carId: item.carId || null,
+      variantId: item.variantId || null,
+      accessoryId: item.accessoryId || null,
+      quantity: item.quantity || 0,
+      price: item.price,
+      totalItemAmount: item.carId ? item.price : item.lineTotal,
+    }));
+
     const order = new Order({
       userId,
-      items: orderItem,
-      address: address,
+      items: orderItems,
+      address,
       paymentMethod,
       subtotal: cart.totalAmount,
       taxAmount: cart.accessoryTax,
       discount: cart.discount,
-      totalAmount: cart.totalAfterAll,
+      totalAmount: cart.totalAfterAll, // final amount after all calc
     });
 
     await order.save();
+
+    // Clear cart
     cart.items = [];
+    cart.totalAmount = 0;
+    cart.accessoryTax = 0;
+    cart.discount = 0;
+    cart.totalAfterAll = 0;
     await cart.save();
 
-    // Reduce product stock for each item
+    // Reduce stock
     for (const item of order.items) {
-      // Accessory Stock Update
       if (item.accessoryId) {
-        const accessory = await Accessory.findById(item.accessoryId);
-        if (accessory && accessory.stock > 0) {
-          await Accessory.findByIdAndUpdate(
-            item.accessoryId,
-            { $inc: { stock: -item.quantity } } // reduce stock
-          );
-        }
+        await Accessory.findByIdAndUpdate(item.accessoryId, {
+          $inc: { stock: -item.quantity },
+        });
       }
-
-      // Car Variant Stock Update
       if (item.variantId) {
-        const variant = await CarVariant.findById(item.variantId);
-        if (variant && variant.stock) {
-          await CarVariant.findByIdAndUpdate(item.variantId, {
-            $inc: { stock: -item.quantity },
-          });
-        }
+        await CarVariant.findByIdAndUpdate(item.variantId, {
+          $inc: { stock: -item.quantity },
+        });
       }
     }
 
-    const advancePercentage = process.env.ADVANCE_PAYMENT_PERCENTAGE || 10;
+    // Populate for front-end display
+    const populatedOrder = await Order.findById(order._id).populate(
+      "items.carId items.accessoryId items.variantId"
+    );
+
+    const advancePercentage =
+      Number(process.env.ADVANCE_PAYMENT_PERCENTAGE) || 10;
+
     let advanceAmount = 0;
     let remainingAmount = 0;
 
     if (paymentMethod === "COD") {
-      advanceAmount = Math.round((cart.totalAmount * advancePercentage) / 100);
-      remainingAmount = cart.totalAmount - advanceAmount;
+      advanceAmount = Math.round(
+        (populatedOrder.totalAmount * advancePercentage) / 100
+      );
+      remainingAmount = populatedOrder.totalAmount - advanceAmount;
     }
-    console.log(order);
+
     res.render("user/checkout/checkout_Step_4_Confirmation", {
-      cart,
-      order,
+      order: populatedOrder,
+      advanceAmount,
+      remainingAmount,
     });
   } catch (error) {
-    console.log("Error loading Step 4", error);
+    console.error("Error loading Step 4", error);
     next(error);
   }
 };

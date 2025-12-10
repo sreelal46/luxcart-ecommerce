@@ -30,23 +30,27 @@
           <ul class="list-group list-group-flush">
             <li class="list-group-item">
               <input type="hidden" value="{{accessory._id}}" id="accessoryId" name="accessoryId">
-              <label for="name" class="form-label mb-1"><strong>Name:</strong></label>
-              <input type="text" id="name" name="name" class="form-control" value="{{accessory.name}}" required />
+              <label for="name" class="form-label mb-1"><strong>Name<span style="color: red;">*</span>:</strong></label>
+              <input type="text" id="name" name="name" class="form-control" value="{{accessory.name}}" />
             </li>
             <li class="list-group-item">
-              <label for="price" class="form-label mb-1"><strong>Price:</strong></label>
-              <input type="number" id="price" name="price" class="form-control" value="{{accessory.price}}" required />
+              <label for="price" class="form-label mb-1"><strong>Price<span
+                    style="color: red;">*</span>:</strong></label>
+              <input type="number" id="price" name="price" class="form-control" value="{{accessory.price}}" />
             </li>
             <li class="list-group-item">
-              <label for="material" class="form-label mb-1"><strong>Material:</strong></label>
+              <label for="material" class="form-label mb-1"><strong>Material<span
+                    style="color: red;">*</span>:</strong></label>
               <input type="text" id="material" name="material" class="form-control" value="{{accessory.material}}" />
             </li>
             <li class="list-group-item">
-              <label for="stock" class="form-label mb-1"><strong>Stock:</strong></label>
+              <label for="stock" class="form-label mb-1"><strong>Stock<span
+                    style="color: red;">*</span>:</strong></label>
               <input type="number" id="stock" name="stock" class="form-control" value="{{accessory.stock}}" />
             </li>
             <li class="list-group-item">
-              <label for="category" class="form-label mb-1"><strong>Category:</strong></label>
+              <label for="category" class="form-label mb-1"><strong>Category<span
+                    style="color: red;">*</span>:</strong></label>
               <select id="category" name="category_id" class="form-select">
                 {{#each categories}}
                 <option value="{{this._id}}" {{#if (eq this._id ../accessory.category_id._id)}}selected{{/if}}>
@@ -56,7 +60,8 @@
               </select>
             </li>
             <li class="list-group-item">
-              <label for="product_type" class="form-label mb-1"><strong>Product Type:</strong></label>
+              <label for="product_type" class="form-label mb-1"><strong>Product Type<span
+                    style="color: red;">*</span>:</strong></label>
               <select id="product_type" name="product_type_id" class="form-select">
                 {{#each types}}
                 <option value="{{this._id}}" {{#if (eq this._id ../accessory.product_type_id._id)}}selected{{/if}}>
@@ -66,7 +71,8 @@
               </select>
             </li>
             <li class="list-group-item">
-              <label for="brand" class="form-label mb-1"><strong>Brand:</strong></label>
+              <label for="brand" class="form-label mb-1"><strong>Brand<span
+                    style="color: red;">*</span>:</strong></label>
               <select id="brand" name="brand_id" class="form-select">
                 {{#each brands}}
                 <option value="{{this._id}}" {{#if (eq this._id ../accessory.brand_id._id)}}selected{{/if}}>
@@ -76,7 +82,8 @@
               </select>
             </li>
             <li class="list-group-item">
-              <label for="description" class="form-label mb-1"><strong>Description:</strong></label>
+              <label for="description" class="form-label mb-1"><strong>Description<span
+                    style="color: red;">*</span>:</strong></label>
               <textarea id="description" name="description" class="form-control"
                 rows="3">{{accessory.description}}</textarea>
             </li>
@@ -88,32 +95,39 @@
           <div class="card-header bg-light fw-semibold fs-5">Specifications</div>
           <ul class="list-group list-group-flush">
             <li class="list-group-item">
-              <label for="country_of_origin" class="form-label mb-1"><strong>Country of Origin:</strong></label>
+              <label for="country_of_origin" class="form-label mb-1"><strong>Country of Origin<span
+                    style="color: red;">*</span>:</strong></label>
               <input type="text" id="country_of_origin" name="country_of_origin" class="form-control"
                 value="{{accessory.country_of_origin}}" />
             </li>
             <li class="list-group-item">
-              <label for="fabric" class="form-label mb-1"><strong>Fabric:</strong></label>
+              <label for="fabric" class="form-label mb-1"><strong>Fabric<span
+                    style="color: red;">*</span>:</strong></label>
               <input type="text" id="fabric" name="fabric" class="form-control" value="{{accessory.fabric}}" />
             </li>
             <li class="list-group-item">
-              <label for="finish" class="form-label mb-1"><strong>Finish:</strong></label>
+              <label for="finish" class="form-label mb-1"><strong>Finish<span
+                    style="color: red;">*</span>:</strong></label>
               <input type="text" id="finish" name="finish" class="form-control" value="{{accessory.finish}}" />
             </li>
             <li class="list-group-item">
-              <label for="fitting" class="form-label mb-1"><strong>Fitting:</strong></label>
+              <label for="fitting" class="form-label mb-1"><strong>Fitting<span
+                    style="color: red;">*</span>:</strong></label>
               <input type="text" id="fitting" name="fitting" class="form-control" value="{{accessory.fitting}}" />
             </li>
             <li class="list-group-item">
-              <label for="warranty" class="form-label mb-1"><strong>Warranty:</strong></label>
+              <label for="warranty" class="form-label mb-1"><strong>Warranty<span
+                    style="color: red;">*</span>:</strong></label>
               <input type="text" id="warranty" name="warranty" class="form-control" value="{{accessory.warranty}}" />
             </li>
             <li class="list-group-item">
-              <strong>Waterproof:</strong>
-              <div class="form-check form-switch mt-2">
-                <input class="form-check-input" type="checkbox" id="waterproof" name="waterproof" {{#if
-                  accessory.waterproof}}checked{{/if}} />
-                <label class="form-check-label" for="waterproof">Yes</label>
+              <div class="col-md-3">
+                <label for="brand" class="form-label mb-1"><strong>Waterproof<span
+                      style="color: red;">*</span>:</strong></label>
+                <select class="form-select" name="waterproof">
+                  <option value="true" {{#if accessory.waterproof}}selected{{/if}}>Yes</option>
+                  <option value="false" {{#unless accessory.waterproof}}selected{{/unless}}>No</option>
+                </select>
               </div>
             </li>
           </ul>
@@ -124,11 +138,13 @@
           <div class="card-header bg-light fw-semibold fs-5">Vehicle Compatibility</div>
           <ul class="list-group list-group-flush">
             <li class="list-group-item">
-              <label for="vehicle" class="form-label mb-1"><strong>Vehicle:</strong></label>
+              <label for="vehicle" class="form-label mb-1"><strong>Vehicle<span
+                    style="color: red;">*</span>:</strong></label>
               <input type="text" id="vehicle" name="vehicle" class="form-control" value="{{accessory.vehicle}}" />
             </li>
             <li class="list-group-item">
-              <label for="production_year" class="form-label mb-1"><strong>Production Year:</strong></label>
+              <label for="production_year" class="form-label mb-1"><strong>Production Year<span
+                    style="color: red;">*</span>:</strong></label>
               <input type="text" id="production_year" name="production_year" class="form-control"
                 value="{{accessory.production_year}}" />
             </li>

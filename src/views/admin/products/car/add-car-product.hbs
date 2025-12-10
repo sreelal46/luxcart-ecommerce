@@ -1,3 +1,37 @@
+<style>
+  .upload-box {
+    width: 280px;
+    min-height: 240px;
+    /* auto grows if needed */
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    position: relative;
+    overflow: hidden;
+    /* clip anything that exceeds */
+  }
+
+  .upload-box .image-preview {
+    width: 100%;
+    height: 100%;
+  }
+
+  /* image fills the box */
+  .upload-box .image-preview img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    border-radius: 8px;
+  }
+
+  /* when we have an image, hide placeholder content */
+  .upload-box.has-image i,
+  .upload-box.has-image p,
+  .upload-box.has-image small {
+    display: none;
+  }
+</style>
 <div class="container py-4">
   <h3 class="fw-bold mb-4">Add Car Product</h3>
 
@@ -7,14 +41,14 @@
       <div class="card-header bg-light fw-semibold">Basic Information</div>
       <div class="card-body row g-3">
         <div class="col-md-12">
-          <label class="form-label">Product Name</label>
-          <input type="text" class="form-control" name="name" placeholder="Enter Product Name" required />
+          <label class="form-label">Product Name <span style="color: red;">*</span></label>
+          <input type="text" class="form-control" name="name" placeholder="Enter Product Name" />
           <span class="text-danger" id="nameError" style="display: none;"></span>
         </div>
         <div class="col-md-4">
-          <label class="form-label">Brand</label>
-          <select class="form-select" name="brand" required>
-            <option selected disabled>Select brand</option>
+          <label class="form-label">Brand <span style="color: red;">*</span></label>
+          <select class="form-select" name="brand">
+            <option value="" selected disabled>Select brand</option>
             {{#each brands}}
             <option value="{{this._id}}">{{this.name}}</option>
             {{/each}}
@@ -22,9 +56,9 @@
         </div>
 
         <div class="col-md-4">
-          <label class="form-label">Category</label>
-          <select class="form-select" name="category" required>
-            <option selected disabled>Select category</option>
+          <label class="form-label">Category <span style="color: red;">*</span></label>
+          <select class="form-select" name="category">
+            <option value="" selected disabled>Select category</option>
             {{#each category}}
             <option value="{{this._id}}">{{this.name}}</option>
             {{/each}}
@@ -32,17 +66,18 @@
         </div>
 
         <div class="col-md-4">
-          <label class="form-label">Product Type</label>
-          <select class="form-select" name="product_type" required>
-            <option selected disabled>Select type</option>
+          <label class="form-label">Product Type <span style="color: red;">*</span></label>
+          <select class="form-select" name="product_type">
+            <option value="" selected disabled>Select type</option>
             {{#each types}}
             <option value="{{this._id}}">{{this.name}}</option>
             {{/each}}
           </select>
         </div>
 
+
         <div class="col-md-12">
-          <label class="form-label">Description</label>
+          <label class="form-label">Description <span style="color: red;">*</span></label>
           <textarea class="form-control" rows="3" name="description" placeholder="Enter description"></textarea>
           <span class="text-danger" id="descriptionError" style="display: none;"></span>
         </div>
@@ -59,16 +94,16 @@
             name="year" />
           <span class="text-danger" id="yearError" style="display: none;"></span>
         </div>
-        <div class="col-md-3"><label class="form-label">Mileage (km/l)</label><input type="text" class="form-control"
-            name="mileage" />
+        <div class="col-md-3"><label class="form-label">Mileage (km/l) <span style="color: red;">*</span></label>
+          <input type="text" class="form-control" name="mileage" />
           <span class="text-danger" id="mileageError" style="display: none;"></span>
         </div>
-        <div class="col-md-3"><label class="form-label">Warranty</label><input type="text" class="form-control"
-            name="warranty" />
+        <div class="col-md-3"><label class="form-label">Warranty <span style="color: red;">*</span></label><input
+            type="text" class="form-control" name="warranty" />
           <span class="text-danger" id="warrantyError" style="display: none;"></span>
         </div>
-        <div class="col-md-3"><label class="form-label">Region</label><input type="text" class="form-control"
-            name="region" />
+        <div class="col-md-3"><label class="form-label">Region <span style="color: red;">*</span></label><input
+            type="text" class="form-control" name="region" />
           <span class="text-danger" id="regionError" style="display: none;"></span>
         </div>
       </div>
@@ -78,32 +113,34 @@
     <div class="card mb-4 shadow-sm">
       <div class="card-header bg-light fw-semibold">Performance</div>
       <div class="card-body row g-3">
-        <div class="col-md-3"><label class="form-label">Top Speed (km/h)</label><input type="number"
-            class="form-control" name="top_speed" />
+        <div class="col-md-3"><label class="form-label">Top Speed (km/h) <span
+              style="color: red;">*</span></label><input type="number" class="form-control" name="top_speed" />
           <span class="text-danger" id="topSpeedError" style="display: none;"></span>
         </div>
-        <div class="col-md-3"><label class="form-label">Power (hp)</label><input type="text" class="form-control"
-            name="power_hp" />
+        <div class="col-md-3"><label class="form-label">Power (hp) <span style="color: red;">*</span></label><input
+            type="text" class="form-control" name="power_hp" />
           <span class="text-danger" id="powerError" style="display: none;"></span>
         </div>
         <div class="col-md-3">
-          <label class="form-label">Engine</label><input type="text" class="form-control" name="engine" />
+          <label class="form-label">Engine <span style="color: red;">*</span></label><input type="text"
+            class="form-control" name="engine" />
           <span class="text-danger" id="engineError" style="display: none;"></span>
         </div>
-        <div class="col-md-3"><label class="form-label">Transmission</label><input type="text" class="form-control"
-            name="transmission" />
+        <div class="col-md-3"><label class="form-label">Transmission <span style="color: red;">*</span></label><input
+            type="text" class="form-control" name="transmission" />
           <span class="text-danger" id="transmissionError" style="display: none;"></span>
         </div>
         <div class="col-md-3">
-          <label class="form-label">Drive Type</label><input type="text" class="form-control" name="drive_type" />
+          <label class="form-label">Drive Type <span style="color: red;">*</span></label><input type="text"
+            class="form-control" name="drive_type" />
           <span class="text-danger" id="driveTypeError" style="display: none;"></span>
         </div>
-        <div class="col-md-3"><label class="form-label">Torque</label><input type="text" class="form-control"
-            name="torque" />
+        <div class="col-md-3"><label class="form-label">Torque <span style="color: red;">*</span></label><input
+            type="text" class="form-control" name="torque" />
           <span class="text-danger" id="torqueError" style="display: none;"></span>
         </div>
-        <div class="col-md-3"><label class="form-label">Acceleration (0–100 km/h)</label><input type="text"
-            class="form-control" name="acceleration_0_100" />
+        <div class="col-md-3"><label class="form-label">Acceleration (0–100 km/h) <span
+              style="color: red;">*</span></label><input type="text" class="form-control" name="acceleration_0_100" />
           <span class="text-danger" id="accelerationError" style="display: none;"></span>
         </div>
       </div>
@@ -113,20 +150,20 @@
     <div class="card mb-4 shadow-sm">
       <div class="card-header bg-light fw-semibold">Exterior & Interior</div>
       <div class="card-body row g-3">
-        <div class="col-md-3"><label class="form-label">Colors</label><input type="text" class="form-control"
-            name="colors" />
+        <div class="col-md-3"><label class="form-label">Colors <span style="color: red;">*</span></label><input
+            type="text" class="form-control" name="colors" />
           <span class="text-danger" id="colorsError" style="display: none;"></span>
         </div>
-        <div class="col-md-3"><label class="form-label">Wheels</label><input type="text" class="form-control"
-            name="wheels" />
+        <div class="col-md-3"><label class="form-label">Wheels <span style="color: red;">*</span></label><input
+            type="text" class="form-control" name="wheels" />
           <span class="text-danger" id="wheelsError" style="display: none;"></span>
         </div>
-        <div class="col-md-3"><label class="form-label">Upholstery</label><input type="text" class="form-control"
-            name="upholstery" />
+        <div class="col-md-3"><label class="form-label">Upholstery <span style="color: red;">*</span></label><input
+            type="text" class="form-control" name="upholstery" />
           <span class="text-danger" id="upholsteryError" style="display: none;"></span>
         </div>
-        <div class="col-md-3"><label class="form-label">Design</label><input type="text" class="form-control"
-            name="design" />
+        <div class="col-md-3"><label class="form-label">Design <span style="color: red;">*</span></label><input
+            type="text" class="form-control" name="design" />
           <span class="text-danger" id="designError" style="display: none;"></span>
         </div>
       </div>
@@ -137,23 +174,23 @@
       <div class="card-header bg-light fw-semibold">Tech & Assistance</div>
       <div class="card-body row g-3">
         <div class="col-md-3">
-          <label class="form-label">Cameras</label>
+          <label class="form-label">Cameras <span style="color: red;">*</span></label>
           <input type="text" class="form-control" name="cameras" />
           <span class="text-danger" id="camerasError" style="display: none;"></span>
         </div>
         <div class="col-md-3">
-          <label class="form-label">Lane Assist</label>
+          <label class="form-label">Lane Assist <span style="color: red;">*</span></label>
           <select class="form-select" name="lane_assist">
             <option value="true">Yes</option>
             <option value="false">No</option>
           </select>
         </div>
-        <div class="col-md-3"><label class="form-label">Sound System</label><input type="text" class="form-control"
-            name="sound_system" />
+        <div class="col-md-3"><label class="form-label">Sound System <span style="color: red;">*</span></label><input
+            type="text" class="form-control" name="sound_system" />
           <span class="text-danger" id="soundSystemError" style="display: none;"></span>
         </div>
         <div class="col-md-3">
-          <label class="form-label">Keyless Go</label>
+          <label class="form-label">Keyless Go <span style="color: red;">*</span></label>
           <select class="form-select" name="keyless_go">
             <option value="true">Yes</option>
             <option value="false">No</option>
@@ -171,21 +208,22 @@
         </div>
         <div class="card-body row g-3">
           <div class="col-md-4">
-            <label class="form-label">Color</label><input type="text" class="form-control" name="variant_color[]"
-              placeholder="Color" />
+            <label class="form-label">Color <span style="color: red;">*</span></label><input type="text"
+              class="form-control" name="variant_color[]" placeholder="Color" />
             <span class="text-danger" id="variantColorError" style="display: none;"></span>
           </div>
           <div class="col-md-4">
-            <label class="form-label">Price</label><input type="number" class="form-control" name="variant_price[]" />
+            <label class="form-label">Price <span style="color: red;">*</span></label><input type="number"
+              class="form-control" name="variant_price[]" />
             <span class="text-danger" id="variantPriceError" style="display: none;"></span>
           </div>
-          <div class="col-md-4"><label class="form-label">Stock</label><input type="number" class="form-control"
-              name="variant_stock[]" />
+          <div class="col-md-4"><label class="form-label">Stock <span style="color: red;">*</span></label><input
+              type="number" class="form-control" name="variant_stock[]" />
             <span class="text-danger" id="variantStockError" style="display: none;"></span>
           </div>
 
           <div class="col-12">
-            <label class="form-label h5 fw-bold">Images</label>
+            <label class="form-label h5 fw-bold">Images <span style="color: red;">*</span></label>
             <div class="variant-images-container d-flex flex-wrap gap-3">
               <div class="upload-card add-image-btn d-flex flex-column justify-content-center align-items-center">
                 <i class="bi bi-plus-circle fs-3"></i>

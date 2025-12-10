@@ -76,13 +76,13 @@
         <div id="addAlert" class="d-none text-center"></div>
         <div class="modal-body">
           <div class="mb-3">
-            <label class="form-label">Type Name</label>
-            <input type="text" class="form-control" name="name" id="nameInput" required>
+            <label class="form-label">Type Name <span style="color: red;">*</span></label>
+            <input type="text" class="form-control" name="name" id="nameInput">
             <small class="text-danger" id="nameError" style="display: none;"></small>
           </div>
           <div class="mb-3">
-            <label class="form-label">Description</label>
-            <textarea class="form-control" name="description" id="description" rows="3" required></textarea>
+            <label class="form-label">Description <span style="color: red;">*</span></label>
+            <textarea class="form-control" name="description" id="description" rows="3"></textarea>
             <small class="text-danger" id="descriptionError" style="display: none;"></small>
           </div>
         </div>
@@ -101,18 +101,18 @@
       <form id="editTypeForm" method="post">
         <div class="modal-header">
           <h5 class="modal-title fw-bold">Edit Type</h5>
-          <button class="btn-close" data-bs-dismiss="modal"></button>
+          <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
         </div>
         <div class="modal-body">
           <input type="hidden" id="editTypeId">
           <div class="mb-3">
-            <label class="form-label">Type Name</label>
-            <input type="text" id="editTypeName" name="name" class="form-control" required>
+            <label class="form-label">Type Name <span style="color: red;">*</span></label>
+            <input type="text" id="editTypeName" name="name" class="form-control">
             <small class="text-danger" id="editNameError" style="display: none;"></small>
           </div>
           <div class="mb-3">
-            <label class="form-label">Description</label>
-            <textarea id="editTypeDescription" name="description" class="form-control" rows="3" required></textarea>
+            <label class="form-label">Description <span style="color: red;">*</span></label>
+            <textarea id="editTypeDescription" name="description" class="form-control" rows="3"></textarea>
             <small class="text-danger" id="editDescriptionError" style="display: none;"></small>
           </div>
         </div>

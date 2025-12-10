@@ -88,9 +88,29 @@ document.addEventListener("DOMContentLoaded", () => {
     name: (v) => (v && v.length >= 3) || "Name must be at least 3 characters.",
     description: (v) =>
       (v && v.length >= 10) || "Description must be at least 10 characters.",
-    brand: (v) => (v && v !== "") || "Brand is required.",
-    category: (v) => (v && v !== "") || "Category is required.",
-    product_type: (v) => (v && v !== "") || "Product Type is required.",
+    brand: (v) => {
+      const value = String(v).trim();
+      return (
+        (value !== "" && !value.toLowerCase().startsWith("select")) ||
+        "Brand is required."
+      );
+    },
+
+    category: (v) => {
+      const value = String(v).trim();
+      return (
+        (value !== "" && !value.toLowerCase().startsWith("select")) ||
+        "Category is required."
+      );
+    },
+
+    product_type: (v) => {
+      const value = String(v).trim();
+      return (
+        (value !== "" && !value.toLowerCase().startsWith("select")) ||
+        "Product Type is required."
+      );
+    },
     year: (v) => {
       if (!v) return "Year is required.";
       const y = parseInt(v, 10),
@@ -128,14 +148,24 @@ document.addEventListener("DOMContentLoaded", () => {
     keyless_go: (v) =>
       ["true", "false"].includes(String(v)) || "Select keyless go option.",
     variant_color: (v) => (v && v !== "") || "Variant color is required.",
-    variant_price: (v) =>
-      v === "" ||
-      (!isNaN(v) && Number(v) > 0) ||
-      "Variant price must be a not equal to Zero.",
-    variant_stock: (v) =>
-      v === "" ||
-      (Number.isInteger(Number(v)) && Number(v) > 0) ||
-      "Variant stock must be a non-negative integer.",
+    variant_price: (v) => {
+      const value = String(v).trim();
+      const num = Number(value);
+
+      return (
+        (value !== "" && !Number.isNaN(num) && num > 0) ||
+        "Variant price must be a number greater than 0."
+      );
+    },
+    variant_stock: (v) => {
+      const value = String(v).trim();
+      const num = Number(value);
+
+      return (
+        (value !== "" && Number.isInteger(num) && num >= 0) ||
+        "Variant stock must be a whole number 0 or greater."
+      );
+    },
     offer_price: (v) => {
       if (v === "") return true;
       return (!isNaN(v) && Number(v) >= 0) || "Enter a valid offer price.";
@@ -143,7 +173,6 @@ document.addEventListener("DOMContentLoaded", () => {
     interior_and_exterior_color: (v) =>
       (v && v !== "") || "Colors is required.",
   };
-
   function runValidatorForElement(el) {
     if (!el || !el.name) return true;
 

@@ -264,15 +264,6 @@ const editAccessories = async (req, res, next) => {
     //collecting data
     const { accessoryId, name } = req.body;
 
-    // const duplicate = await Accessory.findOne({
-    //   name: { $regex: new RegExp(`^${name}$`, "i") },
-    // });
-
-    // if (duplicate)
-    //   return res
-    //     .status(CONFLICT)
-    //     .json({ success: false, message: "Accessory name already exists." });
-
     //saving removed image path to array
     const removed_images = req.body.removed_images
       ? JSON.parse(req.body.removed_images)

@@ -147,14 +147,11 @@ document.addEventListener("DOMContentLoaded", () => {
 
   editCategoryModal.addEventListener("show.bs.modal", (e) => {
     editAlert.classList.add("d-none");
-
     const btn = e.relatedTarget;
-
     document.getElementById("editCategoryId").value = btn.dataset.id;
     document.getElementById("editCategoryName").value = btn.dataset.name;
     document.getElementById("editCategoryDescription").value =
       btn.dataset.description;
-
     const type = btn.dataset.type;
     document.getElementById("editTypeCar").checked = type === "Car";
     document.getElementById("editTypeAccessories").checked =

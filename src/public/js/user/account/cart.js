@@ -1,25 +1,37 @@
+// /js/user/account/cart.js
+
 document.addEventListener("DOMContentLoaded", () => {
+  // ---------- TOAST ----------
   function showMobileAlert(message, notification) {
     const alertBox = document.getElementById("mobileAlert");
+    if (!alertBox) return;
+
     if (notification === "success") {
       alertBox.innerHTML = `<i class="bi bi-check-circle-fill success-icon"></i><span class="message-green">${message}</span>`;
-      alertBox.classList.add("show");
     } else if (notification === "error") {
       alertBox.innerHTML = `<i class="bi bi-x-circle-fill error-icon"></i><span class="message-red">${message}</span>`;
-      alertBox.classList.add("show");
     } else if (notification === "warning") {
       alertBox.innerHTML = `<i class="bi bi-exclamation-triangle-fill yellow-icon"></i><span class="message-yellow">${message}</span>`;
-      alertBox.classList.add("show");
+    } else {
+      alertBox.innerHTML = `<span>${message}</span>`;
     }
+
+    alertBox.classList.add("show");
 
     setTimeout(() => {
       alertBox.classList.remove("show");
     }, 2000);
   }
 
-  function removeCart(element) {
-    element.addEventListener("click", async () => {
-      const itemId = element.dataset.itemid;
+  // ---------- REMOVE CART ITEM ----------
+  function attachRemoveHandler(btn) {
+    btn.addEventListener("click", async (e) => {
+      // stop the <a> navigation
+      e.preventDefault();
+      e.stopPropagation();
+
+      const itemId = btn.dataset.itemid;
+      if (!itemId) return;
 
       try {
         const res = await axios.delete(`/cart/remove-product/${itemId}`);
@@ -37,113 +49,129 @@ document.addEventListener("DOMContentLoaded", () => {
   }
 
   document.querySelectorAll(".remove-acc, .remove-car").forEach((btn) => {
-    removeCart(btn);
+    attachRemoveHandler(btn);
   });
-});
 
-function showMobileAlert(message, notification) {
-  const alertBox = document.getElementById("mobileAlert");
-  if (notification === "success") {
-    alertBox.innerHTML = `<i class="bi bi-check-circle-fill success-icon"></i><span class="message-green">${message}</span>`;
-    alertBox.classList.add("show");
-  } else if (notification === "error") {
-    alertBox.innerHTML = `<i class="bi bi-x-circle-fill error-icon"></i><span class="message-red">${message}</span>`;
-    alertBox.classList.add("show");
-  } else if (notification === "warning") {
-    alertBox.innerHTML = `<i class="bi bi-exclamation-triangle-fill yellow-icon"></i><span class="message-yellow">${message}</span>`;
-    alertBox.classList.add("show");
-  }
+  // ---------- QUANTITY + / - ----------
+  // NOTE: you are using the same id="errorQuantity" in each item.
+  // Ideally make it a class, but keeping your existing structure:
+  const errorQuantity = document.getElementById("errorQuantity");
 
-  setTimeout(() => {
-    alertBox.classList.remove("show");
-  }, 2000);
-}
-
-const errorQuantity = document.getElementById("errorQuantity");
-document.addEventListener("click", (e) => {
-  if (e.target.classList.contains("delete-btn")) {
-    e.preventDefault();
-    e.stopPropagation();
-  }
-  if (e.target.classList.contains("plus")) {
-    e.preventDefault();
-    e.stopPropagation();
-
-    const itemId = e.target.dataset.itemid;
-    const qtyEl = document.querySelector(`.qty-value[data-itemid="${itemId}"]`);
-    let qty = parseInt(qtyEl.dataset.qty);
-
-    qty++;
-    if (qty > 5) {
-      errorQuantity.textContent = "Maximum reached";
-      errorQuantity.style.display = "block";
+  document.addEventListener("click", (e) => {
+    // delete button inside <a> (button or <i> icon)
+    const deleteBtn = e.target.closest(".delete-btn");
+    if (deleteBtn) {
+      // Don't let the anchor navigate
+      e.preventDefault();
+      e.stopPropagation();
+      // The real delete logic is in attachRemoveHandler
       return;
     }
-    if (qty < 5) {
-      errorQuantity.textContent = "";
-      errorQuantity.style.display = "none";
-    }
-    qtyEl.dataset.qty = qty;
-    qtyEl.textContent = qty;
-    setTimeout(async () => {
-      try {
-        const res = await axios.put(`/cart/change-quantity/${itemId}`, {
-          quantityIncrease: qty,
-          quantityDecrease: null,
-        });
-        if (res.data.success) {
-          showMobileAlert("Quantity updated!", "success");
-          setTimeout(() => window.location.reload(), 2000);
-        } else {
-          const msg = res.data.alert || "Somthing went wrong!";
+
+    // PLUS button
+    const plusBtn = e.target.closest(".plus");
+    if (plusBtn) {
+      e.preventDefault();
+      e.stopPropagation();
+
+      const itemId = plusBtn.dataset.itemid;
+      const qtyEl = document.querySelector(
+        `.qty-value[data-itemid="${itemId}"]`
+      );
+      if (!qtyEl) return;
+
+      let qty = parseInt(qtyEl.dataset.qty, 10) || 0;
+      qty++;
+
+      if (qty > 5) {
+        if (errorQuantity) {
+          errorQuantity.textContent = "Maximum reached";
+          errorQuantity.style.display = "block";
+        }
+        return;
+      }
+
+      if (errorQuantity) {
+        errorQuantity.textContent = "";
+        errorQuantity.style.display = "none";
+      }
+
+      qtyEl.dataset.qty = qty;
+      qtyEl.textContent = qty;
+
+      setTimeout(async () => {
+        try {
+          const res = await axios.put(`/cart/change-quantity/${itemId}`, {
+            quantityIncrease: qty,
+            quantityDecrease: null,
+          });
+          if (res.data.success) {
+            showMobileAlert("Quantity updated!", "success");
+            setTimeout(() => window.location.reload(), 2000);
+          } else {
+            const msg = res.data.alert || "Something went wrong!";
+            showMobileAlert(msg, "error");
+            setTimeout(() => window.location.reload(), 2000);
+          }
+        } catch (error) {
+          console.log("Error from change Quantity", error);
+          const msg = error.response?.data.alert || "INTERNAL SERVER ISSUE";
           showMobileAlert(msg, "error");
           setTimeout(() => window.location.reload(), 2000);
         }
-      } catch (error) {
-        console.log("Error from change Quantity", error);
-        const msg = error.response?.data.alert || "INTERNAL SERVER ISSUE";
-        showMobileAlert(msg, "error");
-        setTimeout(() => window.location.reload(), 2000);
-      }
-    }, 2000);
-  }
+      }, 2000);
 
-  if (e.target.classList.contains("minus")) {
-    e.preventDefault();
-    e.stopPropagation();
-
-    const itemId = e.target.dataset.itemid;
-    const qtyEl = document.querySelector(`.qty-value[data-itemid="${itemId}"]`);
-    let qty = parseInt(qtyEl.dataset.qty);
-
-    if (qty > 1) {
-      errorQuantity.textContent = "";
-      errorQuantity.style.display = "none";
-      qty--;
+      return;
     }
-    qtyEl.dataset.qty = qty;
-    qtyEl.textContent = qty;
 
-    setTimeout(async () => {
-      try {
-        const res = await axios.put(`/cart/change-quantity/${itemId}`, {
-          quantityDecrease: qty,
-          quantityIncrease: null,
-        });
-        if (res.data.success) {
-          showMobileAlert("Quantity updated!", "success");
-          setTimeout(() => window.location.reload(), 2000);
-        } else {
-          const msg = res.data.alert || "Somthing went wrong!";
+    // MINUS button
+    const minusBtn = e.target.closest(".minus");
+    if (minusBtn) {
+      e.preventDefault();
+      e.stopPropagation();
+
+      const itemId = minusBtn.dataset.itemid;
+      const qtyEl = document.querySelector(
+        `.qty-value[data-itemid="${itemId}"]`
+      );
+      if (!qtyEl) return;
+
+      let qty = parseInt(qtyEl.dataset.qty, 10) || 0;
+
+      if (qty > 1) {
+        if (errorQuantity) {
+          errorQuantity.textContent = "";
+          errorQuantity.style.display = "none";
+        }
+        qty--;
+      }
+
+      qtyEl.dataset.qty = qty;
+      qtyEl.textContent = qty;
+
+      setTimeout(async () => {
+        try {
+          const res = await axios.put(`/cart/change-quantity/${itemId}`, {
+            quantityDecrease: qty,
+            quantityIncrease: null,
+          });
+          if (res.data.success) {
+            showMobileAlert("Quantity updated!", "success");
+            setTimeout(() => window.location.reload(), 2000);
+          } else {
+            const msg = res.data.alert || "Something went wrong!";
+            showMobileAlert(msg, "error");
+            setTimeout(() => window.location.reload(), 2000);
+          }
+        } catch (error) {
+          console.log("Error from change Quantity", error);
+          const msg = error.response?.data.alert || "INTERNAL SERVER ISSUE";
           showMobileAlert(msg, "error");
           setTimeout(() => window.location.reload(), 2000);
         }
-      } catch (error) {
-        console.log("Error from change Quantity", error);
-        const msg = error.response?.data.alert || "INTERNAL SERVER ISSUE";
-        showMobileAlert(msg, "error");
-        setTimeout(() => window.location.reload(), 2000);
-      }
-    }, 2000);
-  }
+      }, 2000);
+
+      return;
+    }
+  });
 });

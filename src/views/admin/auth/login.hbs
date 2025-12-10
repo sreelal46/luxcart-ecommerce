@@ -1,3 +1,9 @@
+<style>
+  #adminPassword {
+    height: 45px;
+  }
+</style>
+
 <div class="min-vh-100 d-flex align-items-center justify-content-center"
   style="background: url('/images/car-bg.jpg') no-repeat center center; background-size: cover;">
 
@@ -11,20 +17,30 @@
     <div id="alert" class="d-none text-center"></div>
 
     <form class="mt-4" id="loginForm" novalidate>
+
+      <!-- Email -->
       <div class="mb-3">
         <label for="adminEmail" class="form-label fw-medium small">Admin Email</label>
         <input type="email" class="form-control" id="adminEmail" name="email" placeholder="admin@example.com" required>
-        <div class="invalid-feedback">Please enter a valid email address.</div>
+        <div id="emailError" class="text-danger small mt-1"></div>
       </div>
 
-      <div class="mb-3">
-        <label for="adminPassword" class="form-label fw-medium small">Password</label>
+      <!-- Password -->
+      <label for="adminPassword" class="form-label fw-medium small">Password</label>
+
+      <div class="position-relative mb-0">
         <input type="password" class="form-control" id="adminPassword" name="password" placeholder="Enter your password"
-          required minlength="6">
-        <div class="invalid-feedback">Password must be at least 6 characters long.</div>
+          required minlength="8">
+
+        <span class="toggle-eye position-absolute" data-target="adminPassword"
+          style="right: 12px; top: 50%; transform: translateY(-50%); cursor: pointer;">
+          <i class="bi bi-eye-slash"></i>
+        </span>
       </div>
 
-      <div class="d-flex justify-content-between align-items-center mb-3">
+      <div id="passwordError" class="text-danger small mt-1"></div>
+
+      <div class="d-flex justify-content-between align-items-center mb-3 mt-2">
         <div class="form-check">
           <input class="form-check-input" type="checkbox" id="rememberAdmin">
           <label class="form-check-label small text-muted" for="rememberAdmin">
@@ -41,105 +57,105 @@
 
 <script>
   document.addEventListener("DOMContentLoaded", () => {
+
     const adminLoginForm = document.getElementById("loginForm");
     const emailInput = document.getElementById("adminEmail");
     const passwordInput = document.getElementById("adminPassword");
+
+    const emailError = document.getElementById("emailError");
+    const passwordError = document.getElementById("passwordError");
     const alertDiv = document.getElementById("alert");
 
-    // Create and insert error message elements if not present
-    let emailError = emailInput.nextElementSibling;
-    if (!emailError || !emailError.classList.contains("error-text")) {
-      emailError = document.createElement("div");
-      emailError.className = "text-danger small mt-1 error-text";
-      emailInput.insertAdjacentElement("afterend", emailError);
-    }
+    /* =====================================
+                  EYE TOGGLE
+     ===================================== */
+    document.querySelector(".toggle-eye").addEventListener("click", function () {
+      const input = document.getElementById(this.dataset.target);
 
-    let passwordError = passwordInput.nextElementSibling;
-    if (!passwordError || !passwordError.classList.contains("error-text")) {
-      passwordError = document.createElement("div");
-      passwordError.className = "text-danger small mt-1 error-text";
-      passwordInput.insertAdjacentElement("afterend", passwordError);
-    }
+      if (input.type === "password") {
+        input.type = "text";
+        this.innerHTML = '<i class="bi bi-eye"></i>';
+      } else {
+        input.type = "password";
+        this.innerHTML = '<i class="bi bi-eye-slash"></i>';
+      }
+    });
 
-    // Hide alerts by default
-    alertDiv.classList.add("d-none");
+    /* =====================================
+                VALIDATION
+     ===================================== */
 
-    // Helper function
-    const validateEmail = (email) => /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email);
+    const validateEmail = (email) =>
+      /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email);
 
-    // Email validation
     function emailValidation() {
       const email = emailInput.value.trim();
+
       if (!email) {
         emailError.textContent = "Email is required";
         return false;
       } else if (!validateEmail(email)) {
         emailError.textContent = "Invalid email format.";
         return false;
-      } else {
-        emailError.textContent = "";
-        return true;
       }
+
+      emailError.textContent = "";
+      return true;
     }
 
-    // Password validation
     function passwordValidation() {
       const password = passwordInput.value.trim();
+
       if (!password) {
         passwordError.textContent = "Password is required";
         return false;
-      } else if (password.length < 6) {
-        passwordError.textContent = "Password must be at least 6 characters.";
+      } else if (password.length < 8) {
+        passwordError.textContent = "Password must be at least 8 characters.";
         return false;
-      } else {
-        passwordError.textContent = "";
-        return true;
       }
+
+      passwordError.textContent = "";
+      return true;
     }
 
-    // Live input validation
     emailInput.addEventListener("input", emailValidation);
     passwordInput.addEventListener("input", passwordValidation);
 
-    // Form submission
+    /* =====================================
+                FORM SUBMIT
+     ===================================== */
+
     adminLoginForm.addEventListener("submit", async (e) => {
       e.preventDefault();
 
-      alertDiv.classList.add("d-none");
-      alertDiv.textContent = "";
+      const emailValid = emailValidation();
+      const passwordValid = passwordValidation();
 
-
-      //remove comment production time
-      // const emailValid = emailValidation();
-      // const passwordValid = passwordValidation();
-      // if (!emailValid || !passwordValid) return;
+      if (!emailValid || !passwordValid) return;
 
       const email = emailInput.value.trim();
       const password = passwordInput.value.trim();
 
       try {
-        const res = await axios.post(
-          "/admin/login",
-          { email, password },
-          { withCredentials: true }
-        );
+        const res = await axios.post("/admin/login", { email, password }, { withCredentials: true });
+
+        alertDiv.classList.remove("d-none");
 
         if (res.data.success) {
           alertDiv.className = "alert alert-success text-center";
           alertDiv.textContent = "Login successful! Redirecting...";
-          alertDiv.classList.remove("d-none");
           setTimeout(() => (window.location.href = res.data.redirect), 400);
         } else {
           alertDiv.className = "alert alert-danger text-center";
           alertDiv.textContent = res.data.message || "Invalid credentials.";
-          alertDiv.classList.remove("d-none");
         }
+
       } catch (err) {
-        alertDiv.className = "alert alert-danger text-center";
-        alertDiv.textContent =
-          err.response?.data?.message || "Server error. Please try again.";
         alertDiv.classList.remove("d-none");
+        alertDiv.className = "alert alert-danger text-center";
+        alertDiv.textContent = err.response?.data?.message || "Server error. Please try again.";
       }
     });
+
   });
 </script>

@@ -99,12 +99,16 @@ document.addEventListener("DOMContentLoaded", () => {
     .getElementById("addBrandForm")
     .addEventListener("submit", async (e) => {
       e.preventDefault();
+
+      // Validate all fields
+      brndNameValidation(brandNameInput, brandNameError);
+      brndCountryValidation(brandCountryInput, brandCountryError);
+
       const brandName = brandNameInput.value.trim();
       const brandCountry = brandCountryInput.value.trim();
-      const brandImageInput = document.getElementById("brandImageInput");
 
-      if (!brandName) return;
-      if (!brandCountry) return;
+      if (!brandName || !brandCountry) return; // stop if invalid
+
       if (!brandImageInput.files || brandImageInput.files.length === 0) {
         brandImageError.textContent =
           "Please upload an image before submitting.";
@@ -115,10 +119,10 @@ document.addEventListener("DOMContentLoaded", () => {
         brandImageError.style.display = "none";
       }
 
+      // Proceed with form submission (your existing code)
       const formData = new FormData();
-
-      formData.append("name", e.target.name.value.trim());
-      formData.append("country", e.target.country.value.trim());
+      formData.append("name", brandName);
+      formData.append("country", brandCountry);
 
       if (cropper) {
         const blob = await new Promise((resolve) =>
@@ -135,9 +139,7 @@ document.addEventListener("DOMContentLoaded", () => {
         const res = await axios.post(
           "/admin/brands-management/add-brand",
           formData,
-          {
-            headers: { "Content-Type": "multipart/form-data" },
-          }
+          { headers: { "Content-Type": "multipart/form-data" } }
         );
 
         if (res.data.success) {
@@ -147,9 +149,7 @@ document.addEventListener("DOMContentLoaded", () => {
             text: "Brand Added successfully!",
             timer: 1500,
             showConfirmButton: false,
-          }).then(() => {
-            window.location.reload();
-          });
+          }).then(() => window.location.reload());
         } else {
           Swal.fire({
             icon: "warning",
@@ -158,7 +158,6 @@ document.addEventListener("DOMContentLoaded", () => {
           });
         }
       } catch (error) {
-        console.error("Error from brand editing", error);
         Swal.fire({
           icon: "error",
           title: "Oops!",
@@ -217,28 +216,25 @@ document.addEventListener("DOMContentLoaded", () => {
   });
 
   //Edit Form is submitted
+  // ============================
   document
     .getElementById("editBrandForm")
     .addEventListener("submit", async (e) => {
       e.preventDefault();
-      const id = document.getElementById("editBrandId").value;
+
+      // Trigger validation
+      brndNameValidation(editBrandNameInput, editBrandNameError);
+      brndCountryValidation(editBrandCountryInput, editBrandCountryError);
 
       const brandName = editBrandNameInput.value.trim();
       const brandCountry = editBrandCountryInput.value.trim();
-      if (!brandName) return;
-      if (!brandCountry) return;
+
+      if (!brandName || !brandCountry) return; // stop if invalid
 
       const formData = new FormData();
-      formData.append(
-        "name",
-        document.getElementById("editBrandName").value.trim()
-      );
-      formData.append(
-        "country",
-        document.getElementById("editBrandCountry").value.trim()
-      );
+      formData.append("name", brandName);
+      formData.append("country", brandCountry);
 
-      // If a new image was cropped
       if (editCropper) {
         const blob = await new Promise((resolve) =>
           editCropper.getCroppedCanvas().toBlob(resolve, "image/png")
@@ -246,18 +242,16 @@ document.addEventListener("DOMContentLoaded", () => {
         formData.append("image", blob, "updated.png");
       }
 
-      const localAlert = e.target.querySelector("#alert");
       editAlert.className = "alert alert-info text-center";
       editAlert.textContent = "Updating...";
       editAlert.classList.remove("d-none");
 
       try {
+        const id = document.getElementById("editBrandId").value;
         const res = await axios.put(
           `/admin/brands-management/edit-brand/${id}`,
           formData,
-          {
-            headers: { "Content-Type": "multipart/form-data" },
-          }
+          { headers: { "Content-Type": "multipart/form-data" } }
         );
 
         if (res.data.success) {
@@ -267,9 +261,7 @@ document.addEventListener("DOMContentLoaded", () => {
             text: "Brand updated successfully!",
             timer: 1500,
             showConfirmButton: false,
-          }).then(() => {
-            window.location.reload();
-          });
+          }).then(() => window.location.reload());
         } else {
           Swal.fire({
             icon: "error",
@@ -278,7 +270,6 @@ document.addEventListener("DOMContentLoaded", () => {
           });
         }
       } catch (error) {
-        console.error("Error from brand editing", error);
         Swal.fire({
           icon: "error",
           title: "Oops!",
@@ -434,6 +425,6 @@ document.addEventListener("DOMContentLoaded", () => {
   const saveDebounce = debounce(applySearch, 400);
   searchBrandInput.addEventListener("input", saveDebounce);
 
-  // ✅ Load initial data + pagination
+  //Load initial data + pagination
   applySearch(1);
 });

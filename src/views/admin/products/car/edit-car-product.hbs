@@ -82,7 +82,7 @@
 
         {{#each singleCar.variantIds}}
         <div class="card shadow-sm mb-4 border-0">
-          <div class="card-header bg-light fw-semibold">Variant: {{color}}</div>
+          <div class="card-header bg-light fw-semibold">Variant: {{color}} <span style="color: red;">*</span></div>
           <div class="card-body">
             <input type="hidden" name="variant_id_{{@index}}" value="{{this._id}}">
 
@@ -98,16 +98,16 @@
 
             <div class="row g-3 mt-3">
               <div class="col-md-4">
-                <label>Price (₹)</label>
-                <input type="number" name="variant_{{@index}}_price" value="{{price}}" class="form-control" required />
+                <label>Price (₹) <span style="color: red;">*</span></label>
+                <input type="number" name="variant_{{@index}}_price" value="{{price}}" class="form-control" />
               </div>
               <div class="col-md-4">
-                <label>Stock</label>
-                <input type="number" name="variant_{{@index}}_stock" value="{{stock}}" class="form-control" required />
+                <label>Stock <span style="color: red;">*</span></label>
+                <input type="number" name="variant_{{@index}}_stock" value="{{stock}}" class="form-control" />
               </div>
               <div class="col-md-4">
-                <label>Color</label>
-                <input type="text" name="variant_{{@index}}_color" value="{{color}}" class="form-control" required />
+                <label>Color <span style="color: red;">*</span></label>
+                <input type="text" name="variant_{{@index}}_color" value="{{color}}" class="form-control" />
               </div>
             </div>
           </div>
@@ -119,8 +119,8 @@
           <div class="card-header bg-light fw-semibold">Basic Info</div>
           <div class="card-body row g-3">
             <div class="col-md-4">
-              <label>Brand</label>
-              <select name="brand" class="form-select" required>
+              <label>Brand <span style="color: red;">*</span></label>
+              <select name="brand" class="form-select">
                 {{#each brands}}
                 <option value="{{this._id}}" {{#if (eq this._id ../singleCar.brand_id._id)}}selected{{/if}}>
                   {{this.name}}
@@ -129,8 +129,8 @@
               </select>
             </div>
             <div class="col-md-4">
-              <label>Category</label>
-              <select name="category" class="form-select" required>
+              <label>Category <span style="color: red;">*</span></label>
+              <select name="category" class="form-select">
                 {{#each categories}}
                 <option value="{{this._id}}" {{#if (eq this._id ../singleCar.category_id._id)}}selected{{/if}}>
                   {{this.name}}
@@ -139,8 +139,8 @@
               </select>
             </div>
             <div class="col-md-4">
-              <label>Product Type</label>
-              <select name="product_type" class="form-select" required>
+              <label>Product Type <span style="color: red;">*</span></label>
+              <select name="product_type" class="form-select">
                 {{#each types}}
                 <option value="{{this._id}}" {{#if (eq this._id ../singleCar.product_type_id._id)}}selected{{/if}}>
                   {{this.name}}
@@ -149,7 +149,7 @@
               </select>
             </div>
             <div class="col-md-12">
-              <label>Description</label>
+              <label>Description <span style="color: red;">*</span></label>
               <textarea name="description" class="form-control" rows="3">{{singleCar.description}}</textarea>
             </div>
             <div class="col-md-4">
@@ -164,19 +164,19 @@
           <div class="card-header bg-light fw-semibold">Quick Info</div>
           <div class="card-body row g-3">
             <div class="col-md-3">
-              <label>Year</label>
+              <label>Year <span style="color: red;">*</span></label>
               <input type="number" name="year" value="{{singleCar.year}}" class="form-control" />
             </div>
             <div class="col-md-3">
-              <label>Mileage</label>
+              <label>Mileage <span style="color: red;">*</span></label>
               <input type="text" name="mileage" value="{{singleCar.mileage}}" class="form-control" />
             </div>
             <div class="col-md-3">
-              <label>Warranty</label>
+              <label>Warranty <span style="color: red;">*</span></label>
               <input type="text" name="warranty" value="{{singleCar.warranty}}" class="form-control" />
             </div>
             <div class="col-md-3">
-              <label>Region</label>
+              <label>Region <span style="color: red;">*</span></label>
               <input type="text" name="region" value="{{singleCar.region}}" class="form-control" />
             </div>
           </div>
@@ -186,20 +186,20 @@
         <div class="card shadow-sm mb-4 border-0">
           <div class="card-header bg-light fw-semibold">Performance</div>
           <div class="card-body row g-3">
-            <div class="col-md-3"><label>Top Speed</label><input type="text" name="top_speed"
-                value="{{singleCar.top_speed}}" class="form-control" /></div>
-            <div class="col-md-3"><label>Power (HP)</label><input type="text" name="power_hp"
-                value="{{singleCar.power_hp}}" class="form-control" /></div>
-            <div class="col-md-3"><label>Engine</label><input type="text" name="engine" value="{{singleCar.engine}}"
-                class="form-control" /></div>
-            <div class="col-md-3"><label>Transmission</label><input type="text" name="transmission"
-                value="{{singleCar.transmission}}" class="form-control" /></div>
-            <div class="col-md-3"><label>Drive Type</label><input type="text" name="drive_type"
-                value="{{singleCar.drive_type}}" class="form-control" /></div>
-            <div class="col-md-3"><label>Torque</label><input type="text" name="torque" value="{{singleCar.torque}}"
-                class="form-control" /></div>
-            <div class="col-md-3"><label>Acceleration 0–100</label><input type="text" name="acceleration_0_100"
-                value="{{singleCar.acceleration_0_100}}" class="form-control" /></div>
+            <div class="col-md-3"><label>Top Speed <span style="color: red;">*</span></label><input type="text"
+                name="top_speed" value="{{singleCar.top_speed}}" class="form-control" /></div>
+            <div class="col-md-3"><label>Power (HP) <span style="color: red;">*</span></label><input type="text"
+                name="power_hp" value="{{singleCar.power_hp}}" class="form-control" /></div>
+            <div class="col-md-3"><label>Engine <span style="color: red;">*</span></label><input type="text"
+                name="engine" value="{{singleCar.engine}}" class="form-control" /></div>
+            <div class="col-md-3"><label>Transmission <span style="color: red;">*</span></label><input type="text"
+                name="transmission" value="{{singleCar.transmission}}" class="form-control" /></div>
+            <div class="col-md-3"><label>Drive Type <span style="color: red;">*</span></label><input type="text"
+                name="drive_type" value="{{singleCar.drive_type}}" class="form-control" /></div>
+            <div class="col-md-3"><label>Torque <span style="color: red;">*</span></label><input type="text"
+                name="torque" value="{{singleCar.torque}}" class="form-control" /></div>
+            <div class="col-md-3"><label>Acceleration 0–100 <span style="color: red;">*</span></label><input type="text"
+                name="acceleration_0_100" value="{{singleCar.acceleration_0_100}}" class="form-control" /></div>
           </div>
         </div>
 
@@ -207,14 +207,15 @@
         <div class="card shadow-sm mb-4 border-0">
           <div class="card-header bg-light fw-semibold">Exterior & Interior</div>
           <div class="card-body row g-3">
-            <div class="col-md-4"><label>Colors Available</label><input type="text" name="interiorAndExteriorColor"
-                value="{{singleCar.interiorAndExteriorColor}}" class="form-control" /></div>
-            <div class="col-md-4"><label>Wheels</label><input type="text" name="wheels" value="{{singleCar.wheels}}"
-                class="form-control" /></div>
-            <div class="col-md-4"><label>Upholstery</label><input type="text" name="upholstery"
-                value="{{singleCar.upholstery}}" class="form-control" /></div>
-            <div class="col-md-12"><label>Design</label><input type="text" name="design" value="{{singleCar.design}}"
-                class="form-control" /></div>
+            <div class="col-md-4"><label>Colors Available <span style="color: red;">*</span></label><input type="text"
+                name="interiorAndExteriorColor" value="{{singleCar.interiorAndExteriorColor}}" class="form-control" />
+            </div>
+            <div class="col-md-4"><label>Wheels <span style="color: red;">*</span></label><input type="text"
+                name="wheels" value="{{singleCar.wheels}}" class="form-control" /></div>
+            <div class="col-md-4"><label>Upholstery <span style="color: red;">*</span></label><input type="text"
+                name="upholstery" value="{{singleCar.upholstery}}" class="form-control" /></div>
+            <div class="col-md-12"><label>Design <span style="color: red;">*</span></label><input type="text"
+                name="design" value="{{singleCar.design}}" class="form-control" /></div>
           </div>
         </div>
 
@@ -222,16 +223,16 @@
         <div class="card shadow-sm mb-4 border-0">
           <div class="card-header bg-light fw-semibold">Tech & Assistance</div>
           <div class="card-body row g-3">
-            <div class="col-md-3"><label>Cameras</label><input type="text" name="cameras" value="{{singleCar.cameras}}"
-                class="form-control" /></div>
-            <div class="col-md-3"><label>Lane Assist</label>
+            <div class="col-md-3"><label>Cameras <span style="color: red;">*</span></label><input type="text"
+                name="cameras" value="{{singleCar.cameras}}" class="form-control" /></div>
+            <div class="col-md-3"><label>Lane Assist <span style="color: red;">*</span></label>
               <select class="form-select" name="lane_assist">
                 <option value="true" {{#if singleCar.lane_assist}}selected{{/if}}>Yes</option>
                 <option value="false" {{#unless singleCar.lane_assist}}selected{{/unless}}>No</option>
               </select>
             </div>
-            <div class="col-md-3"><label>Sound System</label><input type="text" name="sound_system"
-                value="{{singleCar.sound_system}}" class="form-control" /></div>
+            <div class="col-md-3"><label>Sound System <span style="color: red;">*</span></label><input type="text"
+                name="sound_system" value="{{singleCar.sound_system}}" class="form-control" /></div>
             <div class="col-md-3">
               <label>Keyless Go</label>
               <select class="form-select" name="keyless_go">

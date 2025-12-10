@@ -1,53 +1,203 @@
 <style>
-  body {
-    background: #f8f9fb;
-    font-family: "Inter", sans-serif;
+  /* ===== Order Confirmation – Only for this page ===== */
+  .checkout-confirmation {
+    background: #f5f5f7;
   }
 
-  .order-card {
-    margin-top: 50px;
-    background: #fff;
-    padding: 30px;
-    border-radius: 18px;
+  /* remove default container white gap at top if any */
+  .checkout-confirmation .container,
+  .checkout-confirmation {
+    min-height: calc(100vh - 80px);
+    /* header height approx */
   }
 
-  .success-icon {
-    width: 80px;
-    height: 80px;
-    background: #eaf8ef;
-    color: #28a745;
+  /* Main Card */
+  .checkout-confirmation .order-card {
+    background: #ffffff;
+    border-radius: 16px;
+    padding: 28px 32px 26px;
+    border: 1px solid #e4e4e7;
+  }
+
+  /* Success icon */
+  .checkout-confirmation .success-icon {
+    width: 52px;
+    height: 52px;
     border-radius: 50%;
     display: flex;
     align-items: center;
     justify-content: center;
-    font-size: 40px;
+    background: #e6f4ea;
+    color: #1a7a36;
+    font-size: 1.4rem;
   }
 
-  .total-row {
-    border-top: 1px solid #eee;
+  /* Title + subtitle */
+  .checkout-confirmation h2 {
+    font-size: 1.7rem;
+    letter-spacing: 0.02em;
   }
 
-  .price {
-    color: #f37021;
-    font-size: 1.25rem;
+  .checkout-confirmation .order-card>.text-center p {
+    font-size: 0.95rem;
   }
 
-  .btn-primary {
-    background-color: #f37021;
-    border-color: #f37021;
+  /* Section spacing */
+  .checkout-confirmation .order-info,
+  .checkout-confirmation .order-items,
+  .checkout-confirmation .price-summary,
+  .checkout-confirmation .order-address {
+    margin-bottom: 24px;
+  }
+
+  .checkout-confirmation h5 {
+    font-size: 1.1rem;
+    margin-bottom: 14px;
+  }
+
+  /* Thin separators */
+  .checkout-confirmation hr {
+    margin: 20px 0;
+    border-color: #e5e5e5;
+  }
+
+  /* Order meta (ID, Date, etc.) */
+  .checkout-confirmation .order-info-row {
+    display: flex;
+    justify-content: space-between;
+    font-size: 0.9rem;
+    margin-bottom: 6px;
+  }
+
+  .checkout-confirmation .order-info-row span {
+    color: #757575;
+  }
+
+  .checkout-confirmation .order-info-row strong {
+    font-weight: 600;
+  }
+
+  /* Items list */
+  .checkout-confirmation .order-item {
     border-radius: 10px;
+    border: 1px solid #ececec;
+    padding: 10px 12px;
+    background: #fafafa;
+    transition: box-shadow 0.15s ease, transform 0.15s ease;
   }
 
-  .btn-outline-primary {
-    border-color: #f37021;
-    color: #f37021;
+  .checkout-confirmation .order-item+.order-item {
+    margin-top: 10px;
+  }
+
+  .checkout-confirmation .order-item:hover {
+    box-shadow: 0 4px 10px rgba(0, 0, 0, 0.04);
+    transform: translateY(-1px);
+  }
+
+  /* Thumbnail */
+  .checkout-confirmation .item-thumb {
+    width: 70px;
+    height: 70px;
     border-radius: 10px;
+    overflow: hidden;
+    background: #f0f0f0;
+    flex-shrink: 0;
   }
 
-  .btn-outline-primary:hover {
-    background-color: #f37021;
-    color: #fff;
+  .checkout-confirmation .item-thumb img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
   }
+
+  /* Item text */
+  .checkout-confirmation .order-item h6 {
+    font-size: 0.97rem;
+    margin-bottom: 3px;
+  }
+
+  .checkout-confirmation .order-item .text-muted {
+    font-size: 0.8rem;
+  }
+
+  .checkout-confirmation .order-item .fw-semibold {
+    font-size: 0.95rem;
+  }
+
+  /* Price details */
+  .checkout-confirmation .price-summary-row {
+    display: flex;
+    justify-content: space-between;
+    font-size: 0.9rem;
+    margin-bottom: 4px;
+  }
+
+  .checkout-confirmation .price-summary-row span {
+    color: #555;
+  }
+
+  .checkout-confirmation .price-summary-row strong {
+    font-weight: 600;
+  }
+
+  .checkout-confirmation .price-summary-row.text-success span,
+  .checkout-confirmation .price-summary-row.text-success strong {
+    color: #1a7a36 !important;
+  }
+
+  /* Grand Total highlight */
+  .checkout-confirmation .total-row {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-top: 10px;
+    padding-top: 10px;
+    border-top: 1px dashed #dddddd;
+  }
+
+  .checkout-confirmation .total-row span {
+    font-size: 0.98rem;
+  }
+
+  .checkout-confirmation .total-row .price {
+    font-size: 1.15rem;
+    font-weight: 700;
+    color: #e65100;
+  }
+
+  /* Address block */
+  .checkout-confirmation .order-address p {
+    font-size: 0.9rem;
+    line-height: 1.5;
+  }
+
+  /* Buttons */
+  .checkout-confirmation #downloadInvoice {
+    font-weight: 600;
+    border-radius: 999px;
+  }
+
+  .checkout-confirmation a.btn {
+    border-radius: 999px;
+  }
+
+  /* Responsive tweak */
+  @media (max-width: 576px) {
+    .checkout-confirmation .order-card {
+      padding: 20px 16px;
+    }
+
+    .checkout-confirmation .order-item {
+      flex-direction: column;
+    }
+
+    .checkout-confirmation .order-item .text-end {
+      margin-top: 6px;
+      text-align: left !important;
+    }
+  }
+
 
   /* ===============================
    Slide-in Toast Message (Clean UI)
@@ -122,14 +272,12 @@
 
 <!-- Slide-in Toast MSG -->
 <div id="mobileAlert" class="mobile-alert"></div>
-<div class="container py-5">
-
-
+<div class="container py-5 checkout-confirmation">
   <div class="row justify-content-center">
-    <div class="col-lg-6">
+    <div class="col-lg-8 col-xl-7">
 
-      <!-- Card -->
       <div class="order-card shadow">
+        <!-- Top: Success -->
         <div class="text-center mb-4">
           <div class="success-icon mx-auto">
             <i class="bi bi-check-lg"></i>
@@ -140,40 +288,125 @@
 
         <hr>
 
-        <!-- Order Info -->
+        <!-- Basic Order Info -->
         <div class="order-info mb-4">
-          <h5 class="fw-semibold mb-3">Order Summary</h5>
-
           <div class="d-flex justify-content-between mb-2">
-            <span>Order ID</span>
-            <strong>{{order.orderId}}</strong>
+            <span class="text-muted small">Order ID</span>
+            <strong>#{{order.orderId}}</strong>
           </div>
 
           <div class="d-flex justify-content-between mb-2">
-            <span>Date</span>
+            <span class="text-muted small">Date</span>
             <strong>{{formattedDate order.createdAt}}</strong>
           </div>
 
           <div class="d-flex justify-content-between mb-2">
-            <span>Total Items</span>
+            <span class="text-muted small">Payment Method</span>
+            <strong class="text-capitalize">{{order.paymentMethod}}</strong>
+          </div>
+
+          <div class="d-flex justify-content-between mb-3">
+            <span class="text-muted small">Total Items</span>
             <strong>{{order.items.length}}</strong>
           </div>
+        </div>
+
+        <!-- Items List -->
+        <div class="order-items mb-4">
+          <h5 class="fw-semibold mb-3">Items in this Order</h5>
+
+          {{#each order.items}}
+          <div class="order-item d-flex align-items-start mb-3">
+            <div class="item-thumb me-3">
+              {{#if carId}}
+              <img src="{{this.variantId.image_url.[0]}}" alt="{{carId.name}}" class="img-fluid rounded" />
+              {{else if accessoryId}}
+              <img src="{{accessoryId.images.[0]}}" alt="{{accessoryId.name}}" class="img-fluid rounded" />
+              {{else}}
+              <div class="placeholder-thumb"></div>
+              {{/if}}
+            </div>
+
+            <div class="flex-grow-1">
+              <div class="d-flex justify-content-between">
+                <div>
+                  <h6 class="mb-1">
+                    {{#if carId}}
+                    {{carId.name}}
+                    {{/if}}
+                    {{#if accessoryId}}
+                    {{accessoryId.name}}
+                    {{/if}}
+                  </h6>
+
+                  {{#if variantId}}
+                  <p class="text-muted small mb-1">
+                    Variant:
+                    {{variantId.name}}
+                    {{#if variantId.color}}
+                    ({{variantId.color}})
+                    {{/if}}
+                  </p>
+                  {{/if}}
+
+                  <p class="text-muted small mb-0">
+                    Qty: {{quantity}} × ₹ {{formatPrice price}}
+                  </p>
+                </div>
+
+                <div class="text-end">
+                  <p class="mb-0 fw-semibold">
+                    ₹ {{formatPrice totalItemAmount}}
+                  </p>
+                </div>
+              </div>
+            </div>
+          </div>
+          {{/each}}
+        </div>
+
+        <!-- Price Breakdown -->
+        <div class="price-summary mb-4">
+          <h5 class="fw-semibold mb-3">Price Details</h5>
 
           <div class="d-flex justify-content-between mb-2">
             <span>Subtotal</span>
             <strong>₹ {{formatPrice order.subtotal}}</strong>
           </div>
 
-          <div class="d-flex justify-content-between mb-3">
+          {{#if order.discount}}
+          <div class="d-flex justify-content-between mb-2 text-success">
+            <span>Discount</span>
+            <strong>- ₹ {{formatPrice order.discount}}</strong>
+          </div>
+          {{/if}}
+
+          <div class="d-flex justify-content-between mb-2">
             <span>Tax</span>
             <strong>₹ {{formatPrice order.taxAmount}}</strong>
           </div>
 
-          <div class="d-flex justify-content-between total-row pt-3">
+          <div class="d-flex justify-content-between mb-2">
+            <span>Delivery Charges</span>
+            <strong>Free</strong>
+          </div>
+
+          {{#if advanceAmount}}
+          <div class="d-flex justify-content-between mb-2">
+            <span>Advance Paid (COD)</span>
+            <strong>₹ {{formatPrice advanceAmount}}</strong>
+          </div>
+
+          <div class="d-flex justify-content-between mb-3">
+            <span>Amount Due on Delivery</span>
+            <strong>₹ {{formatPrice remainingAmount}}</strong>
+          </div>
+          {{/if}}
+
+          <div class="d-flex justify-content-between total-row pt-3 border-top mt-2">
             <span class="fw-bold">Grand Total</span>
             <strong class="price">₹ {{formatPrice order.totalAmount}}</strong>
           </div>
-
         </div>
 
         <hr>
@@ -183,32 +416,35 @@
           <h5 class="fw-semibold mb-2">Delivery Address</h5>
 
           <p class="text-muted small mb-0">
-            <strong>{{order.address.name}}</strong><br>
-            Phone: {{order.address.phone}}<br>
-            Email: {{order.address.email}}<br>
-            {{order.address.label}}<br>
-            {{order.address.street}}<br>
-            Landmark: {{order.address.landmark}}<br>
-            City: {{order.address.city}}<br>
-            District: {{order.address.district}}<br>
-            State: {{order.address.state}}<br>
-            Pincode: {{order.address.pincode}}
+            <strong>{{order.address.name}}</strong><br />
+            Phone: {{order.address.phone}}<br />
+            Email: {{order.address.email}}<br />
+            {{order.address.label}}<br />
+            {{order.address.street}}<br />
+            Landmark: {{order.address.landmark}}<br />
+            {{order.address.city}}, {{order.address.district}}<br />
+            {{order.address.state}} - {{order.address.pincode}}
           </p>
         </div>
 
-
         <!-- Buttons -->
         <div class="text-center">
-          <button id="downloadInvoice" data-orderid="{{order._id}}" class="btn btn-primary w-100 py-2 mb-2">Download
-            Invoice</button>
-          <a href="/account/orders" class="btn btn-outline-primary w-100 py-2">View Orders</a>
+          <button id="downloadInvoice" data-orderid="{{order._id}}" data-orderedid="{{order.orderId}}"
+            data-customername="{{order.address.name}}" class="btn btn-primary w-100 py-2 mb-2">
+            Download Invoice
+          </button>
+          <a href="/account/orders" class="btn btn-outline-primary w-100 py-2">
+            View Orders
+          </a>
         </div>
-
       </div>
+
     </div>
   </div>
-
 </div>
+
+
+
 
 <script>
   document.addEventListener("DOMContentLoaded", () => {
@@ -229,27 +465,51 @@
       setTimeout(() => alertBox.classList.remove("show"), 3000);
     }
 
-
-
-
-
-
     const downloadInvoice = document.getElementById("downloadInvoice");
     const orderId = downloadInvoice.dataset.orderid;
+    const orderedId = downloadInvoice.dataset.orderedid;
+    const customerName = downloadInvoice.dataset.customername;
+    console.log("ORDER ID", orderId)
+    console.log("orderedId", orderedId)
+    console.log("customerName", customerName)
 
     downloadInvoice.addEventListener("click", async () => {
       try {
-        const res = await axios.get(`/cart/checkout-success/download-invoice/${orderId}`);
+        const response = await axios.get(
+          `/cart/checkout-success/download-invoice/${orderId}`,
+          {
+            responseType: "blob",
+          }
+        );
 
-        if (res.data.success) {
-          showMobileAlert("Invoice Downloading...", "success");
-          setTimeout(() => window.open(res.data.file, "_blank"), 2000)
+        const blob = new Blob([response.data], {
+          type: "application/pdf",
+        });
 
-        }
+        const downloadUrl = window.URL.createObjectURL(blob);
+        const safeName = customerName?.replace(/[^a-zA-Z0-9]/g, "_") || "Customer";
+
+        const a = document.createElement("a");
+        a.href = downloadUrl;
+        a.download = `LUXCART-Invoice-${safeName}-${orderedId}-${new Date()
+          .toISOString()
+          .split("T")[0]}.pdf`;
+        document.body.appendChild(a);
+        a.click();
+
+        a.remove();
+        window.URL.revokeObjectURL(downloadUrl);
+
+        showMobileAlert("Invoice downloaded successfully", "success");
       } catch (error) {
-        const msg = error.response?.data.alert || "INTERNAL SERVER ERROR";
+        const msg = error.response?.data?.alert || "INTERNAL SERVER ERROR";
         showMobileAlert(msg, "error");
       }
     });
+
+
+
+
+
   });
 </script>

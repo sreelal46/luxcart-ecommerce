@@ -118,23 +118,23 @@
         <div id="addAlert" class="d-none text-center"></div>
         <div class="modal-body">
           <div class="mb-3">
-            <label class="form-label">Category Name</label>
-            <input type="text" class="form-control" name="name" id="addName" required>
+            <label class="form-label">Category Name <span style="color: red;">*</span></label>
+            <input type="text" class="form-control" name="name" id="addName">
             <small class="text-danger" id="nameError" style="display: none;"></small>
           </div>
           <div class="mb-3">
-            <label class="form-label">Description</label>
-            <textarea class="form-control" name="description" id="addDescription" rows="3" required></textarea>
+            <label class="form-label">Description <span style="color: red;">*</span></label>
+            <textarea class="form-control" name="description" id="addDescription" rows="3"></textarea>
             <small class="text-danger" id="descriptionError" style="display: none;"></small>
           </div>
           <div class="mb-3">
-            <label class="form-label d-block">Product Type <span class="text-danger">*</span></label>
+            <label class="form-label d-block">Product Type <span style="color: red;">*</span></label>
             <div class="radio-container d-inline-block me-4">
-              <input type="radio" name="productType" value="Car" id="typeCar" required>
+              <input type="radio" name="productType" value="Car" id="typeCar">
               <label for="typeCar">Car</label>
             </div>
             <div class="radio-container d-inline-block">
-              <input type="radio" name="productType" value="Accessories" id="typeAccessories" required>
+              <input type="radio" name="productType" value="Accessories" id="typeAccessories">
               <label for="typeAccessories">Accessories</label>
             </div>
           </div>
@@ -154,23 +154,23 @@
       <form id="editCategoryForm" method="post">
         <div class="modal-header">
           <h5 class="modal-title fw-bold">Edit Category</h5>
-          <button class="btn-close" data-bs-dismiss="modal"></button>
+          <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
         </div>
         <div id="editAlert" class="d-none text-center"></div>
         <div class="modal-body">
           <input type="hidden" id="editCategoryId">
           <div class="mb-3">
-            <label class="form-label">Category Name</label>
-            <input type="text" id="editCategoryName" name="name" class="form-control" required>
+            <label class="form-label">Category Name <span style="color: red;">*</span></label>
+            <input type="text" id="editCategoryName" name="name" class="form-control">
             <small class="text-danger" id="editNameError" style="display: none;"></small>
           </div>
           <div class="mb-3">
-            <label class="form-label">Description</label>
-            <textarea id="editCategoryDescription" name="description" class="form-control" rows="3" required></textarea>
+            <label class="form-label">Description <span style="color: red;">*</span></label>
+            <textarea id="editCategoryDescription" name="description" class="form-control" rows="3"></textarea>
             <small class="text-danger" id="editDescriptionError" style="display: none;"></small>
           </div>
           <div class="mb-3">
-            <label class="form-label d-block">Product Type <span class="text-danger">*</span></label>
+            <label class="form-label d-block">Product Type <span style="color: red;">*</span></label>
             <div class="radio-container d-inline-block me-4">
               <input type="radio" name="product" id="editTypeCar" value="Car">
               <label for="editTypeCar">Car</label>
@@ -211,133 +211,3 @@
 
 
 <script src="/js/admin/categoryManagement.js"></script>
-
-<!-- <script>
-  document.addEventListener("DOMContentLoaded", () => {
-
-    // -------------------- Add Category --------------------
-    const addCategoryForm = document.getElementById("addCategoryForm");
-    const addAlert = document.getElementById("addAlert");
-    const addCategoryModal = document.getElementById("addCategoryModal");
-
-    // Reset form when modal opens
-    addCategoryModal.addEventListener('shown.bs.modal', () => {
-      addCategoryForm.reset();
-      addAlert.classList.add('d-none');
-      // Remove any checked state
-      document.querySelectorAll('#addCategoryModal input[type="radio"]').forEach(r => r.checked = false);
-    });
-
-    addCategoryForm.addEventListener("submit", async e => {
-      e.preventDefault();
-
-      // Manual validation for radio buttons
-      const radioChecked = document.querySelector('input[name="productType"]:checked');
-      if (!radioChecked) {
-        addAlert.className = "alert alert-warning text-center";
-        addAlert.textContent = "Please select a product type";
-        addAlert.classList.remove("d-none");
-        return;
-      }
-
-      const data = Object.fromEntries(new FormData(addCategoryForm).entries());
-      addAlert.className = "alert alert-info text-center";
-      addAlert.textContent = "Processing...";
-      addAlert.classList.remove("d-none");
-
-      try {
-        const res = await axios.post("/admin/categorys-management/add-category", data);
-        if (res.data.success) {
-          addAlert.className = "alert alert-success text-center";
-          addAlert.textContent = "Category added successfully!";
-          setTimeout(() => window.location.reload(), 800);
-        }
-      } catch (err) {
-        addAlert.className = "alert alert-danger text-center";
-        addAlert.textContent = err.response?.data?.alert || "Something went wrong";
-      }
-    });
-
-    // -------------------- Edit Category --------------------
-    const editCategoryForm = document.getElementById("editCategoryForm");
-    const editAlert = document.getElementById("editAlert");
-    const editCategoryModal = document.getElementById("editCategoryModal");
-
-    editCategoryModal.addEventListener("show.bs.modal", e => {
-      editAlert.classList.add('d-none');
-      const btn = e.relatedTarget;
-      document.getElementById("editCategoryId").value = btn.dataset.id;
-      document.getElementById("editCategoryName").value = btn.dataset.name;
-      document.getElementById("editCategoryDescription").value = btn.dataset.description;
-
-      // Set radio buttons
-      const type = btn.dataset.type;
-      document.getElementById("editTypeCar").checked = (type === "Car");
-      document.getElementById("editTypeAccessories").checked = (type === "Accessories");
-    });
-
-    editCategoryForm.addEventListener("submit", async e => {
-      e.preventDefault();
-      const id = document.getElementById("editCategoryId").value;
-      const data = Object.fromEntries(new FormData(editCategoryForm).entries());
-      editAlert.className = "alert alert-info text-center";
-      editAlert.textContent = "Updating...";
-      editAlert.classList.remove("d-none");
-
-      try {
-        const res = await axios.put(`/admin/categorys-management/edit-category/${id}`, data);
-        if (res.data.success) {
-          editAlert.className = "alert alert-success text-center";
-          editAlert.textContent = "Category updated successfully!";
-          setTimeout(() => window.location.reload(), 600);
-        } else {
-          editAlert.className = "alert alert-danger text-center";
-          editAlert.textContent = res.data.message || "Failed to update Category";
-        }
-      } catch (err) {
-        editAlert.className = "alert alert-danger text-center";
-        editAlert.textContent = "Update failed";
-      }
-    });
-
-    // -------------------- List/Unlist --------------------
-    const confirmListModal = document.getElementById("confirmListModal");
-    const categoriesDeleteConfirm = document.getElementById("categoriesDeleteConfirm");
-
-    confirmListModal.addEventListener("show.bs.modal", e => {
-      const btn = e.relatedTarget;
-      if (!btn || !btn.dataset.id) return e.preventDefault();
-      document.getElementById("categoriesId").value = btn.dataset.id;
-    });
-
-    categoriesDeleteConfirm.addEventListener("click", async () => {
-      const id = document.getElementById("categoriesId").value;
-      const modalInstance = bootstrap.Modal.getInstance(confirmListModal);
-      try {
-        const res = await axios.patch(`/admin/categorys-management/soft-delete-category/${id}`);
-        modalInstance.hide();
-        if (res.data.success) {
-          Swal.fire({ icon: 'success', title: 'Category Updated!', timer: 1500, showConfirmButton: false })
-            .then(() => window.location.reload());
-        } else {
-          Swal.fire({ icon: 'error', title: 'Failed!', text: res.data.message || 'Failed to update category' });
-        }
-      } catch (err) {
-        modalInstance.hide();
-        Swal.fire({ icon: 'error', title: 'Error!', text: 'Something went wrong while updating the category' });
-      }
-    });
-
-    // -------------------- Live Search --------------------
-    const searchInput = document.getElementById("searchCategory");
-    searchInput.addEventListener("input", e => {
-      const query = e.target.value.toLowerCase();
-      document.querySelectorAll("#categoryTable tr").forEach(tr => {
-        const name = tr.querySelector("td:nth-child(2)")?.textContent.toLowerCase() || "";
-        const type = tr.querySelector("td:nth-child(3)")?.textContent.toLowerCase() || "";
-        tr.style.display = (name.includes(query) || type.includes(query)) ? "" : "none";
-      });
-    });
-
-  });
-</script> -->

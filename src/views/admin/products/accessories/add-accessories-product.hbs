@@ -1,3 +1,37 @@
+<style>
+  .upload-box {
+    width: 280px;
+    min-height: 240px;
+    /* auto grows if needed */
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    position: relative;
+    overflow: hidden;
+    /* clip anything that exceeds */
+  }
+
+  .upload-box .image-preview {
+    width: 100%;
+    height: 100%;
+  }
+
+  /* image fills the box */
+  .upload-box .image-preview img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    border-radius: 8px;
+  }
+
+  /* when we have an image, hide placeholder content */
+  .upload-box.has-image i,
+  .upload-box.has-image p,
+  .upload-box.has-image small {
+    display: none;
+  }
+</style>
 <div class="container py-4">
   <h3 class="fw-bold mb-4">Add Accessory Product</h3>
 
@@ -7,13 +41,13 @@
       <div class="card-header bg-light fw-semibold">Basic Information</div>
       <div class="card-body row g-3">
         <div class="col-md-12">
-          <label class="form-label">Name</label>
-          <input type="text" class="form-control" name="name" placeholder="Enter product name" required />
+          <label class="form-label">Name <span style="color: red;">*</span></label>
+          <input type="text" class="form-control" name="name" placeholder="Enter product name" />
         </div>
 
         <div class="col-md-4">
-          <label class="form-label">Category</label>
-          <select class="form-select" name="category_id" required>
+          <label class="form-label">Category <span style="color: red;">*</span></label>
+          <select class="form-select" name="category_id">
             <option selected disabled>Select category</option>
             {{#each category}}
             <option value="{{this._id}}">{{this.name}}</option>
@@ -22,8 +56,8 @@
         </div>
 
         <div class="col-md-4">
-          <label class="form-label">Product Type</label>
-          <select class="form-select" name="product_type_id" required>
+          <label class="form-label">Product Type <span style="color: red;">*</span></label>
+          <select class="form-select" name="product_type_id">
             <option selected disabled>Select type</option>
             {{#each types}}
             <option value="{{this._id}}">{{this.name}}</option>
@@ -32,8 +66,8 @@
         </div>
 
         <div class="col-md-4">
-          <label class="form-label">Brand</label>
-          <select class="form-select" name="brand_id" required>
+          <label class="form-label">Brand <span style="color: red;">*</span></label>
+          <select class="form-select" name="brand_id">
             <option selected disabled>Select brand</option>
             {{#each brands}}
             <option value="{{this._id}}">{{this.name}}</option>
@@ -42,7 +76,7 @@
         </div>
 
         <div class="col-md-12">
-          <label class="form-label">Description</label>
+          <label class="form-label">Description <span style="color: red;">*</span></label>
           <textarea class="form-control" rows="3" name="description" placeholder="Enter description"></textarea>
         </div>
       </div>
@@ -50,30 +84,30 @@
 
     <!-- Specification -->
     <div class="card mb-4 shadow-sm">
-      <div class="card-header bg-light fw-semibold">Specification</div>
+      <div class="card-header bg-light fw-semibold">Specification <span style="color: red;">*</span></div>
       <div class="card-body row g-3">
         <div class="col-md-4">
-          <label class="form-label">Country of Origin</label>
+          <label class="form-label">Country of Origin <span style="color: red;">*</span></label>
           <input type="text" class="form-control" name="country_of_origin" />
         </div>
         <div class="col-md-4">
-          <label class="form-label">Fabric</label>
+          <label class="form-label">Fabric <span style="color: red;">*</span></label>
           <input type="text" class="form-control" name="fabric" />
         </div>
         <div class="col-md-4">
-          <label class="form-label">Finish</label>
+          <label class="form-label">Finish <span style="color: red;">*</span></label>
           <input type="text" class="form-control" name="finish" />
         </div>
         <div class="col-md-4">
-          <label class="form-label">Fitting</label>
+          <label class="form-label">Fitting <span style="color: red;">*</span></label>
           <input type="text" class="form-control" name="fitting" />
         </div>
         <div class="col-md-4">
-          <label class="form-label">Warranty</label>
+          <label class="form-label">Warranty <span style="color: red;">*</span></label>
           <input type="text" class="form-control" name="warranty" />
         </div>
         <div class="col-md-4">
-          <label class="form-label">Waterproof</label>
+          <label class="form-label">Waterproof <span style="color: red;">*</span></label>
           <select class="form-select" name="waterproof">
             <option value="true">Yes</option>
             <option value="false">No</option>
@@ -87,11 +121,11 @@
       <div class="card-header bg-light fw-semibold">Vehicle Compatibility</div>
       <div class="card-body row g-3">
         <div class="col-md-6">
-          <label class="form-label">Vehicle</label>
+          <label class="form-label">Vehicle <span style="color: red;">*</span></label>
           <input type="text" class="form-control" name="vehicle" />
         </div>
         <div class="col-md-6">
-          <label class="form-label">Production Year</label>
+          <label class="form-label">Production Year <span style="color: red;">*</span></label>
           <input type="number" class="form-control" name="production_year" />
         </div>
       </div>
@@ -107,20 +141,20 @@
 
         <div class="card-body row g-3">
           <div class="col-md-4">
-            <label class="form-label">Price</label>
+            <label class="form-label">Price <span style="color: red;">*</span></label>
             <input type="number" class="form-control" name="price" />
           </div>
           <div class="col-md-4">
-            <label class="form-label">Material</label>
+            <label class="form-label">Material <span style="color: red;">*</span></label>
             <input type="text" class="form-control" name="material" />
           </div>
           <div class="col-md-4">
-            <label class="form-label">Stock</label>
+            <label class="form-label">Stock <span style="color: red;">*</span></label>
             <input type="number" class="form-control" name="stock" />
           </div>
 
           <div class="col-12">
-            <label class="form-label h5 fw-bold">Images</label>
+            <label class="form-label h5 fw-bold">Images <span style="color: red;">*</span></label>
             <div class="variant-images-container d-flex flex-wrap gap-3">
               <div class="upload-card add-image-btn d-flex flex-column justify-content-center align-items-center">
                 <i class="bi bi-plus-circle fs-3"></i>

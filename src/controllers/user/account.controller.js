@@ -438,17 +438,20 @@ const downloadInvoice = async (req, res, next) => {
     }
 
     // File path
-    const filePath = path.join(invoiceDir, `invoice_${orderId}.pdf`);
+    const filePath = path.join(invoiceDir, `invoice_${order.orderId}.pdf`);
 
     // Generate PDF
     await generateInvoice(invoiceData, filePath);
 
+    // setTimeout(() => {
+    //   res.status(OK).json({
+    //     success: true,
+    //     alert: "Invoice generated",
+    //     file: `/invoices/invoice_${order.orderId}.pdf`,
+    //   });
+    // }, 2000);
     setTimeout(() => {
-      res.status(200).json({
-        success: true,
-        alert: "Invoice generated",
-        file: `/invoices/invoice_${orderId}.pdf`,
-      });
+      return res.download(filePath, `invoice_${order.orderId}.pdf`);
     }, 2000);
   } catch (error) {
     console.log("Error download invoice:", error);
