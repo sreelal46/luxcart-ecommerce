@@ -128,14 +128,13 @@ const loadOrderPage = async (req, res, next) => {
 const loadCartPage = async (req, res, next) => {
   try {
     const userId = req.session.user._id;
-    console.log(userId);
     const cart = await Cart.findOne({ userId }, null, {
       sort: { createdAt: -1 },
     })
       .populate("items.carId")
       .populate("items.variantId")
-      .populate("items.accessoryId")
-      .lean();
+      .populate("items.accessoryId");
+
     if (cart) {
       for (let item of cart.items) {
         // Variant price update
@@ -165,6 +164,7 @@ const loadCartPage = async (req, res, next) => {
         }
       }
     }
+
     res.status(OK).render("user/account/cart", { cart, taxRate });
   } catch (error) {
     console.log("Error from cart page load", error);
@@ -177,10 +177,12 @@ const loadCheckoutStep1 = async (req, res, next) => {
   try {
     const userId = req.session.user._id;
     const cartId = req.params.cartId;
-    const cart = await Cart.findById(cartId);
     const address = await Address.find({ userId });
 
     if (!cartId) return res.status(FORBIDDEN).redirect("/cart");
+    const cart = await Cart.findById(cartId);
+    if (!cart.items.length) return res.status(FORBIDDEN).redirect("/cart");
+    await cart.save();
 
     res.status(OK).render("user/checkout/checkout_Step_1_Address", {
       address,
@@ -199,10 +201,10 @@ const loadCheckoutStep2 = async (req, res, next) => {
     const addressId = req.params.addressId;
     const cart = await Cart.findOne({ userId });
     req.session.addressId = addressId;
-    console.log("Address id", addressId);
 
     if (!addressId) return res.status(FORBIDDEN).redirect("/cart");
-
+    if (!cart.items.length) return res.status(FORBIDDEN).redirect("/cart");
+    await cart.save();
     res.status(OK).render("user/checkout/checkout_Step_2_Select_Payment", {
       cart,
       taxRate,
@@ -221,6 +223,7 @@ const loadCheckoutStep3 = async (req, res, next) => {
     const cart = await Cart.findOne({ userId });
 
     if (!paymentMethod) return res.status(FORBIDDEN).redirect("/cart");
+    if (!cart.items.length) return res.status(FORBIDDEN).redirect("/cart");
 
     const advancePercentage = parseInt(process.env.ADVANCE_PAYMENT_PERCENTAGE);
 
@@ -228,7 +231,7 @@ const loadCheckoutStep3 = async (req, res, next) => {
     const advanceAmount = Math.round(
       (cart.totalAfterAll * advancePercentage) / 100
     );
-
+    await cart.save();
     res.status(OK).render("user/checkout/checkout_Step_3_Payment_", {
       cart,
       taxRate,
@@ -241,101 +244,14 @@ const loadCheckoutStep3 = async (req, res, next) => {
 };
 const loadCheckoutStep4 = async (req, res, next) => {
   try {
-    const userId = req.session.user._id;
-    const paymentMethod = req.session.paymentMethod;
-    const addressId = req.session.addressId;
-
-    const cart = await Cart.findOne({ userId }).populate(
+    const orderId = req.params.orderId;
+    if (!orderId) return res.status(FORBIDDEN).redirect("/cart");
+    const populatedOrder = await Order.findById(orderId).populate(
       "items.carId items.accessoryId items.variantId"
     );
-    if (!cart || !cart.items.length) {
-      return res.redirect("/cart"); // or handle properly
-    }
-
-    const selectedAddress = await Address.findById(addressId);
-    if (!selectedAddress) {
-      return res.redirect("/checkout/address");
-    }
-
-    const address = {
-      name: selectedAddress.fullName,
-      phone: selectedAddress.phone,
-      email: selectedAddress.email,
-      label: selectedAddress.label,
-      street: selectedAddress.street,
-      landmark: selectedAddress.landmark,
-      city: selectedAddress.city,
-      district: selectedAddress.district,
-      state: selectedAddress.state,
-      pincode: selectedAddress.pinCode,
-    };
-
-    const orderItems = cart.items.map((item) => ({
-      carId: item.carId || null,
-      variantId: item.variantId || null,
-      accessoryId: item.accessoryId || null,
-      quantity: item.quantity || 0,
-      price: item.price,
-      totalItemAmount: item.carId ? item.price : item.lineTotal,
-    }));
-
-    const order = new Order({
-      userId,
-      items: orderItems,
-      address,
-      paymentMethod,
-      subtotal: cart.totalAmount,
-      taxAmount: cart.accessoryTax,
-      discount: cart.discount,
-      totalAmount: cart.totalAfterAll, // final amount after all calc
-    });
-
-    await order.save();
-
-    // Clear cart
-    cart.items = [];
-    cart.totalAmount = 0;
-    cart.accessoryTax = 0;
-    cart.discount = 0;
-    cart.totalAfterAll = 0;
-    await cart.save();
-
-    // Reduce stock
-    for (const item of order.items) {
-      if (item.accessoryId) {
-        await Accessory.findByIdAndUpdate(item.accessoryId, {
-          $inc: { stock: -item.quantity },
-        });
-      }
-      if (item.variantId) {
-        await CarVariant.findByIdAndUpdate(item.variantId, {
-          $inc: { stock: -item.quantity },
-        });
-      }
-    }
-
-    // Populate for front-end display
-    const populatedOrder = await Order.findById(order._id).populate(
-      "items.carId items.accessoryId items.variantId"
-    );
-
-    const advancePercentage =
-      Number(process.env.ADVANCE_PAYMENT_PERCENTAGE) || 10;
-
-    let advanceAmount = 0;
-    let remainingAmount = 0;
-
-    if (paymentMethod === "COD") {
-      advanceAmount = Math.round(
-        (populatedOrder.totalAmount * advancePercentage) / 100
-      );
-      remainingAmount = populatedOrder.totalAmount - advanceAmount;
-    }
 
     res.render("user/checkout/checkout_Step_4_Confirmation", {
       order: populatedOrder,
-      advanceAmount,
-      remainingAmount,
     });
   } catch (error) {
     console.error("Error loading Step 4", error);

@@ -8,17 +8,11 @@
 }
 
 /* -------- BASE -------- */
-body {
-  margin: 0;
-  font-family: Inter, Arial, sans-serif;
-  background: #fafafa;
-  color: #111;
-}
 
 .container {
   width: 92%;
   max-width: var(--max-width);
-  margin: 20px auto 60px;
+  margin: 60px auto 60px;
   padding: 12px 0 40px;
 }
 

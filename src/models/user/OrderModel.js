@@ -113,7 +113,14 @@ const orderSchema = new Schema(
       type: Number,
       required: true,
     },
-
+    advanceAmount: {
+      type: Number,
+      default: null,
+    },
+    remainingAmount: {
+      type: Number,
+      default: null,
+    },
     paymentId: {
       type: String,
       default: null,

@@ -80,11 +80,18 @@
 
           <!-- Desktop Buttons -->
           {{#if singleCar.isListed}}
-          <!-- <button class="btn btn-buy" id="buyProductDesk" data-carid="{{singleCar._id}}"
-            data-variantId="{{getFirstVariantId singleCar}}"><i class="bi bi-lightning-charge"></i> Buy
-            Now</button> -->
-          {{#if (includes inCartVariants selectedVariantId)}}
-          <a class="btn btn-cart" href="/cart">
+          {{#if singleCar.variantIds.length}}
+          {{#unless singleCar.variantIds.[0].stock}}
+          <a style="text-decoration: none;" id="addToCartDesk" data-carid="{{singleCar._id}}"
+            data-variantId="{{selectedVariantId}}"
+            class="p-3 rounded-3 border border-danger bg-light text-danger mt-2 d-flex align-items-center">
+            <i class="bi bi-exclamation-octagon-fill fs-5 me-2"></i>
+            <span class="fw-semibold">Out of Stock</span>
+          </a>
+          {{else}}
+          {{#if inCart}}
+          <a class="btn btn-cart" id="addToCartDesk" data-carid="{{singleCar._id}}"
+            data-variantId="{{selectedVariantId}}" href="/cart">
             <i class="bi bi-cart"></i> Go to Cart
           </a>
           {{else}}
@@ -93,16 +100,20 @@
             <i class="bi bi-cart"></i> Add to Cart
           </a>
           {{/if}}
-
-
-
-
+          {{/unless}}
           {{else}}
           <div class="p-3 rounded-3 border border-danger bg-light text-danger mt-2 d-flex align-items-center">
             <i class="bi bi-exclamation-octagon-fill fs-5 me-2"></i>
             <span class="fw-semibold">This model is currently unavailable</span>
           </div>
           {{/if}}
+          {{else}}
+          <div class="p-3 rounded-3 border border-danger bg-light text-danger mt-2 d-flex align-items-center">
+            <i class="bi bi-exclamation-octagon-fill fs-5 me-2"></i>
+            <span class="fw-semibold">This model is currently unavailable</span>
+          </div>
+          {{/if}}
+
 
         </div>
       </div>

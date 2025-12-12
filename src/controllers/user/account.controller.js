@@ -347,7 +347,7 @@ const changeQuantity = async (req, res, next) => {
     if (!cart)
       return res
         .status(NOT_FOUND)
-        .json({ success: false, alert: "Cart not fount" });
+        .json({ success: false, alert: "Cart not found" });
 
     if (!item) {
       return res.status(NOT_FOUND).json({
@@ -406,8 +406,9 @@ const downloadInvoice = async (req, res, next) => {
     const formattedItems = order.items.map((item) => ({
       description:
         item.accessoryId?.name ||
-        item.variantId?.name ||
-        item.carId?.name ||
+        (item.carId?.name && item.variantId?.color
+          ? `${item.carId.name} (${item.variantId.color})`
+          : null) ||
         "Product",
       qty: item.quantity,
       price: item.price,
@@ -428,6 +429,8 @@ const downloadInvoice = async (req, res, next) => {
       taxAmount: order.taxAmount,
       discount: order.discount || 0,
       totalAmount: order.totalAmount,
+      advanceAmount: order.advanceAmount,
+      remainingAmount: order.remainingAmount,
     };
 
     // Invoice folder path
@@ -458,8 +461,6 @@ const downloadInvoice = async (req, res, next) => {
     next(error);
   }
 };
-
-module.exports = { downloadInvoice };
 
 module.exports = {
   editEmail,

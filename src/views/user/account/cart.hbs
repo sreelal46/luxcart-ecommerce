@@ -36,10 +36,15 @@
 
             {{!-- TITLE --}}
             {{#if this.carId}}
-            <div class="cart-item-title">{{this.carId.name}}</div>
+            <div class="cart-item-title">{{this.carId.name}} {{#unless (gt this.variantId.stock 0)}}<span
+                class="text-danger">(Out of
+                Stock)</span>{{/unless}}
+            </div>
             <div class="cart-item-meta">Color: {{this.variantId.color}}</div>
             {{else}}
-            <div class="cart-item-title">{{this.accessoryId.name}}</div>
+            <div class="cart-item-title">{{this.accessoryId.name}} {{#unless (gt this.accessoryId.stock 0)}}<span
+                class="text-danger">(Out of
+                Stock)</span>{{/unless}}</div>
             <div class="cart-item-meta">Material: {{this.accessoryId.material}}</div>
             {{/if}}
 

@@ -51,6 +51,7 @@ const {
   changeQuantity,
   downloadInvoice,
 } = require("../controllers/user/account.controller");
+const { createOrder } = require("../controllers/user/order.controller");
 
 const {
   cancelOrder,
@@ -206,7 +207,8 @@ route.get(
   checkSession,
   loadCheckoutStep3
 );
-route.get("/cart/checkout-step-4/:cartId", checkSession, loadCheckoutStep4);
+route.post("/cart/checkout/create-order/:cartId", checkSession, createOrder);
+route.get("/cart/checkout-step-4/:orderId", checkSession, loadCheckoutStep4);
 
 //download invoice
 route.get(

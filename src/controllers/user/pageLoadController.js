@@ -180,7 +180,7 @@ const loadSingleCarProduct = async (req, res, next) => {
     // Get data
     const userId = req.session.user._id;
     const carId = req.params.carId;
-    let selectedVariantId = req.query.variantId; // from axios
+    let selectedVariantId = req.query.variantId;
     const cart = await Cart.findOne({ userId });
 
     // Load Car + variants
@@ -190,7 +190,6 @@ const loadSingleCarProduct = async (req, res, next) => {
       .populate("product_type_id", "name")
       .populate("variantIds", "image_url stock color price")
       .lean();
-
     // Active variant
     if (!selectedVariantId) {
       selectedVariantId = singleCar.variantIds[0]._id.toString();
@@ -223,7 +222,7 @@ const loadSingleCarProduct = async (req, res, next) => {
       .populate("brand_id product_type_id variantIds")
       .lean();
 
-    // If frontend requested JSON (axios)
+    // If frontend requested JSON
     if (req.xhr || req.headers.accept.indexOf("application/json") > -1) {
       return res.json({
         success: true,

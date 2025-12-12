@@ -1,4 +1,4 @@
-// generateInvoice.js - Single Page Optimized Version
+// generateInvoice.js - Single Page Optimized Version (dynamic payment summary height)
 const PDFDocument = require("pdfkit");
 const fs = require("fs");
 const path = require("path");
@@ -22,7 +22,7 @@ function formatCurrency(value) {
  * @returns {string} Number in words
  */
 function numberToWords(num) {
-  if (num === 0) return "Zero Rupees Only";
+  if (!num) return "Zero Rupees Only";
 
   const ones = [
     "",
@@ -105,11 +105,14 @@ function generateInvoice(order, outputPath, options = {}) {
   const fontPath = path.join(__dirname, "../font/DejaVuSans.ttf");
   const fontBoldPath = path.join(__dirname, "../font/DejaVuSans-Bold.ttf");
 
-  doc.registerFont("DejaVu", fontPath);
-  if (fs.existsSync(fontBoldPath)) {
-    doc.registerFont("DejaVuBold", fontBoldPath);
+  if (fs.existsSync(fontPath)) doc.registerFont("DejaVu", fontPath);
+  if (fs.existsSync(fontBoldPath)) doc.registerFont("DejaVuBold", fontBoldPath);
+  // fallback to built-in if fonts are missing
+  try {
+    doc.font("DejaVu");
+  } catch (e) {
+    // ignore, pdfkit will use default
   }
-  doc.font("DejaVu");
 
   const stream = fs.createWriteStream(outputPath);
   doc.pipe(stream);
@@ -363,15 +366,95 @@ function generateInvoice(order, outputPath, options = {}) {
 
   currentY += 20;
 
-  // ========== PAYMENT SUMMARY ==========
+  // ========== PAYMENT SUMMARY (dynamic height, measured) ==========
   const summaryX = 325;
   const summaryWidth = 230;
 
+  // Build summary lines (label/value). We'll measure heights to compute box size.
+  const summaryLines = [];
+
+  // Subtotal
+  summaryLines.push({
+    label: "Subtotal",
+    value: formatCurrency(order.subtotal || 0),
+    color: colors.secondary,
+  });
+
+  // Tax
+  const taxPercent = order.taxPercent || "";
+  const taxLabel = taxPercent ? `Tax (${taxPercent}%)` : "Tax";
+  summaryLines.push({
+    label: taxLabel,
+    value: formatCurrency(order.taxAmount || 0),
+    color: colors.secondary,
+  });
+
+  // Optional lines
+  if (order.discount && Number(order.discount) > 0) {
+    summaryLines.push({
+      label: "Discount",
+      value: `- ${formatCurrency(order.discount)}`,
+      color: colors.success,
+    });
+  }
+
+  if (order.advanceAmount && Number(order.advanceAmount) > 0) {
+    summaryLines.push({
+      label: "Advance Paid (COD)",
+      value: `- ${formatCurrency(order.advanceAmount)}`,
+      color: colors.success,
+    });
+  }
+
+  if (order.remainingAmount && Number(order.remainingAmount) > 0) {
+    summaryLines.push({
+      label: "Remaining Amount",
+      value: `- ${formatCurrency(order.remainingAmount)}`,
+      color: colors.success,
+    });
+  }
+
+  // We'll measure label heights using the font sizes we plan to render
+  const headerHeight = 20; // space allocated for "PAYMENT SUMMARY" header (approx)
+  const labelFontSize = 9;
+  const totalLabelFontSize = 11;
+  const totalAmountFontSize = 13;
+  const paddingTop = 12;
+  const paddingBottom = 12;
+  const gapBetweenLines = 6;
+
+  // Measure heights
+  doc.fontSize(labelFontSize);
+  let measuredLinesHeight = 0;
+  summaryLines.forEach((ln) => {
+    const h = doc.heightOfString(ln.label, { width: summaryWidth - 24 });
+    measuredLinesHeight += h + gapBetweenLines;
+  });
+
+  // Extra space for divider + total amount
+  const dividerExtra = 10;
+  const totalLabelHeight = doc.heightOfString("Total Amount", {
+    width: summaryWidth - 24,
+  });
+
+  // Compute summary box height with a sensible minimum
+  const computedHeight =
+    paddingTop +
+    headerHeight +
+    measuredLinesHeight +
+    dividerExtra +
+    totalLabelHeight +
+    paddingBottom;
+  const minHeight = 115;
+  const summaryHeight = Math.max(minHeight, computedHeight);
+
+  // Draw summary box
   doc
-    .roundedRect(summaryX, currentY, summaryWidth, 115, 6)
+    .roundedRect(summaryX, currentY, summaryWidth, summaryHeight, 6)
     .fillAndStroke(colors.lightGray, colors.border);
 
-  let summaryY = currentY + 12;
+  // Render header
+  let summaryY = currentY + paddingTop;
   const labelX = summaryX + 12;
   const valueX = summaryX + summaryWidth - 12;
 
@@ -379,40 +462,23 @@ function generateInvoice(order, outputPath, options = {}) {
     .fontSize(11)
     .fillColor(colors.primary)
     .text("PAYMENT SUMMARY", labelX, summaryY);
+  summaryY += headerHeight;
 
-  summaryY += 20;
-
-  // Subtotal
-  doc.fontSize(9).fillColor(colors.secondary);
-  doc.text("Subtotal", labelX, summaryY);
-  doc.text(formatCurrency(order.subtotal), valueX - 95, summaryY, {
-    width: 95,
-    align: "right",
+  // Render each summary line
+  summaryLines.forEach((ln) => {
+    doc
+      .fontSize(labelFontSize)
+      .fillColor(ln.color || colors.secondary)
+      .text(ln.label, labelX, summaryY, { width: summaryWidth - 36 });
+    // value right aligned
+    doc
+      .fontSize(labelFontSize)
+      .fillColor(colors.secondary)
+      .text(ln.value, valueX - 95, summaryY, { width: 95, align: "right" });
+    summaryY +=
+      doc.heightOfString(ln.label, { width: summaryWidth - 24 }) +
+      gapBetweenLines;
   });
-
-  summaryY += 16;
-
-  // Tax
-  const taxPercent = order.taxPercent || "";
-  const taxLabel = taxPercent ? `Tax (${taxPercent}%)` : "Tax";
-  doc.text(taxLabel, labelX, summaryY);
-  doc.text(formatCurrency(order.taxAmount), valueX - 95, summaryY, {
-    width: 95,
-    align: "right",
-  });
-
-  summaryY += 16;
-
-  // Discount (if any)
-  if (order.discount && Number(order.discount) > 0) {
-    doc.fillColor(colors.success);
-    doc.text("Discount", labelX, summaryY);
-    doc.text(`- ${formatCurrency(order.discount)}`, valueX - 95, summaryY, {
-      width: 95,
-      align: "right",
-    });
-    summaryY += 16;
-  }
 
   // Divider
   doc
@@ -420,26 +486,25 @@ function generateInvoice(order, outputPath, options = {}) {
     .lineTo(valueX, summaryY + 2)
     .strokeColor(colors.border)
     .stroke();
-
-  summaryY += 10;
+  summaryY += dividerExtra;
 
   // Total Amount
   doc
-    .fontSize(11)
+    .fontSize(totalLabelFontSize)
     .fillColor(colors.primary)
     .text("Total Amount", labelX, summaryY);
-
   doc
-    .fontSize(13)
+    .fontSize(totalAmountFontSize)
     .fillColor(colors.accent)
-    .text(formatCurrency(order.totalAmount), valueX - 95, summaryY, {
+    .text(formatCurrency(order.totalAmount || 0), valueX - 95, summaryY, {
       width: 95,
       align: "right",
     });
 
-  // Amount in words (below summary box)
-  currentY = currentY + 130;
+  // Move currentY down by the exact height we used plus a small gap
+  currentY = currentY + summaryHeight + 12;
 
+  // ========== AMOUNT IN WORDS ==========
   doc
     .fontSize(8)
     .fillColor(colors.secondary)
@@ -449,7 +514,7 @@ function generateInvoice(order, outputPath, options = {}) {
     .fontSize(9)
     .fillColor(colors.primary)
     .text(
-      numberToWords(Math.floor(order.totalAmount)),
+      numberToWords(Math.floor(order.totalAmount || 0)),
       marginLeft,
       currentY + 11,
       {

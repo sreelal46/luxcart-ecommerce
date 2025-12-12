@@ -1,7 +1,8 @@
 <style>
   /* ===== Order Confirmation – Only for this page ===== */
   .checkout-confirmation {
-    background: #f5f5f7;
+    margin-top: 50px;
+    background: #ffffff;
   }
 
   /* remove default container white gap at top if any */
@@ -341,11 +342,8 @@
 
                   {{#if variantId}}
                   <p class="text-muted small mb-1">
-                    Variant:
-                    {{variantId.name}}
-                    {{#if variantId.color}}
-                    ({{variantId.color}})
-                    {{/if}}
+                    Color:
+                    {{variantId.color}}
                   </p>
                   {{/if}}
 
@@ -383,23 +381,28 @@
 
           <div class="d-flex justify-content-between mb-2">
             <span>Tax</span>
+            {{#if order.taxAmount}}
             <strong>₹ {{formatPrice order.taxAmount}}</strong>
+            {{else}}
+            <strong>₹ 0</strong>
+            {{/if}}
           </div>
+
 
           <div class="d-flex justify-content-between mb-2">
             <span>Delivery Charges</span>
             <strong>Free</strong>
           </div>
 
-          {{#if advanceAmount}}
+          {{#if order.advanceAmount}}
           <div class="d-flex justify-content-between mb-2">
             <span>Advance Paid (COD)</span>
-            <strong>₹ {{formatPrice advanceAmount}}</strong>
+            <strong>₹ {{formatPrice order.advanceAmount}}</strong>
           </div>
 
           <div class="d-flex justify-content-between mb-3">
             <span>Amount Due on Delivery</span>
-            <strong>₹ {{formatPrice remainingAmount}}</strong>
+            <strong>₹ {{formatPrice order.remainingAmount}}</strong>
           </div>
           {{/if}}
 

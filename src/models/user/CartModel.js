@@ -67,7 +67,9 @@ cartSchema.pre("save", async function (next) {
       // ACCESSORY PRICE
       if (item.accessoryId) {
         const accessory = await Accessory.findById(item.accessoryId).lean();
+
         if (accessory && accessory.isListed !== false) {
+          item.price = accessory.price;
           accessoryTotal += (item.price || 0) * (item.quantity || 0);
           item.lineTotal = (item.price || 0) * (item.quantity || 0);
         }
@@ -77,6 +79,7 @@ cartSchema.pre("save", async function (next) {
       if (item.variantId) {
         const variant = await CarVariant.findById(item.variantId).lean();
         if (variant && variant.isListed !== false) {
+          item.price = variant.price;
           carTotal += (item.price || 0) * (item.quantity || 0);
         }
       }

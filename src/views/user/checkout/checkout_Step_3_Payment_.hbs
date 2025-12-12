@@ -1,5 +1,94 @@
 <link rel="stylesheet" href="/css/user/checkout/checkout.css" />
+<style>
+  /* ===============================
+   Slide-in Toast MSG
+=============================== */
 
+  .mobile-alert {
+    position: fixed;
+    bottom: 20px;
+    left: 50%;
+    transform: translateX(-50%) translateY(100px);
+    background: #111;
+    color: #fff;
+    padding: 12px 20px;
+    border-radius: 14px;
+    font-size: 14px;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    opacity: 0;
+    pointer-events: none;
+    transition: all 0.35s ease;
+    box-shadow: 0 6px 22px rgba(0, 0, 0, 0.25);
+    z-index: 9999;
+  }
+
+  .mobile-alert.show {
+    opacity: 1;
+    transform: translateX(-50%) translateY(0);
+  }
+
+  button {
+    padding: 10px 20px;
+    background: #000;
+    color: #fff;
+    border: none;
+    border-radius: 10px;
+    cursor: pointer;
+    font-size: 16px;
+  }
+
+  @media (min-width: 768px) {
+    .mobile-alert {
+      top: 20px;
+      bottom: auto;
+      transform: translateX(-50%) translateY(-100px);
+    }
+
+    .mobile-alert.show {
+      transform: translateX(-50%) translateY(0);
+    }
+  }
+
+  .message-green {
+    color: #00ff7f;
+  }
+
+  .message-red {
+    color: #ff4d4d;
+  }
+
+  .message-yellow {
+    color: #ffcc00;
+  }
+
+  .success-icon,
+  .error-icon {
+    font-size: 16px;
+    /* same size */
+    margin-right: 6px;
+    /* space */
+    vertical-align: middle;
+  }
+
+  .success-icon {
+    color: #00ff7f;
+    /* green */
+  }
+
+  .error-icon {
+    color: #dc3545;
+    /* red */
+  }
+
+  .yellow-icon {
+    color: #ffcc00;
+    /* red */
+  }
+</style>
+<!-- Slide-in Toast MSG -->
+<div id="mobileAlert" class="mobile-alert"></div>
 <div class="wrap-container">
   <div class="container">
     <h1>Checkout</h1>
@@ -12,15 +101,15 @@
         </div>
         <div class="step-item">
           <div class="step active-step">2</div>
-          <div class="step-label">Payment</div>
+          <div class="step-label">Select Payment</div>
         </div>
         <div class="step-item">
           <div class="step active-step">3</div>
-          <div class="step-label">{{paymentMethod}}</div>
+          <div class="step-label">Pay</div>
         </div>
         <div class="step-item">
           <div class="step">4</div>
-          <div class="step-label">Confirm</div>
+          <div class="step-label">Summary</div>
         </div>
       </div>
     </div>
@@ -59,12 +148,16 @@
               cart.totalAmount}}</span></div>
           <!-- <div class="summary-row"><span>Discount</span><span>₹28,000</span></div> -->
           <div class="summary-row"><span>Shipping</span><span>Free</span></div>
+          {{#if cart.accessoryTax}}
           <div class="summary-row"><span>Tax<span class="fw-semibold">(GST {{taxRate}}% Only for
                 Accessory)</span></span><span>₹ {{formatPrice cart.accessoryTax}}</span></div>
+          {{else}}
+          <div class="summary-row"><span>Tax</span><span>₹ 0</span></div>
+          {{/if}}
           <hr>
           <div class="summary-row" style="font-weight:700"><span>Total</span><span>₹ {{formatPrice
               cart.totalAfterAll}}</span></div>
-          <button class="btn" id="continueBtn" data-cartid="{{cart._id}}" onclick="step3(this)">Continue</button>
+          <button class="btn" id="continueBtn" data-cartid="{{cart._id}}">Continue</button>
         </div>
       </div>
 
@@ -72,8 +165,51 @@
   </div>
 </div>
 <script>
-  function step3(div) {
-    const cartId = div.getAttribute("data-cartid");
-    window.location.href = `/cart/checkout-step-4/${cartId}`;
-  }
+  document.addEventListener("DOMContentLoaded", () => {
+
+    function showMobileAlert(message, notification) {
+      const alertBox = document.getElementById("mobileAlert");
+      if (notification === "success") {
+        alertBox.innerHTML = `<i class="bi bi-check-circle-fill success-icon"></i><span class="message-green">${message}</span>`;
+        alertBox.classList.add("show");
+      } else if (notification === "error") {
+        alertBox.innerHTML = `<i class="bi bi-x-circle-fill error-icon"></i><span class="message-red">${message}</span>`;
+        alertBox.classList.add("show");
+      } else if (notification === "warning") {
+        alertBox.innerHTML = `<i class="bi bi-exclamation-triangle-fill yellow-icon"></i><span class="message-yellow">${message}</span>`;
+        alertBox.classList.add("show");
+      }
+
+      setTimeout(() => {
+        alertBox.classList.remove("show");
+      }, 2000);
+    }
+
+
+
+    const continueBtn = document.getElementById("continueBtn")
+    continueBtn.addEventListener("click", async () => {
+      try {
+        const cartId = continueBtn.getAttribute("data-cartid");
+        const res = await axios.post(`/cart/checkout/create-order/${cartId}`);
+
+        console.log("create-order response:", res.data); // debug
+
+        if (res.data && res.data.success) {
+          showMobileAlert("Order created successfully", "success");
+          setTimeout(() => {
+            window.location.replace(res.data.redirect);
+          }, 1000);
+        } else {
+          const msg = res.data?.message || "Failed to create order";
+          showMobileAlert(msg, "error");
+        }
+      } catch (error) {
+        console.error("Create order failed:", error.response?.data || error.message);
+        const msg = error.response?.data?.message || "Something went wrong";
+        showMobileAlert(msg, "error");
+      }
+
+    })
+  })
 </script>
