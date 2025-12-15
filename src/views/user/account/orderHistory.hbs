@@ -119,12 +119,9 @@
 <section id="orders" class="main-card">
   <h5>Order History</h5>
 
-  {{!-- LOOP ALL ORDERS --}}
-  {{#each orders}}
-  <div class="order-row mt-3">
 
-    {{!-- TOP ROW --}}
-    <div class="order-row-header">
+  <!-- {{!-- TOP ROW --}}
+  <div class="order-row-header">
       <div class="order-meta">
 
         <div>
@@ -148,54 +145,70 @@
         <div style="font-size:13px;color:var(--muted)">Status</div>
         <div class="status-pill status-delivered">{{this.orderStatus}}</div>
       </div>
-    </div>
+    </div> -->
 
-    {{!-- LOOP ALL ITEMS OF THE ORDER --}}
-    {{#each this.items}}
-    <div class="order-items">
+  {{!-- LOOP ALL ORDERS --}}
 
-      {{!-- CAR ITEM --}}
-      {{#if this.carId}}
-      <img class="order-item-image" src="{{this.variantId.image_url.[0]}}" alt="car">
-      <div class="flex-grow-1">
-        <div style="font-weight:600">{{this.carId.name}}</div>
+  {{#each orders}}
+  {{#each this.items}}
 
-        {{!-- ACCESSORY ITEM --}}
+  <div class="order-row mt-3">
+    <div class="order-items d-flex justify-content-between align-items-start">
+
+      <!-- LEFT: IMAGE + DETAILS -->
+      <div class="d-flex align-items-start gap-3">
+
+        {{#if this.carId}}
+        <img class="order-item-image" src="{{this.variantId.image_url.[0]}}" alt="car">
         {{else}}
         <img class="order-item-image" src="{{this.accessoryId.images.[0]}}" alt="accessory">
-        <div class="flex-grow-1">
-          <div style="font-weight:600">{{this.accessoryId.name}}</div>
-          {{/if}}
+        {{/if}}
 
-          <div style="font-size:13px;color:var(--muted)" class="mt-1">
+        <div class="flex-grow-1">
+          <div class="fw-semibold">
+            {{#if this.carId}}
+            {{this.carId.name}}
+            {{else}}
+            {{this.accessoryId.name}}
+            {{/if}}
+          </div>
+
+          <div class="text-muted mt-1" style="font-size:13px;">
+            {{#if this.carId}}
+            Color: {{this.variantId.color}}<br>
+            {{else}}
+            Material : {{this.accessoryId.material}}<br>
+            {{/if}}
             Quantity: {{this.quantity}}
           </div>
         </div>
-
-        <div class="order-actions">
-          <a href="/account/orders/order-details/{{../_id}}" class="btn btn-outline-dark btn-sm" id="viewDetailBtn">
-            View Details
-          </a>
-          {{#if (eqTwo this.orderStatus "delivered")}}
-          <button class="btn btn-warning btn-sm returnBtn" data-orderid="{{../_id}}" data-itemid="{{this._id}}"
-            data-bs-toggle="modal" data-bs-target="#returnModal">
-            <i class="bi bi-bag-plus"></i> Return
-          </button>
-
-          {{else}}
-          <button class="btn btn-danger btn-sm cancelBtn" data-orderid="{{../_id}}" data-itemid="{{this._id}}"
-            data-bs-toggle="modal" data-bs-target="#cancelModal">
-            Cancel Order
-          </button>
-
-          {{/if}}
-        </div>
-
       </div>
-      {{/each}}
+
+      <!-- RIGHT: ACTIONS -->
+      <div class="order-actions text-end">
+        <a href="/account/orders/order-details/{{../_id}}/{{this._id}}" class="btn btn-outline-dark btn-sm mb-1">
+          View Details
+        </a>
+
+        {{#if (eqTwo this.orderStatus "return")}}
+        <button id="changingButtonReturn" class="btn btn-warning btn-sm returnBtn" data-orderid="{{../_id}}"
+          data-itemid="{{this._id}}" data-bs-toggle="modal" data-bs-target="#returnModal">
+          <i class="bi bi-bag-plus"></i> Return
+        </button>
+        {{else}}
+        <button id="changingButton" class="btn btn-danger btn-sm cancelBtn" data-orderid="{{../_id}}"
+          data-itemid="{{this._id}}" data-bs-toggle="modal" data-bs-target="#cancelModal">
+          Cancel Order
+        </button>
+        {{/if}}
+      </div>
 
     </div>
-    {{/each}}
+  </div>
+
+  {{/each}}
+  {{/each}}
+
 
 </section>
 
@@ -332,6 +345,8 @@
     }
 
     const responsMsg = document.getElementById("responsMsg")
+    const changingButton = document.getElementById("changingButton")
+    const changingButtonReturn = document.getElementById("changingButton")
     // ========== SHOW SUCCESS MODAL ==========
     function showSuccessModal(msg = "Processing") {
       const successModal = new bootstrap.Modal(document.getElementById("successModal"));
@@ -356,6 +371,28 @@
           bootstrap.Modal.getInstance(document.getElementById("cancelModal")).hide();
           this.reset();
           showSuccessModal("We received your request");
+          /* ---------- SUCCESS UI UPDATE ---------- */
+          changingButton.innerHTML = "Canceled";
+          changingButton.classList.remove("btn-warning");
+          changingButton.classList.add("btn-secondary");
+
+          // Disable button
+          changingButton.disabled = true;
+
+          // Remove modal-related attributes
+          changingButton.removeAttribute("data-bs-toggle");
+          changingButton.removeAttribute("data-bs-target");
+          changingButton.removeAttribute("data-orderid");
+          changingButton.removeAttribute("data-itemid");
+
+          // Optional: prevent any click events
+          changingButton.style.pointerEvents = "none";
+
+          // Close modal manually
+          const modalEl = document.getElementById("returnModal");
+          const modalInstance = bootstrap.Modal.getInstance(modalEl);
+          modalInstance.hide();
+
         }
         else {
           bootstrap.Modal.getInstance(document.getElementById("cancelModal")).hide();
@@ -384,7 +421,7 @@
       try {
         const res = await axios.post(`/account/orders/order-details/return-request/${orderId}/${itemId}`, data)
         if (res.data.success) {
-          bootstrap.Modal.getInstance(document.getElementById("cancelModal")).hide();
+          bootstrap.Modal.getInstance(document.getElementById("returnModal")).hide();
           this.reset();
           showSuccessModal("We received your request");
         }
@@ -393,6 +430,27 @@
           this.reset();
           const msg = res.data.alert || "Somthing went wrong"
           showSuccessModal(msg);
+          /* ---------- SUCCESS UI UPDATE ---------- */
+          changingButtonReturn.innerHTML = "Return requested";
+          changingButtonReturn.classList.remove("btn-warning");
+          changingButtonReturn.classList.add("btn-secondary");
+
+          // Disable button
+          changingButtonReturn.disabled = true;
+
+          // Remove modal-related attributes
+          changingButtonReturn.removeAttribute("data-bs-toggle");
+          changingButtonReturn.removeAttribute("data-bs-target");
+          changingButtonReturn.removeAttribute("data-orderid");
+          changingButtonReturn.removeAttribute("data-itemid");
+
+          // Optional: prevent any click events
+          changingButtonReturn.style.pointerEvents = "none";
+
+          // Close modal manually
+          const modalEl = document.getElementById("returnModal");
+          const modalInstance = bootstrap.Modal.getInstance(modalEl);
+          modalInstance.hide();
         }
       } catch (error) {
         console.log("Error from return order", error)

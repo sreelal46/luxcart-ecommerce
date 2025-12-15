@@ -1,5 +1,5 @@
 const Handlebars = require("handlebars");
-
+let row = 0;
 module.exports = {
   // Existing equality helper
   eq: (a, b) => {
@@ -10,6 +10,9 @@ module.exports = {
   },
   and: (a, b) => {
     return a && b;
+  },
+  or: () => {
+    return Array.prototype.slice.call(arguments, 0, -1).some(Boolean);
   },
   length: function (arr) {
     if (Array.isArray(arr)) return arr.length;
@@ -75,5 +78,37 @@ module.exports = {
   },
   eqTwo: (a, b) => {
     return a === b;
+  },
+  rowNumber: () => {
+    return ++row;
+  },
+  statusBadge: (status) => {
+    switch (status) {
+      case "requested":
+        return "bg-warning text-dark";
+      case "approved":
+        return "bg-success";
+      case "rejected":
+        return "bg-danger";
+      case "refunded":
+        return "bg-primary";
+      default:
+        return "bg-secondary";
+    }
+  },
+  orderStatusBadge: (status) => {
+    const base = "badge-status";
+
+    const map = {
+      placed: "badge-placed",
+      confirmed: "badge-confirmed",
+      shipped: "badge-shipped",
+      out_for_delivery: "badge-out-for-delivery",
+      delivered: "badge-delivered",
+      cancelled: "badge-cancelled",
+      returned: "badge-returned",
+    };
+
+    return `${base} ${map[status] || ""}`;
   },
 };

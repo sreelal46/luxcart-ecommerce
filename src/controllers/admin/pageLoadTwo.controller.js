@@ -2,6 +2,7 @@ const { OK } = require("../../constant/statusCode");
 const Accessory = require("../../models/admin/productAccessoryModal");
 const Car = require("../../models/admin/productCarModal");
 const Order = require("../../models/user/OrderModel");
+const Return = require("../../models/user/ReturnModel");
 
 const loadOrderManagement = async (req, res, next) => {
   try {
@@ -15,7 +16,7 @@ const loadOrderManagement = async (req, res, next) => {
 
     let query = {};
 
-    // 🔍 Search filter
+    // Search filter
     if (search.trim() !== "") {
       query.$or = [
         { orderId: { $regex: search, $options: "i" } },
@@ -23,12 +24,12 @@ const loadOrderManagement = async (req, res, next) => {
       ];
     }
 
-    // 🏷 Status filter
+    //Status filter
     if (status) {
       query.orderStatus = status;
     }
 
-    // 📅 Date range filter
+    //Date range filter
     if (dateFrom || dateTo) {
       query.createdAt = {};
       if (dateFrom) query.createdAt.$gte = new Date(dateFrom);
@@ -42,12 +43,12 @@ const loadOrderManagement = async (req, res, next) => {
       .populate("items.variantId")
       .lean();
 
-    // 📌 If Axios → return JSON (no render)
+    // If Axios → return JSON (no render)
     if (ajax === "1") {
       return res.json({ success: true, orders });
     }
 
-    // 📌 Normal page load → render
+    //Normal page load → render
     res.render("admin/orders/ordersManagement", { orders });
   } catch (error) {
     console.log("Error loading orders:", error);
@@ -118,5 +119,85 @@ const loadStockPage = async (req, res, next) => {
     next(error);
   }
 };
+const loadReturnReq = async (req, res, next) => {
+  try {
+    const returnItems = await Order.aggregate([
+      { $unwind: "$items" },
+      {
+        $match: {
+          "items.return.requested": true,
+        },
+      },
+      {
+        $project: {
+          orderId: 1,
+          userId: 1,
+          items: 1,
+          createdAt: 1,
+        },
+      },
+    ]);
 
-module.exports = { loadOrderManagement, loadOneOrder, loadStockPage };
+    // Attach matched order item to each return
+    const formattedReturns = returnDetail.map((ret) => {
+      const item = ret.orderId.items.find(
+        (i) => i._id.toString() === ret.orderItemId.toString()
+      );
+
+      return {
+        ...ret,
+        item,
+      };
+    });
+
+    res.render("admin/orders/returnRequestManagement", {
+      returnDetail: formattedReturns,
+    });
+  } catch (error) {
+    console.log("Error from load return request", error);
+    next(error);
+  }
+};
+const loadCancelReq = async (req, res, next) => {
+  try {
+    const cancelledItems = await Order.aggregate([
+      { $unwind: "$items" },
+
+      { $match: { "items.cancel.requested": true } },
+
+      {
+        $lookup: {
+          from: "users",
+          localField: "userId",
+          foreignField: "_id",
+          as: "user",
+        },
+      },
+      { $unwind: "$user" },
+
+      {
+        $project: {
+          orderId: 1,
+          createdAt: 1,
+          items: 1,
+          "user.name": 1,
+        },
+      },
+    ]);
+    console.log(cancelledItems);
+    res.render("admin/orders/cancelRequestManagement", {
+      cancelledItems,
+    });
+  } catch (error) {
+    console.log("Error from load cancel request", error);
+    next(error);
+  }
+};
+
+module.exports = {
+  loadOrderManagement,
+  loadOneOrder,
+  loadStockPage,
+  loadReturnReq,
+  loadCancelReq,
+};

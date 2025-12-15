@@ -391,7 +391,7 @@ const changeQuantity = async (req, res, next) => {
 const downloadInvoice = async (req, res, next) => {
   try {
     const orderId = req.params.orderId;
-    console.log(orderId);
+    console.log("order id", orderId);
     const order = await Order.findById(orderId).populate(
       "items.carId items.variantId items.accessoryId"
     );

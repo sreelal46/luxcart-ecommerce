@@ -1,13 +1,92 @@
+<style>
+  .admin-orders-table {
+    background: #fff;
+    border-radius: 12px;
+    overflow: hidden;
+  }
+
+  /* Product column handling */
+  .admin-orders-table .product-col {
+    max-width: 360px;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+  }
+
+  /* Status badges */
+  .status-badge {
+    padding: 6px 12px;
+    font-size: 0.75rem;
+    text-transform: capitalize;
+  }
+
+  .status-badge.placed {
+    background-color: #198754;
+  }
+
+  .status-badge.cancelled {
+    background-color: #dc3545;
+  }
+
+  .status-badge.shipped {
+    background-color: #0d6efd;
+  }
+
+  .status-badge.delivered {
+    background-color: #20c997;
+  }
+
+  /* Table spacing */
+  .admin-orders-table th,
+  .admin-orders-table td {
+    vertical-align: middle;
+  }
+
+  /* Hover effect */
+  .admin-orders-table tbody tr:hover {
+    background-color: #f8f9fa;
+  }
+
+  .btn-cancel {
+    background-color: #fff;
+    border: 2px solid #dc3545;
+    color: #dc3545;
+  }
+
+  .btn-cancel:hover {
+    background-color: #dc3545;
+    color: #fff;
+  }
+
+  .btn-return {
+    background-color: #fff;
+    border: 2px solid #0d6efd;
+    color: #0d6efd;
+  }
+
+  .btn-return:hover {
+    background-color: #0d6efd;
+    color: #fff;
+  }
+</style>
+
 <div class="container py-5">
   <!-- Header -->
   <div class="d-flex justify-content-between align-items-center mb-4">
     <h2 class="fw-bold">Orders Management</h2>
     <div class="d-flex">
-      <a href="/admin/orders-management/return-request-management"><button
-          class="btn btn-warning btn-md me-2 shadow-sm">
-          <i class="bi bi-arrow-counterclockwise me-2"></i> Return Request
+      <a href="/admin/orders-management/cancel-request-management">
+        <button class="btn btn-cancel btn-md me-2 shadow-sm">
+          <i class="bi bi-x-circle me-2"></i> Cancel Requests
         </button>
       </a>
+
+      <a href="/admin/orders-management/return-request-management">
+        <button class="btn btn-return btn-md me-2 shadow-sm">
+          <i class="bi bi-arrow-repeat me-2"></i> Return Requests
+        </button>
+      </a>
+
       <!-- <button class="btn btn-success btn-md shadow-sm">
         <i class="bi bi-download me-2"></i> Export Orders
       </button> -->
@@ -26,42 +105,55 @@
   <!-- Orders Table Card -->
   <div class="card shadow-sm rounded-4 p-4">
     <div class="table-responsive">
-      <table class="table table-hover align-middle text-center">
+      <table class="table table-hover align-middle admin-orders-table">
         <thead class="table-light">
           <tr>
             <th>#</th>
             <th>Order ID</th>
             <th>Customer</th>
-            <!-- <th>Product</th> -->
+            <th>Items</th>
             <th>Date</th>
-            <th>Amount (₹)</th>
-            <th>Status</th>
-            <th>Action</th>
+            <th class="text-center">Action</th>
           </tr>
         </thead>
 
         <tbody id="ordersTableBody">
-          <!-- Example Order 1 -->
           {{#each orders}}
           <tr>
-            <td>{{inc @index}}</td>
-            <td class="fw-bold">{{this.orderId}}</td>
-            <td>{{this.address.name}}</td>
-            <!-- <td>Car Accessories Kit</td> -->
-            <td>{{formattedDate this.createdAt}}</td>
-            <td>₹ {{formatPrice this.totalAmount}}</td>
-            <td><span class="badge bg-success">{{this.orderStatus}}</span></td>
-            <td>
-              <a href="/admin/orders-management/view-order/{{this._id}}"> <button class="btn btn-sm btn-info">
-                  <i class="bi bi-eye-fill"></i> View
-                </button>
-              </a>
+            <!-- Row Number -->
+            <td class="fw-semibold">{{inc @index}}</td>
 
+            <!-- Order ID -->
+            <td class="fw-bold text-muted small">
+              {{this.orderId}}
+            </td>
+
+            <!-- Customer -->
+            <td>
+              {{this.address.name}}
+            </td>
+
+            <!-- Product -->
+            <td class="product-col">
+              {{this.items.length}}
+            </td>
+
+            <!-- Date -->
+            <td class="text-nowrap">
+              {{formattedDate this.createdAt}}
+            </td>
+            <!-- Action -->
+            <td class="text-center">
+              <a href="/admin/orders-management/view-order/{{this._id}}" class="btn btn-sm btn-info">
+                <i class="bi bi-eye-fill"></i>
+                View
+              </a>
             </td>
           </tr>
           {{/each}}
         </tbody>
       </table>
+
     </div>
   </div>
 </div>

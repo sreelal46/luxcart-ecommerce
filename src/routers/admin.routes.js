@@ -33,6 +33,8 @@ const {
   loadOrderManagement,
   loadOneOrder,
   loadStockPage,
+  loadReturnReq,
+  loadCancelReq,
 } = require("../controllers/admin/pageLoadTwo.controller");
 //auth controller
 const {
@@ -77,7 +79,14 @@ const {
 } = require("../controllers/admin/product.controller");
 
 //Order controller
-const { updateOrderStatus } = require("../controllers/admin/order.Controller");
+const {
+  updateOrderStatus,
+  updateSingleItemStatus,
+  returnApprove,
+  returnReject,
+  cancelApprove,
+  cancelReject,
+} = require("../controllers/admin/order.Controller");
 //=========================================code section=======================================================
 
 // Setup for admin layout for these routes only
@@ -235,12 +244,45 @@ route.patch(
   checkSession,
   updateOrderStatus
 );
-route.get("/stock-management", checkSession, loadStockPage);
-route.get("/orders-management/return-request-management", (req, res) => {
-  res.render("admin/returnRequestManagement");
-});
+route.patch(
+  "/orders-management/update-status/:orderId/:itemId",
+  checkSession,
+  updateSingleItemStatus
+);
+//=======================================ORDER MANAGEMENT ( RETURN & CANCEL )==========================
+route.get(
+  "/orders-management/return-request-management",
+  checkSession,
+  loadReturnReq
+);
+route.post(
+  "/orders-management/return-request-management/:returnId/approve",
+  checkSession,
+  returnApprove
+);
+route.post(
+  "/orders-management/return-request-management/:returnId/reject",
+  checkSession,
+  returnReject
+);
+route.get(
+  "/orders-management/cancel-request-management",
+  checkSession,
+  loadCancelReq
+);
+route.patch(
+  "/orders-management/cancel-request-management/:orderId/:itemId/approve",
+  checkSession,
+  cancelApprove
+);
+route.patch(
+  "/orders-management/cancel-request-management/:orderId/:itemId/reject",
+  checkSession,
+  cancelReject
+);
 
-//
+route.get("/stock-management", checkSession, loadStockPage);
+
 route.get("/products-management/view-categories-product", (req, res) => {
   res.render("admin/products/accessories/view-accessories-product");
 });

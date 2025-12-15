@@ -1,0 +1,323 @@
+<style>
+  .product-col {
+    max-width: 380px;
+    white-space: normal;
+    word-break: break-word;
+  }
+
+  .action-col {
+    min-width: 180px;
+  }
+
+  .badge {
+    font-size: 0.85rem;
+    padding: 6px 12px;
+    border-radius: 20px;
+  }
+</style>
+
+<div class="container py-5">
+  <!-- Header -->
+  <div class="d-flex justify-content-between align-items-center mb-4">
+    <h2 class="fw-bold text-primary">Cancel Requests</h2>
+    <div class="d-flex">
+      <button class="btn btn-secondary btn-md me-2 shadow-sm" onclick="history.back()">
+        <i class="bi bi-arrow-left me-2"></i> Go Back
+      </button>
+      <button class="btn btn-success btn-md shadow-sm">
+        <i class="bi bi-download me-2"></i> Export Orders
+      </button>
+    </div>
+  </div>
+
+  <!-- Search & Filter -->
+  <div class="d-flex justify-content-between mb-3">
+    <input type="text" id="searchReturnInput" class="form-control w-50"
+      placeholder="Search by Order ID, Customer, Product">
+    <button class="btn btn-primary ms-2" data-bs-toggle="modal" data-bs-target="#filterReturnModal">
+      <i class="bi bi-funnel"></i> Filter
+    </button>
+  </div>
+
+  <!-- Return Requests Table Card -->
+  <div class="container py-5">
+    <div class="card shadow rounded-4">
+      <div class="table-responsive p-3">
+
+        <table class="table table-hover align-middle text-center w-100" style="table-layout: fixed;">
+
+          <thead class="table-light">
+            <tr>
+              <th style="width:50px;">#</th>
+              <th style="width:120px;">Order ID</th>
+              <th style="width:150px;">Customer</th>
+              <th>Product</th>
+              <th style="width:120px;">Date</th>
+              <th style="width:120px;">Amount (₹)</th>
+              <th style="width:120px;">Status</th>
+              <th style="width:200px;">Action</th>
+            </tr>
+          </thead>
+
+          <tbody>
+            {{#each cancelledItems}}
+            <tr>
+
+              <td>{{inc @index}}</td>
+
+              <td class="fw-bold text-primary">
+                {{this.orderId}}
+              </td>
+
+              <td>{{this.user.name}}</td>
+
+              <td class="text-start product-col">
+                {{this.items.productName}}
+              </td>
+
+              <td>
+                {{formattedDate this.items.cancel.requestedAt}}
+              </td>
+
+              <td class="fw-semibold">
+                ₹{{this.items.price}}
+              </td>
+
+              <td>
+                {{#if this.items.cancel.approvedAt}}
+                <span class="badge bg-success">Approved</span>
+                {{else if this.items.cancel.rejectedAt}}
+                <span class="badge bg-danger">Rejected</span>
+                {{else}}
+                <span class="badge bg-warning text-dark">Requested</span>
+                {{/if}}
+              </td>
+
+              <td class="action-col">
+                <div class="d-flex justify-content-center gap-2 flex-wrap">
+
+                  <button class="btn btn-sm btn-info rounded-circle" data-bs-toggle="modal"
+                    data-bs-target="#viewCancelModal" data-reason="{{this.items.cancel.reason}}"
+                    data-message="{{this.items.cancel.description}}">
+                    <i class="bi bi-eye-fill"></i>
+                  </button>
+
+                  {{#unless this.items.cancel.approvedAt}}
+                  {{#unless this.items.cancel.rejectedAt}}
+                  <button class="btn btn-sm btn-success rounded-pill" data-bs-toggle="modal"
+                    data-bs-target="#approveModal" data-id="{{this.items._id}}" data-orderid="{{this._id}}"
+                    data-orderedid="{{this.orderId}}">
+                    Approve
+                  </button>
+
+                  <button class="btn btn-sm btn-danger rounded-pill" data-bs-toggle="modal"
+                    data-bs-target="#rejectModal" data-id="{{this.items._id}}" data-orderid="{{this._id}}"
+                    data-orderedid="{{this.orderId}}">
+                    Reject
+                  </button>
+                  {{/unless}}
+                  {{/unless}}
+
+                </div>
+              </td>
+
+            </tr>
+            {{/each}}
+          </tbody>
+
+
+        </table>
+
+      </div>
+    </div>
+  </div>
+
+</div>
+
+<!-- Filter Modal -->
+<div class="modal fade" id="filterReturnModal" tabindex="-1" aria-labelledby="filterReturnModalLabel"
+  aria-hidden="true">
+  <div class="modal-dialog modal-dialog-centered">
+    <div class="modal-content rounded-4 shadow-lg">
+      <div class="modal-header bg-primary text-white">
+        <h5 class="modal-title fw-bold" id="filterReturnModalLabel"><i class="bi bi-funnel me-2"></i> Filter Return
+          Requests</h5>
+        <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+      </div>
+      <div class="modal-body">
+        <form id="filterReturnForm">
+          <div class="mb-3">
+            <label class="form-label fw-semibold">Status</label>
+            <select class="form-select" name="status">
+              <option value="">All</option>
+              <option value="Approved">Approved</option>
+              <option value="Rejected">Rejected</option>
+              <option value="Pending">Pending</option>
+            </select>
+          </div>
+          <div class="mb-3">
+            <label class="form-label fw-semibold">Date From</label>
+            <input type="date" class="form-control" name="dateFrom">
+          </div>
+          <div class="mb-3">
+            <label class="form-label fw-semibold">Date To</label>
+            <input type="date" class="form-control" name="dateTo">
+          </div>
+          <div class="text-end mt-3">
+            <button type="button" class="btn btn-secondary me-2" data-bs-dismiss="modal">Close</button>
+            <button type="submit" class="btn btn-primary">Apply Filter</button>
+          </div>
+        </form>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- View Return Reason Modal -->
+<div class="modal fade" id="viewCancelModal" tabindex="-1" aria-labelledby="viewReturnModalLabel" aria-hidden="true">
+  <div class="modal-dialog modal-dialog-centered modal-lg">
+    <div class="modal-content rounded-4 shadow-lg">
+      <div class="modal-header bg-info text-white">
+        <h5 class="modal-title fw-bold" id="viewReturnModalLabel"><i class="bi bi-eye-fill me-2"></i> Cancel Reason</h5>
+        <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+      </div>
+      <div class="modal-body">
+        <form>
+          <div class="mb-3">
+            <label class="form-label fw-semibold">Subject</label>
+            <input type="text" class="form-control form-control-lg" id="returnSubject" readonly>
+          </div>
+          <div class="mb-3">
+            <label class="form-label fw-semibold">Reason</label>
+            <textarea class="form-control form-control-lg" id="returnReason" rows="5" readonly></textarea>
+          </div>
+        </form>
+      </div>
+      <div class="modal-footer">
+        <button type="button" class="btn btn-secondary rounded-pill" data-bs-dismiss="modal">Close</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+
+<!-- Approve Confirmation Modal -->
+<div class="modal fade" id="approveModal" tabindex="-1" aria-labelledby="approveModalLabel" aria-hidden="true">
+  <div class="modal-dialog modal-dialog-centered">
+    <div class="modal-content rounded-4 shadow-lg">
+      <div class="modal-header bg-success text-white">
+        <h5 class="modal-title fw-bold" id="approveModalLabel"><i class="bi bi-check-circle me-2"></i> Approve Cancel
+        </h5>
+        <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+      </div>
+      <div class="modal-body">
+        <p class="fs-6">Are you sure you want to approve the return for order <strong id="approveOrderId"></strong>?</p>
+      </div>
+      <div class="modal-footer">
+        <button type="button" class="btn btn-secondary rounded-pill" data-bs-dismiss="modal">Cancel</button>
+        <button type="button" class="btn btn-success rounded-pill" id="confirmApprove">Approve</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- Reject Confirmation Modal -->
+<div class="modal fade" id="rejectModal" tabindex="-1" aria-labelledby="rejectModalLabel" aria-hidden="true">
+  <div class="modal-dialog modal-dialog-centered">
+    <div class="modal-content rounded-4 shadow-lg">
+      <div class="modal-header bg-danger text-white">
+        <h5 class="modal-title fw-bold" id="rejectModalLabel"><i class="bi bi-x-circle me-2"></i> Reject Cancel</h5>
+        <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+      </div>
+      <div class="modal-body">
+        <p class="fs-6">Are you sure you want to reject the return for order <strong id="rejectOrderId"></strong>?</p>
+      </div>
+      <div class="modal-footer">
+        <button type="button" class="btn btn-secondary rounded-pill" data-bs-dismiss="modal">Cancel</button>
+        <button type="button" class="btn btn-danger rounded-pill" id="confirmReject">Reject</button>
+      </div>
+    </div>
+  </div>
+</div>
+<script>
+  const viewModal = document.getElementById("viewCancelModal");
+
+  viewModal.addEventListener("show.bs.modal", function (event) {
+    const button = event.relatedTarget;
+    const reason = button.getAttribute("data-reason");
+    const message = button.getAttribute("data-message");
+
+    document.getElementById("returnReason").value = reason || "—";
+    document.getElementById("returnSubject").value = message || "cancel Items";
+  });
+
+  document.addEventListener("DOMContentLoaded", () => {
+    let selectedCancelItemId = null;
+    let selectedOrderId = null;
+
+    /* ---------- APPROVE MODAL ---------- */
+    const approveModal = document.getElementById("approveModal");
+    approveModal.addEventListener("show.bs.modal", function (event) {
+      const button = event.relatedTarget;
+
+      selectedCancelItemId = button.getAttribute("data-id");
+      const orderedId = button.getAttribute("data-orderedid");
+      selectedOrderId = button.getAttribute("data-orderid");
+
+      document.getElementById("approveOrderId").innerText = orderedId;
+    });
+
+    document.getElementById("confirmApprove").addEventListener("click", async () => {
+      try {
+        const res = await axios.patch(
+          `/admin/orders-management/cancel-request-management/${selectedOrderId}/${selectedCancelItemId}/approve`
+        );
+        if (res.data.success) {
+          location.reload()
+        }
+        else {
+          console.log("Error")
+        }
+      } catch (error) {
+        console.error("AXIOS ERROR", error.response || error);
+        alert(error.response?.data?.message || "Request failed");
+      }
+
+    });
+
+    /* ---------- REJECT MODAL ---------- */
+    const rejectModal = document.getElementById("rejectModal");
+    rejectModal.addEventListener("show.bs.modal", function (event) {
+      const button = event.relatedTarget;
+
+
+      selectedCancelItemId = button.getAttribute("data-id");
+      const orderedId = button.getAttribute("data-orderedid");
+      selectedOrderId = button.getAttribute("data-orderid");
+
+
+      document.getElementById("rejectOrderId").innerText = orderedId;
+    });
+
+    document.getElementById("confirmReject").addEventListener("click", async () => {
+      try {
+        const res = await axios.patch(
+          `/admin/orders-management/cancel-request-management/${selectedOrderId}/${selectedCancelItemId}/reject`
+        );
+
+        if (res.data.success) {
+          location.reload()
+        }
+        else {
+          console.log("Error")
+        }
+      } catch (error) {
+        console.error("AXIOS ERROR", error.response || error);
+        alert(error.response?.data?.message || "Request failed");
+      }
+
+    });
+
+
+  })
+</script>

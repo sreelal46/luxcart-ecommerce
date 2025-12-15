@@ -4,6 +4,7 @@ const Accessory = require("../../models/admin/productAccessoryModal");
 const Address = require("../../models/user/addressModel");
 const Cart = require("../../models/user/CartModel");
 const Order = require("../../models/user/OrderModel");
+const taxRate = parseInt(process.env.ACCESSORY_TAX_RATE);
 
 const createOrder = async (req, res, next) => {
   try {
@@ -69,8 +70,10 @@ const createOrder = async (req, res, next) => {
       carId: item.carId || null,
       variantId: item.variantId || null,
       accessoryId: item.accessoryId || null,
+      productName: item.carId ? item.carId.name : item.accessoryId.name || null,
       quantity: item.quantity || 0,
       price: item.price,
+      accessoryTax: item.price * (taxRate / 100),
       totalItemAmount: item.carId ? item.price : item.lineTotal,
     }));
 

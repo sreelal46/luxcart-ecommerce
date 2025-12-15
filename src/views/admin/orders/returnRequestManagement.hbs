@@ -1,3 +1,21 @@
+<style>
+  .product-col {
+    max-width: 380px;
+    white-space: normal;
+    word-break: break-word;
+  }
+
+  .action-col {
+    min-width: 180px;
+  }
+
+  .badge {
+    font-size: 0.85rem;
+    padding: 6px 12px;
+    border-radius: 20px;
+  }
+</style>
+
 <div class="container py-5">
   <!-- Header -->
   <div class="d-flex justify-content-between align-items-center mb-4">
@@ -22,65 +40,99 @@
   </div>
 
   <!-- Return Requests Table Card -->
-  <div class="card shadow-sm rounded-4 p-4">
-    <div class="table-responsive">
-      <table class="table table-hover align-middle text-center">
-        <thead class="table-light">
-          <tr>
-            <th>#</th>
-            <th>Order ID</th>
-            <th>Customer</th>
-            <th>Product</th>
-            <th>Date</th>
-            <th>Amount (₹)</th>
-            <th>Status</th>
-            <th>Action</th>
-          </tr>
-        </thead>
-        <tbody id="returnTableBody">
-          <!-- Example Return Request 1 -->
-          <tr>
-            <td>1</td>
-            <td class="fw-bold">ORD1001</td>
-            <td>John Doe</td>
-            <td>Car Accessories Kit</td>
-            <td>2025-10-15</td>
-            <td>₹4500</td>
-            <td><span class="badge bg-secondary">Pending</span></td>
-            <td>
-              <button class="btn btn-sm btn-info rounded-pill me-1" data-bs-toggle="modal"
-                data-bs-target="#viewReturnModal" data-subject="Defective Product"
-                data-reason="The product received is broken and not working.">
-                <i class="bi bi-eye-fill"></i> View
-              </button>
-              <button class="btn btn-sm btn-success rounded-pill me-1" data-bs-toggle="modal"
-                data-bs-target="#approveModal" data-orderid="ORD1001">Approve</button>
-              <button class="btn btn-sm btn-danger rounded-pill" data-bs-toggle="modal" data-bs-target="#rejectModal"
-                data-orderid="ORD1001">Reject</button>
-            </td>
-          </tr>
+  <div class="container py-5">
+    <div class="card shadow rounded-4">
+      <div class="table-responsive p-3">
 
-          <!-- Example Return Request 2 -->
-          <tr>
-            <td>2</td>
-            <td class="fw-bold">ORD1002</td>
-            <td>Jane Smith</td>
-            <td>Car Seat Cover</td>
-            <td>2025-10-16</td>
-            <td>₹1200</td>
-            <td><span class="badge bg-secondary">Pending</span></td>
-            <td>
-              <button class="btn btn-sm btn-info rounded-pill me-1"><i class="bi bi-eye-fill"></i> View</button>
-              <button class="btn btn-sm btn-success rounded-pill me-1" data-bs-toggle="modal"
-                data-bs-target="#approveModal" data-orderid="ORD1002">Approve</button>
-              <button class="btn btn-sm btn-danger rounded-pill" data-bs-toggle="modal" data-bs-target="#rejectModal"
-                data-orderid="ORD1002">Reject</button>
-            </td>
-          </tr>
-        </tbody>
-      </table>
+        <table class="table table-hover align-middle text-center w-100" style="table-layout: fixed;">
+
+          <thead class="table-light">
+            <tr>
+              <th style="width:50px;">#</th>
+              <th style="width:120px;">Order ID</th>
+              <th style="width:150px;">Customer</th>
+              <th>Product</th>
+              <th style="width:120px;">Date</th>
+              <th style="width:120px;">Amount (₹)</th>
+              <th style="width:120px;">Status</th>
+              <th style="width:200px;">Action</th>
+            </tr>
+          </thead>
+
+          <tbody>
+            {{#each returnDetail}}
+            <tr>
+
+              <td>{{inc @index}}</td>
+
+              <td class="fw-bold text-primary">
+                {{#if this.orderedId}}
+                {{this.orderedId}}
+                {{else}}
+                —
+                {{/if}}
+              </td>
+
+              <td>{{this.userId.name}}</td>
+
+              <td class="text-start product-col">
+                {{#if this.item.carId}}
+                {{this.item.carId.name}}
+                {{else if this.item.accessoryId}}
+                {{this.item.accessoryId.name}}
+                {{else if this.item.variantId}}
+                {{this.item.variantId.name}}
+                {{else}}
+                —
+                {{/if}}
+              </td>
+
+              <td>{{formattedDate this.createdAt}}</td>
+
+              <td class="fw-semibold">
+                ₹{{this.item.price}}
+              </td>
+
+              <td>
+                <span class="badge {{statusBadge this.status}}">
+                  {{this.status}}
+                </span>
+              </td>
+
+              <td class="action-col">
+                <div class="d-flex justify-content-center gap-2 flex-wrap">
+
+                  <button class="btn btn-sm btn-info rounded-circle" data-bs-toggle="modal"
+                    data-bs-target="#viewReturnModal" data-reason="{{this.reason}}">
+                    <i class="bi bi-eye-fill"></i>
+                  </button>
+
+                  {{#if (eq this.status "requested")}}
+                  <button class="btn btn-sm btn-success rounded-pill" data-bs-toggle="modal"
+                    data-bs-target="#approveModal" data-id="{{this._id}}" data-order="{{this.orderedId}}">
+                    Approve
+                  </button>
+
+                  <button class="btn btn-sm btn-danger rounded-pill" data-bs-toggle="modal"
+                    data-bs-target="#rejectModal" data-id="{{this._id}}" data-order="{{this.orderedId}}">
+                    Reject
+                  </button>
+
+                  {{/if}}
+
+                </div>
+              </td>
+
+            </tr>
+            {{/each}}
+          </tbody>
+
+        </table>
+
+      </div>
     </div>
   </div>
+
 </div>
 
 <!-- Filter Modal -->
@@ -188,3 +240,79 @@
     </div>
   </div>
 </div>
+<script>
+  const viewModal = document.getElementById("viewReturnModal");
+
+  viewModal.addEventListener("show.bs.modal", function (event) {
+    const button = event.relatedTarget;
+    const reason = button.getAttribute("data-reason");
+
+    document.getElementById("returnReason").value = reason || "—";
+    document.getElementById("returnSubject").value = "Return Request";
+  });
+
+  document.addEventListener("DOMContentLoaded", () => {
+    let selectedReturnId = null;
+
+    /* ---------- APPROVE MODAL ---------- */
+    const approveModal = document.getElementById("approveModal");
+    approveModal.addEventListener("show.bs.modal", function (event) {
+      const button = event.relatedTarget;
+
+      selectedReturnId = button.getAttribute("data-id");
+      const orderId = button.getAttribute("data-order");
+
+      document.getElementById("approveOrderId").innerText = orderId;
+    });
+
+    document.getElementById("confirmApprove").addEventListener("click", async () => {
+      try {
+        const res = await axios.post(
+          `/admin/orders-management/return-request-management/${selectedReturnId}/approve`
+        );
+        if (res.data.success) {
+          location.reload()
+        }
+        else {
+          console.log("Error")
+        }
+      } catch (error) {
+        console.error("AXIOS ERROR", error.response || error);
+        alert(error.response?.data?.message || "Request failed");
+      }
+
+    });
+
+    /* ---------- REJECT MODAL ---------- */
+    const rejectModal = document.getElementById("rejectModal");
+    rejectModal.addEventListener("show.bs.modal", function (event) {
+      const button = event.relatedTarget;
+
+      selectedReturnId = button.getAttribute("data-id");
+      const orderId = button.getAttribute("data-order");
+
+      document.getElementById("rejectOrderId").innerText = orderId;
+    });
+
+    document.getElementById("confirmReject").addEventListener("click", async () => {
+      try {
+        const res = await axios.post(
+          `/admin/orders-management/return-request-management/${selectedReturnId}/reject`
+        );
+
+        if (res.data.success) {
+          location.reload()
+        }
+        else {
+          console.log("Error")
+        }
+      } catch (error) {
+        console.error("AXIOS ERROR", error.response || error);
+        alert(error.response?.data?.message || "Request failed");
+      }
+
+    });
+
+
+  })
+</script>

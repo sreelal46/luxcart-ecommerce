@@ -1,37 +1,41 @@
-const { NOT_FOUND, OK, FORBIDDEN } = require("../../constant/statusCode");
+const {
+  NOT_FOUND,
+  OK,
+  FORBIDDEN,
+  BAD_REQUEST,
+} = require("../../constant/statusCode");
 const carVariantModel = require("../../models/admin/carVariantModel");
 const Accessory = require("../../models/admin/productAccessoryModal");
 const Car = require("../../models/admin/productCarModal");
 const Cart = require("../../models/user/CartModel");
 const Order = require("../../models/user/OrderModel");
+const Return = require("../../models/user/ReturnModel");
 const Wishlist = require("../../models/user/wishlistModel");
 
 const cancelOrder = async (req, res, next) => {
   try {
     const { orderId, itemId } = req.params;
-    const { request, subject, message } = req.body;
+    const { subject, message } = req.body;
 
     const order = await Order.findById(orderId);
     const item = order.items.find((item) => item._id.toString() === itemId);
     if (!order)
       return res
-        .status(FORBIDDEN)
+        .status(BAD_REQUEST)
         .json({ success: false, alert: "Order not Found" });
     if (!item)
       return res
-        .status(FORBIDDEN)
+        .status(BAD_REQUEST)
         .json({ success: false, alert: "Ordered item not Found" });
 
     await Order.updateOne(
       { _id: orderId, "items._id": itemId },
       {
         $set: {
-          "items.$.requestInfo": {
+          "items.$.cancel": {
             requested: true,
-            requestedType: "cancel",
             reason: subject,
             description: message,
-            status: "requested",
             requestedAt: new Date(),
           },
         },
@@ -48,7 +52,7 @@ const returnOrder = async (req, res, next) => {
   try {
     const { orderId, itemId } = req.params;
     const { request, subject, message } = req.body;
-
+    const userId = req.session.user._id;
     const order = await Order.findById(orderId);
     const item = order.items.find((item) => item._id.toString() === itemId);
     if (!order)
@@ -64,9 +68,9 @@ const returnOrder = async (req, res, next) => {
       { _id: orderId, "items._id": itemId },
       {
         $set: {
-          "items.$.requestInfo": {
+          "items.$.orderStatus": {
             requested: true,
-            requestedType: "return",
+            requestedType: request,
             reason: subject,
             description: message,
             status: "requested",
@@ -76,6 +80,14 @@ const returnOrder = async (req, res, next) => {
       }
     );
 
+    const newReturn = new Return({
+      orderId,
+      orderedId: order.orderId,
+      orderItemId: itemId,
+      userId,
+      reason: message,
+    });
+    await newReturn.save();
     res.status(OK).json({ success: true });
   } catch (error) {
     console.log("Error from order return", error);
