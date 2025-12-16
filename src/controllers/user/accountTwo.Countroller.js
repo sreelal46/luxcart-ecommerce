@@ -51,43 +51,32 @@ const cancelOrder = async (req, res, next) => {
 const returnOrder = async (req, res, next) => {
   try {
     const { orderId, itemId } = req.params;
-    const { request, subject, message } = req.body;
-    const userId = req.session.user._id;
+    const { subject, message } = req.body;
+
     const order = await Order.findById(orderId);
     const item = order.items.find((item) => item._id.toString() === itemId);
     if (!order)
       return res
-        .status(FORBIDDEN)
+        .status(BAD_REQUEST)
         .json({ success: false, alert: "Order not Found" });
     if (!item)
       return res
-        .status(FORBIDDEN)
+        .status(BAD_REQUEST)
         .json({ success: false, alert: "Ordered item not Found" });
 
     await Order.updateOne(
       { _id: orderId, "items._id": itemId },
       {
         $set: {
-          "items.$.orderStatus": {
+          "items.$.return": {
             requested: true,
-            requestedType: request,
             reason: subject,
             description: message,
-            status: "requested",
             requestedAt: new Date(),
           },
         },
       }
     );
-
-    const newReturn = new Return({
-      orderId,
-      orderedId: order.orderId,
-      orderItemId: itemId,
-      userId,
-      reason: message,
-    });
-    await newReturn.save();
     res.status(OK).json({ success: true });
   } catch (error) {
     console.log("Error from order return", error);

@@ -121,37 +121,33 @@ const loadStockPage = async (req, res, next) => {
 };
 const loadReturnReq = async (req, res, next) => {
   try {
-    const returnItems = await Order.aggregate([
+    const returnedItems = await Order.aggregate([
       { $unwind: "$items" },
+
+      { $match: { "items.return.requested": true } },
+
       {
-        $match: {
-          "items.return.requested": true,
+        $lookup: {
+          from: "users",
+          localField: "userId",
+          foreignField: "_id",
+          as: "user",
         },
       },
+      { $unwind: "$user" },
+
       {
         $project: {
           orderId: 1,
-          userId: 1,
-          items: 1,
           createdAt: 1,
+          items: 1,
+          "user.name": 1,
         },
       },
+      { $sort: { "items.return.requestedAt": -1 } },
     ]);
-
-    // Attach matched order item to each return
-    const formattedReturns = returnDetail.map((ret) => {
-      const item = ret.orderId.items.find(
-        (i) => i._id.toString() === ret.orderItemId.toString()
-      );
-
-      return {
-        ...ret,
-        item,
-      };
-    });
-
     res.render("admin/orders/returnRequestManagement", {
-      returnDetail: formattedReturns,
+      returnedItems,
     });
   } catch (error) {
     console.log("Error from load return request", error);
@@ -183,8 +179,8 @@ const loadCancelReq = async (req, res, next) => {
           "user.name": 1,
         },
       },
+      { $sort: { "items.cancel.requestedAt": -1 } },
     ]);
-    console.log(cancelledItems);
     res.render("admin/orders/cancelRequestManagement", {
       cancelledItems,
     });

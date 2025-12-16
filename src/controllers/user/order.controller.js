@@ -8,6 +8,8 @@ const taxRate = parseInt(process.env.ACCESSORY_TAX_RATE);
 
 const createOrder = async (req, res, next) => {
   try {
+    const advancePercentage =
+      Number(process.env.ADVANCE_PAYMENT_PERCENTAGE) || 10;
     const userId = req.session.user._id;
     const paymentMethod = req.session.paymentMethod;
     const addressId = req.session.addressId;
@@ -66,41 +68,59 @@ const createOrder = async (req, res, next) => {
       pincode: selectedAddress.pinCode,
     };
 
-    const orderItems = cart.items.map((item) => ({
-      carId: item.carId || null,
-      variantId: item.variantId || null,
-      accessoryId: item.accessoryId || null,
-      productName: item.carId ? item.carId.name : item.accessoryId.name || null,
-      quantity: item.quantity || 0,
-      price: item.price,
-      accessoryTax: item.price * (taxRate / 100),
-      totalItemAmount: item.carId ? item.price : item.lineTotal,
-    }));
+    const orderItems = cart.items.map((item) => {
+      const baseAmount = item.price * item.quantity;
+      const taxAmount = baseAmount * (taxRate / 100);
+      const itemFinalAmount = baseAmount + taxAmount;
 
-    const advancePercentage =
-      Number(process.env.ADVANCE_PAYMENT_PERCENTAGE) || 10;
+      const itemAdvance =
+        paymentMethod === "COD"
+          ? Math.round((itemFinalAmount * advancePercentage) / 100)
+          : itemFinalAmount;
+
+      return {
+        carId: item.carId || null,
+        variantId: item.variantId || null,
+        accessoryId: item.accessoryId || null,
+        productName: item.carId
+          ? item.carId.name
+          : item.accessoryId?.name || null,
+        quantity: item.quantity,
+        price: item.price,
+        accessoryTax: item.accessoryId ? taxAmount : null,
+        totalItemAmount: itemFinalAmount,
+        advanceAmount: itemAdvance,
+      };
+    });
 
     let advanceAmount = 0;
     let remainingAmount = 0;
 
+    // if (paymentMethod === "COD") {
+    //   advanceAmount = Math.round((cart.totalAmount * advancePercentage) / 100);
+    //   remainingAmount = cart.totalAmount - advanceAmount;
+    // }
+
+    const orderTotal = cart.totalAfterAll;
     if (paymentMethod === "COD") {
-      advanceAmount = Math.round((cart.totalAmount * advancePercentage) / 100);
-      remainingAmount = cart.totalAmount - advanceAmount;
+      advanceAmount = orderItems.reduce(
+        (sum, item) => sum + item.advanceAmount,
+        0
+      );
+      remainingAmount = orderTotal - advanceAmount;
     }
-    console.log("advanceAmount", advanceAmount);
-    console.log("remainingAmount", remainingAmount);
 
     const order = new Order({
       userId,
       items: orderItems,
       address,
       paymentMethod,
-      advanceAmount,
-      remainingAmount,
-      subtotal: cart.totalAmount,
+      advanceAmount: advanceAmount || null,
+      remainingAmount: remainingAmount || null,
+      subtotal: cart.totalAmount - cart.accessoryTax,
       taxAmount: cart.accessoryTax,
       discount: cart.discount,
-      totalAmount: cart.totalAfterAll - advanceAmount,
+      totalAmount: cart.totalAfterAll,
     });
     await order.save();
 

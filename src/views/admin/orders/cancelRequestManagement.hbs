@@ -173,7 +173,7 @@
   </div>
 </div>
 
-<!-- View Return Reason Modal -->
+<!-- View Cancel Reason Modal -->
 <div class="modal fade" id="viewCancelModal" tabindex="-1" aria-labelledby="viewReturnModalLabel" aria-hidden="true">
   <div class="modal-dialog modal-dialog-centered modal-lg">
     <div class="modal-content rounded-4 shadow-lg">
@@ -211,7 +211,7 @@
         <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
       </div>
       <div class="modal-body">
-        <p class="fs-6">Are you sure you want to approve the return for order <strong id="approveOrderId"></strong>?</p>
+        <p class="fs-6">Are you sure you want to approve the cancel for order <strong id="approveOrderId"></strong>?</p>
       </div>
       <div class="modal-footer">
         <button type="button" class="btn btn-secondary rounded-pill" data-bs-dismiss="modal">Cancel</button>
@@ -230,7 +230,7 @@
         <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
       </div>
       <div class="modal-body">
-        <p class="fs-6">Are you sure you want to reject the return for order <strong id="rejectOrderId"></strong>?</p>
+        <p class="fs-6">Are you sure you want to reject the cancel for order <strong id="rejectOrderId"></strong>?</p>
       </div>
       <div class="modal-footer">
         <button type="button" class="btn btn-secondary rounded-pill" data-bs-dismiss="modal">Cancel</button>
@@ -280,7 +280,7 @@
         }
       } catch (error) {
         console.error("AXIOS ERROR", error.response || error);
-        alert(error.response?.data?.message || "Request failed");
+        alert(error.response?.data?.alert || "Request failed");
       }
 
     });
@@ -313,7 +313,7 @@
         }
       } catch (error) {
         console.error("AXIOS ERROR", error.response || error);
-        alert(error.response?.data?.message || "Request failed");
+        alert(error.response?.data?.alert || "Request failed");
       }
 
     });

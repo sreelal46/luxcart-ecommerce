@@ -391,73 +391,157 @@ const changeQuantity = async (req, res, next) => {
 const downloadInvoice = async (req, res, next) => {
   try {
     const orderId = req.params.orderId;
-    console.log("order id", orderId);
+
     const order = await Order.findById(orderId).populate(
       "items.carId items.variantId items.accessoryId"
     );
 
-    // Full address
+    if (!order) {
+      return res.status(404).json({ message: "Order not found" });
+    }
+
     const fullAddress =
       `${order.address.street}, ${order.address.landmark}, ` +
       `${order.address.city}, ${order.address.district}, ` +
       `${order.address.state} - ${order.address.pincode}`;
 
-    // Format items
-    const formattedItems = order.items.map((item) => ({
-      description:
+    // Format items with status categorization
+    const formattedItems = order.items.map((item) => {
+      // Check if cancelled
+      const isCancelled =
+        item.fulfillmentStatus.status === "cancelled" &&
+        item.cancel?.approvedAt;
+
+      // Check if returned
+      const isReturned =
+        item.fulfillmentStatus.status === "returned" && item.return?.approvedAt;
+
+      // Determine status
+      let status = "ACTIVE";
+      let refundAmount = 0;
+
+      if (isCancelled) {
+        status = "CANCELLED";
+        refundAmount = item.cancel.refundAmount || 0;
+      } else if (isReturned) {
+        status = "RETURNED";
+        refundAmount = item.return.refundAmount || 0;
+      }
+
+      // Get product description
+      const description =
         item.accessoryId?.name ||
         (item.carId?.name && item.variantId?.color
           ? `${item.carId.name} (${item.variantId.color})`
-          : null) ||
-        "Product",
-      qty: item.quantity,
-      price: item.price,
-      total: item.totalItemAmount,
-    }));
+          : item.productName);
 
-    // Data sent to PDF generator
+      return {
+        description,
+        qty: item.quantity,
+        price: item.price,
+        tax: item.accessoryTax || 0,
+        advanceAmount: item.advanceAmount || 0,
+        status,
+        refundAmount,
+        total: isCancelled || isReturned ? 0 : item.totalItemAmount,
+      };
+    });
+
+    // Calculate refunded amounts separately
+    const refundedAmount = order.items.reduce(
+      (sum, item) =>
+        sum + (item.cancel?.approvedAt ? item.cancel.refundAmount || 0 : 0),
+      0
+    );
+
+    const returnRefundAmount = order.items.reduce(
+      (sum, item) =>
+        sum + (item.return?.approvedAt ? item.return.refundAmount || 0 : 0),
+      0
+    );
+
+    // Calculate actual remaining amount after all deductions
+    const totalRefunds = refundedAmount + returnRefundAmount;
+    const advanceAmount = order.advanceAmount || 0;
+    const discount = order.discount || 0;
+
+    const remainingAmount = Math.max(
+      0,
+      order.totalAmount - totalRefunds - advanceAmount - discount
+    );
+
     const invoiceData = {
       orderId: order.orderId,
       createdAt: order.createdAt,
       customerName: order.address.name,
       customerAddress: fullAddress,
+
       items: formattedItems,
+
       subtotal: order.subtotal,
-      taxPercent: order.taxAmount
-        ? Math.round((order.taxAmount / order.subtotal) * 100)
-        : 0,
       taxAmount: order.taxAmount,
-      discount: order.discount || 0,
+      taxPercent: order.taxPercent, // If you have tax percentage
       totalAmount: order.totalAmount,
-      advanceAmount: order.advanceAmount,
-      remainingAmount: order.remainingAmount,
+
+      discount: order.discount || 0,
+      advanceAmount: order.advanceAmount || 0,
+
+      refundedAmount, // Cancelled items refund
+      returnRefundAmount, // Returned items refund
+
+      remainingAmount,
+      paymentStatus: order.paymentStatus,
+
+      address: order.address, // Pass full address object
     };
 
-    // Invoice folder path
     const invoiceDir = path.join(__dirname, "../../public/invoices");
-
     if (!fs.existsSync(invoiceDir)) {
       fs.mkdirSync(invoiceDir, { recursive: true });
     }
 
-    // File path
     const filePath = path.join(invoiceDir, `invoice_${order.orderId}.pdf`);
 
-    // Generate PDF
-    await generateInvoice(invoiceData, filePath);
+    // Optional: Add company info and custom terms
+    const options = {
+      companyInfo: {
+        name: "LUXCART India Pvt. Ltd.",
+        address: "123 Business Park, MG Road",
+        city: "Bangalore, Karnataka - 560001",
+        gstin: "29XXXXXXXXXXXXX",
+        phone: "+91-XXXX-XXXXXX",
+        email: "support@luxcart.com",
+      },
+      terms: [
+        "Payment is due within 30 days of invoice date.",
+        "Please include invoice number on your payment.",
+        "Refunds for cancelled items will be processed within 5-7 business days.",
+        "Returns must be initiated within 7 days of delivery.",
+        "Return shipping charges may apply as per policy.",
+        "Late payments may incur additional charges.",
+      ],
+      highQuality: true,
+      addWatermark: false,
+    };
 
-    // setTimeout(() => {
-    //   res.status(OK).json({
-    //     success: true,
-    //     alert: "Invoice generated",
-    //     file: `/invoices/invoice_${order.orderId}.pdf`,
-    //   });
-    // }, 2000);
+    await generateInvoice(invoiceData, filePath, options);
+
+    // Small delay to ensure file is written
     setTimeout(() => {
-      return res.download(filePath, `invoice_${order.orderId}.pdf`);
-    }, 2000);
+      return res.download(filePath, `invoice_${order.orderId}.pdf`, (err) => {
+        if (err) {
+          console.error("Download error:", err);
+          next(err);
+        }
+
+        // Optional: Delete file after download
+        // fs.unlink(filePath, (unlinkErr) => {
+        //   if (unlinkErr) console.error("Cleanup error:", unlinkErr);
+        // });
+      });
+    }, 1000);
   } catch (error) {
-    console.log("Error download invoice:", error);
+    console.error("Invoice generation error:", error);
     next(error);
   }
 };

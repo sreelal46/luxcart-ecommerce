@@ -30,6 +30,7 @@ const orderItemSchema = new Schema(
     price: { type: Number, required: true },
     accessoryTax: { type: Number, default: null },
     quantity: { type: Number, required: true, min: 1 },
+    advanceAmount: { type: Number, default: null },
     totalItemAmount: { type: Number, required: true },
 
     /* DELIVERY / FULFILLMENT STATUS (ADMIN CONTROLS THIS) */
@@ -62,14 +63,17 @@ const orderItemSchema = new Schema(
       requestedAt: { type: Date, default: null },
       approvedAt: { type: Date, default: null },
       rejectedAt: { type: Date, default: null },
+      refundAmount: { type: Number, default: null },
     },
 
     /* RETURN (AFTER DELIVERY) */
     return: {
       requested: { type: Boolean, default: false },
       reason: { type: String, default: null },
+      description: { type: String, default: null },
       requestedAt: { type: Date, default: null },
       approvedAt: { type: Date, default: null },
+      rejectedAt: { type: Date, default: null },
       pickedUpAt: { type: Date, default: null },
       refundedAt: { type: Date, default: null },
       refundAmount: { type: Number, default: null },
@@ -156,8 +160,6 @@ const orderSchema = new Schema(
 
     advanceAmount: { type: Number, default: null },
     remainingAmount: { type: Number, default: null },
-
-    /* LOGISTICS */
     trackingId: { type: String, default: null },
 
     /* INTERNAL NOTES */

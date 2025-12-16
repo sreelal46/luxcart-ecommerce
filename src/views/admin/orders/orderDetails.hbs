@@ -323,34 +323,29 @@
                 </div>
 
                 <div class="status-action">
+                  {{#if this.cancel.requested}}
+                  {{else if this.return.requested}}
+                  {{else}}
                   <select class="form-select form-select-sm item-status-select" data-orderid="{{../order._id}}"
                     data-itemid="{{this._id}}">
+
                     <option value="placed" {{#ifEquals this.fulfillmentStatus.status "placed" }}selected{{/ifEquals}}>
-                      Placed
-                    </option>
+                      Placed</option>
                     <option value="confirmed" {{#ifEquals this.fulfillmentStatus.status "confirmed"
-                      }}selected{{/ifEquals}}>
-                      Confirmed
-                    </option>
+                      }}selected{{/ifEquals}}>Confirmed</option>
                     <option value="shipped" {{#ifEquals this.fulfillmentStatus.status "shipped" }}selected{{/ifEquals}}>
-                      Shipped
-                    </option>
+                      Shipped</option>
                     <option value="out_for_delivery" {{#ifEquals this.fulfillmentStatus.status "out_for_delivery"
-                      }}selected{{/ifEquals}}>Out
-                      for Delivery</option>
+                      }}selected{{/ifEquals}}>
+                      Out for Delivery
+                    </option>
                     <option value="delivered" {{#ifEquals this.fulfillmentStatus.status "delivered"
                       }}selected{{/ifEquals}}>
                       Delivered
                     </option>
-                    <option value="cancelled" {{#ifEquals this.fulfillmentStatus.status "cancelled"
-                      }}selected{{/ifEquals}}>
-                      Cancelled
-                    </option>
-                    <option value="returned" {{#ifEquals this.fulfillmentStatus.status "returned"
-                      }}selected{{/ifEquals}}>
-                      Returned
-                    </option>
                   </select>
+                  {{/if}}
+
                 </div>
               </div>
 
@@ -404,8 +399,6 @@
             <option value="shipped">Shipped</option>
             <option value="out_for_delivery">Out for Delivery</option>
             <option value="delivered">Delivered</option>
-            <option value="cancelled">Cancelled</option>
-            <option value="returned">Returned</option>
           </select>
         </div>
       </div>

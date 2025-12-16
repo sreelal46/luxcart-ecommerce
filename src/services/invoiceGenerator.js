@@ -1,26 +1,18 @@
-// generateInvoice.js - Single Page Optimized Version (dynamic payment summary height)
+// generateInvoice.js - Enhanced with Return Items Table
 const PDFDocument = require("pdfkit");
 const fs = require("fs");
 const path = require("path");
 
-/**
- * Format number as Indian currency with proper grouping
- * @param {number|string} value - Amount to format
- * @returns {string} Formatted currency string
- */
 function formatCurrency(value) {
   const num = Number(value || 0);
-  return `₹${num.toLocaleString("en-IN", {
-    minimumFractionDigits: 0,
+  // Format number with Indian numbering system
+  const formatted = num.toLocaleString("en-IN", {
+    minimumFractionDigits: 2,
     maximumFractionDigits: 2,
-  })}`;
+  });
+  return `₹${formatted}`;
 }
 
-/**
- * Convert number to words (Indian system)
- * @param {number} num - Number to convert
- * @returns {string} Number in words
- */
 function numberToWords(num) {
   if (!num) return "Zero Rupees Only";
 
@@ -89,29 +81,43 @@ function numberToWords(num) {
   return result.trim() + " Rupees Only";
 }
 
-/**
- * Generate professional invoice PDF (Single Page Optimized)
- * @param {Object} order - Order details
- * @param {string} outputPath - Output file path
- * @param {Object} options - Additional options
- */
 function generateInvoice(order, outputPath, options = {}) {
-  const doc = new PDFDocument({
+  const config = {
+    highQuality: options.highQuality !== false,
+    compress: options.compress || false,
+    colorProfile: options.colorProfile || "default",
+    embedFonts: options.embedFonts !== false,
+    addWatermark: options.addWatermark || false,
+    watermarkText: options.watermarkText || "ORIGINAL",
+  };
+
+  const docOptions = {
     size: "A4",
     margin: 40,
-  });
+    bufferPages: true,
+    autoFirstPage: true,
+    compress: config.compress,
+    info: {
+      Title: `Invoice ${order.orderId}`,
+      Author: "LUXCART",
+      Subject: `Invoice for Order ${order.orderId}`,
+      Creator: "LUXCART Invoice System",
+      CreationDate: new Date(),
+    },
+  };
 
-  // Register font
+  const doc = new PDFDocument(docOptions);
+
   const fontPath = path.join(__dirname, "../font/DejaVuSans.ttf");
   const fontBoldPath = path.join(__dirname, "../font/DejaVuSans-Bold.ttf");
 
   if (fs.existsSync(fontPath)) doc.registerFont("DejaVu", fontPath);
   if (fs.existsSync(fontBoldPath)) doc.registerFont("DejaVuBold", fontBoldPath);
-  // fallback to built-in if fonts are missing
+
   try {
     doc.font("DejaVu");
   } catch (e) {
-    // ignore, pdfkit will use default
+    // Fallback to default font
   }
 
   const stream = fs.createWriteStream(outputPath);
@@ -121,55 +127,69 @@ function generateInvoice(order, outputPath, options = {}) {
   const marginRight = 555;
   const pageWidth = 515;
 
-  // Color scheme
-  const colors = {
+  let colors = {
     primary: "#1a1a1a",
     secondary: "#666666",
     accent: "#2563eb",
     lightGray: "#f8f9fa",
     border: "#dee2e6",
     success: "#10b981",
+    danger: "#ef4444",
+    warning: "#f59e0b",
     headerBg: "#1e40af",
+    cancelledBg: "#fee2e2",
+    returnedBg: "#fff4e6",
   };
 
   let currentY = 40;
 
+  // ========== WATERMARK ==========
+  if (config.addWatermark) {
+    doc.save();
+    doc
+      .fontSize(60)
+      .fillColor(colors.lightGray)
+      .opacity(0.1)
+      .rotate(-45, { origin: [297, 420] })
+      .text(config.watermarkText, 150, 400, { width: 400, align: "center" });
+    doc.restore();
+  }
+
   // ========== HEADER SECTION ==========
-  // Logo box
+  doc.save();
   doc
     .roundedRect(marginLeft, currentY, 50, 50, 4)
+    .lineWidth(0.5)
     .fillAndStroke(colors.accent, colors.accent);
+  doc.restore();
 
   doc
     .fontSize(22)
     .fillColor("#ffffff")
     .text("LC", marginLeft + 10, currentY + 13);
 
-  // Company info
   doc
     .fontSize(20)
     .fillColor(colors.primary)
     .text("LUXCART", marginLeft + 65, currentY + 2);
-
   doc
     .fontSize(9)
     .fillColor(colors.secondary)
-    .text("Premium Car Accessories & Detailing", marginLeft + 65, currentY + 26)
+    .text("Premium Car & Accessories Detailing", marginLeft + 65, currentY + 26)
     .text("www.luxcart.com", marginLeft + 65, currentY + 38);
 
-  // Invoice details box
   const invoiceBoxX = 410;
   const invoiceBoxWidth = 145;
 
   doc
     .roundedRect(invoiceBoxX, currentY, invoiceBoxWidth, 50, 4)
+    .lineWidth(0.5)
     .fillAndStroke(colors.lightGray, colors.border);
 
   doc
     .fontSize(14)
     .fillColor(colors.accent)
     .text("INVOICE", invoiceBoxX + 10, currentY + 8);
-
   doc
     .fontSize(8)
     .fillColor(colors.secondary)
@@ -182,25 +202,22 @@ function generateInvoice(order, outputPath, options = {}) {
 
   currentY += 65;
 
-  // Separator
   doc
     .moveTo(marginLeft, currentY)
     .lineTo(marginRight, currentY)
     .strokeColor(colors.border)
-    .lineWidth(1)
+    .lineWidth(0.5)
     .stroke();
 
   currentY += 15;
 
-  // ========== BILLING SECTION (2 COLUMNS) ==========
+  // ========== BILLING SECTION ==========
   const billToY = currentY;
 
-  // Left: Bill To
   doc
     .fontSize(10)
     .fillColor(colors.accent)
     .text("BILL TO", marginLeft, currentY);
-
   let leftY = currentY + 15;
 
   const customerName = order.customerName || order.address?.name || "Customer";
@@ -215,14 +232,13 @@ function generateInvoice(order, outputPath, options = {}) {
     .fontSize(10)
     .fillColor(colors.primary)
     .text(customerName, marginLeft, leftY);
-
   leftY += 14;
 
   if (customerAddress.trim()) {
     doc
       .fontSize(9)
       .fillColor(colors.secondary)
-      .text(customerAddress, marginLeft, leftY, { width: 240 });
+      .text(customerAddress, marginLeft, leftY, { width: 240, lineGap: 2 });
     leftY = doc.y + 4;
   }
 
@@ -236,9 +252,7 @@ function generateInvoice(order, outputPath, options = {}) {
     leftY = doc.y;
   }
 
-  // Right: From
   doc.fontSize(10).fillColor(colors.accent).text("FROM", 305, billToY);
-
   let rightY = billToY + 15;
 
   const companyInfo = options.companyInfo || {
@@ -254,133 +268,121 @@ function generateInvoice(order, outputPath, options = {}) {
     .fontSize(10)
     .fillColor(colors.primary)
     .text(companyInfo.name, 305, rightY);
-
   doc
     .fontSize(9)
     .fillColor(colors.secondary)
-    .text(companyInfo.address, 305, rightY + 14)
+    .text(companyInfo.address, 305, rightY + 14, { lineGap: 2 })
     .text(companyInfo.city, 305, doc.y + 3)
     .text(`GSTIN: ${companyInfo.gstin}`, 305, doc.y + 3);
 
   currentY = Math.max(leftY, doc.y) + 20;
 
-  // ========== ORDER ITEMS TABLE ==========
-  doc
-    .fontSize(11)
-    .fillColor(colors.primary)
-    .text("ORDER ITEMS", marginLeft, currentY);
+  // ========== ACTIVE ORDER ITEMS TABLE ==========
+  const activeItems = order.items.filter(
+    (item) => item.status !== "CANCELLED" && item.status !== "RETURNED"
+  );
 
-  currentY += 18;
+  if (activeItems.length > 0) {
+    doc
+      .fontSize(11)
+      .fillColor(colors.primary)
+      .text("ORDER ITEMS", marginLeft, currentY);
+    currentY += 18;
 
-  // Table dimensions
-  const tableTop = currentY;
-  const descX = marginLeft;
-  const qtyX = 320;
-  const unitPriceX = 380;
-  const totalX = 470;
+    currentY = renderItemsTable(
+      doc,
+      activeItems,
+      currentY,
+      colors,
+      marginLeft,
+      pageWidth,
+      false
+    );
+    currentY += 10;
+  }
 
-  const descWidth = qtyX - descX - 10;
-  const qtyWidth = 45;
-  const unitPriceWidth = 75;
-  const totalWidth = 85;
+  // ========== CANCELLED ITEMS TABLE ==========
+  const cancelledItems = order.items.filter(
+    (item) => item.status === "CANCELLED"
+  );
 
-  // Table header
-  doc
-    .rect(marginLeft, tableTop, pageWidth, 22)
-    .fillAndStroke(colors.headerBg, colors.headerBg);
-
-  doc
-    .fontSize(9)
-    .fillColor("#ffffff")
-    .text("DESCRIPTION", descX + 6, tableTop + 7)
-    .text("QTY", qtyX, tableTop + 7, { width: qtyWidth, align: "center" })
-    .text("UNIT PRICE", unitPriceX, tableTop + 7, {
-      width: unitPriceWidth,
-      align: "right",
-    })
-    .text("TOTAL", totalX, tableTop + 7, { width: totalWidth, align: "right" });
-
-  currentY = tableTop + 26;
-
-  // Table rows
-  const items = order.items || [];
-  let isAlternate = false;
-
-  items.forEach((item) => {
-    const description = item.description || item.name || "Item";
-    const qty = item.qty || item.quantity || 1;
-    const price = item.price || 0;
-    const total = item.total || item.totalItemAmount || qty * price;
-
-    // Calculate row height based on description
-    const descHeight = doc.heightOfString(description, {
-      width: descWidth - 6,
-    });
-    const rowHeight = Math.max(descHeight + 16, 28);
-
-    // Alternating background
-    if (isAlternate) {
-      doc
-        .rect(marginLeft, currentY - 4, pageWidth, rowHeight)
-        .fill(colors.lightGray);
+  if (cancelledItems.length > 0) {
+    // Check if we need a new page
+    if (currentY > 650) {
+      doc.addPage();
+      currentY = 40;
     }
-    isAlternate = !isAlternate;
 
-    // Description
     doc
-      .fontSize(9)
-      .fillColor(colors.primary)
-      .text(description, descX + 6, currentY, { width: descWidth - 6 });
+      .fontSize(11)
+      .fillColor(colors.danger)
+      .text("CANCELLED ITEMS", marginLeft, currentY);
+    currentY += 18;
 
-    // Quantity (centered)
-    doc.text(String(qty), qtyX, currentY, { width: qtyWidth, align: "center" });
+    currentY = renderItemsTable(
+      doc,
+      cancelledItems,
+      currentY,
+      colors,
+      marginLeft,
+      pageWidth,
+      true,
+      "CANCELLED"
+    );
+    currentY += 10;
+  }
 
-    // Unit Price (right-aligned)
+  // ========== RETURNED ITEMS TABLE ==========
+  const returnedItems = order.items.filter(
+    (item) => item.status === "RETURNED"
+  );
+
+  if (returnedItems.length > 0) {
+    // Check if we need a new page
+    if (currentY > 650) {
+      doc.addPage();
+      currentY = 40;
+    }
+
     doc
-      .fontSize(9)
-      .fillColor(colors.secondary)
-      .text(formatCurrency(price), unitPriceX, currentY, {
-        width: unitPriceWidth,
-        align: "right",
-      });
+      .fontSize(11)
+      .fillColor(colors.warning)
+      .text("RETURNED ITEMS", marginLeft, currentY);
+    currentY += 18;
 
-    // Total (right-aligned, bold)
-    doc
-      .fontSize(9)
-      .fillColor(colors.primary)
-      .text(formatCurrency(total), totalX, currentY, {
-        width: totalWidth,
-        align: "right",
-      });
+    currentY = renderItemsTable(
+      doc,
+      returnedItems,
+      currentY,
+      colors,
+      marginLeft,
+      pageWidth,
+      true,
+      "RETURNED"
+    );
+    currentY += 10;
+  }
 
-    currentY += rowHeight;
-  });
+  // ========== PAYMENT SUMMARY ==========
+  currentY += 10;
 
-  // Bottom table border
-  doc
-    .moveTo(marginLeft, currentY)
-    .lineTo(marginRight, currentY)
-    .strokeColor(colors.border)
-    .lineWidth(1)
-    .stroke();
+  // Check if we need a new page for summary
+  if (currentY > 600) {
+    doc.addPage();
+    currentY = 40;
+  }
 
-  currentY += 20;
-
-  // ========== PAYMENT SUMMARY (dynamic height, measured) ==========
   const summaryX = 325;
   const summaryWidth = 230;
 
-  // Build summary lines (label/value). We'll measure heights to compute box size.
   const summaryLines = [];
 
-  // Subtotal
   summaryLines.push({
     label: "Subtotal",
     value: formatCurrency(order.subtotal || 0),
     color: colors.secondary,
   });
 
-  // Tax
   const taxPercent = order.taxPercent || "";
   const taxLabel = taxPercent ? `Tax (${taxPercent}%)` : "Tax";
   summaryLines.push({
@@ -389,7 +391,12 @@ function generateInvoice(order, outputPath, options = {}) {
     color: colors.secondary,
   });
 
-  // Optional lines
+  summaryLines.push({
+    label: "Total Amount",
+    value: formatCurrency(order.totalAmount || 0),
+    color: colors.primary,
+  });
+
   if (order.discount && Number(order.discount) > 0) {
     summaryLines.push({
       label: "Discount",
@@ -398,32 +405,36 @@ function generateInvoice(order, outputPath, options = {}) {
     });
   }
 
+  if (order.refundedAmount && Number(order.refundedAmount) > 0) {
+    summaryLines.push({
+      label: "Refunded (Cancelled)",
+      value: `- ${formatCurrency(order.refundedAmount)}`,
+      color: colors.danger,
+    });
+  }
+
+  if (order.returnRefundAmount && Number(order.returnRefundAmount) > 0) {
+    summaryLines.push({
+      label: "Refunded (Returned)",
+      value: `- ${formatCurrency(order.returnRefundAmount)}`,
+      color: colors.warning,
+    });
+  }
+
   if (order.advanceAmount && Number(order.advanceAmount) > 0) {
     summaryLines.push({
-      label: "Advance Paid (COD)",
+      label: "Advance Paid",
       value: `- ${formatCurrency(order.advanceAmount)}`,
       color: colors.success,
     });
   }
 
-  if (order.remainingAmount && Number(order.remainingAmount) > 0) {
-    summaryLines.push({
-      label: "Remaining Amount",
-      value: `- ${formatCurrency(order.remainingAmount)}`,
-      color: colors.success,
-    });
-  }
-
-  // We'll measure label heights using the font sizes we plan to render
-  const headerHeight = 20; // space allocated for "PAYMENT SUMMARY" header (approx)
+  const headerHeight = 20;
   const labelFontSize = 9;
-  const totalLabelFontSize = 11;
-  const totalAmountFontSize = 13;
   const paddingTop = 12;
   const paddingBottom = 12;
   const gapBetweenLines = 6;
 
-  // Measure heights
   doc.fontSize(labelFontSize);
   let measuredLinesHeight = 0;
   summaryLines.forEach((ln) => {
@@ -431,13 +442,8 @@ function generateInvoice(order, outputPath, options = {}) {
     measuredLinesHeight += h + gapBetweenLines;
   });
 
-  // Extra space for divider + total amount
   const dividerExtra = 10;
-  const totalLabelHeight = doc.heightOfString("Total Amount", {
-    width: summaryWidth - 24,
-  });
-
-  // Compute summary box height with a sensible minimum
+  const totalLabelHeight = 15;
   const computedHeight =
     paddingTop +
     headerHeight +
@@ -445,15 +451,20 @@ function generateInvoice(order, outputPath, options = {}) {
     dividerExtra +
     totalLabelHeight +
     paddingBottom;
-  const minHeight = 115;
-  const summaryHeight = Math.max(minHeight, computedHeight);
+  const summaryHeight = Math.max(115, computedHeight);
 
-  // Draw summary box
+  doc.save();
+  doc
+    .roundedRect(summaryX + 2, currentY + 2, summaryWidth, summaryHeight, 6)
+    .fillOpacity(0.1)
+    .fill("#000000");
+  doc.restore();
+
   doc
     .roundedRect(summaryX, currentY, summaryWidth, summaryHeight, 6)
+    .lineWidth(0.5)
     .fillAndStroke(colors.lightGray, colors.border);
 
-  // Render header
   let summaryY = currentY + paddingTop;
   const labelX = summaryX + 12;
   const valueX = summaryX + summaryWidth - 12;
@@ -464,44 +475,49 @@ function generateInvoice(order, outputPath, options = {}) {
     .text("PAYMENT SUMMARY", labelX, summaryY);
   summaryY += headerHeight;
 
-  // Render each summary line
   summaryLines.forEach((ln) => {
+    const lineValueStr = ln.value;
+    const lineFontSize = lineValueStr.length > 15 ? 8 : 9;
+
     doc
-      .fontSize(labelFontSize)
+      .fontSize(9)
       .fillColor(ln.color || colors.secondary)
       .text(ln.label, labelX, summaryY, { width: summaryWidth - 36 });
-    // value right aligned
     doc
-      .fontSize(labelFontSize)
-      .fillColor(colors.secondary)
-      .text(ln.value, valueX - 95, summaryY, { width: 95, align: "right" });
+      .fontSize(lineFontSize)
+      .fillColor(ln.color || colors.secondary)
+      .text(ln.value, valueX - 110, summaryY, { width: 110, align: "right" });
     summaryY +=
       doc.heightOfString(ln.label, { width: summaryWidth - 24 }) +
       gapBetweenLines;
   });
 
-  // Divider
   doc
     .moveTo(labelX, summaryY + 2)
     .lineTo(valueX, summaryY + 2)
     .strokeColor(colors.border)
+    .lineWidth(0.5)
     .stroke();
   summaryY += dividerExtra;
 
-  // Total Amount
+  const finalAmount = order.remainingAmount || order.totalAmount || 0;
+
+  // Calculate if amount needs smaller font
+  const amountStr = formatCurrency(finalAmount);
+  const amountFontSize = amountStr.length > 15 ? 11 : 13;
+
   doc
-    .fontSize(totalLabelFontSize)
+    .fontSize(11)
     .fillColor(colors.primary)
-    .text("Total Amount", labelX, summaryY);
+    .text("Amount to Pay", labelX, summaryY);
   doc
-    .fontSize(totalAmountFontSize)
+    .fontSize(amountFontSize)
     .fillColor(colors.accent)
-    .text(formatCurrency(order.totalAmount || 0), valueX - 95, summaryY, {
-      width: 95,
+    .text(formatCurrency(finalAmount), valueX - 110, summaryY, {
+      width: 110,
       align: "right",
     });
 
-  // Move currentY down by the exact height we used plus a small gap
   currentY = currentY + summaryHeight + 12;
 
   // ========== AMOUNT IN WORDS ==========
@@ -509,52 +525,49 @@ function generateInvoice(order, outputPath, options = {}) {
     .fontSize(8)
     .fillColor(colors.secondary)
     .text("Amount in words:", marginLeft, currentY);
-
   doc
     .fontSize(9)
     .fillColor(colors.primary)
-    .text(
-      numberToWords(Math.floor(order.totalAmount || 0)),
-      marginLeft,
-      currentY + 11,
-      {
-        width: pageWidth * 0.7,
-        lineGap: 2,
-      }
-    );
+    .text(numberToWords(Math.floor(finalAmount)), marginLeft, currentY + 11, {
+      width: pageWidth * 0.7,
+      lineGap: 2,
+    });
 
   currentY = doc.y + 18;
 
   // ========== TERMS & CONDITIONS ==========
+  if (currentY > 700) {
+    doc.addPage();
+    currentY = 40;
+  }
+
   doc
     .fontSize(10)
     .fillColor(colors.primary)
     .text("Terms & Conditions", marginLeft, currentY);
-
   currentY = doc.y + 8;
 
   const terms = options.terms || [
     "Payment is due within 30 days of invoice date.",
     "Please include invoice number on your payment.",
-    "All sales are final unless otherwise stated.",
+    "Refunds for cancelled items will be processed within 5-7 business days.",
+    "Returns must be initiated within 7 days of delivery.",
     "Late payments may incur additional charges.",
   ];
 
   doc.fontSize(8).fillColor(colors.secondary);
+
   terms.forEach((term, index) => {
-    doc.text(`${index + 1}. ${term}`, marginLeft, currentY);
+    doc.text(`${index + 1}. ${term}`, marginLeft, currentY, { lineGap: 1 });
     currentY = doc.y + 3;
   });
 
   currentY += 12;
 
   // ========== FOOTER ==========
-  const footerY = currentY;
-
-  // Footer separator line
   doc
-    .moveTo(marginLeft, footerY)
-    .lineTo(marginRight, footerY)
+    .moveTo(marginLeft, currentY)
+    .lineTo(marginRight, currentY)
     .strokeColor(colors.border)
     .lineWidth(0.5)
     .stroke();
@@ -562,7 +575,7 @@ function generateInvoice(order, outputPath, options = {}) {
   doc
     .fontSize(9)
     .fillColor(colors.secondary)
-    .text("Thank you for shopping with LUXCART!", marginLeft, footerY + 8, {
+    .text("Thank you for shopping with LUXCART!", marginLeft, currentY + 8, {
       width: pageWidth,
       align: "center",
     });
@@ -573,9 +586,32 @@ function generateInvoice(order, outputPath, options = {}) {
     .text(
       "This is a system generated invoice and does not require signature.",
       marginLeft,
-      footerY + 22,
+      currentY + 22,
       { width: pageWidth, align: "center" }
     );
+
+  if (order.paymentStatus) {
+    const paymentY = currentY + 36;
+    let statusColor = colors.warning;
+    let statusText = order.paymentStatus.toUpperCase();
+
+    if (order.paymentStatus === "paid" || order.paymentStatus === "completed") {
+      statusColor = colors.success;
+    } else if (
+      order.paymentStatus === "failed" ||
+      order.paymentStatus === "cancelled"
+    ) {
+      statusColor = colors.danger;
+    }
+
+    doc
+      .fontSize(8)
+      .fillColor(statusColor)
+      .text(`Payment Status: ${statusText}`, marginLeft, paymentY, {
+        width: pageWidth,
+        align: "center",
+      });
+  }
 
   doc.end();
 
@@ -583,6 +619,209 @@ function generateInvoice(order, outputPath, options = {}) {
     stream.on("finish", () => resolve(outputPath));
     stream.on("error", reject);
   });
+}
+
+// ========== HELPER: RENDER ITEMS TABLE ==========
+function renderItemsTable(
+  doc,
+  items,
+  startY,
+  colors,
+  marginLeft,
+  pageWidth,
+  isAdjustment = false,
+  adjustmentType = ""
+) {
+  let currentY = startY;
+  const marginRight = marginLeft + pageWidth;
+
+  const tableTop = currentY;
+  const descX = marginLeft;
+  const qtyX = 175;
+  const unitPriceX = 215;
+  const taxX = 305;
+  const advanceX = 395;
+  const totalX = 485;
+
+  const descWidth = qtyX - descX - 8;
+  const qtyWidth = 30;
+  const unitPriceWidth = 85;
+  const taxWidth = 85;
+  const advanceWidth = 85;
+  const totalWidth = 75;
+
+  // Table header
+  let headerBg = colors.headerBg;
+  if (adjustmentType === "CANCELLED") headerBg = colors.danger;
+  if (adjustmentType === "RETURNED") headerBg = colors.warning;
+
+  doc
+    .rect(marginLeft, tableTop, pageWidth, 22)
+    .lineWidth(0.5)
+    .fillAndStroke(headerBg, headerBg);
+
+  doc
+    .fontSize(7)
+    .fillColor("#ffffff")
+    .text("DESCRIPTION", descX + 6, tableTop + 7)
+    .text("QTY", qtyX + 2, tableTop + 7, { width: qtyWidth, align: "center" })
+    .text("PRICE", unitPriceX - 5, tableTop + 7, {
+      width: unitPriceWidth,
+      align: "right",
+    })
+    .text("TAX", taxX - 5, tableTop + 7, { width: taxWidth, align: "right" })
+    .text("ADVANCE", advanceX - 5, tableTop + 7, {
+      width: advanceWidth,
+      align: "right",
+    })
+    .text("TOTAL", totalX - 5, tableTop + 7, {
+      width: totalWidth,
+      align: "right",
+    });
+
+  currentY = tableTop + 26;
+
+  let isAlternate = false;
+
+  items.forEach((item) => {
+    const description = item.description || item.name || "Item";
+    const qty = item.qty || item.quantity || 1;
+    const price = item.price || 0;
+    const taxAmount = item.tax || 0;
+    const total = item.total || 0;
+    const status = item.status || "ACTIVE";
+    const refundAmount = item.refundAmount || 0;
+    const advanceAmount = item.advanceAmount || 0;
+
+    const descHeight = doc.heightOfString(description, {
+      width: descWidth - 6,
+      lineGap: 1,
+    });
+    const rowHeight = Math.max(descHeight + 16, 28);
+
+    // Check if we need a new page
+    if (currentY + rowHeight > 750) {
+      doc.addPage();
+      currentY = 40;
+
+      // Redraw header on new page
+      doc
+        .rect(marginLeft, currentY, pageWidth, 22)
+        .lineWidth(0.5)
+        .fillAndStroke(headerBg, headerBg);
+
+      doc
+        .fontSize(7)
+        .fillColor("#ffffff")
+        .text("DESCRIPTION", descX + 6, currentY + 7)
+        .text("QTY", qtyX + 2, currentY + 7, {
+          width: qtyWidth,
+          align: "center",
+        })
+        .text("PRICE", unitPriceX - 5, currentY + 7, {
+          width: unitPriceWidth,
+          align: "right",
+        })
+        .text("TAX", taxX - 5, currentY + 7, {
+          width: taxWidth,
+          align: "right",
+        })
+        .text("ADVANCE", advanceX - 5, currentY + 7, {
+          width: advanceWidth,
+          align: "right",
+        })
+        .text("TOTAL", totalX - 5, currentY + 7, {
+          width: totalWidth,
+          align: "right",
+        });
+
+      currentY += 26;
+    }
+
+    // Background
+    doc.save();
+    let bgColor = isAlternate ? colors.lightGray : "#ffffff";
+    if (status === "CANCELLED") bgColor = colors.cancelledBg;
+    if (status === "RETURNED") bgColor = colors.returnedBg;
+
+    doc
+      .rect(marginLeft, currentY - 4, pageWidth, rowHeight)
+      .lineWidth(0.25)
+      .fillAndStroke(bgColor, colors.border);
+    doc.restore();
+
+    isAlternate = !isAlternate;
+
+    // Description
+    doc
+      .fontSize(8)
+      .fillColor(colors.primary)
+      .text(description, descX + 6, currentY, {
+        width: descWidth - 6,
+        lineGap: 1,
+      });
+
+    // Quantity
+    doc.fontSize(8).text(String(qty), qtyX + 2, currentY, {
+      width: qtyWidth,
+      align: "center",
+    });
+
+    // Unit Price
+    doc
+      .fontSize(8)
+      .fillColor(colors.secondary)
+      .text(formatCurrency(price), unitPriceX - 5, currentY, {
+        width: unitPriceWidth,
+        align: "right",
+      });
+
+    // Tax
+    doc.text(formatCurrency(taxAmount), taxX - 5, currentY, {
+      width: taxWidth,
+      align: "right",
+    });
+
+    // Advance Amount
+    doc
+      .fontSize(8)
+      .fillColor(colors.secondary)
+      .text(formatCurrency(advanceAmount), advanceX - 5, currentY, {
+        width: advanceWidth,
+        align: "right",
+      });
+
+    // Total - Simple display without strikethrough
+    if (isAdjustment && refundAmount > 0) {
+      doc
+        .fontSize(8)
+        .fillColor(status === "CANCELLED" ? colors.danger : colors.warning)
+        .text(`-${formatCurrency(refundAmount)}`, totalX - 5, currentY, {
+          width: totalWidth,
+          align: "right",
+        });
+    } else {
+      doc
+        .fontSize(8)
+        .fillColor(colors.primary)
+        .text(formatCurrency(total), totalX - 5, currentY, {
+          width: totalWidth,
+          align: "right",
+        });
+    }
+
+    currentY += rowHeight;
+  });
+
+  // Bottom border
+  doc
+    .moveTo(marginLeft, currentY)
+    .lineTo(marginRight, currentY)
+    .strokeColor(colors.border)
+    .lineWidth(0.5)
+    .stroke();
+
+  return currentY + 10;
 }
 
 module.exports = generateInvoice;

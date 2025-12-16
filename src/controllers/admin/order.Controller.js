@@ -1,6 +1,9 @@
 const { OK, BAD_REQUEST, NOT_FOUND } = require("../../constant/statusCode");
+const carVariant = require("../../models/admin/carVariantModel");
+const Accessory = require("../../models/admin/productAccessoryModal");
 const Order = require("../../models/user/OrderModel");
 const Return = require("../../models/user/ReturnModel");
+const mongoose = require("mongoose");
 
 const updateOrderStatus = async (req, res, next) => {
   try {
@@ -88,6 +91,7 @@ const updateSingleItemStatus = async (req, res, next) => {
 
     const update = {
       "items.$[item].fulfillmentStatus.status": status,
+      "items.$[item].fulfillmentStatus.status": status,
     };
 
     const timeField = STATUS_TIME_MAP[status];
@@ -121,35 +125,131 @@ const updateSingleItemStatus = async (req, res, next) => {
     next(error);
   }
 };
+
 const cancelApprove = async (req, res, next) => {
   try {
     const { orderId, itemId } = req.params;
 
-    const result = await Order.updateOne(
+    // Ensure ObjectId
+    const orderObjectId = new mongoose.Types.ObjectId(orderId);
+    const itemObjectId = new mongoose.Types.ObjectId(itemId);
+
+    /* =============================
+       FIND ORDER WITH VALID ITEM
+    ============================= */
+    const order = await Order.findOne(
       {
-        _id: orderId,
-        "items._id": itemId,
-        "items.cancel.requested": true,
+        _id: orderObjectId,
+        items: {
+          $elemMatch: {
+            _id: itemObjectId,
+            "cancel.requested": true,
+            "cancel.approvedAt": { $exists: false },
+          },
+        },
+      },
+      {
+        items: 1,
+        advanceAmount: 1,
+        remainingAmount: 1,
+        totalAmount: 1,
+        subtotal: 1,
+        taxAmount: 1,
+      }
+    );
+
+    if (!order) {
+      return res.status(400).json({
+        success: false,
+        alert: "Cancel already processed or invalid",
+      });
+    }
+
+    /* =============================
+       GET EXACT ITEM
+    ============================= */
+    const item = order.items.find((i) => i._id.toString() === itemId);
+    if (!item) {
+      return res.status(BAD_REQUEST).json({
+        success: false,
+        alert: "Item not found",
+      });
+    }
+
+    /* =============================
+       CALCULATIONS
+    ============================= */
+    const itemAdvanceAmount = item.advanceAmount || 0;
+    const itemTaxAmount = item.accessoryTax || 0;
+    const itemPrice = item.price || 0;
+
+    const newSubTotal = order.subtotal - itemPrice;
+    const newTaxAmount = order.taxAmount - itemTaxAmount;
+    const newTotalAmount = newSubTotal + newTaxAmount;
+    const newAdvanceAmount = order.advanceAmount - itemAdvanceAmount;
+    const newRemainingAmount = newTotalAmount - newAdvanceAmount;
+
+    /* =============================
+       ATOMIC UPDATE
+    ============================= */
+    const updateResult = await Order.updateOne(
+      {
+        _id: orderObjectId,
+        items: {
+          $elemMatch: {
+            _id: itemObjectId,
+            "cancel.approvedAt": { $exists: false },
+          },
+        },
       },
       {
         $set: {
           "items.$.cancel.approvedAt": new Date(),
+          "items.$.cancel.refundAmount": itemAdvanceAmount,
           "items.$.fulfillmentStatus.status": "cancelled",
+          advanceAmount: newAdvanceAmount > 0 ? newAdvanceAmount : 0,
+          remainingAmount: newRemainingAmount > 0 ? newRemainingAmount : 0,
+          totalAmount: newTotalAmount > 0 ? newTotalAmount : 0,
+          subtotal: newSubTotal > 0 ? newSubTotal : 0,
+          taxAmount: newTaxAmount > 0 ? newTaxAmount : 0,
         },
       }
     );
 
-    if (result.modifiedCount === 0) {
-      return res.status(BAD_REQUEST).json({
+    if (updateResult.modifiedCount === 0) {
+      return res.status(400).json({
         success: false,
-        message: "Cancel request not found or already processed",
+        alert: "Cancel already approved",
       });
     }
-
-    res.status(OK).json({ success: true });
-  } catch (error) {
-    console.log("Error from cancel approve", error);
-    next(error);
+    /* =============================
+       stock updating
+    ============================= */
+    const variantId = item.variantId;
+    const accessoryId = item.accessoryId;
+    const quantity = item.quantity;
+    if (variantId) {
+      await carVariant.findByIdAndUpdate(
+        { _id: variantId },
+        { $inc: { stock: quantity } }
+      );
+    }
+    if (accessoryId) {
+      await Accessory.findByIdAndUpdate(
+        { _id: accessoryId },
+        { $inc: { stock: quantity } }
+      );
+    }
+    /* =============================
+       SUCCESS
+    ============================= */
+    res.json({
+      success: true,
+      message: "Cancel approved successfully",
+    });
+  } catch (err) {
+    console.error("Cancel approve error:", err);
+    next(err);
   }
 };
 
@@ -183,29 +283,159 @@ const cancelReject = async (req, res, next) => {
     next(error);
   }
 };
-
 const returnApprove = async (req, res, next) => {
   try {
-    const { returnId } = req.params;
+    const { orderId, itemId } = req.params;
 
-    await Return.findByIdAndUpdate(returnId, {
-      status: "approved",
+    // Ensure ObjectId
+    const orderObjectId = new mongoose.Types.ObjectId(orderId);
+    const itemObjectId = new mongoose.Types.ObjectId(itemId);
+
+    /* =============================
+       FIND ORDER WITH VALID ITEM
+    ============================= */
+    const order = await Order.findOne(
+      {
+        _id: orderObjectId,
+        items: {
+          $elemMatch: {
+            _id: itemObjectId,
+            "return.requested": true,
+            "return.approvedAt": { $exists: false },
+          },
+        },
+      },
+      {
+        items: 1,
+        advanceAmount: 1,
+        remainingAmount: 1,
+        totalAmount: 1,
+        subtotal: 1,
+        taxAmount: 1,
+      }
+    );
+
+    if (!order) {
+      return res.status(BAD_REQUEST).json({
+        success: false,
+        alert: "Return already processed or invalid",
+      });
+    }
+
+    /* =============================
+       GET EXACT ITEM
+    ============================= */
+    const item = order.items.find((i) => i._id.toString() === itemId);
+
+    if (!item) {
+      return res.status(BAD_REQUEST).json({
+        success: false,
+        alert: "Item not found",
+      });
+    }
+
+    /* =============================
+       CALCULATIONS
+    ============================= */
+    const itemAdvanceAmount = item.advanceAmount || 0;
+    const itemTaxAmount = item.accessoryTax || 0;
+    const itemPrice = item.price || 0;
+
+    const newSubTotal = order.subtotal - itemPrice;
+    const newTaxAmount = order.taxAmount - itemTaxAmount;
+    const newTotalAmount = newSubTotal + newTaxAmount;
+    const newAdvanceAmount = order.advanceAmount - itemAdvanceAmount;
+    const newRemainingAmount = newTotalAmount - newAdvanceAmount;
+
+    /* =============================
+       ATOMIC UPDATE
+    ============================= */
+    const updateResult = await Order.updateOne(
+      {
+        _id: orderObjectId,
+        items: {
+          $elemMatch: {
+            _id: itemObjectId,
+            "return.approvedAt": { $exists: false },
+          },
+        },
+      },
+      {
+        $set: {
+          "items.$.return.approvedAt": new Date(),
+          "items.$.return.refundAmount": itemAdvanceAmount,
+          "items.$.fulfillmentStatus.status": "returned",
+          advanceAmount: newAdvanceAmount > 0 ? newAdvanceAmount : 0,
+          remainingAmount: newRemainingAmount > 0 ? newRemainingAmount : 0,
+          totalAmount: newTotalAmount > 0 ? newTotalAmount : 0,
+          subtotal: newSubTotal > 0 ? newSubTotal : 0,
+          taxAmount: newTaxAmount > 0 ? newTaxAmount : 0,
+        },
+      }
+    );
+
+    if (updateResult.modifiedCount === 0) {
+      return res.status(BAD_REQUEST).json({
+        success: false,
+        alert: "Cancel already approved",
+      });
+    }
+    /* =============================
+       stock updating
+    ============================= */
+    const variantId = item.variantId;
+    const accessoryId = item.accessoryId;
+    const quantity = item.quantity;
+    if (variantId) {
+      await carVariant.findByIdAndUpdate(
+        { _id: variantId },
+        { $inc: { stock: quantity } }
+      );
+    }
+    if (accessoryId) {
+      await Accessory.findByIdAndUpdate(
+        { _id: accessoryId },
+        { $inc: { stock: quantity } }
+      );
+    }
+
+    /* =============================
+       SUCCESS
+    ============================= */
+    res.json({
+      success: true,
+      message: "Cancel approved successfully",
     });
-
-    res.status(OK).json({ success: true });
-  } catch (error) {
-    console.log("Error from return approve", error);
-
-    next(error);
+  } catch (err) {
+    console.error("Cancel approve error:", err);
+    next(err);
   }
 };
+
 const returnReject = async (req, res, next) => {
   try {
-    const { returnId } = req.params;
+    const { orderId, itemId } = req.params;
 
-    await Return.findByIdAndUpdate(returnId, {
-      status: "rejected",
-    });
+    const result = await Order.updateOne(
+      {
+        _id: orderId,
+        "items._id": itemId,
+        "items.return.requested": true,
+      },
+      {
+        $set: {
+          "items.$.return.rejectedAt": new Date(),
+          "items.$.fulfillmentStatus.status": "returned",
+        },
+      }
+    );
+
+    if (result.modifiedCount === 0) {
+      return res.status(BAD_REQUEST).json({
+        success: false,
+        message: "Return request not found or already processed",
+      });
+    }
 
     res.json({ success: true });
   } catch (error) {

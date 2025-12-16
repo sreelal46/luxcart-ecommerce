@@ -255,13 +255,13 @@ route.get(
   checkSession,
   loadReturnReq
 );
-route.post(
-  "/orders-management/return-request-management/:returnId/approve",
+route.patch(
+  "/orders-management/return-request-management/:orderId/:itemId/approve",
   checkSession,
   returnApprove
 );
-route.post(
-  "/orders-management/return-request-management/:returnId/reject",
+route.patch(
+  "/orders-management/return-request-management/:orderId/:itemId/reject",
   checkSession,
   returnReject
 );

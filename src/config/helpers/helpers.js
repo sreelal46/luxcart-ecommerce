@@ -111,4 +111,5 @@ module.exports = {
 
     return `${base} ${map[status] || ""}`;
   },
+  canCancel: (status) => ["placed", "confirmed", "shipped"].includes(status),
 };

@@ -60,65 +60,63 @@
           </thead>
 
           <tbody>
-            {{#each returnDetail}}
+            {{#each returnedItems}}
             <tr>
 
               <td>{{inc @index}}</td>
 
               <td class="fw-bold text-primary">
-                {{#if this.orderedId}}
-                {{this.orderedId}}
-                {{else}}
-                —
-                {{/if}}
+                {{this.orderId}}
               </td>
 
-              <td>{{this.userId.name}}</td>
+              <td>{{this.user.name}}</td>
 
               <td class="text-start product-col">
-                {{#if this.item.carId}}
-                {{this.item.carId.name}}
-                {{else if this.item.accessoryId}}
-                {{this.item.accessoryId.name}}
-                {{else if this.item.variantId}}
-                {{this.item.variantId.name}}
-                {{else}}
-                —
-                {{/if}}
-              </td>
-
-              <td>{{formattedDate this.createdAt}}</td>
-
-              <td class="fw-semibold">
-                ₹{{this.item.price}}
+                {{this.items.productName}}
               </td>
 
               <td>
-                <span class="badge {{statusBadge this.status}}">
-                  {{this.status}}
-                </span>
+                {{formattedDate this.items.return.requestedAt}}
+              </td>
+
+              <td class="fw-semibold">
+                ₹{{this.items.price}}
+              </td>
+
+              <td>
+                {{#if this.items.return.approvedAt}}
+                <span class="badge bg-success">Approved</span>
+                {{else if this.items.return.rejectedAt}}
+                <span class="badge bg-danger">Rejected</span>
+                {{else}}
+                <span class="badge bg-warning text-dark">Requested</span>
+                {{/if}}
               </td>
 
               <td class="action-col">
                 <div class="d-flex justify-content-center gap-2 flex-wrap">
 
                   <button class="btn btn-sm btn-info rounded-circle" data-bs-toggle="modal"
-                    data-bs-target="#viewReturnModal" data-reason="{{this.reason}}">
+                    data-bs-target="#viewCancelModal" data-reason="{{this.items.return.reason}}"
+                    data-message="{{this.items.return.description}}">
                     <i class="bi bi-eye-fill"></i>
                   </button>
 
-                  {{#if (eq this.status "requested")}}
+                  {{#unless this.items.return.approvedAt}}
+                  {{#unless this.items.return.rejectedAt}}
                   <button class="btn btn-sm btn-success rounded-pill" data-bs-toggle="modal"
-                    data-bs-target="#approveModal" data-id="{{this._id}}" data-order="{{this.orderedId}}">
+                    data-bs-target="#approveModal" data-id="{{this.items._id}}" data-orderid="{{this._id}}"
+                    data-orderedid="{{this.orderId}}">
                     Approve
                   </button>
 
                   <button class="btn btn-sm btn-danger rounded-pill" data-bs-toggle="modal"
-                    data-bs-target="#rejectModal" data-id="{{this._id}}" data-order="{{this.orderedId}}">
+                    data-bs-target="#rejectModal" data-id="{{this.items._id}}" data-orderid="{{this._id}}"
+                    data-orderedid="{{this.orderId}}">
                     Reject
                   </button>
-
-                  {{/if}}
+                  {{/unless}}
+                  {{/unless}}
 
                 </div>
               </td>
@@ -175,7 +173,7 @@
 </div>
 
 <!-- View Return Reason Modal -->
-<div class="modal fade" id="viewReturnModal" tabindex="-1" aria-labelledby="viewReturnModalLabel" aria-hidden="true">
+<div class="modal fade" id="viewCancelModal" tabindex="-1" aria-labelledby="viewReturnModalLabel" aria-hidden="true">
   <div class="modal-dialog modal-dialog-centered modal-lg">
     <div class="modal-content rounded-4 shadow-lg">
       <div class="modal-header bg-info text-white">
@@ -241,34 +239,36 @@
   </div>
 </div>
 <script>
-  const viewModal = document.getElementById("viewReturnModal");
+  const viewModal = document.getElementById("viewCancelModal");
 
   viewModal.addEventListener("show.bs.modal", function (event) {
     const button = event.relatedTarget;
     const reason = button.getAttribute("data-reason");
-
-    document.getElementById("returnReason").value = reason || "—";
-    document.getElementById("returnSubject").value = "Return Request";
+    const message = button.getAttribute("data-message");
+    document.getElementById("returnReason").value = message || "—";
+    document.getElementById("returnSubject").value = reason || "Return Items";
   });
 
   document.addEventListener("DOMContentLoaded", () => {
-    let selectedReturnId = null;
+    let selectedReturnItemId = null;
+    let selectedOrderId = null;
 
     /* ---------- APPROVE MODAL ---------- */
     const approveModal = document.getElementById("approveModal");
     approveModal.addEventListener("show.bs.modal", function (event) {
       const button = event.relatedTarget;
 
-      selectedReturnId = button.getAttribute("data-id");
-      const orderId = button.getAttribute("data-order");
+      selectedReturnItemId = button.getAttribute("data-id");
+      const orderedId = button.getAttribute("data-orderedid");
+      selectedOrderId = button.getAttribute("data-orderid");
 
-      document.getElementById("approveOrderId").innerText = orderId;
+      document.getElementById("approveOrderId").innerText = orderedId;
     });
 
     document.getElementById("confirmApprove").addEventListener("click", async () => {
       try {
-        const res = await axios.post(
-          `/admin/orders-management/return-request-management/${selectedReturnId}/approve`
+        const res = await axios.patch(
+          `/admin/orders-management/return-request-management/${selectedOrderId}/${selectedReturnItemId}/approve`
         );
         if (res.data.success) {
           location.reload()
@@ -288,23 +288,26 @@
     rejectModal.addEventListener("show.bs.modal", function (event) {
       const button = event.relatedTarget;
 
-      selectedReturnId = button.getAttribute("data-id");
-      const orderId = button.getAttribute("data-order");
 
-      document.getElementById("rejectOrderId").innerText = orderId;
+      selectedReturnItemId = button.getAttribute("data-id");
+      const orderedId = button.getAttribute("data-orderedid");
+      selectedOrderId = button.getAttribute("data-orderid");
+
+
+      document.getElementById("rejectOrderId").innerText = orderedId;
     });
 
     document.getElementById("confirmReject").addEventListener("click", async () => {
       try {
-        const res = await axios.post(
-          `/admin/orders-management/return-request-management/${selectedReturnId}/reject`
+        const res = await axios.patch(
+          `/admin/orders-management/return-request-management/${selectedOrderId}/${selectedReturnItemId}/reject`
         );
 
         if (res.data.success) {
           location.reload()
         }
         else {
-          console.log("Error")
+          alert(res.data.alert || "Request failed");
         }
       } catch (error) {
         console.error("AXIOS ERROR", error.response || error);
