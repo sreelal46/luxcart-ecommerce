@@ -88,18 +88,13 @@ const createOrder = async (req, res, next) => {
         quantity: item.quantity,
         price: item.price,
         accessoryTax: item.accessoryId ? taxAmount : null,
-        totalItemAmount: itemFinalAmount,
+        totalItemAmount: item.accessoryId ? itemFinalAmount : item.price,
         advanceAmount: itemAdvance,
       };
     });
 
     let advanceAmount = 0;
     let remainingAmount = 0;
-
-    // if (paymentMethod === "COD") {
-    //   advanceAmount = Math.round((cart.totalAmount * advancePercentage) / 100);
-    //   remainingAmount = cart.totalAmount - advanceAmount;
-    // }
 
     const orderTotal = cart.totalAfterAll;
     if (paymentMethod === "COD") {

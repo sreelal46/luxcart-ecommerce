@@ -37,6 +37,22 @@
     gap: 8px;
   }
 
+  .btn-pay {
+    margin-top: auto;
+    margin-bottom: 5px;
+    height: 40px;
+    background: #000;
+    color: #fff;
+    border: none;
+    padding: 10px 18px;
+    border-radius: 10px;
+    font-size: 14px;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+  }
+
   /* ================= SUMMARY ================= */
   .order-summary-box {
     display: grid;
@@ -334,34 +350,66 @@
 
     <button id="downloadInvoice" class="btn-invoice" data-orderid="{{order._id}}" data-orderedid="{{order.orderId}}"
       data-customername="{{order.address.name}}">
-      <i class="bi bi-download"></i>
-      Download Invoice
+      <i class="bi bi-receipt"></i>
+      Invoice
     </button>
   </div>
 
   <!-- STICKY SUMMARY -->
   <div class="order-summary-box">
-    <div>
+    <!-- <div>
       <div class="os-label">Order ID</div>
       <div class="os-value">{{order.orderId}}</div>
-    </div>
+    </div> -->
+
     <div>
       <div class="os-label">Date</div>
       <div class="os-value">{{formattedDate order.createdAt}}</div>
     </div>
+
     <div>
       <div class="os-label">Total</div>
-      <div class="os-value">₹ {{formatPrice order.totalAmount}}</div>
-    </div>
-    <div>
-      <div class="os-label">Advance Amount Paid</div>
-      <span class="os-value">₹ {{formatPrice order.advanceAmount}}</span>
-    </div>
-    <div>
-      <div class="os-label">Remaing Amount</div>
-      <span class="os-value">₹ {{formatPrice order.remainingAmount}}</span>
+      <span class="os-value">
+        ₹ {{#if order.totalAmount}}
+        {{formatPrice order.totalAmount}}
+        {{else}}
+        0
+        {{/if}}
+      </span>
     </div>
 
+    <div>
+      <div class="os-label">Advance Amount Paid</div>
+      <span class="os-value">
+        ₹ {{#if order.advanceAmount}}
+        {{formatPrice order.advanceAmount}}
+        {{else}}
+        0
+        {{/if}}
+      </span>
+    </div>
+
+    <div>
+      <div class="os-label">Remaining Amount</div>
+      <span class="os-value">
+        ₹ {{#if order.remainingAmount}}
+        {{formatPrice order.remainingAmount}}
+        {{else}}
+        0
+        {{/if}}
+      </span>
+    </div>
+
+    <div>
+      <div class="os-label">Refund Amount</div>
+      <span class="os-value">
+        ₹ {{#if order.totalRefundAmount}}
+        {{formatPrice order.totalRefundAmount}}
+        {{else}}
+        0
+        {{/if}}
+      </span>
+    </div>
   </div>
 
   <!-- ADDRESS -->
@@ -377,8 +425,14 @@
   </div>
 
   <!-- ITEMS -->
-  <h5 class="section-title">Order Items</h5>
-
+  <div style="display: flex;justify-content: space-between;">
+    <h5 class="section-title">Order Items</h5>
+    <button id="downloadInvoice" class="btn-pay" data-orderid="{{order._id}}" data-orderedid="{{order.orderId}}"
+      data-customername="{{order.address.name}}">
+      <i class="bi bi-credit-card"></i>
+      Pay
+    </button>
+  </div>
   <div class="item-box">
     {{#each order.items}}
     <div class="user-item-row">
@@ -397,10 +451,6 @@
         </div>
 
         <div class="user-item-meta">Qty {{this.quantity}}</div>
-
-        <!-- <span class="badge-status badge-{{this.fulfillmentStatus.status}}">
-          {{this.fulfillmentStatus.status}}
-        </span> -->
 
         <div class="order-progress
   {{#if this.cancel.approvedAt}}is-cancelled{{/if}}
@@ -520,10 +570,16 @@
           Return Requested
         </button>
         {{else if (eq this.fulfillmentStatus.status "delivered")}}
+        {{#if this.carId}}
+        <button class="item-action-btn return" disabled>
+          No Return
+        </button>
+        {{else}}
         <button class="item-action-btn return" data-orderid="{{../order._id}}" data-itemid="{{this._id}}"
           data-bs-toggle="modal" data-bs-target="#returnModal">
           Return
         </button>
+        {{/if}}
         {{else if this.cancel.approvedAt}}
         <button class="item-action-btn cancel" disabled>
           Cancelled
@@ -534,7 +590,7 @@
         </button>
         {{else if this.cancel.requested}}
         <button class="item-action-btn cancel" disabled>
-          Cancel Rejected
+          Cancel Requested
         </button>
         {{else if (eq this.fulfillmentStatus.status "out_for_delivery")}}
         <button class="item-action-btn cancel" disabled>

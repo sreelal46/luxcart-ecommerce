@@ -280,48 +280,86 @@ document.addEventListener("DOMContentLoaded", () => {
 
     if (types.length === 0) {
       tbody.innerHTML = `
-        <tr>
-          <td colspan="5" class="text-center text-muted py-4">No Types Found</td>
-        </tr>
-      `;
+      <tr>
+        <td colspan="5" class="text-center text-muted py-4">
+          No Types Found
+        </td>
+      </tr>
+    `;
       return;
     }
 
     tbody.innerHTML = types
-      .map((t, index) => {
-        return `
-        <tr>
-          <td>${index + 1}</td>
-          <td>${t.name}</td>
-          <td>${t.description || "-"}</td>
-          <td class="${t.isListed ? "text-success" : "text-danger"}">${
-          t.isListed ? "Listed" : "Unlisted"
-        }</td>
+      .map(
+        (t, index) => `
+      <tr>
+        <td class="fw-semibold text-muted">${index + 1}</td>
 
-          <td>
-            <button class="btn btn-sm btn-outline-primary me-2"
-              data-bs-toggle="modal" data-bs-target="#editTypeModal"
-              data-id="${t._id}" data-name="${t.name}" data-description="${
-          t.description
-        }">
-              <i class="bi bi-pencil-fill"></i>
-            </button>
+        <td>
+          <div class="fw-semibold text-dark">${t.name}</div>
+        </td>
 
-            <button class="btn btn-sm ${
-              t.isListed ? "btn-outline-warning" : "btn-outline-success"
-            }"
-              data-bs-toggle="modal" data-bs-target="#deleteTypeModal"
-              data-id="${t._id}" data-name="${t.name}">
-              <i class="bi ${
-                t.isListed ? "bi-eye-slash-fill" : "bi-eye-fill"
-              }"></i>
-            </button>
-          </td>
-        </tr>
-      `;
-      })
+        <td class="text-muted">
+          ${t.description || "-"}
+        </td>
+
+        <td>
+          ${
+            t.isListed
+              ? `<span class="badge bg-success-subtle text-success fw-semibold">Listed</span>`
+              : `<span class="badge bg-danger-subtle text-danger fw-semibold">Unlisted</span>`
+          }
+        </td>
+
+        <td class="text-center">
+          <div class="d-flex justify-content-center align-items-center gap-2">
+
+            <!-- Edit -->
+            <div data-bs-toggle="tooltip" title="Edit type">
+              <button
+                class="btn btn-sm btn-outline-success"
+                data-bs-toggle="modal"
+                data-bs-target="#editTypeModal"
+                data-id="${t._id}"
+                data-name="${t.name}"
+                data-description="${t.description || ""}">
+                <i class="bi bi-pencil"></i>
+              </button>
+            </div>
+
+            <!-- List / Unlist -->
+            <div
+              data-bs-toggle="tooltip"
+              title="${t.isListed ? "Unlist type" : "List type"}">
+              <button
+                class="btn btn-sm ${
+                  t.isListed ? "btn-outline-warning" : "btn-outline-success"
+                }"
+                data-bs-toggle="modal"
+                data-bs-target="#deleteTypeModal"
+                data-id="${t._id}"
+                data-name="${t.name}">
+                <i class="bi ${t.isListed ? "bi-eye-slash" : "bi-eye"}"></i>
+              </button>
+            </div>
+
+          </div>
+        </td>
+      </tr>
+    `
+      )
       .join("");
+
+    initTooltips(); // REQUIRED after DOM update
   }
+
+  function initTooltips() {
+    document.querySelectorAll('[data-bs-toggle="tooltip"]').forEach((el) => {
+      new bootstrap.Tooltip(el);
+    });
+  }
+
+  initTooltips();
 
   function renderPagination(currentPage, totalPages) {
     if (!paginationSection) return;

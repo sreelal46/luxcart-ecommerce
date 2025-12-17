@@ -28,6 +28,7 @@ const {
   loadViewAccessories,
   loadEditAccessories,
   usersManagement,
+  usersManagementDetail,
 } = require("../controllers/admin/pageLoad.controller");
 const {
   loadOrderManagement,
@@ -44,7 +45,6 @@ const {
   PasswordChanging,
   resendOTP,
 } = require("../controllers/admin/adminAuth.controller");
-
 //user controller
 const { blockOrUnblockUser } = require("../controllers/admin/user.controller");
 
@@ -322,13 +322,9 @@ route.get("/coupons-management", (req, res) => {
 
 //view all user
 route.get("/users-management", checkSession, usersManagement);
-
+route.get("/users-management/user-details/:userId", usersManagementDetail);
 //block user
 route.patch("/users-management/block-unblock-user/:id", blockOrUnblockUser);
-
-route.get("/users-management/user-details", (req, res) => {
-  res.render("admin/userDetails");
-});
 
 route.get("/settings", (req, res) => {
   res.render("admin/settings");

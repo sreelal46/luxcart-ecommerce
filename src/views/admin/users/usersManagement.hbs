@@ -1,3 +1,34 @@
+<style>
+  .admin-table tbody tr {
+    height: 84px;
+  }
+
+  .admin-table th,
+  .admin-table td {
+    padding: 16px 18px;
+    vertical-align: middle;
+  }
+
+  .admin-table .badge {
+    padding: 6px 12px;
+    font-size: 12px;
+    font-weight: 600;
+  }
+
+  .tooltip-inner {
+    background-color: #000;
+    color: #fff;
+    padding: 6px 12px;
+    border-radius: 8px;
+    font-weight: 500;
+    box-shadow: 0 6px 16px rgba(0, 0, 0, 0.25);
+  }
+
+  .tooltip.bs-tooltip-top .tooltip-arrow::before {
+    border-top-color: #000;
+  }
+</style>
+
 <div class="container py-5">
   <!-- Header -->
   <div class="d-flex justify-content-between align-items-center mb-4">
@@ -13,61 +44,99 @@
   </div>
 
   <!-- Users Table Card -->
-  <div class="card shadow-sm rounded-4 p-4">
-    <div class="table-responsive">
-      <table class="table table-hover align-middle text-center">
+  <div class="card shadow-sm mb-5 border-0">
+    <div class="card-body table-responsive p-0">
+
+      <table class="table table-hover align-middle mb-0 admin-table">
         <thead class="table-light">
           <tr>
             <th>#</th>
             <th>User</th>
             <th>Status</th>
             <th>Total Orders</th>
-            <th>Action</th>
+            <th class="text-center">Actions</th>
           </tr>
         </thead>
+
         <tbody id="usersTableBody">
           {{#each users}}
           <tr>
-            <td>{{inc @index}}</td>
-            <td class="d-flex align-items-center">
-              <img src="{{this.avatarUrl}}" class="rounded-circle me-2" alt="profile"
-                style="width:36px;height:36px;object-fit:cover;">
-              <div class="text-start">
-                <div class="fw-bold">{{this.name}}</div>
-                <small class="text-muted">{{this.email}}</small>
+            <!-- # -->
+            <td class="fw-semibold text-muted">
+              {{inc @index}}
+            </td>
+
+            <!-- User -->
+            <td>
+              <div class="d-flex align-items-center gap-2">
+                <img src="{{this.profileImage_url}}" class="rounded-circle" alt="profile"
+                  style="width:36px;height:36px;object-fit:cover;">
+                <div>
+                  <div class="fw-semibold text-dark">{{this.name}}</div>
+                  <div class="small text-muted">{{this.email}}</div>
+                </div>
               </div>
             </td>
-            {{#if this.isBlocked}}
-            <td><span class="badge bg-danger">Blocked</span></td>
-            {{else}}
-            <td><span class="badge bg-success">Active</span></td>
-            {{/if}}
-            <td>{{this.orderCount}}</td>
+
+            <!-- Status -->
             <td>
-              <a href="/admin/users-management/user-details/{{this._id}}" style="text-decoration: none;">
-                <button class="btn btn-sm btn-info rounded-pill me-1"><i class="bi bi-eye-fill"></i> View</button>
-              </a>
               {{#if this.isBlocked}}
-              <button class="btn btn-sm btn-warning rounded-pill" data-bs-toggle="modal"
-                data-bs-target="#blockUserModal" data-id="{{this._id}}" data-user="{{this.name}}"
-                data-action="unblock">Unblock</button>
+              <span class="badge bg-danger-subtle text-danger fw-semibold">
+                Blocked
+              </span>
               {{else}}
-              <button class="btn btn-sm btn-warning rounded-pill" data-bs-toggle="modal"
-                data-bs-target="#blockUserModal" data-id="{{this._id}}" data-user="{{this.name}}"
-                data-action="block">Block</button>
+              <span class="badge bg-success-subtle text-success fw-semibold">
+                Active
+              </span>
               {{/if}}
+            </td>
+
+            <!-- Orders -->
+            <td class="text-muted">
+              {{this.orderCount}}
+            </td>
+
+            <!-- Actions -->
+            <td class="text-center">
+              <div class="d-flex justify-content-center align-items-center gap-2">
+
+                <!-- View -->
+                <div data-bs-toggle="tooltip" title="View user">
+                  <a href="/admin/users-management/user-details/{{this._id}}" class="btn btn-sm btn-outline-primary">
+                    <i class="bi bi-eye"></i>
+                  </a>
+                </div>
+
+                <!-- Block / Unblock -->
+                <div data-bs-toggle="tooltip" title="{{#if this.isBlocked}}Unblock user{{else}}Block user{{/if}}">
+                  <button class="btn btn-sm {{#if this.isBlocked}}btn-outline-success{{else}}btn-outline-warning{{/if}}"
+                    data-bs-toggle="modal" data-bs-target="#blockUserModal" data-id="{{this._id}}"
+                    data-user="{{this.name}}" data-action="{{#if this.isBlocked}}unblock{{else}}block{{/if}}">
+                    <i class="bi {{#if this.isBlocked}}bi-unlock{{else}}bi-lock{{/if}}"></i>
+                  </button>
+                </div>
+
+              </div>
+            </td>
+
+          </tr>
+          {{else}}
+          <tr>
+            <td colspan="5" class="text-center text-muted py-4">
+              No users found
             </td>
           </tr>
           {{/each}}
         </tbody>
       </table>
+
     </div>
-
-    <nav class="mt-3">
-      <ul class="pagination justify-content-center" id="usersPagination"></ul>
-    </nav>
-
   </div>
+
+  <nav class="mt-4">
+    <ul class="pagination justify-content-center" id="usersPagination"></ul>
+  </nav>
+
 
   <!-- Filter Modal -->
   <div class="modal fade" id="filterUserModal" tabindex="-1" aria-labelledby="filterUserModalLabel" aria-hidden="true">
@@ -119,7 +188,7 @@
 
   <!-- Scripts -->
 
-  <script src="/js/admin//users/usersManagement.js"></script>
+  <script src="/js/admin/users/usersManagement.js"></script>
 
 
   <!-- <script>

@@ -18,3 +18,74 @@
   background-color: #0d6efd;
   color: white;
 }
+/* Admin Table Styling */
+.admin-table th {
+  font-size: 13px;
+  text-transform: uppercase;
+  letter-spacing: 0.03em;
+  color: #6c757d;
+  border-bottom: 1px solid #dee2e6;
+}
+
+.admin-table td {
+  padding: 14px 12px;
+  vertical-align: middle;
+}
+
+.admin-table tbody tr {
+  border-bottom: 1px solid #f1f3f5;
+}
+
+.admin-table tbody tr:hover {
+  background-color: #f8f9fb;
+}
+
+/* Buttons */
+.admin-table .btn {
+  width: 34px;
+  height: 34px;
+  padding: 0;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+}
+
+/* Switch */
+.form-switch .form-check-input {
+  cursor: pointer;
+}
+
+/* Status Badges */
+.badge {
+  font-size: 12px;
+}
+
+/* Tooltip base */
+.tooltip {
+  font-size: 13px;
+}
+
+/* Tooltip bubble */
+.tooltip-inner {
+  background-color: #000;
+  color: #fff;
+  padding: 6px 12px;
+  border-radius: 8px;
+  font-weight: 500;
+  line-height: 1.2;
+  box-shadow: 0 6px 16px rgba(0, 0, 0, 0.25);
+}
+
+/* Tooltip arrows */
+.tooltip.bs-tooltip-top .tooltip-arrow::before {
+  border-top-color: #000;
+}
+.tooltip.bs-tooltip-bottom .tooltip-arrow::before {
+  border-bottom-color: #000;
+}
+.tooltip.bs-tooltip-start .tooltip-arrow::before {
+  border-left-color: #000;
+}
+.tooltip.bs-tooltip-end .tooltip-arrow::before {
+  border-right-color: #000;
+}

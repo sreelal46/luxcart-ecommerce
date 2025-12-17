@@ -301,7 +301,17 @@
 
                 <div>
                   <div class="fw-semibold">
-                    {{#if this.carId}}{{this.carId.name}}{{else}}{{this.accessoryId.name}}{{/if}}
+                    {{#if this.carId}}{{this.carId.name}}{{else}}{{this.accessoryId.name}}{{/if}}{{#if
+                    this.cancel.requested}}
+                    <span class="text-danger">
+                      Cancel requested
+                    </span>
+                    {{/if}}
+                    {{#if this.return.requested}}
+                    <span class="text-danger">
+                      Return requested
+                    </span>
+                    {{/if}}
                   </div>
                   <small class="text-muted">
                     Qty {{this.quantity}} • ₹ {{formatPrice this.price}}
@@ -323,8 +333,8 @@
                 </div>
 
                 <div class="status-action">
-                  {{#if this.cancel.requested}}
-                  {{else if this.return.requested}}
+                  {{#if this.cancel.approvedAt}}
+                  {{else if this.return.approvedAt}}
                   {{else}}
                   <select class="form-select form-select-sm item-status-select" data-orderid="{{../order._id}}"
                     data-itemid="{{this._id}}">

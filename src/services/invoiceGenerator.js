@@ -1,4 +1,4 @@
-// generateInvoice.js - Enhanced with Return Items Table
+// generateInvoice.js - Enhanced with Return Items Table (Fixed - No Blank Space)
 const PDFDocument = require("pdfkit");
 const fs = require("fs");
 const path = require("path");
@@ -275,13 +275,29 @@ function generateInvoice(order, outputPath, options = {}) {
     .text(companyInfo.city, 305, doc.y + 3)
     .text(`GSTIN: ${companyInfo.gstin}`, 305, doc.y + 3);
 
-  currentY = Math.max(leftY, doc.y) + 20;
+  // FIXED: Calculate the correct currentY based on both columns
+  currentY = Math.max(leftY, doc.y) + 15; // Reduced from 20 to 15
+
+  // ========== FILTER ITEMS BY STATUS ==========
+  const activeItems = order.items.filter((item) => {
+    const status = (item.status || "").toUpperCase().trim();
+    return status !== "CANCELLED" && status !== "RETURNED";
+  });
+
+  const cancelledItems = order.items.filter((item) => {
+    const status = (item.status || "").toUpperCase().trim();
+    return status === "CANCELLED";
+  });
+
+  const returnedItems = order.items.filter((item) => {
+    const status = (item.status || "").toUpperCase().trim();
+    return status === "RETURNED";
+  });
+
+  // Track if we've rendered any section yet
+  let hasRenderedAnySection = false;
 
   // ========== ACTIVE ORDER ITEMS TABLE ==========
-  const activeItems = order.items.filter(
-    (item) => item.status !== "CANCELLED" && item.status !== "RETURNED"
-  );
-
   if (activeItems.length > 0) {
     doc
       .fontSize(11)
@@ -298,15 +314,16 @@ function generateInvoice(order, outputPath, options = {}) {
       pageWidth,
       false
     );
-    currentY += 10;
+    hasRenderedAnySection = true;
   }
 
   // ========== CANCELLED ITEMS TABLE ==========
-  const cancelledItems = order.items.filter(
-    (item) => item.status === "CANCELLED"
-  );
-
   if (cancelledItems.length > 0) {
+    // Add spacing only if we already rendered a section
+    if (hasRenderedAnySection) {
+      currentY += 15;
+    }
+
     // Check if we need a new page
     if (currentY > 650) {
       doc.addPage();
@@ -329,15 +346,16 @@ function generateInvoice(order, outputPath, options = {}) {
       true,
       "CANCELLED"
     );
-    currentY += 10;
+    hasRenderedAnySection = true;
   }
 
   // ========== RETURNED ITEMS TABLE ==========
-  const returnedItems = order.items.filter(
-    (item) => item.status === "RETURNED"
-  );
-
   if (returnedItems.length > 0) {
+    // Add spacing only if we already rendered a section
+    if (hasRenderedAnySection) {
+      currentY += 15;
+    }
+
     // Check if we need a new page
     if (currentY > 650) {
       doc.addPage();
@@ -360,11 +378,11 @@ function generateInvoice(order, outputPath, options = {}) {
       true,
       "RETURNED"
     );
-    currentY += 10;
+    hasRenderedAnySection = true;
   }
 
   // ========== PAYMENT SUMMARY ==========
-  currentY += 10;
+  currentY += 10; // Small gap before payment summary
 
   // Check if we need a new page for summary
   if (currentY > 600) {
@@ -550,8 +568,9 @@ function generateInvoice(order, outputPath, options = {}) {
   const terms = options.terms || [
     "Payment is due within 30 days of invoice date.",
     "Please include invoice number on your payment.",
-    "Refunds for cancelled items will be processed within 5-7 business days.",
+    "Refunds for cancelled items will be processed within 5–7 business days.",
     "Returns must be initiated within 7 days of delivery.",
+    "Cars once sold are non-returnable and non-refundable.",
     "Late payments may incur additional charges.",
   ];
 
@@ -689,7 +708,7 @@ function renderItemsTable(
     const price = item.price || 0;
     const taxAmount = item.tax || 0;
     const total = item.total || 0;
-    const status = item.status || "ACTIVE";
+    const status = (item.status || "").toUpperCase().trim();
     const refundAmount = item.refundAmount || 0;
     const advanceAmount = item.advanceAmount || 0;
 
@@ -821,7 +840,8 @@ function renderItemsTable(
     .lineWidth(0.5)
     .stroke();
 
-  return currentY + 10;
+  // Return currentY WITHOUT adding extra spacing - let the caller control spacing
+  return currentY;
 }
 
 module.exports = generateInvoice;

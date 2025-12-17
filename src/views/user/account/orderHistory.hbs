@@ -1,466 +1,190 @@
 <style>
-  .main-card {
-    background: var(--card);
-    padding: 20px;
-    border-radius: 8px;
+  /* =========================
+     ORDER HISTORY CARD
+  ========================= */
+  .order-card-front {
+    margin-bottom: 18px;
+    background: #fff;
+    border-radius: 18px;
+    padding: 22px 26px;
+    box-shadow: 0 10px 28px rgba(0, 0, 0, 0.08);
   }
 
-  .order-card {
-    background: transparent;
-    padding: 0;
-    border-radius: 6px;
-  }
-
-  .order-row {
-    background: #fbfbfb;
-    padding: 16px;
-    border-radius: 6px;
-    margin-bottom: 16px;
-    border: 1px solid #eee;
-  }
-
-  .status-pill {
-    display: inline-block;
-    padding: 6px 12px;
-    border-radius: 20px;
-    font-size: 13px;
-  }
-
-  .status-delivered {
-    background: #e8fbef;
-    color: #0a8a3d;
-  }
-
-  .status-processing {
-    background: #fff7df;
-    color: #b78600;
-  }
-
+  /* =========================
+     GRID LAYOUT
+  ========================= */
   .order-row-header {
-    display: flex;
+    display: grid;
+    grid-template-columns: 140px 1.2fr 1fr 1fr 140px;
     align-items: center;
-    justify-content: space-between;
-    gap: 12px;
+    gap: 24px;
   }
 
-  .order-meta {
-    display: flex;
-    gap: 20px;
-    align-items: center;
+  /* =========================
+     IMAGE STACK
+  ========================= */
+  .order-image-stack {
+    position: relative;
+    width: 110px;
+    height: 90px;
+  }
+
+  .order-image-stack img {
+    position: absolute;
+    width: 90px;
+    height: 90px;
+    object-fit: cover;
+    border-radius: 14px;
+    background: #fff;
+    border: 1px solid #e6e6e6;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
+  }
+
+  /* FRONT IMAGE */
+  .order-image-stack img:nth-child(1) {
+    z-index: 3;
+    top: 0;
+    left: 0;
+  }
+
+  /* BACK IMAGE (small visible part) */
+  .order-image-stack img:nth-child(2) {
+    z-index: 1;
+    top: 10px;
+    left: 18px;
+    /* controls how much shows */
+    opacity: 0.95;
+  }
+
+  /* HIDE EXTRA IMAGES */
+  .order-image-stack img:nth-child(n+3) {
+    display: none;
+  }
+
+  /* =========================
+     TEXT STYLES
+  ========================= */
+  .label {
+    font-size: 12px;
+    color: #8b8f97;
+    margin-bottom: 4px;
+  }
+
+  .value {
+    font-size: 15px;
+    font-weight: 600;
+    color: #111;
   }
 
   .order-total {
     text-align: right;
-    min-width: 120px;
   }
 
-  .order-status {
-    min-width: 140px;
+  .order-action {
     text-align: right;
   }
 
-  .order-items {
-    display: flex;
-    align-items: center;
-    gap: 16px;
-    margin-top: 12px;
+  .order-action .btn {
+    padding: 8px 16px;
+    border-radius: 10px;
+    font-size: 14px;
   }
 
-  .order-item-image {
-    width: 240px;
-    height: 100px;
-    object-fit: cover;
-    border-radius: 6px;
-  }
-
-  .order-actions {
-    display: flex;
-    gap: 8px;
-  }
-
-  .order-actions .btn {
-    white-space: nowrap;
-  }
-
-  @media(max-width:575px) {
-    .order-row {
-      padding: 12px;
-      font-size: 14px;
-    }
-
+  /* =========================
+     MOBILE VIEW
+  ========================= */
+  @media (max-width: 768px) {
     .order-row-header {
-      flex-direction: column;
-      align-items: flex-start;
-      gap: 8px;
+      grid-template-columns: 1fr;
+      gap: 14px;
     }
 
-    .order-items {
-      flex-direction: column;
-      gap: 12px;
-    }
-
-    .order-item-image {
+    .order-image-stack {
       width: 100%;
-      height: 180px;
+      height: 160px;
     }
 
-    .order-actions .btn {
-      width: 100%;
-      display: block;
+    .order-image-stack img {
+      width: 140px;
+      height: 140px;
     }
 
     .order-total,
-    .order-status {
-      align-self: flex-start;
+    .order-action {
+      text-align: left;
     }
   }
 </style>
 
 <section id="orders" class="main-card">
-  <h5>Order History</h5>
-
-
-  <!-- {{!-- TOP ROW --}}
-  <div class="order-row-header">
-      <div class="order-meta">
-
-        <div>
-
-          <div style="font-size:13px;color:var(--muted)">Order ID</div>
-          <div style="font-weight:700">{{this.orderId}}</div>
-        </div>
-
-        <div>
-          <div style="font-size:13px;color:var(--muted)">Date</div>
-          <div>{{formattedDate this.createdAt}}</div>
-        </div>
-      </div>
-
-      <div class="order-total">
-        <div style="font-size:13px;color:var(--muted)">Total</div>
-        <div style="font-weight:700">₹ {{formatPrice this.totalAmount}}</div>
-      </div>
-
-      <div class="order-status">
-        <div style="font-size:13px;color:var(--muted)">Status</div>
-        <div class="status-pill status-delivered">{{this.orderStatus}}</div>
-      </div>
-    </div> -->
-
-  {{!-- LOOP ALL ORDERS --}}
+  <h5 class="mb-3">Order History</h5>
 
   {{#each orders}}
-  {{#each this.items}}
+  <div class="order-card-front">
 
-  <div class="order-row mt-3">
-    <div class="order-items d-flex justify-content-between align-items-start">
+    <div class="order-row-header">
 
-      <!-- LEFT: IMAGE + DETAILS -->
-      <div class="d-flex align-items-start gap-3">
-
+      <!-- IMAGE STACK -->
+      <div class="order-image-stack">
+        {{#each this.items}}
         {{#if this.carId}}
-        <img class="order-item-image" src="{{this.variantId.image_url.[0]}}" alt="car">
+        <img src="{{this.variantId.image_url.[0]}}" alt="Product">
         {{else}}
-        <img class="order-item-image" src="{{this.accessoryId.images.[0]}}" alt="accessory">
+        <img src="{{this.accessoryId.images.[0]}}" alt="Product">
         {{/if}}
-
-        <div class="flex-grow-1">
-          <div class="fw-semibold">
-            {{#if this.carId}}
-            {{this.carId.name}}
-            {{else}}
-            {{this.accessoryId.name}}
-            {{/if}}
-          </div>
-
-          <div class="text-muted mt-1" style="font-size:13px;">
-            {{#if this.carId}}
-            Color: {{this.variantId.color}}<br>
-            {{else}}
-            Material : {{this.accessoryId.material}}<br>
-            {{/if}}
-            Quantity: {{this.quantity}}
-          </div>
-        </div>
+        {{/each}}
       </div>
 
-      <!-- RIGHT: ACTIONS -->
-      <div class="order-actions text-end">
-        <a href="/account/orders/order-details/{{../_id}}/{{this._id}}" class="btn btn-outline-dark btn-sm mb-1">
+      <!-- ORDER ID -->
+      <div>
+        <div class="label">Order ID</div>
+        <div class="value">{{this.orderId}}</div>
+      </div>
+
+      <!-- DATE -->
+      <div>
+        <div class="label">Date</div>
+        <div class="value">{{formattedDate this.createdAt}}</div>
+      </div>
+
+      <!-- TOTAL / REFUND -->
+      <div class="order-total">
+        {{#if this.totalRefundAmount}}
+        <div class="label">Refund Total</div>
+        <div class="value">₹ {{formatPrice this.totalRefundAmount}}</div>
+        {{else}}
+        <div class="label">Total</div>
+        <div class="value">₹ {{formatPrice this.totalAmount}}</div>
+        {{/if}}
+      </div>
+
+      <!-- ACTION -->
+      <div class="order-action">
+        <a href="/account/orders/order-details/{{this._id}}" class="btn btn-outline-dark btn-sm">
           View Details
         </a>
-
-        {{#if (eqTwo this.orderStatus "return")}}
-        <button id="changingButtonReturn" class="btn btn-warning btn-sm returnBtn" data-orderid="{{../_id}}"
-          data-itemid="{{this._id}}" data-bs-toggle="modal" data-bs-target="#returnModal">
-          <i class="bi bi-bag-plus"></i> Return
-        </button>
-        {{else}}
-        <button id="changingButton" class="btn btn-danger btn-sm cancelBtn" data-orderid="{{../_id}}"
-          data-itemid="{{this._id}}" data-bs-toggle="modal" data-bs-target="#cancelModal">
-          Cancel Order
-        </button>
-        {{/if}}
       </div>
 
     </div>
+
   </div>
-
   {{/each}}
-  {{/each}}
-
-
 </section>
 
-<div class="modal fade" id="returnModal" tabindex="-1" aria-hidden="true">
-  <div class="modal-dialog modal-lg modal-dialog-centered">
-    <div class="modal-content">
-      <div class="modal-body">
-        <h5>Product Return</h5>
-
-        <form id="returnForm" class="mt-3">
-          <input type="hidden" name="request" value="return">
-
-          <div class="mb-3">
-            <label class="form-label">Subject</label>
-            <input class="form-control" name="subject" placeholder="subject">
-            <small class="text-danger error-subject d-none">Subject is required</small>
-          </div>
-
-          <div class="mb-3">
-            <label class="form-label">Message</label>
-            <textarea class="form-control" rows="6" name="message"></textarea>
-            <small class="text-danger error-message d-none">Message is required</small>
-          </div>
-
-          <div class="d-flex justify-content-end">
-            <button type="submit" class="btn btn-dark">
-              <i class="bi bi-send"></i> Request
-            </button>
-          </div>
-        </form>
-
-      </div>
-    </div>
-  </div>
-</div>
-
-<!-- cancel order -->
-<div class="modal fade" id="cancelModal" tabindex="-1" aria-hidden="true">
-  <div class="modal-dialog modal-lg modal-dialog-centered">
-    <div class="modal-content">
-      <div class="modal-body">
-        <h5>Product Cancel</h5>
-
-        <form id="cancelForm" class="mt-3">
-          <input type="hidden" name="request" value="cancel">
-
-          <div class="mb-3">
-            <label class="form-label">Subject</label>
-            <input class="form-control" name="subject">
-            <small class="text-danger error-subject d-none">Subject is required</small>
-          </div>
-
-          <div class="mb-3">
-            <label class="form-label">Message</label>
-            <textarea class="form-control" rows="6" name="message"></textarea>
-            <small class="text-danger error-message d-none">Message is required</small>
-          </div>
-
-          <div class="d-flex justify-content-end">
-            <button type="submit" class="btn btn-dark">
-              <i class="bi bi-send"></i> Request
-            </button>
-          </div>
-        </form>
-
-      </div>
-    </div>
-  </div>
-</div>
-
-
-<!-- Success Modal -->
-<div class="modal fade" id="successModal" tabindex="-1" aria-hidden="true">
-  <div class="modal-dialog modal-sm modal-dialog-centered">
-    <div class="modal-content text-center p-3">
-      <h5 class="mb-2">Request Sent</h5>
-      <p class="text-muted mb-2" id="responsMsg"></p>
-      <i class="bi bi-check-circle-fill text-success" style="font-size:32px;"></i>
-    </div>
-  </div>
-</div>
 
 <script>
-  let orderId = null;
-  let itemId = null;
-
   document.addEventListener("DOMContentLoaded", () => {
+    document.querySelectorAll(".order-image-stack").forEach(stack => {
+      const images = stack.querySelectorAll("img");
 
-    // ========== SET IDS WHEN BUTTON CLICKED ==========
-    document.querySelectorAll(".cancelBtn").forEach(btn => {
-      btn.addEventListener("click", () => {
-        orderId = btn.dataset.orderid;
-        itemId = btn.dataset.itemid;
-      });
-    });
+      if (images.length > 1) {
+        // pick random image index
+        const randomIndex = Math.floor(Math.random() * images.length);
 
-    document.querySelectorAll(".returnBtn").forEach(btn => {
-      btn.addEventListener("click", () => {
-        orderId = btn.dataset.orderid;
-        itemId = btn.dataset.itemid;
-      });
-    });
-
-
-    // ========== VALIDATION ==========
-    function validateForm(form) {
-      let valid = true;
-
-      const subject = form.querySelector('input[name="subject"]');
-      const message = form.querySelector('textarea[name="message"]');
-
-      const subjectError = form.querySelector(".error-subject");
-      const messageError = form.querySelector(".error-message");
-
-      if (!subject.value.trim()) {
-        subject.classList.add("is-invalid");
-        subjectError.classList.remove("d-none");
-        valid = false;
-      } else {
-        subject.classList.remove("is-invalid");
-        subjectError.classList.add("d-none");
-      }
-
-      if (!message.value.trim()) {
-        message.classList.add("is-invalid");
-        messageError.classList.remove("d-none");
-        valid = false;
-      } else {
-        message.classList.remove("is-invalid");
-        messageError.classList.add("d-none");
-      }
-
-      return valid;
-    }
-
-    const responsMsg = document.getElementById("responsMsg")
-    const changingButton = document.getElementById("changingButton")
-    const changingButtonReturn = document.getElementById("changingButton")
-    // ========== SHOW SUCCESS MODAL ==========
-    function showSuccessModal(msg = "Processing") {
-      const successModal = new bootstrap.Modal(document.getElementById("successModal"));
-      responsMsg.textContent = msg
-      successModal.show();
-
-      setTimeout(() => {
-        successModal.hide();
-      }, 2000); // auto-close in 2 sec
-    }
-
-
-    // ========== CANCEL FORM SUBMIT ==========
-    document.getElementById("cancelForm").addEventListener("submit", async function (e) {
-      e.preventDefault();
-      if (!validateForm(this)) return;
-
-      const data = Object.fromEntries(new FormData(this).entries());
-      try {
-        const res = await axios.post(`/account/orders/order-details/cancel-request/${orderId}/${itemId}`, data)
-        if (res.data.success) {
-          bootstrap.Modal.getInstance(document.getElementById("cancelModal")).hide();
-          this.reset();
-          showSuccessModal("We received your request");
-          /* ---------- SUCCESS UI UPDATE ---------- */
-          changingButton.innerHTML = "Canceled";
-          changingButton.classList.remove("btn-warning");
-          changingButton.classList.add("btn-secondary");
-
-          // Disable button
-          changingButton.disabled = true;
-
-          // Remove modal-related attributes
-          changingButton.removeAttribute("data-bs-toggle");
-          changingButton.removeAttribute("data-bs-target");
-          changingButton.removeAttribute("data-orderid");
-          changingButton.removeAttribute("data-itemid");
-
-          // Optional: prevent any click events
-          changingButton.style.pointerEvents = "none";
-
-          // Close modal manually
-          const modalEl = document.getElementById("returnModal");
-          const modalInstance = bootstrap.Modal.getInstance(modalEl);
-          modalInstance.hide();
-
-        }
-        else {
-          bootstrap.Modal.getInstance(document.getElementById("cancelModal")).hide();
-          this.reset();
-          const msg = res.data.alert || "Somthing went wrong"
-          showSuccessModal(msg);
-        }
-      } catch (error) {
-        console.log("Error from cencel order", error)
-        bootstrap.Modal.getInstance(document.getElementById("cancelModal")).hide();
-        this.reset();
-        const msg = error.response?.data.alert || "Somthing went wrong"
-        showSuccessModal(msg);
-      }
-
-    });
-
-
-    // ========== RETURN FORM SUBMIT ==========
-    document.getElementById("returnForm").addEventListener("submit", async function (e) {
-      e.preventDefault();
-      if (!validateForm(this)) return;
-
-      const data = Object.fromEntries(new FormData(this).entries());
-
-      try {
-        const res = await axios.post(`/account/orders/order-details/return-request/${orderId}/${itemId}`, data)
-        if (res.data.success) {
-          bootstrap.Modal.getInstance(document.getElementById("returnModal")).hide();
-          this.reset();
-          showSuccessModal("We received your request");
-        }
-        else {
-          bootstrap.Modal.getInstance(document.getElementById("cancelModal")).hide();
-          this.reset();
-          const msg = res.data.alert || "Somthing went wrong"
-          showSuccessModal(msg);
-          /* ---------- SUCCESS UI UPDATE ---------- */
-          changingButtonReturn.innerHTML = "Return requested";
-          changingButtonReturn.classList.remove("btn-warning");
-          changingButtonReturn.classList.add("btn-secondary");
-
-          // Disable button
-          changingButtonReturn.disabled = true;
-
-          // Remove modal-related attributes
-          changingButtonReturn.removeAttribute("data-bs-toggle");
-          changingButtonReturn.removeAttribute("data-bs-target");
-          changingButtonReturn.removeAttribute("data-orderid");
-          changingButtonReturn.removeAttribute("data-itemid");
-
-          // Optional: prevent any click events
-          changingButtonReturn.style.pointerEvents = "none";
-
-          // Close modal manually
-          const modalEl = document.getElementById("returnModal");
-          const modalInstance = bootstrap.Modal.getInstance(modalEl);
-          modalInstance.hide();
-        }
-      } catch (error) {
-        console.log("Error from return order", error)
-        bootstrap.Modal.getInstance(document.getElementById("cancelModal")).hide();
-        this.reset();
-        const msg = error.response?.data.alert || "Somthing went wrong"
-        showSuccessModal(msg);
+        // move random image to front
+        const selectedImage = images[randomIndex];
+        stack.insertBefore(selectedImage, images[0]);
       }
     });
-
-
   });
 </script>

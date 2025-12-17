@@ -14,6 +14,35 @@
     padding: 6px 12px;
     border-radius: 20px;
   }
+
+  .admin-table tbody tr {
+    height: 84px;
+  }
+
+  .admin-table th,
+  .admin-table td {
+    padding: 16px 18px;
+    vertical-align: middle;
+  }
+
+  .admin-table .badge {
+    padding: 6px 12px;
+    font-size: 12px;
+    font-weight: 600;
+  }
+
+  .tooltip-inner {
+    background-color: #000;
+    color: #fff;
+    padding: 6px 12px;
+    border-radius: 8px;
+    font-weight: 500;
+    box-shadow: 0 6px 16px rgba(0, 0, 0, 0.25);
+  }
+
+  .tooltip.bs-tooltip-top .tooltip-arrow::before {
+    border-top-color: #000;
+  }
 </style>
 
 <div class="container py-5">
@@ -41,41 +70,43 @@
 
   <!-- Return Requests Table Card -->
   <div class="container py-5">
-    <div class="card shadow rounded-4">
-      <div class="table-responsive p-3">
+    <div class="card shadow-sm mb-5 border-0">
+      <div class="card-body table-responsive p-0">
 
-        <table class="table table-hover align-middle text-center w-100" style="table-layout: fixed;">
-
+        <table class="table table-hover align-middle mb-0 admin-table">
           <thead class="table-light">
             <tr>
-              <th style="width:50px;">#</th>
-              <th style="width:120px;">Order ID</th>
-              <th style="width:150px;">Customer</th>
+              <th>#</th>
+              <th>Order ID</th>
+              <th>Customer</th>
               <th>Product</th>
-              <th style="width:120px;">Date</th>
-              <th style="width:120px;">Amount (₹)</th>
-              <th style="width:120px;">Status</th>
-              <th style="width:200px;">Action</th>
+              <th>Date</th>
+              <th>Amount (₹)</th>
+              <th>Status</th>
+              <th class="text-center">Actions</th>
             </tr>
           </thead>
 
           <tbody>
             {{#each returnedItems}}
             <tr>
+              <td class="fw-semibold text-muted">
+                {{inc @index}}
+              </td>
 
-              <td>{{inc @index}}</td>
-
-              <td class="fw-bold text-primary">
+              <td class="fw-semibold text-muted small">
                 {{this.orderId}}
               </td>
 
-              <td>{{this.user.name}}</td>
+              <td class="fw-semibold text-dark">
+                {{this.user.name}}
+              </td>
 
-              <td class="text-start product-col">
+              <td class="text-muted">
                 {{this.items.productName}}
               </td>
 
-              <td>
+              <td class="text-muted text-nowrap">
                 {{formattedDate this.items.return.requestedAt}}
               </td>
 
@@ -85,42 +116,63 @@
 
               <td>
                 {{#if this.items.return.approvedAt}}
-                <span class="badge bg-success">Approved</span>
+                <span class="badge bg-success-subtle text-success fw-semibold">
+                  Approved
+                </span>
                 {{else if this.items.return.rejectedAt}}
-                <span class="badge bg-danger">Rejected</span>
+                <span class="badge bg-danger-subtle text-danger fw-semibold">
+                  Rejected
+                </span>
                 {{else}}
-                <span class="badge bg-warning text-dark">Requested</span>
+                <span class="badge bg-warning-subtle text-warning fw-semibold">
+                  Requested
+                </span>
                 {{/if}}
               </td>
 
-              <td class="action-col">
-                <div class="d-flex justify-content-center gap-2 flex-wrap">
+              <td class="text-center">
+                <div class="d-flex justify-content-center align-items-center gap-2 flex-wrap">
 
-                  <button class="btn btn-sm btn-info rounded-circle" data-bs-toggle="modal"
-                    data-bs-target="#viewCancelModal" data-reason="{{this.items.return.reason}}"
-                    data-message="{{this.items.return.description}}">
-                    <i class="bi bi-eye-fill"></i>
-                  </button>
+                  <!-- View Return Reason -->
+                  <div data-bs-toggle="tooltip" title="View return reason">
+                    <button class="btn btn-sm btn-outline-primary" data-bs-toggle="modal"
+                      data-bs-target="#viewCancelModal" data-reason="{{this.items.return.reason}}"
+                      data-message="{{this.items.return.description}}">
+                      <i class="bi bi-eye"></i>
+                    </button>
+                  </div>
 
                   {{#unless this.items.return.approvedAt}}
                   {{#unless this.items.return.rejectedAt}}
-                  <button class="btn btn-sm btn-success rounded-pill" data-bs-toggle="modal"
-                    data-bs-target="#approveModal" data-id="{{this.items._id}}" data-orderid="{{this._id}}"
-                    data-orderedid="{{this.orderId}}">
-                    Approve
-                  </button>
 
-                  <button class="btn btn-sm btn-danger rounded-pill" data-bs-toggle="modal"
-                    data-bs-target="#rejectModal" data-id="{{this.items._id}}" data-orderid="{{this._id}}"
-                    data-orderedid="{{this.orderId}}">
-                    Reject
-                  </button>
+                  <!-- Approve -->
+                  <div data-bs-toggle="tooltip" title="Approve return">
+                    <button class="btn btn-sm btn-outline-success" data-bs-toggle="modal" data-bs-target="#approveModal"
+                      data-id="{{this.items._id}}" data-orderid="{{this._id}}" data-orderedid="{{this.orderId}}">
+                      Approve
+                    </button>
+                  </div>
+
+                  <!-- Reject -->
+                  <div data-bs-toggle="tooltip" title="Reject return">
+                    <button class="btn btn-sm btn-outline-danger" data-bs-toggle="modal" data-bs-target="#rejectModal"
+                      data-id="{{this.items._id}}" data-orderid="{{this._id}}" data-orderedid="{{this.orderId}}">
+                      Reject
+                    </button>
+                  </div>
+
                   {{/unless}}
                   {{/unless}}
 
                 </div>
               </td>
 
+            </tr>
+            {{else}}
+            <tr>
+              <td colspan="8" class="text-center text-muted py-4">
+                No return requests found
+              </td>
             </tr>
             {{/each}}
           </tbody>
@@ -129,6 +181,7 @@
 
       </div>
     </div>
+
   </div>
 
 </div>
@@ -239,6 +292,17 @@
   </div>
 </div>
 <script>
+  function initTooltips() {
+    document.querySelectorAll('[data-bs-toggle="tooltip"]').forEach(el => {
+      new bootstrap.Tooltip(el, {
+        placement: 'top',
+        delay: { show: 100, hide: 80 }
+      });
+    });
+  }
+
+  document.addEventListener("DOMContentLoaded", initTooltips);
+
   const viewModal = document.getElementById("viewCancelModal");
 
   viewModal.addEventListener("show.bs.modal", function (event) {

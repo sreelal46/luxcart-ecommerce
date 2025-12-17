@@ -1,3 +1,34 @@
+<style>
+  .admin-table tbody tr {
+    height: 84px;
+  }
+
+  .admin-table th,
+  .admin-table td {
+    padding: 16px 18px;
+    vertical-align: middle;
+  }
+
+  .admin-table .badge {
+    padding: 6px 12px;
+    font-size: 12px;
+    font-weight: 600;
+  }
+
+  .tooltip-inner {
+    background-color: #000;
+    color: #fff;
+    padding: 6px 12px;
+    border-radius: 8px;
+    font-weight: 500;
+    box-shadow: 0 6px 16px rgba(0, 0, 0, 0.25);
+  }
+
+  .tooltip.bs-tooltip-top .tooltip-arrow::before {
+    border-top-color: #000;
+  }
+</style>
+
 <div class="container-fluid px-4 py-4">
   <!-- Header -->
   <div class="d-flex justify-content-between align-items-center mb-4">
@@ -18,47 +49,79 @@
   </div>
 
   <!-- Type Table -->
-  <div class="card shadow-sm">
-    <div class="card-body table-responsive">
-      <table class="table table-hover align-middle">
+  <div class="card shadow-sm mb-5 border-0">
+    <div class="card-body table-responsive p-0">
+
+      <table class="table table-hover align-middle mb-0 admin-table">
         <thead class="table-light">
           <tr>
-            <th>ID</th>
+            <th>#</th>
             <th>Type Name</th>
             <th>Description</th>
-            <th>status</th>
-            <th>Actions</th>
+            <th>Status</th>
+            <th class="text-center">Actions</th>
           </tr>
         </thead>
+
         <tbody id="typeTable">
-          <!-- Sample Data -->
           {{#each types}}
           <tr>
-            <td>{{inc @index}}</td>
-            <td>{{this.name}}</td>
-            <td>{{this.description}}</td>
-            {{#if this.isListed}}
-            <td class="text-success">Listed</td>
-            {{else}}
-            <td class="text-danger">Unlisted</td>
-            {{/if}}
+            <td class="fw-semibold text-muted">{{inc @index}}</td>
+
             <td>
-              <button class="btn btn-sm btn-outline-primary me-2" data-bs-toggle="modal" data-bs-target="#editTypeModal"
-                data-id="{{this._id}}" data-name="{{this.name}}" data-description="{{this.description}}">
-                <i class="bi bi-pencil-fill"></i>
-              </button>
+              <div class="fw-semibold text-dark">{{this.name}}</div>
+            </td>
 
+            <td class="text-muted">
+              {{this.description}}
+            </td>
 
-              <button class="btn btn-sm {{#if this.isListed}}btn-outline-warning{{else}}btn-outline-success{{/if}}"
-                data-bs-toggle="modal" data-bs-target="#deleteTypeModal" data-id="{{this._id}}"
-                data-name="{{this.name}}">
-                <i class="bi {{#if this.isListed}}bi-eye-slash-fill{{else}}bi-eye-fill{{/if}}"></i>
-              </button>
+            <td>
+              {{#if this.isListed}}
+              <span class="badge bg-success-subtle text-success fw-semibold">
+                Listed
+              </span>
+              {{else}}
+              <span class="badge bg-danger-subtle text-danger fw-semibold">
+                Unlisted
+              </span>
+              {{/if}}
+            </td>
+
+            <td class="text-center">
+              <div class="d-flex justify-content-center align-items-center gap-2">
+
+                <!-- Edit -->
+                <div data-bs-toggle="tooltip" title="Edit type">
+                  <button class="btn btn-sm btn-outline-success" data-bs-toggle="modal" data-bs-target="#editTypeModal"
+                    data-id="{{this._id}}" data-name="{{this.name}}" data-description="{{this.description}}">
+                    <i class="bi bi-pencil"></i>
+                  </button>
+                </div>
+
+                <!-- List / Unlist -->
+                <div data-bs-toggle="tooltip" title="{{#if this.isListed}}Unlist type{{else}}List type{{/if}}">
+                  <button class="btn btn-sm {{#if this.isListed}}btn-outline-warning{{else}}btn-outline-success{{/if}}"
+                    data-bs-toggle="modal" data-bs-target="#deleteTypeModal" data-id="{{this._id}}"
+                    data-name="{{this.name}}">
+                    <i class="bi {{#if this.isListed}}bi-eye-slash{{else}}bi-eye{{/if}}"></i>
+                  </button>
+                </div>
+
+              </div>
+            </td>
+          </tr>
+          {{else}}
+          <tr>
+            <td colspan="5" class="text-center text-muted py-4">
+              No Types Found
             </td>
           </tr>
           {{/each}}
         </tbody>
+
       </table>
+
     </div>
   </div>
   <nav class="mt-4" id="typePagination"></nav>

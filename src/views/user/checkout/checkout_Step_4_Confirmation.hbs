@@ -283,9 +283,20 @@
           <div class="success-icon mx-auto">
             <i class="bi bi-check-lg"></i>
           </div>
+
           <h2 class="fw-bold mt-3">Order Confirmed</h2>
-          <p class="text-muted">Thank you! Your order has been successfully placed.</p>
+          <p class="text-muted">
+            Thank you! Your order has been successfully placed.
+          </p>
+
+          <!-- IMPORTANT NOTICE -->
+          <div class="alert alert-warning mt-3 d-inline-block text-start" role="alert">
+            <strong>Important:</strong>
+            Orders containing <b>cars</b> are <b>not eligible for return</b>.
+            Please review the product details carefully before proceeding.
+          </div>
         </div>
+
 
         <hr>
 
@@ -346,6 +357,12 @@
                     {{variantId.color}}
                   </p>
                   {{/if}}
+                  {{#if accessoryId}}
+                  <p class="text-muted small mb-1">
+                    Material:
+                    {{accessoryId.material}}
+                  </p>
+                  {{/if}}
 
                   <p class="text-muted small mb-0">
                     Qty: {{quantity}} × ₹ {{formatPrice price}}
@@ -354,7 +371,13 @@
 
                 <div class="text-end">
                   <p class="mb-0 fw-semibold">
+                    {{#if carId}}
                     ₹ {{formatPrice totalItemAmount}}
+                    {{/if}}
+                    {{#if accessoryId}}
+                    ₹ {{formatPrice totalItemAmount}} (With Tax)
+                    {{/if}}
+
                   </p>
                 </div>
               </div>
@@ -451,7 +474,6 @@
 
 <script>
   document.addEventListener("DOMContentLoaded", () => {
-
     function showMobileAlert(message, notification) {
       const alertBox = document.getElementById("mobileAlert");
 
@@ -509,10 +531,5 @@
         showMobileAlert(msg, "error");
       }
     });
-
-
-
-
-
   });
 </script>

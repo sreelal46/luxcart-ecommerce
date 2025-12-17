@@ -160,6 +160,7 @@ const orderSchema = new Schema(
 
     advanceAmount: { type: Number, default: null },
     remainingAmount: { type: Number, default: null },
+    totalRefundAmount: { type: Number, default: 0 },
     trackingId: { type: String, default: null },
 
     /* INTERNAL NOTES */

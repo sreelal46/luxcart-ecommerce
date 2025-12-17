@@ -156,6 +156,7 @@ async function loadProducts(page = 1, search = state.search) {
   state.search = search;
 
   renderProducts(fullProducts);
+  initTooltips();
   renderPagination(totalPages, page);
 }
 
@@ -178,66 +179,116 @@ function renderProducts(data) {
     const price = isCar ? item.variantIds?.[0]?.price : item.price;
     const stock = isCar ? item.variantIds?.[0]?.stock : item.stock;
 
-    const actions = isCar
-      ? `
-        <a href="/admin/products-management/view-car-product/${
-          item._id
-        }" class="btn btn-sm btn-outline-primary me-2">
-          <i class="bi bi-eye-fill"></i>
-        </a>
-        <a href="/admin/products-management/edit-car-product/${
-          item._id
-        }" class="btn btn-sm btn-outline-success me-2">
-          <i class="bi bi-pencil-fill"></i>
-        </a>
-        <div class="form-check form-switch">
-          <input class="form-check-input toggle-status" data-id="${
-            item._id
-          }" type="checkbox" ${
-          item.isListed ? "checked" : ""
-        } data-bs-toggle="modal" data-bs-target="#confirmListModal">
-        </div>
-      `
-      : `
-        <a href="/admin/products-management/view-accessories-product/${
-          item._id
-        }" class="btn btn-sm btn-outline-primary me-2">
-          <i class="bi bi-eye-fill"></i>
-        </a>
-        <a href="/admin/products-management/edit-accessories-product/${
-          item._id
-        }" class="btn btn-sm btn-outline-success me-2">
-          <i class="bi bi-pencil-fill"></i>
-        </a>
-        <div class="form-check form-switch">
-          <input class="form-check-input toggle-status" data-id="${
-            item._id
-          }" type="checkbox" ${
-          item.isListed ? "checked" : ""
-        } data-bs-toggle="modal" data-bs-target="#confirmListModal">
-        </div>
-      `;
+    const viewLink = isCar
+      ? `/admin/products-management/view-car-product/${item._id}`
+      : `/admin/products-management/view-accessories-product/${item._id}`;
+
+    const editLink = isCar
+      ? `/admin/products-management/edit-car-product/${item._id}`
+      : `/admin/products-management/edit-accessories-product/${item._id}`;
 
     tbody.insertAdjacentHTML(
       "beforeend",
       `
       <tr>
-        <td>${index + 1}</td>
-        <td>${item.name}</td>
-        <td>${item.category_id?.name || "-"}</td>
-        <td>${item.brand_id?.name || "-"}</td>
-        <td>${price ?? "-"}</td>
-        <td>${stock ?? "-"}</td>
-        <td><span class="badge bg-success">10% Off</span></td>
-        <td class="${item.isListed ? "text-success" : "text-danger"}">
-          ${item.isListed ? "Listed" : "Unlisted"}
+        <td class="fw-semibold text-muted">${index + 1}</td>
+
+        <td>
+          <div class="fw-semibold text-dark">${item.name}</div>
         </td>
-        <td>${actions}</td>
+
+        <td class="text-muted">${item.category_id?.name || "-"}</td>
+        <td class="text-muted">${item.brand_id?.name || "-"}</td>
+
+        <td class="text-end fw-semibold">
+          ${price != null ? `₹ ${price}` : "-"}
+        </td>
+
+        <td class="text-center">
+          <span class="badge bg-light text-dark border">
+            ${stock != null ? stock : "-"}
+          </span>
+        </td>
+
+        <td>
+          <span class="badge rounded-pill bg-success">
+            10% OFF
+          </span>
+        </td>
+
+        <td>
+          ${
+            item.isListed
+              ? `<span class="badge bg-success-subtle text-success fw-semibold">Listed</span>`
+              : `<span class="badge bg-danger-subtle text-danger fw-semibold">Unlisted</span>`
+          }
+        </td>
+
+        <td class="text-center">
+  <div class="d-flex justify-content-center align-items-center gap-2">
+
+    <!-- Add Offer -->
+    <div
+      data-bs-toggle="tooltip"
+      data-bs-placement="top"
+      title="Add offer">
+      <button
+        class="btn btn-sm btn-outline-warning add-offer-btn"
+        data-productid="{{this._id}}"
+        data-bs-toggle="modal"
+        data-bs-target="#offerModal">
+        <i class="bi bi-percent"></i>
+      </button>
+    </div>
+
+    <!-- Edit -->
+    <div
+      data-bs-toggle="tooltip"
+      data-bs-placement="top"
+      title="Edit product">
+      <a
+        href="/admin/products-management/edit-product/{{this._id}}"
+        class="btn btn-sm btn-outline-success">
+        <i class="bi bi-pencil"></i>
+      </a>
+    </div>
+
+    <!-- List / Unlist -->
+    <div
+      class="form-check form-switch m-0"
+      data-bs-toggle="tooltip"
+      data-bs-placement="top"
+      title="{{#if this.isListed}}Unlist product{{else}}List product{{/if}}">
+      <input
+        class="form-check-input"
+        type="checkbox"
+        data-id="{{this._id}}"
+        {{#if this.isListed}}checked{{/if}}
+        data-bs-toggle="modal"
+        data-bs-target="#confirmListModal">
+    </div>
+
+  </div>
+</td>
+
       </tr>
-    `
+      `
     );
   });
+  initTooltips();
 }
+
+function initTooltips() {
+  document.querySelectorAll('[data-bs-toggle="tooltip"]').forEach((el) => {
+    new bootstrap.Tooltip(el, {
+      placement: "top",
+      trigger: "hover",
+      delay: { show: 100, hide: 80 },
+    });
+  });
+}
+
+document.addEventListener("DOMContentLoaded", initTooltips);
 
 // ---------- PAGINATION ----------
 function renderPagination(totalPages, current) {

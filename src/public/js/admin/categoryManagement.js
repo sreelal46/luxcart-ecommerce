@@ -289,6 +289,7 @@ document.addEventListener("DOMContentLoaded", () => {
 
       if (res.data.success) {
         renderCategories(res.data.result);
+        initTooltips();
         renderPagination(res.data.currentPage, res.data.totalPages);
       }
     } catch (error) {
@@ -302,67 +303,121 @@ document.addEventListener("DOMContentLoaded", () => {
 
   function renderCategories(categories = []) {
     const tbody = document.getElementById("categoryTable");
-    if (!tbody) return console.error("categoryTable element not found");
+    if (!tbody) return;
 
-    if (!Array.isArray(categories)) {
-      console.error("renderCategories expects an array");
-      return;
-    }
-
-    if (categories.length === 0) {
+    if (!Array.isArray(categories) || categories.length === 0) {
       tbody.innerHTML = `
-        <tr>
-          <td colspan="8" class="text-center text-muted py-4">No Categories Found</td>
-        </tr>
-      `;
+      <tr>
+        <td colspan="8" class="text-center text-muted py-4">
+          No Categories Found
+        </td>
+      </tr>
+    `;
       return;
     }
 
     tbody.innerHTML = categories
-      .map((c, index) => {
-        return `
-        <tr>
-          <td>${index + 1}</td>
-          <td>${c.name}</td>
-          <td><span class="badge bg-primary">${c.product}</span></td>
-          <td>${c.description || "-"}</td>
-          <td>total product</td>
-          <td class="${c.isListed ? "text-success" : "text-danger"}">${
-          c.isListed ? "Listed" : "Unlisted"
-        }</td>
-          
-          <td>
-            <button class="btn btn-sm btn-outline-info"
-              data-id="${c._id}" data-name="${c.name}"
-              data-bs-toggle="modal" data-bs-target="#addOfferModal">
-              <i class="bi bi-tags-fill me-1"></i> Add Offer
-            </button>
-          </td>
+      .map(
+        (c, index) => `
+      <tr>
+        <td class="fw-semibold text-muted">${index + 1}</td>
 
-          <td>
-            <button class="btn btn-sm btn-outline-primary me-2"
-              data-bs-toggle="modal" data-bs-target="#editCategoryModal"
-              data-id="${c._id}" data-name="${c.name}" data-description="${
-          c.description
-        }" data-type="${c.product}">
-              <i class="bi bi-pencil-fill"></i>
-            </button>
+        <td><div class="fw-semibold text-dark">${c.name}</div></td>
 
-            <button class="btn btn-sm ${
-              c.isListed ? "btn-outline-warning" : "btn-outline-success"
-            }"
-              data-bs-toggle="modal" data-bs-target="#confirmListModal"
-              data-id="${c._id}" data-status="${c.isListed}">
-              <i class="bi ${
-                c.isListed ? "bi-eye-slash-fill" : "bi-eye-fill"
-              }"></i>
-            </button>
-          </td>
-        </tr>
-      `;
-      })
+        <td>
+          <span class="badge bg-light text-dark border">${c.product}</span>
+        </td>
+
+        <td class="text-muted">${c.description || "-"}</td>
+
+        <td class="text-center">
+          <span class="badge bg-light text-dark border">total product</span>
+        </td>
+
+        <td>
+          <span class="badge rounded-pill bg-success">10% OFF</span>
+        </td>
+
+        <td>
+          ${
+            c.isListed
+              ? `<span class="badge bg-success-subtle text-success fw-semibold">Listed</span>`
+              : `<span class="badge bg-danger-subtle text-danger fw-semibold">Unlisted</span>`
+          }
+        </td>
+
+        <td class="text-center">
+          <div class="d-flex justify-content-center align-items-center gap-2">
+${
+  c.offer
+    ? `                <!-- Remove Offer -->
+                <div data-bs-toggle="tooltip" title="Remove offer">
+                  <button class="btn btn-sm btn-outline-warning add-offer-btn" data-bs-toggle="modal"
+                    data-bs-target="#addOfferModal" data-id="{{this._id}}" data-name="{{this.name}}">
+                    <i class="bi bi-percent"></i>
+                  </button>
+                </div>`
+    : `            <!-- ADD OFFER -->
+            <div data-bs-toggle="tooltip" title="Add offer">
+              <button
+                class="btn btn-sm btn-outline-warning add-offer-btn"
+                data-bs-toggle="modal"
+                data-bs-target="#addOfferModal"
+                data-id="${c._id}"
+                data-name="${c.name}">
+                <i class="bi bi-percent"></i>
+              </button>
+            </div>`
+}
+
+
+
+
+            <!-- EDIT -->
+            <div data-bs-toggle="tooltip" title="Edit category">
+              <button
+                class="btn btn-sm btn-outline-success"
+                data-bs-toggle="modal"
+                data-bs-target="#editCategoryModal"
+                data-id="${c._id}"
+                data-name="${c.name}"
+                data-description="${c.description || ""}"
+                data-type="${c.product}">
+                <i class="bi bi-pencil"></i>
+              </button>
+            </div>
+
+            <!-- LIST / UNLIST -->
+            <div
+              class="form-check form-switch m-0"
+              data-bs-toggle="tooltip"
+              title="${c.isListed ? "Unlist category" : "List category"}">
+              <input
+                class="form-check-input category-toggle-status"
+                type="checkbox"
+                data-id="${c._id}"
+                ${c.isListed ? "checked" : ""}
+                data-bs-toggle="modal"
+                data-bs-target="#confirmListModal">
+            </div>
+
+          </div>
+        </td>
+      </tr>
+    `
+      )
       .join("");
+
+    initTooltips();
   }
+
+  function initTooltips() {
+    document.querySelectorAll('[data-bs-toggle="tooltip"]').forEach((el) => {
+      new bootstrap.Tooltip(el);
+    });
+  }
+
+  initTooltips();
 
   function renderPagination(currentPage, totalPages) {
     if (!paginationSection) return;

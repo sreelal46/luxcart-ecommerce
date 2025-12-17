@@ -30,77 +30,138 @@
   </div>
 
   <!-- All products Table -->
-  <div id="allProductTable" class="card shadow-sm mb-5">
-    <div class="card-body table-responsive">
-      <table class="table table-hover align-middle">
+  <div id="allProductTable" class="card shadow-sm mb-5 border-0">
+    <div class="card-body table-responsive p-0">
+
+      <table class="table table-hover align-middle mb-0 admin-table">
         <thead class="table-light">
           <tr>
-            <th>ID</th>
+            <th>#</th>
             <th>Product</th>
             <th>Category</th>
             <th>Brand</th>
-            <th>Price</th>
-            <th>Stock</th>
+            <th class="text-end">Price</th>
+            <th class="text-center">Stock</th>
             <th>Offer</th>
             <th>Status</th>
-            <th>Action</th>
+            <th class="text-center">Actions</th>
           </tr>
         </thead>
+
         <tbody>
           {{#each fullProducts}}
           <tr>
-            <td>{{inc @index}}</td>
-            <td>{{this.name}}</td>
-            <td>{{this.category_id.name}}</td>
-            <td>{{this.brand_id.name}}</td>
-            {{#if this.engine}}
-            <td>{{this.variantIds.[0].price}}</td>
-            <td>{{this.variantIds.[0].stock}}</td>
-            {{else}}
-            <td>{{this.price}}</td>
-            <td>{{this.stock}}</td>
-            {{/if}}
-            <td><span class="badge bg-success">10% Off</span></td>
-            {{#if this.isListed}}
-            <td class="text-success">Listed</td>
-            {{else}}
-            <td class="text-danger">Unlisted</td>
-            {{/if}}
+            <td class="fw-semibold text-muted">{{inc @index}}</td>
+
             <td>
-              {{#if this.engine}}
-              <a href="/admin/products-management/view-car-product/{{this._id}}"
-                class="btn btn-sm btn-outline-primary me-2">
-                <i class="bi bi-eye-fill"></i>
-              </a>
-              <a href="/admin/products-management/edit-car-product/{{this._id}}"
-                class="btn btn-sm btn-outline-success me-2">
-                <i class="bi bi-pencil-fill"></i>
-              </a>
-              <div class="form-check form-switch">
-                <input class="form-check-input" data-id="{{this._id}}" type="checkbox" checked data-bs-toggle="modal"
-                  data-bs-target="#confirmListModal">
-              </div>
+              <div class="fw-semibold text-dark">{{this.name}}</div>
+            </td>
+
+            <td class="text-muted">{{this.category_id.name}}</td>
+            <td class="text-muted">{{this.brand_id.name}}</td>
+
+            {{#if this.engine}}
+            <td class="text-end fw-semibold">₹ {{this.variantIds.[0].price}}</td>
+            <td class="text-center">
+              <span class="badge bg-light text-dark border">
+                {{this.variantIds.[0].stock}}
+              </span>
+            </td>
+            {{else}}
+            <td class="text-end fw-semibold">₹ {{this.price}}</td>
+            <td class="text-center">
+              <span class="badge bg-light text-dark border">
+                {{this.stock}}
+              </span>
+            </td>
+            {{/if}}
+
+            <td>
+              <span class="badge rounded-pill bg-success">
+                10% OFF
+              </span>
+            </td>
+
+            <td>
+              {{#if this.isListed}}
+              <span class="badge bg-success-subtle text-success fw-semibold">
+                Listed
+              </span>
               {{else}}
-              <a href="/admin/products-management/view-accessories-product/{{this._id}}"
-                class="btn btn-sm btn-outline-primary me-2">
-                <i class="bi bi-eye-fill"></i>
-              </a>
-              <a href="/admin/products-management/edit-accessories-product/{{this._id}}"
-                class="btn btn-sm btn-outline-success me-2">
-                <i class="bi bi-pencil-fill"></i>
-              </a>
-              <div class="form-check form-switch">
-                <input class="form-check-input" data-id="{{this._id}}" type="checkbox" checked data-bs-toggle="modal"
-                  data-bs-target="#confirmListModal">
-              </div>
+              <span class="badge bg-danger-subtle text-danger fw-semibold">
+                Unlisted
+              </span>
               {{/if}}
             </td>
+
+            <td class="text-center">
+              <div class="d-flex justify-content-center align-items-center gap-2">
+
+                <!-- Add Offer -->
+                <div data-bs-toggle="tooltip" title="Add offer">
+                  <button class="btn btn-sm btn-outline-warning add-offer-btn" data-productid="{{this._id}}"
+                    data-bs-toggle="modal" data-bs-target="#offerModal">
+                    <i class="bi bi-percent"></i>
+                  </button>
+                </div>
+
+                {{#if this.engine}}
+
+                <!-- View Car -->
+                <div data-bs-toggle="tooltip" title="View product">
+                  <a href="/admin/products-management/view-car-product/{{this._id}}"
+                    class="btn btn-sm btn-outline-primary">
+                    <i class="bi bi-eye"></i>
+                  </a>
+                </div>
+
+                <!-- Edit Car -->
+                <div data-bs-toggle="tooltip" title="Edit product">
+                  <a href="/admin/products-management/edit-car-product/{{this._id}}"
+                    class="btn btn-sm btn-outline-success">
+                    <i class="bi bi-pencil"></i>
+                  </a>
+                </div>
+
+                {{else}}
+
+                <!-- View Accessory -->
+                <div data-bs-toggle="tooltip" title="View product">
+                  <a href="/admin/products-management/view-accessories-product/{{this._id}}"
+                    class="btn btn-sm btn-outline-primary">
+                    <i class="bi bi-eye"></i>
+                  </a>
+                </div>
+
+                <!-- Edit Accessory -->
+                <div data-bs-toggle="tooltip" title="Edit product">
+                  <a href="/admin/products-management/edit-accessories-product/{{this._id}}"
+                    class="btn btn-sm btn-outline-success">
+                    <i class="bi bi-pencil"></i>
+                  </a>
+                </div>
+
+                {{/if}}
+
+                <!-- List / Unlist -->
+                <div class="form-check form-switch m-0" data-bs-toggle="tooltip"
+                  title="{{#if this.isListed}}Unlist product{{else}}List product{{/if}}">
+                  <input class="form-check-input" type="checkbox" data-id="{{this._id}}" {{#if
+                    this.isListed}}checked{{/if}} data-bs-toggle="modal" data-bs-target="#confirmListModal">
+                </div>
+
+              </div>
+            </td>
+
+
           </tr>
           {{/each}}
         </tbody>
       </table>
+
     </div>
   </div>
+
 
   <!-- Cars Table -->
   <!-- <div id="carTable" class="card shadow-sm mb-5">
@@ -259,25 +320,32 @@
 
 <!-- Offer Modal -->
 <div class="modal fade" id="offerModal" tabindex="-1">
-  <div class="modal-dialog">
+  <div class="modal-dialog modal-dialog-centered">
     <div class="modal-content">
+
       <form id="offerForm">
         <div class="modal-header">
           <h5 class="modal-title fw-bold">Add Offer</h5>
           <button class="btn-close" data-bs-dismiss="modal"></button>
         </div>
+
         <div class="modal-body">
+
+          <input type="hidden" id="offerProductId">
+
           <div class="mb-3">
             <label class="form-label">Discount Type</label>
             <select class="form-select" name="discountType" required>
               <option value="Percentage">Percentage (%)</option>
-              <option value="Price">Fixed Price ($)</option>
+              <option value="Price">Fixed Price</option>
             </select>
           </div>
+
           <div class="mb-3">
             <label class="form-label">Discount Value</label>
             <input type="number" class="form-control" name="discountValue" required>
           </div>
+
           <div class="row">
             <div class="col-md-6 mb-3">
               <label class="form-label">Valid From</label>
@@ -288,18 +356,25 @@
               <input type="date" class="form-control" name="validTo" required>
             </div>
           </div>
+
           <div class="mb-3">
             <label class="form-label">Usage Limit</label>
             <input type="number" class="form-control" name="usageLimit" required>
           </div>
+
         </div>
+
         <div class="modal-footer">
-          <button class="btn btn-success w-100">Apply Offer</button>
+          <button type="submit" class="btn btn-success w-100">
+            Apply Offer
+          </button>
         </div>
       </form>
+
     </div>
   </div>
 </div>
+
 
 <!-- Filter Modal -->
 <div class="modal fade" id="filterModal" tabindex="-1">
@@ -376,3 +451,56 @@
 
 <!-- <script src="/js/admin/car-product.js"></script> -->
 <script src="/js/admin/productManagement.js"></script>
+<script>
+  let selectedProductId = null;
+
+  // Capture product ID when clicking Add Offer
+  document.querySelectorAll(".add-offer-btn").forEach(btn => {
+    btn.addEventListener("click", () => {
+      selectedProductId = btn.dataset.productid;
+      document.getElementById("offerProductId").value = selectedProductId;
+    });
+  });
+
+  // Submit offer
+  document.getElementById("offerForm").addEventListener("submit", async (e) => {
+    e.preventDefault();
+
+    const form = e.target;
+    const productId = document.getElementById("offerProductId").value;
+
+    const offerData = {
+      productId,
+      discountType: form.discountType.value,
+      discountValue: form.discountValue.value,
+      validFrom: form.validFrom.value,
+      validTo: form.validTo.value,
+      usageLimit: form.usageLimit.value,
+    };
+
+    try {
+      const res = await axios.post(
+        "/admin/offers/add",
+        offerData
+      );
+
+      if (res.data.success) {
+        Swal.fire({
+          icon: "success",
+          title: "Offer Applied",
+          timer: 1500,
+          showConfirmButton: false
+        });
+
+        const modal = bootstrap.Modal.getInstance(
+          document.getElementById("offerModal")
+        );
+        modal.hide();
+
+        form.reset();
+      }
+    } catch (err) {
+      Swal.fire("Error", err.response?.data?.message || "Something went wrong", "error");
+    }
+  });
+</script>

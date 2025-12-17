@@ -15,6 +15,35 @@
   #editStockModal .modal-content {
     border-radius: 14px;
   }
+
+  .admin-table tbody tr {
+    height: 84px;
+  }
+
+  .admin-table th,
+  .admin-table td {
+    padding: 16px 18px;
+    vertical-align: middle;
+  }
+
+  .admin-table .badge {
+    padding: 6px 12px;
+    font-size: 12px;
+    font-weight: 600;
+  }
+
+  .tooltip-inner {
+    background-color: #000;
+    color: #fff;
+    padding: 6px 12px;
+    border-radius: 8px;
+    font-weight: 500;
+    box-shadow: 0 6px 16px rgba(0, 0, 0, 0.25);
+  }
+
+  .tooltip.bs-tooltip-top .tooltip-arrow::before {
+    border-top-color: #000;
+  }
 </style>
 
 <!-- STOCK MANAGEMENT PAGE -->
@@ -28,69 +57,98 @@
   </div>
 
   <!-- Table -->
-  <div class="card shadow-sm border-0">
-    <div class="card-body">
+  <div class="card shadow-sm mb-5 border-0">
+    <div class="card-body table-responsive p-0">
 
-      <div class="table-responsive">
-        <table class="table align-middle">
-          <thead class="table-light">
-            <tr>
-              <th>#</th>
-              <th>Product</th>
-              <th>Category</th>
-              <th>Variant / Stock</th>
-              <th>Status</th>
-              <th class="text-end">Actions</th>
-            </tr>
-          </thead>
+      <table class="table table-hover align-middle mb-0 admin-table">
+        <thead class="table-light">
+          <tr>
+            <th>#</th>
+            <th>Product</th>
+            <th>Category</th>
+            <th>Variant / Stock</th>
+            <th>Status</th>
+            <th class="text-center">Actions</th>
+          </tr>
+        </thead>
 
-          <tbody>
-            {{#each fullProducts}}
-            <tr>
-              <td>{{inc @index}}</td>
+        <tbody>
+          {{#each fullProducts}}
+          <tr>
+            <td class="fw-semibold text-muted">{{inc @index}}</td>
 
-              <td class="fw-semibold">{{this.name}}</td>
+            <td>
+              <div class="fw-semibold text-dark">{{this.name}}</div>
+            </td>
 
-              <td>{{this.category_id.name}}</td>
+            <td class="text-muted">
+              {{this.category_id.name}}
+            </td>
 
-              <td>
-                {{#if this.variantIds}}
-                {{#each this.variantIds}}
-                <div class="mb-1">
-                  <strong>{{this.color}}:</strong> {{this.stock}}
+            <td>
+              {{#if this.variantIds}}
+              {{#each this.variantIds}}
+              <div class="mb-1 text-muted">
+                <strong class="text-dark">{{this.color}}:</strong> {{this.stock}}
+              </div>
+              {{/each}}
+              {{else}}
+              <span class="fw-semibold">{{this.stock}}</span>
+              {{/if}}
+            </td>
+
+            <td>
+              {{{stockStatus (getMainStock this)}}}
+            </td>
+
+            <td class="text-center">
+              <div class="d-flex justify-content-center align-items-center">
+
+                <!-- Edit Stock -->
+                <div data-bs-toggle="tooltip" title="Edit stock">
+                  {{#if this.variantIds}}
+                  <a href="/admin/products-management/edit-car-product/{{this._id}}"
+                    class="btn btn-sm btn-outline-success">
+                    <i class="bi bi-pencil-square"></i>
+                  </a>
+                  {{else}}
+                  <a href="/admin/products-management/edit-accessories-product/{{this._id}}"
+                    class="btn btn-sm btn-outline-success">
+                    <i class="bi bi-pencil-square"></i>
+                  </a>
+                  {{/if}}
                 </div>
-                {{/each}}
-                {{else}}
-                <strong>{{this.stock}}</strong>
-                {{/if}}
-              </td>
 
-              <td>
-                {{{stockStatus (getMainStock this)}}}
-              </td>
+              </div>
+            </td>
 
-              <td class="text-end">
-                {{#if this.variantIds}}
-                <a href="/admin/products-management/edit-car-product/{{this._id}}"
-                  class="btn btn-sm btn-outline-primary editStockBtn">
-                  <i class="bi bi-pencil-square"></i>
-                </a>
-                {{else}}
-                <a href="/admin/products-management/edit-accessories-product/{{this._id}}"
-                  class="btn btn-sm btn-outline-primary editStockBtn">
-                  <i class="bi bi-pencil-square"></i>
-                </a>
-                {{/if}}
-              </td>
+          </tr>
+          {{else}}
+          <tr>
+            <td colspan="6" class="text-center text-muted py-4">
+              No Products Found
+            </td>
+          </tr>
+          {{/each}}
+        </tbody>
 
-            </tr>
-            {{/each}}
-          </tbody>
-
-        </table>
-      </div>
+      </table>
 
     </div>
   </div>
 
+
 </div>
+<script>
+  function initTooltips() {
+    document.querySelectorAll('[data-bs-toggle="tooltip"]').forEach(el => {
+      new bootstrap.Tooltip(el, {
+        placement: 'top',
+        delay: { show: 100, hide: 80 }
+      });
+    });
+  }
+
+  document.addEventListener("DOMContentLoaded", initTooltips);
+
+</script>

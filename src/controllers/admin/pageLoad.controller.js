@@ -1,10 +1,12 @@
-const { OK } = require("../../constant/statusCode");
+const { OK, NOT_FOUND } = require("../../constant/statusCode");
 const Brand = require("../../models/admin/brandModal");
 const Category = require("../../models/admin/categoryModel");
 const Type = require("../../models/admin/typeModal");
 const Car = require("../../models/admin/productCarModal");
 const Accessory = require("../../models/admin/productAccessoryModal");
 const User = require("../../models/user/UserModel");
+const mongoose = require("mongoose");
+
 //loading admin loaging page
 const adminLoadLoginPage = (req, res) => {
   res.status(OK).render("admin/auth/login");
@@ -383,10 +385,71 @@ const loadEditAccessories = async (req, res, next) => {
 //User Management
 const usersManagement = async (req, res, next) => {
   try {
-    //finding all users
-    const users = await User.find({}).sort({ createdAt: -1 }).lean();
-    // console.log(users);
+    const users = await User.aggregate([
+      {
+        $lookup: {
+          from: "orders", // collection name (plural, lowercase)
+          localField: "_id",
+          foreignField: "userId",
+          as: "orders",
+        },
+      },
+      {
+        $addFields: {
+          orderCount: { $size: "$orders" },
+        },
+      },
+      {
+        $project: {
+          orders: 0, // remove heavy data
+        },
+      },
+      {
+        $sort: { createdAt: -1 },
+      },
+    ]);
+
     res.status(OK).render("admin/users/usersManagement", { users });
+  } catch (error) {
+    console.log(error);
+    next(error);
+  }
+};
+
+const usersManagementDetail = async (req, res, next) => {
+  try {
+    const userId = new mongoose.Types.ObjectId(req.params.userId);
+
+    const user = await User.aggregate([
+      {
+        $match: { _id: userId },
+      },
+      {
+        $lookup: {
+          from: "orders",
+          localField: "_id",
+          foreignField: "userId",
+          as: "orders",
+        },
+      },
+      {
+        $addFields: {
+          orderCount: { $size: "$orders" },
+        },
+      },
+      {
+        $project: {
+          orders: 0, // remove heavy data
+        },
+      },
+    ]);
+
+    if (!user.length) {
+      return res.status(NOT_FOUND).render("errors/404");
+    }
+    console.log("user details", user[0]);
+    // aggregation returns array → take first item
+    res.status(OK).render("admin/users/userDetails", { user: user[0] });
   } catch (error) {
     console.log(error);
     next(error);
@@ -410,4 +473,5 @@ module.exports = {
   loadViewAccessories,
   loadEditAccessories,
   usersManagement,
+  usersManagementDetail,
 };

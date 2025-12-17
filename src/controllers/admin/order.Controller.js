@@ -39,8 +39,13 @@ const updateOrderStatus = async (req, res, next) => {
 
     const now = new Date();
 
-    // Update ALL items
+    // Update ONLY active items
     order.items.forEach((item) => {
+      //Skip cancelled or returned items
+      if (item.cancel?.approvedAt || item.return?.approvedAt) {
+        return;
+      }
+
       item.fulfillmentStatus.status = status;
 
       // set timestamp only if relevant
@@ -155,6 +160,7 @@ const cancelApprove = async (req, res, next) => {
         totalAmount: 1,
         subtotal: 1,
         taxAmount: 1,
+        paymentMethod: 1,
       }
     );
 
@@ -182,13 +188,46 @@ const cancelApprove = async (req, res, next) => {
     const itemAdvanceAmount = item.advanceAmount || 0;
     const itemTaxAmount = item.accessoryTax || 0;
     const itemPrice = item.price || 0;
+    const paymentMethod = order.paymentMethod === "COD";
+    const itemTotalAmount = item.totalItemAmount || 0;
 
     const newSubTotal = order.subtotal - itemPrice;
     const newTaxAmount = order.taxAmount - itemTaxAmount;
     const newTotalAmount = newSubTotal + newTaxAmount;
     const newAdvanceAmount = order.advanceAmount - itemAdvanceAmount;
     const newRemainingAmount = newTotalAmount - newAdvanceAmount;
-
+    console.log(
+      "==================================itemAdvanceAmount================="
+    );
+    console.log(itemAdvanceAmount);
+    console.log(
+      "==================================itemTaxAmount================="
+    );
+    console.log(itemTaxAmount);
+    console.log(
+      "==================================paymentMethod================="
+    );
+    console.log(paymentMethod);
+    console.log(
+      "==================================newSubTotal================="
+    );
+    console.log(newSubTotal);
+    console.log(
+      "==================================newTaxAmount================="
+    );
+    console.log(newTaxAmount);
+    console.log(
+      "==================================newAdvanceAmount================="
+    );
+    console.log(newAdvanceAmount);
+    console.log(
+      "==================================newTaxAmount================="
+    );
+    console.log(newTaxAmount);
+    console.log(
+      "==================================newRemainingAmount================="
+    );
+    console.log(newRemainingAmount);
     /* =============================
        ATOMIC UPDATE
     ============================= */
@@ -205,13 +244,20 @@ const cancelApprove = async (req, res, next) => {
       {
         $set: {
           "items.$.cancel.approvedAt": new Date(),
-          "items.$.cancel.refundAmount": itemAdvanceAmount,
+          "items.$.cancel.refundAmount": paymentMethod
+            ? itemAdvanceAmount
+            : itemTotalAmount,
           "items.$.fulfillmentStatus.status": "cancelled",
           advanceAmount: newAdvanceAmount > 0 ? newAdvanceAmount : 0,
           remainingAmount: newRemainingAmount > 0 ? newRemainingAmount : 0,
           totalAmount: newTotalAmount > 0 ? newTotalAmount : 0,
           subtotal: newSubTotal > 0 ? newSubTotal : 0,
           taxAmount: newTaxAmount > 0 ? newTaxAmount : 0,
+        },
+        $inc: {
+          totalRefundAmount: paymentMethod
+            ? itemAdvanceAmount
+            : itemTotalAmount,
         },
       }
     );
@@ -334,19 +380,48 @@ const returnApprove = async (req, res, next) => {
       });
     }
 
-    /* =============================
+    /* ==========================
        CALCULATIONS
     ============================= */
     const itemAdvanceAmount = item.advanceAmount || 0;
     const itemTaxAmount = item.accessoryTax || 0;
     const itemPrice = item.price || 0;
+    const itemTotalAmount = item.totalItemAmount || 0;
 
     const newSubTotal = order.subtotal - itemPrice;
     const newTaxAmount = order.taxAmount - itemTaxAmount;
     const newTotalAmount = newSubTotal + newTaxAmount;
     const newAdvanceAmount = order.advanceAmount - itemAdvanceAmount;
     const newRemainingAmount = newTotalAmount - newAdvanceAmount;
-
+    console.log("================================== RETURN =================");
+    console.log(
+      "==================================itemAdvanceAmount================="
+    );
+    console.log(itemAdvanceAmount);
+    console.log(
+      "==================================itemTaxAmount================="
+    );
+    console.log(itemTaxAmount);
+    console.log(
+      "==================================newSubTotal================="
+    );
+    console.log(newSubTotal);
+    console.log(
+      "==================================newTaxAmount================="
+    );
+    console.log(newTaxAmount);
+    console.log(
+      "==================================newAdvanceAmount================="
+    );
+    console.log(newAdvanceAmount);
+    console.log(
+      "==================================newTaxAmount================="
+    );
+    console.log(newTaxAmount);
+    console.log(
+      "==================================newRemainingAmount================="
+    );
+    console.log(newRemainingAmount);
     /* =============================
        ATOMIC UPDATE
     ============================= */
@@ -363,7 +438,7 @@ const returnApprove = async (req, res, next) => {
       {
         $set: {
           "items.$.return.approvedAt": new Date(),
-          "items.$.return.refundAmount": itemAdvanceAmount,
+          "items.$.return.refundAmount": itemTotalAmount,
           "items.$.fulfillmentStatus.status": "returned",
           advanceAmount: newAdvanceAmount > 0 ? newAdvanceAmount : 0,
           remainingAmount: newRemainingAmount > 0 ? newRemainingAmount : 0,
@@ -371,6 +446,7 @@ const returnApprove = async (req, res, next) => {
           subtotal: newSubTotal > 0 ? newSubTotal : 0,
           taxAmount: newTaxAmount > 0 ? newTaxAmount : 0,
         },
+        $inc: { totalRefundAmount: itemTotalAmount },
       }
     );
 

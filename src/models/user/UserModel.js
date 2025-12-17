@@ -18,6 +18,7 @@ const userSchema = new mongoose.Schema(
     phoneNumber: {
       type: Number,
     },
+
     dob: {
       type: String,
     },
@@ -36,6 +37,9 @@ const userSchema = new mongoose.Schema(
     profileImage_url: {
       type: String,
       default: defaultImage,
+    },
+    totalSpended: {
+      type: Number,
     },
 
     authProvider: {

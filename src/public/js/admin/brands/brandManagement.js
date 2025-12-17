@@ -343,42 +343,91 @@ document.addEventListener("DOMContentLoaded", () => {
 
   function renderBrand(brands = []) {
     const tbody = document.getElementById("brandTable");
-    if (!tbody) return console.error("brandTable element not found");
+    if (!tbody) return;
+
+    if (!Array.isArray(brands) || brands.length === 0) {
+      tbody.innerHTML = `
+      <tr>
+        <td colspan="6" class="text-center text-muted py-4">
+          No Brands Found
+        </td>
+      </tr>
+    `;
+      return;
+    }
 
     tbody.innerHTML = brands
       .map((brand, index) => {
         const { _id, name, country, image_url, isListed } = brand;
 
         return `
-        <tr>
-          <td>${index + 1}</td>
-          <td><img src="${image_url}" alt="${name}" class="rounded"
-            style="width:50px; height:50px; object-fit:cover;"></td>
-          <td class="fw-semibold">${name}</td>
-          <td>${country}</td>
-          <td class="${isListed ? "text-success" : "text-danger"}">
-            ${isListed ? "Listed" : "Unlisted"}
-          </td>
-          <td>
-            <button class="btn btn-sm btn-outline-primary me-2 editBrandBtn"
-              data-id="${_id}" data-name="${name}" data-country="${country}"
-              data-image="${image_url}" data-bs-toggle="modal"
-              data-bs-target="#editBrandModal">
-              <i class="bi bi-pencil-fill"></i>
-            </button>
-            <button class="btn btn-sm ${
-              isListed ? "btn-outline-warning" : "btn-outline-success"
-            } deleteBrandBtn"
-              data-id="${_id}" data-name="${name}"
-              data-bs-toggle="modal" data-bs-target="#deleteConfirmModal">
-              <i class="bi ${
-                isListed ? "bi-eye-slash-fill" : "bi-eye-fill"
-              }"></i>
-            </button>
-          </td>
-        </tr>`;
+      <tr>
+        <td class="fw-semibold text-muted">${index + 1}</td>
+
+        <td>
+          <div class="brand-logo">
+            <img src="${image_url}" alt="${name}">
+          </div>
+        </td>
+
+        <td class="fw-semibold text-dark">${name}</td>
+
+        <td class="text-muted">${country}</td>
+
+        <td>
+          ${
+            isListed
+              ? `<span class="badge bg-success-subtle text-success fw-semibold">Listed</span>`
+              : `<span class="badge bg-danger-subtle text-danger fw-semibold">Unlisted</span>`
+          }
+        </td>
+
+        <td class="text-center">
+          <div class="d-flex justify-content-center align-items-center gap-2">
+
+            <!-- Edit -->
+            <div data-bs-toggle="tooltip" title="Edit brand">
+              <button
+                class="btn btn-sm btn-outline-success edit-brand-btn"
+                data-bs-toggle="modal"
+                data-bs-target="#editBrandModal"
+                data-id="${_id}"
+                data-name="${name}"
+                data-country="${country}"
+                data-image="${image_url}">
+                <i class="bi bi-pencil"></i>
+              </button>
+            </div>
+
+            <!-- List / Unlist -->
+            <div
+              data-bs-toggle="tooltip"
+              title="${isListed ? "Unlist brand" : "List brand"}">
+              <button
+                class="btn btn-sm ${
+                  isListed ? "btn-outline-warning" : "btn-outline-success"
+                } toggle-brand-status-btn"
+                data-bs-toggle="modal"
+                data-bs-target="#deleteConfirmModal"
+                data-id="${_id}"
+                data-name="${name}">
+                <i class="bi ${isListed ? "bi-eye-slash" : "bi-eye"}"></i>
+              </button>
+            </div>
+
+          </div>
+        </td>
+      </tr>
+    `;
       })
       .join("");
+
+    initTooltips();
+  }
+  function initTooltips() {
+    document.querySelectorAll('[data-bs-toggle="tooltip"]').forEach((el) => {
+      new bootstrap.Tooltip(el);
+    });
   }
 
   function renderPagination(currentPage, totalPages) {

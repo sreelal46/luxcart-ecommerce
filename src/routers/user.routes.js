@@ -143,7 +143,7 @@ route.post(
 //order details
 route.get("/account/orders", checkSession, loadOrderPage);
 route.get(
-  "/account/orders/order-details/:orderId/:orderItemId",
+  "/account/orders/order-details/:orderId",
   checkSession,
   loadOrderDetailPage
 );

@@ -1,3 +1,14 @@
+function initTooltips() {
+  document.querySelectorAll('[data-bs-toggle="tooltip"]').forEach((el) => {
+    new bootstrap.Tooltip(el, {
+      placement: "top",
+      delay: { show: 100, hide: 80 },
+    });
+  });
+}
+
+document.addEventListener("DOMContentLoaded", initTooltips);
+
 // Search functionality
 document
   .getElementById("searchUserInput")

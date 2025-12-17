@@ -24,6 +24,24 @@
     position: relative;
     z-index: 1;
   }
+
+  .admin-table tbody tr {
+    height: 84px;
+    /* baseline admin table height */
+  }
+
+  .tooltip-inner {
+    background-color: #000;
+    color: #fff;
+    padding: 6px 12px;
+    border-radius: 8px;
+    font-weight: 500;
+    box-shadow: 0 6px 16px rgba(0, 0, 0, 0.25);
+  }
+
+  .tooltip.bs-tooltip-top .tooltip-arrow::before {
+    border-top-color: #000;
+  }
 </style>
 
 
@@ -47,60 +65,118 @@
   </div>
 
   <!-- Category Table -->
-  <div class="card shadow-sm">
-    <div class="card-body table-responsive">
-      <table class="table table-hover align-middle">
+  <div class="card shadow-sm mb-5 border-0">
+    <div class="card-body table-responsive p-0">
+
+      <table class="table table-hover align-middle mb-0 admin-table">
         <thead class="table-light">
           <tr>
-            <th>ID</th>
+            <th>#</th>
             <th>Name</th>
             <th>Type</th>
             <th>Description</th>
-            <th>Products</th>
-            <th>Status</th>
+            <th class="text-center">Products</th>
             <th>Offer</th>
-            <th>Actions</th>
+            <th>Status</th>
+            <th class="text-center">Actions</th>
           </tr>
         </thead>
+
         <tbody id="categoryTable">
           {{#each categories}}
           <tr>
-            <td>{{inc @index}}</td>
-            <td>{{this.name}}</td>
-            <td><span class="badge bg-primary">{{this.product}}</span></td>
-            <td>{{this.description}}</td>
-            <td>total product</td>
-            {{#if this.isListed}}
-            <td class="text-success">Listed</td>
-            {{else}}
-            <td class="text-danger">Unlisted</td>
-            {{/if}}
+            <td class="fw-semibold text-muted">{{inc @index}}</td>
+
             <td>
-              <button class="btn btn-sm btn-outline-info" data-id="{{this._id}}" data-name="{{this.name}}"
-                data-bs-toggle="modal" data-bs-target="#addOfferModal">
-                <i class="bi bi-tags-fill me-1"></i> Add Offer
-              </button>
+              <div class="fw-semibold text-dark">{{this.name}}</div>
             </td>
+
             <td>
-              <button class="btn btn-sm btn-outline-primary me-2" data-bs-toggle="modal"
-                data-bs-target="#editCategoryModal" data-id="{{this._id}}" data-name="{{this.name}}"
-                data-description="{{this.description}}" data-type="{{this.product}}">
-                <i class="bi bi-pencil-fill"></i>
-              </button>
-              <button class="btn btn-sm {{#if this.isListed}}btn-outline-warning{{else}}btn-outline-success{{/if}}"
-                data-bs-toggle="modal" data-bs-target="#confirmListModal" data-id="{{this._id}}"
-                data-status="{{this.isListed}}">
-                <i class="bi {{#if this.isListed}}bi-eye-slash-fill{{else}}bi-eye-fill{{/if}}"></i>
-              </button>
+              <span class="badge bg-light text-dark border">
+                {{this.product}}
+              </span>
             </td>
+
+            <td class="text-muted">
+              {{this.description}}
+            </td>
+
+            <td class="text-center">
+              <span class="badge bg-light text-dark border">
+                total product
+              </span>
+            </td>
+
+            <td>
+              <span class="badge rounded-pill bg-success">
+                10% OFF
+              </span>
+            </td>
+
+            <td>
+              {{#if this.isListed}}
+              <span class="badge bg-success-subtle text-success fw-semibold">
+                Listed
+              </span>
+              {{else}}
+              <span class="badge bg-danger-subtle text-danger fw-semibold">
+                Unlisted
+              </span>
+              {{/if}}
+            </td>
+
+            <td class="text-center">
+              <div class="d-flex justify-content-center align-items-center gap-2">
+                {{#if this.offer}}
+                <!-- Remove Offer -->
+                <div data-bs-toggle="tooltip" title="Remove offer">
+                  <button class="btn btn-sm btn-outline-warning add-offer-btn" data-bs-toggle="modal"
+                    data-bs-target="#addOfferModal" data-id="{{this._id}}" data-name="{{this.name}}">
+                    <i class="bi bi-percent"></i>
+                  </button>
+                </div>
+                {{else}}
+                <!-- Add Offer -->
+                <div data-bs-toggle="tooltip" title="Add offer">
+                  <button class="btn btn-sm btn-outline-warning add-offer-btn" data-bs-toggle="modal"
+                    data-bs-target="#addOfferModal" data-id="{{this._id}}" data-name="{{this.name}}">
+                    <i class="bi bi-percent"></i>
+                  </button>
+                </div>
+                {{/if}}
+
+
+                <!-- Edit -->
+                <div data-bs-toggle="tooltip" title="Edit category">
+                  <button class="btn btn-sm btn-outline-success" data-bs-toggle="modal"
+                    data-bs-target="#editCategoryModal" data-id="{{this._id}}" data-name="{{this.name}}"
+                    data-description="{{this.description}}" data-type="{{this.product}}">
+                    <i class="bi bi-pencil"></i>
+                  </button>
+                </div>
+
+                <!-- List / Unlist -->
+                <div class="form-check form-switch m-0" data-bs-toggle="tooltip"
+                  title="{{#if this.isListed}}Unlist category{{else}}List category{{/if}}">
+                  <input class="form-check-input category-toggle-status" type="checkbox" data-id="{{this._id}}" {{#if
+                    this.isListed}}checked{{/if}} data-bs-toggle="modal" data-bs-target="#confirmListModal">
+                </div>
+
+              </div>
+            </td>
+
           </tr>
           {{else}}
           <tr>
-            <td colspan="8" class="text-center text-muted py-4">No Categories</td>
+            <td colspan="8" class="text-center text-muted py-4">
+              No Categories Found
+            </td>
           </tr>
           {{/each}}
         </tbody>
+
       </table>
+
     </div>
   </div>
   <nav class="mt-4" id="categoryPagination"></nav>

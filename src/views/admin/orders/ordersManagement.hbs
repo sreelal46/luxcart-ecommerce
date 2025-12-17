@@ -68,6 +68,35 @@
     background-color: #0d6efd;
     color: #fff;
   }
+
+  .admin-table tbody tr {
+    height: 84px;
+  }
+
+  .admin-table th,
+  .admin-table td {
+    padding: 16px 18px;
+    vertical-align: middle;
+  }
+
+  .admin-table .badge {
+    padding: 6px 12px;
+    font-size: 12px;
+    font-weight: 600;
+  }
+
+  .tooltip-inner {
+    background-color: #000;
+    color: #fff;
+    padding: 6px 12px;
+    border-radius: 8px;
+    font-weight: 500;
+    box-shadow: 0 6px 16px rgba(0, 0, 0, 0.25);
+  }
+
+  .tooltip.bs-tooltip-top .tooltip-arrow::before {
+    border-top-color: #000;
+  }
 </style>
 
 <div class="container py-5">
@@ -103,9 +132,10 @@
   </div>
 
   <!-- Orders Table Card -->
-  <div class="card shadow-sm rounded-4 p-4">
-    <div class="table-responsive">
-      <table class="table table-hover align-middle admin-orders-table">
+  <div class="card shadow-sm mb-5 border-0">
+    <div class="card-body table-responsive p-0">
+
+      <table class="table table-hover align-middle mb-0 admin-table">
         <thead class="table-light">
           <tr>
             <th>#</th>
@@ -113,7 +143,7 @@
             <th>Customer</th>
             <th>Items</th>
             <th>Date</th>
-            <th class="text-center">Action</th>
+            <th class="text-center">Actions</th>
           </tr>
         </thead>
 
@@ -121,41 +151,58 @@
           {{#each orders}}
           <tr>
             <!-- Row Number -->
-            <td class="fw-semibold">{{inc @index}}</td>
+            <td class="fw-semibold text-muted">
+              {{inc @index}}
+            </td>
 
             <!-- Order ID -->
-            <td class="fw-bold text-muted small">
+            <td class="fw-semibold text-muted small">
               {{this.orderId}}
             </td>
 
             <!-- Customer -->
-            <td>
+            <td class="fw-semibold text-dark">
               {{this.address.name}}
             </td>
 
-            <!-- Product -->
-            <td class="product-col">
+            <!-- Items -->
+            <td class="text-muted">
               {{this.items.length}}
             </td>
 
             <!-- Date -->
-            <td class="text-nowrap">
+            <td class="text-nowrap text-muted">
               {{formattedDate this.createdAt}}
             </td>
-            <!-- Action -->
+
+            <!-- Actions -->
             <td class="text-center">
-              <a href="/admin/orders-management/view-order/{{this._id}}" class="btn btn-sm btn-info">
-                <i class="bi bi-eye-fill"></i>
-                View
-              </a>
+              <div class="d-flex justify-content-center align-items-center gap-2">
+
+                <!-- View Order -->
+                <div data-bs-toggle="tooltip" title="View order">
+                  <a href="/admin/orders-management/view-order/{{this._id}}" class="btn btn-sm btn-outline-primary">
+                    <i class="bi bi-eye"></i> View
+                  </a>
+                </div>
+
+              </div>
+            </td>
+          </tr>
+          {{else}}
+          <tr>
+            <td colspan="6" class="text-center text-muted py-4">
+              No Orders Found
             </td>
           </tr>
           {{/each}}
         </tbody>
+
       </table>
 
     </div>
   </div>
+
 </div>
 
 <!-- Filter Modal -->
@@ -199,35 +246,82 @@
 <script>
   const tableBody = document.getElementById("ordersTableBody");
   const searchInput = document.getElementById("searchOrderInput");
+  function initTooltips() {
+    document.querySelectorAll('[data-bs-toggle="tooltip"]').forEach(el => {
+      new bootstrap.Tooltip(el, {
+        placement: "top",
+        delay: { show: 100, hide: 80 }
+      });
+    });
+  }
+
+  document.addEventListener("DOMContentLoaded", initTooltips);
 
   // Render orders dynamically
-  function renderOrders(orders) {
+  function renderOrders(orders = []) {
     tableBody.innerHTML = "";
 
-    if (!orders.length) {
-      tableBody.innerHTML = `<tr><td colspan="7">No orders found</td></tr>`;
+    if (!Array.isArray(orders) || orders.length === 0) {
+      tableBody.innerHTML = `
+      <tr>
+        <td colspan="6" class="text-center text-muted py-4">
+          No orders found
+        </td>
+      </tr>
+    `;
       return;
     }
 
     orders.forEach((order, index) => {
-      tableBody.innerHTML += `
-        <tr>
-          <td>${index + 1}</td>
-          <td class="fw-bold">${order.orderId}</td>
-          <td>${order.address?.name || "-"}</td>
-          <td>${new Date(order.createdAt).toLocaleDateString()}</td>
-          <td>₹ ${order.totalAmount.toLocaleString()}</td>
-          <td><span class="badge bg-success">${order.orderStatus}</span></td>
-          <td>
-            <a href="/admin/orders-management/view-order/${order._id}">
-              <button class="btn btn-sm btn-info">
-                <i class="bi bi-eye-fill"></i> View
-              </button>
-            </a>
-          </td>
-        </tr>
-      `;
+      tableBody.insertAdjacentHTML(
+        "beforeend",
+        `
+      <tr>
+        <!-- # -->
+        <td class="fw-semibold text-muted">
+          ${index + 1}
+        </td>
+
+        <!-- Order ID -->
+        <td class="fw-semibold text-muted small">
+          ${order.orderId}
+        </td>
+
+        <!-- Customer -->
+        <td class="fw-semibold text-dark">
+          ${order.address?.name || "-"}
+        </td>
+
+        <!-- Items -->
+        <td class="text-muted">
+          ${order.items?.length ?? "-"}
+        </td>
+
+        <!-- Date -->
+        <td class="text-nowrap text-muted">
+          ${new Date(order.createdAt).toLocaleDateString()}
+        </td>
+
+        <!-- Actions -->
+        <td class="text-center">
+          <div class="d-flex justify-content-center align-items-center gap-2">
+
+            <!-- View Order -->
+            <div data-bs-toggle="tooltip" title="View order">
+              <a
+                href="/admin/orders-management/view-order/${order._id}"
+                class="btn btn-sm btn-outline-primary">
+                <i class="bi bi-eye"></i> View
+              </a>
+            </div>
+
+          </div>
+        </td>
+      </tr>
+      `
+      );
     });
+    initTooltips()
   }
 
   // Live Search
@@ -239,6 +333,7 @@
     });
 
     renderOrders(response.data.orders);
+    initTooltips()
   });
 
   // Apply Filter

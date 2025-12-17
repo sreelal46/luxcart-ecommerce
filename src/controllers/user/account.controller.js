@@ -397,7 +397,7 @@ const downloadInvoice = async (req, res, next) => {
     );
 
     if (!order) {
-      return res.status(404).json({ message: "Order not found" });
+      return res.status(NOT_FOUND).json({ message: "Order not found" });
     }
 
     const fullAddress =
@@ -515,9 +515,9 @@ const downloadInvoice = async (req, res, next) => {
       terms: [
         "Payment is due within 30 days of invoice date.",
         "Please include invoice number on your payment.",
-        "Refunds for cancelled items will be processed within 5-7 business days.",
+        "Refunds for cancelled items will be processed within 5–7 business days.",
         "Returns must be initiated within 7 days of delivery.",
-        "Return shipping charges may apply as per policy.",
+        "Cars once sold are non-returnable and non-refundable.",
         "Late payments may incur additional charges.",
       ],
       highQuality: true,
