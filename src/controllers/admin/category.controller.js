@@ -1,5 +1,12 @@
-const { OK, CONFLICT, NOT_FOUND } = require("../../constant/statusCode");
+const {
+  OK,
+  CONFLICT,
+  NOT_FOUND,
+  BAD_REQUEST,
+} = require("../../constant/statusCode");
 const Category = require("../../models/admin/categoryModel");
+const Accessory = require("../../models/admin/productAccessoryModal");
+const mongoose = require("mongoose");
 
 const addCategory = async (req, res, next) => {
   try {
@@ -121,4 +128,113 @@ const softDeleteCategory = async (req, res, next) => {
     next(error);
   }
 };
-module.exports = { addCategory, editCategory, softDeleteCategory };
+
+const addOfferToCategory = async (req, res, next) => {
+  try {
+    const { categoryId } = req.params;
+    const { discountType, discountValue, validFrom, validTo } = req.body;
+    // VALIDATION
+    if (
+      discountType === "Percentage" &&
+      (discountValue < 0 || discountValue > 100)
+    ) {
+      return res.status(BAD_REQUEST).json({
+        success: false,
+        alert: "Percentage discount must be between 1 and 100",
+      });
+    }
+    // UPDATE CATEGORY OFFER
+    const category = await Category.findByIdAndUpdate(
+      categoryId,
+      {
+        $set: {
+          offer: {
+            discountType,
+            discountValue,
+            validFrom,
+            validTo,
+            isActive: true,
+          },
+        },
+      },
+      { new: true }
+    );
+
+    if (!category) {
+      return res.status(BAD_REQUEST).json({
+        success: false,
+        alert: "Category not found",
+      });
+    }
+    // APPLY OFFER TO RELATED PRODUCTS
+    let productUpdateResult;
+
+    if (category.product === "Accessories") {
+      productUpdateResult = await Accessory.updateMany(
+        { category_id: category._id },
+        {
+          $set: {
+            categoryOffer: category.offer,
+          },
+        }
+      );
+    }
+    console.log("Product", productUpdateResult);
+    // OPTIONAL CHECK
+    if (productUpdateResult?.matchedCount === 0) {
+      return res.status(BAD_REQUEST).json({
+        success: false,
+        alert: "No products found for this category",
+      });
+    }
+
+    return res.status(OK).json({
+      success: true,
+      alert: "Offer applied to category and related products",
+    });
+  } catch (error) {
+    console.log("Error from adding offer to category", error);
+    next(error);
+  }
+};
+
+const removeOfferToCategory = async (req, res, next) => {
+  try {
+    const categoryId = req.params.categoryId;
+    const category = await Category.findByIdAndUpdate(categoryId, {
+      $set: {
+        "offer.isActive": false,
+      },
+    });
+    await Accessory.updateMany(
+      { category_id: categoryId },
+      { $unset: { categoryOffer: "" } }
+    );
+
+    if (category.matchedCount === 0) {
+      return res.status(BAD_REQUEST).json({
+        success: false,
+        alert: "Category not found",
+      });
+    }
+
+    if (category.modifiedCount === 0) {
+      return res.status(BAD_REQUEST).json({
+        success: false,
+        alert: "No changes applied (offer already up to date)",
+      });
+    }
+
+    res.status(OK).json({ success: true });
+  } catch (error) {
+    console.log("Error from adding offer to category", error);
+    next(error);
+  }
+};
+module.exports = {
+  addCategory,
+  editCategory,
+  softDeleteCategory,
+  addOfferToCategory,
+  removeOfferToCategory,
+};

@@ -1,3 +1,21 @@
+<style>
+  .admin-table tbody tr {
+    height: 84px;
+  }
+
+  .admin-table th,
+  .admin-table td {
+    padding: 16px 18px;
+    vertical-align: middle;
+  }
+
+  .admin-table .badge {
+    padding: 6px 12px;
+    font-size: 12px;
+    font-weight: 600;
+  }
+</style>
+
 <!-- Dashboard Header -->
 <div class="d-flex justify-content-between align-items-center pt-4 pb-2">
   <div>
@@ -73,41 +91,70 @@
       <h5 class="fw-bold text-dark mb-0">Recent Orders</h5>
       <a href="#" class="text-decoration-none small text-primary fw-semibold">View All</a>
     </div>
-    <div class="table-responsive">
-      <table class="table align-middle table-hover table-striped mb-0">
-        <thead class="table-light">
-          <tr>
-            <th>Order ID</th>
-            <th>Customer</th>
-            <th>Product</th>
-            <th>Date</th>
-            <th>Amount</th>
-            <th>Status</th>
-          </tr>
-        </thead>
-        <tbody>
-          {{#each orders}}
-          <tr>
-            <td class="fw-semibold text-dark">#{{orderId}}</td>
-            <td>{{customer}}</td>
-            <td>{{product}}</td>
-            <td>{{date}}</td>
-            <td>₹{{amount}}</td>
-            <td>
-              {{#if (eq status "Completed")}}
-              <span class="badge bg-success">Completed</span>
-              {{else if (eq status "Processing")}}
-              <span class="badge bg-primary">Processing</span>
-              {{else if (eq status "Pending")}}
-              <span class="badge bg-warning text-dark">Pending</span>
-              {{else}}
-              <span class="badge bg-secondary">{{status}}</span>
-              {{/if}}
-            </td>
-          </tr>
-          {{/each}}
-        </tbody>
-      </table>
+    <div class="card shadow-sm mb-5 border-0">
+      <div class="card-body table-responsive p-0">
+
+        <table class="table table-hover align-middle mb-0 admin-table">
+          <thead class="table-light">
+            <tr>
+              <th>Order ID</th>
+              <th>Customer</th>
+              <th>Product</th>
+              <th>Date</th>
+              <th class="text-end">Amount (₹)</th>
+              <th>Status</th>
+            </tr>
+          </thead>
+
+          <tbody>
+            {{#each orders}}
+            <tr>
+              <td class="fw-semibold text-muted">
+                #{{orderId}}
+              </td>
+
+              <td class="fw-semibold text-dark">
+                {{customer}}
+              </td>
+
+              <td class="text-muted">
+                {{product}}
+              </td>
+
+              <td class="text-muted text-nowrap">
+                {{date}}
+              </td>
+
+              <td class="fw-semibold text-end">
+                ₹{{amount}}
+              </td>
+
+              <td>
+                {{#if (eq status "Completed")}}
+                <span class="badge bg-success-subtle text-success fw-semibold">
+                  Completed
+                </span>
+                {{else if (eq status "Processing")}}
+                <span class="badge bg-primary-subtle text-primary fw-semibold">
+                  Processing
+                </span>
+                {{else if (eq status "Pending")}}
+                <span class="badge bg-warning-subtle text-warning fw-semibold">
+                  Pending
+                </span>
+                {{else}}
+                <span class="badge bg-secondary-subtle text-secondary fw-semibold">
+                  {{status}}
+                </span>
+                {{/if}}
+              </td>
+            </tr>
+            {{/each}}
+          </tbody>
+
+        </table>
+
+      </div>
     </div>
   </div>
 </div>

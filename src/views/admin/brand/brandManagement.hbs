@@ -147,13 +147,15 @@
                 </div>
 
                 <!-- List / Unlist Brand -->
-                <div data-bs-toggle="tooltip" title="{{#if this.isListed}}Unlist brand{{else}}List brand{{/if}}">
-                  <button
-                    class="btn btn-sm {{#if this.isListed}}btn-outline-warning{{else}}btn-outline-success{{/if}} toggle-brand-status-btn"
-                    data-bs-toggle="modal" data-bs-target="#deleteConfirmModal" data-id="{{_id}}" data-name="{{name}}">
-                    <i class="bi {{#if this.isListed}}bi-eye-slash{{else}}bi-eye{{/if}}"></i>
-                  </button>
+                <div class="form-check form-switch m-0" data-bs-toggle="tooltip"
+                  title="{{#if this.isListed}}Unlist brand{{else}}List brand{{/if}}">
+
+                  <input class="form-check-input brand-toggle-status" type="checkbox" data-id="{{_id}}"
+                    data-name="{{name}}" {{#if this.isListed}}checked{{/if}} data-bs-toggle="modal"
+                    data-bs-target="#deleteConfirmModal">
+
                 </div>
+
 
               </div>
             </td>

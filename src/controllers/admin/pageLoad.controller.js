@@ -110,6 +110,7 @@ const loadCategory = async (req, res, next) => {
         createdAt: -1,
       })
       .lean();
+    // console.log(categories);
     res.status(OK).render("admin/categoryManagement", { categories });
   } catch (error) {
     console.log(error);

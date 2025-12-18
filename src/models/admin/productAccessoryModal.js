@@ -1,6 +1,36 @@
 const mongoose = require("mongoose");
 const { Schema } = mongoose;
 
+const offerSchema = new Schema(
+  {
+    discountType: {
+      type: String,
+      enum: ["Percentage", "Flat"],
+      required: true,
+    },
+    discountValue: {
+      type: Number,
+      required: true,
+    },
+    validFrom: {
+      type: Date,
+      required: true,
+      index: true,
+    },
+    validTo: {
+      type: Date,
+      required: true,
+      index: true,
+    },
+    isActive: {
+      type: Boolean,
+      default: true,
+      index: true,
+    },
+  },
+  { _id: false }
+);
+
 const accessoryProductSchema = new Schema(
   {
     name: { type: String, required: true, unique: true },
@@ -15,18 +45,33 @@ const accessoryProductSchema = new Schema(
       ref: "Type",
       required: true,
     },
-    description: { type: String },
 
-    country_of_origin: { type: String },
-    fabric: { type: String },
-    finish: { type: String },
-    fitting: { type: String },
-    warranty: { type: String },
-    waterproof: { type: Boolean },
+    description: String,
 
-    vehicle: { type: String },
-    production_year: { type: String },
+    country_of_origin: String,
+    fabric: String,
+    finish: String,
+    fitting: String,
+    warranty: String,
+    waterproof: Boolean,
+
+    vehicle: String,
+    production_year: String,
+
     price: { type: Number, required: true },
+
+    //PRODUCT LEVEL OFFER
+    productOffer: {
+      type: offerSchema,
+      default: null,
+    },
+
+    //CATEGORY LEVEL OFFER (copied from Category)
+    categoryOffer: {
+      type: offerSchema,
+      default: null,
+    },
+
     material: { type: String, required: true },
     stock: { type: Number, required: true },
     images: [{ type: String }],

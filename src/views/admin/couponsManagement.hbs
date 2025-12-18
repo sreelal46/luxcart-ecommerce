@@ -1,3 +1,34 @@
+<style>
+  .admin-table tbody tr {
+    height: 84px;
+  }
+
+  .admin-table th,
+  .admin-table td {
+    padding: 16px 18px;
+    vertical-align: middle;
+  }
+
+  .admin-table .badge {
+    padding: 6px 12px;
+    font-size: 12px;
+    font-weight: 600;
+  }
+
+  .tooltip-inner {
+    background-color: #000;
+    color: #fff;
+    padding: 6px 12px;
+    border-radius: 8px;
+    font-weight: 500;
+    box-shadow: 0 6px 16px rgba(0, 0, 0, 0.25);
+  }
+
+  .tooltip.bs-tooltip-top .tooltip-arrow::before {
+    border-top-color: #000;
+  }
+</style>
+
 <div class="container py-5">
   <!-- Header -->
   <div class="d-flex justify-content-between align-items-center mb-4">
@@ -8,9 +39,10 @@
   </div>
 
   <!-- Coupons Table Card -->
-  <div class="card shadow-sm rounded-4 p-4">
-    <div class="table-responsive">
-      <table class="table table-hover align-middle text-center">
+  <div class="card shadow-sm mb-5 border-0">
+    <div class="card-body table-responsive p-0">
+
+      <table class="table table-hover align-middle mb-0 admin-table">
         <thead class="table-light">
           <tr>
             <th>#</th>
@@ -18,52 +50,112 @@
             <th>Discount</th>
             <th>Valid Period</th>
             <th>Status</th>
-            <th>Action</th>
+            <th class="text-center">Actions</th>
           </tr>
         </thead>
+
         <tbody id="couponsTableBody">
+
           <!-- Coupon 1 -->
-          <tr class="align-middle">
-            <td>1</td>
-            <td class="fw-bold">WELCOME50</td>
-            <td><span class="badge bg-success fs-6">50%</span></td>
-            <td>2025-10-01 - 2025-12-31</td>
-            <td><span class="badge bg-primary">Active</span></td>
+          <tr>
+            <td class="fw-semibold text-muted">1</td>
+
+            <td class="fw-semibold text-dark">
+              WELCOME50
+            </td>
+
             <td>
-              <button class="btn btn-sm btn-warning me-2 " data-bs-toggle="modal" data-bs-target="#editCouponModal"
-                data-code="WELCOME50" data-discounttype="percentage" data-discount="50" data-validfrom="2025-10-01"
-                data-validto="2025-12-31" data-usagelimit="100">
-                <i class="bi bi-pencil-fill"></i>
-              </button>
-              <button class="btn btn-sm btn-danger" data-bs-toggle="modal" data-bs-target="#deleteCouponModal"
-                data-code="WELCOME50">
-                <i class="bi bi-trash-fill"></i>
-              </button>
+              <span class="badge bg-success-subtle text-success fw-semibold">
+                50%
+              </span>
+            </td>
+
+            <td class="text-muted text-nowrap">
+              2025-10-01 – 2025-12-31
+            </td>
+
+            <td>
+              <span class="badge bg-success-subtle text-success fw-semibold">
+                Active
+              </span>
+            </td>
+
+            <td class="text-center">
+              <div class="d-flex justify-content-center gap-2">
+
+                <!-- Edit -->
+                <div data-bs-toggle="tooltip" title="Edit coupon">
+                  <button class="btn btn-sm btn-outline-success" data-bs-toggle="modal"
+                    data-bs-target="#editCouponModal" data-code="WELCOME50" data-discounttype="percentage"
+                    data-discount="50" data-validfrom="2025-10-01" data-validto="2025-12-31" data-usagelimit="100">
+                    <i class="bi bi-pencil"></i>
+                  </button>
+                </div>
+
+                <!-- Delete -->
+                <div data-bs-toggle="tooltip" title="Delete coupon">
+                  <button class="btn btn-sm btn-outline-danger" data-bs-toggle="modal"
+                    data-bs-target="#deleteCouponModal" data-code="WELCOME50">
+                    <i class="bi bi-trash"></i>
+                  </button>
+                </div>
+
+              </div>
             </td>
           </tr>
+
           <!-- Coupon 2 -->
           <tr>
-            <td>2</td>
-            <td class="fw-bold">FLAT200</td>
-            <td><span class="badge bg-info fs-6">₹200</span></td>
-            <td>2025-10-15 - 2025-11-30</td>
-            <td><span class="badge bg-primary">Active</span></td>
+            <td class="fw-semibold text-muted">2</td>
+
+            <td class="fw-semibold text-dark">
+              FLAT200
+            </td>
+
             <td>
-              <button class="btn btn-sm btn-warning me-2 " data-bs-toggle="modal" data-bs-target="#editCouponModal"
-                data-code="FLAT200" data-discounttype="fixed" data-discount="200" data-validfrom="2025-10-15"
-                data-validto="2025-11-30" data-usagelimit="50">
-                <i class="bi bi-pencil-fill"></i>
-              </button>
-              <button class="btn btn-sm btn-danger" data-bs-toggle="modal" data-bs-target="#deleteCouponModal"
-                data-code="WELCOME50">
-                <i class="bi bi-trash-fill"></i>
-              </button>
+              <span class="badge bg-info-subtle text-info fw-semibold">
+                ₹200
+              </span>
+            </td>
+
+            <td class="text-muted text-nowrap">
+              2025-10-15 – 2025-11-30
+            </td>
+
+            <td>
+              <span class="badge bg-success-subtle text-success fw-semibold">
+                Active
+              </span>
+            </td>
+
+            <td class="text-center">
+              <div class="d-flex justify-content-center gap-2">
+
+                <div data-bs-toggle="tooltip" title="Edit coupon">
+                  <button class="btn btn-sm btn-outline-success" data-bs-toggle="modal"
+                    data-bs-target="#editCouponModal" data-code="FLAT200" data-discounttype="fixed" data-discount="200"
+                    data-validfrom="2025-10-15" data-validto="2025-11-30" data-usagelimit="50">
+                    <i class="bi bi-pencil"></i>
+                  </button>
+                </div>
+
+                <div data-bs-toggle="tooltip" title="Delete coupon">
+                  <button class="btn btn-sm btn-outline-danger" data-bs-toggle="modal"
+                    data-bs-target="#deleteCouponModal" data-code="FLAT200">
+                    <i class="bi bi-trash"></i>
+                  </button>
+                </div>
+
+              </div>
             </td>
           </tr>
+
         </tbody>
       </table>
+
     </div>
   </div>
+
 </div>
 
 <!-- Add Coupon Modal -->
@@ -188,3 +280,11 @@
     </div>
   </div>
 </div>
+<script>
+  function initTooltips() {
+    document.querySelectorAll('[data-bs-toggle="tooltip"]').forEach((el) => {
+      new bootstrap.Tooltip(el);
+    });
+  }
+  document.addEventListener("DOMContentLoaded", initTooltips)
+</script>

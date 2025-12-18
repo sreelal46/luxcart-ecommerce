@@ -1,3 +1,22 @@
+<style>
+  .admin-table tbody tr {
+    height: 84px;
+  }
+
+  .admin-table th,
+  .admin-table td {
+    padding: 16px 18px;
+    vertical-align: middle;
+  }
+
+  .admin-table th {
+    font-weight: 600;
+  }
+
+  .admin-table td small {
+    font-size: 12px;
+  }
+</style>
 <div class="container py-4">
   <!-- Header -->
   <div class="d-flex justify-content-between align-items-center mb-4">
@@ -17,42 +36,72 @@
   </div>
 
   <!-- Sales Table -->
-  <div class="card p-3">
-    <div class="table-responsive">
-      <table class="table table-hover align-middle">
+  <div class="card shadow-sm mb-5 border-0">
+    <div class="card-body table-responsive p-0">
+
+      <table class="table table-hover align-middle mb-0 admin-table">
         <thead class="table-light">
           <tr>
             <th>#</th>
             <th>Buyer</th>
             <th>Product</th>
             <th>Product ID</th>
-            <th>Quantity</th>
-            <th>Price (₹)</th>
+            <th class="text-center">Qty</th>
+            <th class="text-end">Price (₹)</th>
             <th>Category</th>
-            <th>Total (₹)</th>
+            <th class="text-end">Total (₹)</th>
           </tr>
         </thead>
+
         <tbody id="salesTableBody">
           {{#each sales}}
           <tr>
-            <td>{{@index}}</td>
-            <td>{{this.buyer}}</td>
-            <td>{{this.product}}</td>
-            <td>{{this.product_id}}</td>
-            <td>{{this.quantity}}</td>
-            <td>{{this.price}}</td>
-            <td>{{this.category}}</td>
-            <td>{{this.total}}</td>
+            <td class="fw-semibold text-muted">
+              {{inc @index}}
+            </td>
+
+            <td class="fw-semibold text-dark">
+              {{this.buyer}}
+            </td>
+
+            <td class="text-muted">
+              {{this.product}}
+            </td>
+
+            <td class="text-muted small">
+              {{this.product_id}}
+            </td>
+
+            <td class="text-center fw-semibold">
+              {{this.quantity}}
+            </td>
+
+            <td class="text-end fw-semibold">
+              ₹{{this.price}}
+            </td>
+
+            <td class="text-muted">
+              {{this.category}}
+            </td>
+
+            <td class="text-end fw-semibold">
+              ₹{{this.total}}
+            </td>
           </tr>
           {{else}}
           <tr>
-            <td colspan="8" class="text-center text-muted py-4">No sales data available</td>
+            <td colspan="8" class="text-center text-muted py-4">
+              No sales data available
+            </td>
           </tr>
           {{/each}}
         </tbody>
+
       </table>
+
     </div>
   </div>
+
 </div>
 
 <!-- Filter Modal -->

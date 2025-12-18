@@ -108,9 +108,21 @@
             </td>
 
             <td>
+              {{#if this.offer.isActive}}
+              {{#if (eq this.offer.discountType "Percentage")}}
               <span class="badge rounded-pill bg-success">
-                10% OFF
+                {{this.offer.discountValue}}% OFF
               </span>
+              {{else}}
+              <span class="badge rounded-pill bg-success">
+                ₹ {{formatPrice this.offer.discountValue}} OFF
+              </span>
+              {{/if}}
+              {{else}}
+              <span class="badge rounded-pill bg-danger">
+                NO OFFERS
+              </span>
+              {{/if}}
             </td>
 
             <td>
@@ -127,23 +139,22 @@
 
             <td class="text-center">
               <div class="d-flex justify-content-center align-items-center gap-2">
-                {{#if this.offer}}
-                <!-- Remove Offer -->
+                {{#if this.offer.isActive}}
                 <div data-bs-toggle="tooltip" title="Remove offer">
-                  <button class="btn btn-sm btn-outline-warning add-offer-btn" data-bs-toggle="modal"
-                    data-bs-target="#addOfferModal" data-id="{{this._id}}" data-name="{{this.name}}">
-                    <i class="bi bi-percent"></i>
+                  <button id="removeOffer" class="btn btn-sm btn-outline-danger remove-offer-btn" data-bs-toggle="modal"
+                    data-bs-target="#removeOfferModal" data-id="{{this._id}}" data-name="{{this.name}}">
+                    <i class="bi bi-trash-fill"></i>
                   </button>
                 </div>
                 {{else}}
-                <!-- Add Offer -->
                 <div data-bs-toggle="tooltip" title="Add offer">
-                  <button class="btn btn-sm btn-outline-warning add-offer-btn" data-bs-toggle="modal"
-                    data-bs-target="#addOfferModal" data-id="{{this._id}}" data-name="{{this.name}}">
+                  <button id="addOffer" class="btn btn-sm btn-outline-warning add-offer-btn" data-bs-toggle="modal"
+                    data-bs-target="#offerModal" data-id="{{this._id}}" data-name="{{this.name}}">
                     <i class="bi bi-percent"></i>
                   </button>
                 </div>
                 {{/if}}
+
 
 
                 <!-- Edit -->
@@ -181,6 +192,94 @@
   </div>
   <nav class="mt-4" id="categoryPagination"></nav>
 </div>
+
+<!-- Offer Modal -->
+<div class="modal fade" id="offerModal" tabindex="-1">
+  <div class="modal-dialog modal-dialog-centered">
+    <div class="modal-content">
+
+      <form id="offerForm">
+        <div class="modal-header">
+          <h5 class="modal-title fw-bold">Add Offer</h5>
+          <button class="btn-close" data-bs-dismiss="modal"></button>
+        </div>
+
+        <div class="modal-body">
+
+          <input type="hidden" id="offerProductId">
+
+          <div class="mb-3">
+            <label class="form-label">Discount Type <span style="color: red;">*</span></label>
+            <select class="form-select" name="discountType">
+              <option value="Percentage">Percentage (%)</option>
+              <option value="Price">Fixed Price</option>
+            </select>
+          </div>
+
+          <div class="mb-3">
+            <label class="form-label">Discount Value <span style="color: red;">*</span></label>
+            <input type="number" class="form-control" name="discountValue">
+            <span id="dicountError" style="color: red; font-size: 15px;"></span>
+          </div>
+
+          <div class="row">
+            <div class="col-md-6 mb-3">
+              <label class="form-label">Valid From <span style="color:red">*</span></label>
+              <input type="datetime-local" class="form-control" name="validFrom">
+              <span id="ValidateFromtError" style="color:red;"></span>
+            </div>
+
+            <div class="col-md-6 mb-3">
+              <label class="form-label">Valid To <span style="color:red">*</span></label>
+              <input type="datetime-local" class="form-control" name="validTo">
+              <span id="ValidateTotError" style="color:red;"></span>
+            </div>
+          </div>
+
+        </div>
+
+        <div class="modal-footer">
+          <button type="submit" class="btn btn-success w-100">
+            Apply Offer
+          </button>
+        </div>
+      </form>
+
+    </div>
+  </div>
+</div>
+<!-- Remove Offer Confirmation Modal -->
+<div class="modal fade" id="removeOfferModal" tabindex="-1">
+  <div class="modal-dialog modal-dialog-centered">
+    <div class="modal-content">
+
+      <div class="modal-header">
+        <h5 class="modal-title fw-bold text-danger">Remove Offer</h5>
+        <button class="btn-close" data-bs-dismiss="modal"></button>
+      </div>
+
+      <div class="modal-body">
+        <p class="mb-0">
+          Are you sure you want to remove the offer from
+          <strong id="removeOfferProductName"></strong>?
+        </p>
+
+        <input type="hidden" id="removeOfferProductId">
+      </div>
+
+      <div class="modal-footer">
+        <button class="btn btn-secondary" data-bs-dismiss="modal">
+          Cancel
+        </button>
+        <button class="btn btn-danger" id="confirmRemoveOffer">
+          Yes, Remove
+        </button>
+      </div>
+
+    </div>
+  </div>
+</div>
+
 
 <!-- Add Category Modal -->
 <div class="modal fade" id="addCategoryModal" tabindex="-1" data-bs-backdrop="static">
