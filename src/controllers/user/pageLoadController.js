@@ -369,7 +369,7 @@ const loadSingleAccessories = async (req, res, next) => {
 
       inCart = inCartAccessoryIds.includes(String(productId));
     }
-
+    console.log(accessory);
     res.status(OK).render("user/products/accessory/viewAccessorProduct", {
       accessory,
       inCart,

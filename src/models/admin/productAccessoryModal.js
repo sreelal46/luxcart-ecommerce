@@ -71,7 +71,20 @@ const accessoryProductSchema = new Schema(
       type: offerSchema,
       default: null,
     },
-
+    offerPrices: {
+      productPrice: { type: Number, default: null },
+      categoryPrice: { type: Number, default: null },
+      finalPrice: { type: Number, default: null },
+    },
+    appliedOffer: {
+      source: {
+        type: String, // "PRODUCT" | "CATEGORY"
+      },
+      discountType: {
+        type: String, // "Percentage" | "Price"
+      },
+      discountValue: Number,
+    },
     material: { type: String, required: true },
     stock: { type: Number, required: true },
     images: [{ type: String }],

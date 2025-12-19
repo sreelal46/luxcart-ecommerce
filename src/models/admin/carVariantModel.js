@@ -1,5 +1,34 @@
 const mongoose = require("mongoose");
 
+const offerSchema = new mongoose.Schema(
+  {
+    discountType: {
+      type: String,
+      enum: ["Percentage", "Flat"],
+      required: true,
+    },
+    discountValue: {
+      type: Number,
+      required: true,
+    },
+    validFrom: {
+      type: Date,
+      required: true,
+      index: true,
+    },
+    validTo: {
+      type: Date,
+      required: true,
+      index: true,
+    },
+    isActive: {
+      type: Boolean,
+      default: true,
+      index: true,
+    },
+  },
+  { _id: false }
+);
 const carVariantSchema = new mongoose.Schema(
   {
     product_id: {
@@ -11,30 +40,32 @@ const carVariantSchema = new mongoose.Schema(
       type: Number,
       required: true,
     },
-    offer: {
+    //PRODUCT LEVEL OFFER
+    productOffer: {
+      type: offerSchema,
+      default: null,
+    },
+
+    //CATEGORY LEVEL OFFER
+    categoryOffer: {
+      type: offerSchema,
+      default: null,
+    },
+    offerPrices: {
+      productPrice: { type: Number, default: null },
+      categoryPrice: { type: Number, default: null },
+      finalPrice: { type: Number, default: null },
+    },
+    appliedOffer: {
+      source: {
+        type: String, // "PRODUCT" | "CATEGORY"
+      },
       discountType: {
-        type: String,
-        enum: ["Percentage", "Price"],
-        index: true,
+        type: String, // "Percentage" | "Price"
       },
       discountValue: Number,
-
-      validFrom: {
-        type: Date,
-        index: true,
-      },
-      validTo: {
-        type: Date,
-        index: true,
-      },
-
-      isActive: {
-        type: Boolean,
-        default: true,
-        index: true,
-      },
     },
-    discountedPrice: { type: Number, default: null },
+
     color: { type: String, required: true },
     stock: { type: Number, default: 0 },
     image_url: [{ type: String }], // array of image URLs
