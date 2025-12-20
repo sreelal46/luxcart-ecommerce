@@ -40,10 +40,10 @@
             <th>Product</th>
             <th>Category</th>
             <th>Brand</th>
-            <th class="text-end">Price</th>
-            <th class="text-center">Stock</th>
-            <th>Offer</th>
-            <th>Status</th>
+            <th class="text-center">Price</th>
+            <!-- <th class="text-center">Stock</th> -->
+            <th class="text-center">Offer</th>
+            <th class="text-center">Status</th>
             <th class="text-center">Actions</th>
           </tr>
         </thead>
@@ -61,25 +61,46 @@
             <td class="text-muted">{{this.brand_id.name}}</td>
 
             {{#if this.engine}}
-            <td class="text-end fw-semibold">₹ {{this.variantIds.[0].price}}</td>
-            <td class="text-center">
-              <span class="badge bg-light text-dark border">
-                {{this.variantIds.[0].stock}}
-              </span>
-            </td>
+            <td class="text-end fw-semibold">₹ {{formatPrice this.variantIds.[0].price}}</td>
             {{else}}
-            <td class="text-end fw-semibold">₹ {{this.price}}</td>
-            <td class="text-center">
-              <span class="badge bg-light text-dark border">
-                {{this.stock}}
-              </span>
-            </td>
+            <td class="text-end fw-semibold">₹ {{formatPrice this.price}}</td>
             {{/if}}
 
             <td>
+
+              {{#if this.engine}}
+              {{#if this.variantIds.[0].productOffer.isActive}}
+              {{#if (eq this.variantIds.[0].appliedOffer.discountType "Percentage")}}
               <span class="badge rounded-pill bg-success">
-                10% OFF
+                {{this.variantIds.[0].appliedOffer.discountValue}}% OFF
               </span>
+              {{else}}
+              <span class="badge rounded-pill bg-success">
+                ₹ {{formatPrice this.variantIds.[0].appliedOffer.discountValue}} OFF
+              </span>
+              {{/if}}
+              {{else}}
+              <span class="badge rounded-pill bg-danger">
+                NO OFFER
+              </span>
+              {{/if}}
+              {{else}}
+              {{#if this.productOffer.isActive}}
+              {{#if (eq this.appliedOffer.discountType "Percentage")}}
+              <span class="badge rounded-pill bg-success">
+                {{this.appliedOffer.discountValue}}% OFF
+              </span>
+              {{else}}
+              <span class="badge rounded-pill bg-success">
+                ₹ {{formatPrice this.appliedOffer.discountValue}} OFF
+              </span>
+              {{/if}}
+              {{else}}
+              <span class="badge rounded-pill bg-danger">
+                NO OFFER
+              </span>
+              {{/if}}
+              {{/if}}
             </td>
 
             <td>
@@ -96,14 +117,70 @@
 
             <td class="text-center">
               <div class="d-flex justify-content-center align-items-center gap-2">
-
+                {{#if this.engine}}
+                {{#if this.variantIds.[0].productOffer.isActive}}
                 <!-- Add Offer -->
+                <div data-bs-toggle="tooltip" title="Remove offer">
+                  <button class="btn btn-sm btn-outline-danger remove-offer-btn" data-bs-toggle="modal"
+                    data-bs-target="#removeOfferModal" data-id="{{this._id}}" data-producttype="car"
+                    data-name="{{this.name}}">
+                    <i class="bi bi-trash-fill"></i>
+                  </button>
+                </div>
+
+                {{else if this.variantIds.[0].productOffer.isConfigured}}
+                <div data-bs-toggle="tooltip" title="View configured offer">
+                  <button class="btn btn-sm btn-outline-info view-offer-btn" data-bs-toggle="modal"
+                    data-bs-target="#offerViewModal"
+                    data-discount-type="{{this.variantIds.[0].productOffer.discountType}}"
+                    data-discount-value="{{this.variantIds.[0].productOffer.discountValue}}"
+                    data-valid-from="{{this.variantIds.[0].productOffer.validFrom}}"
+                    data-valid-to="{{this.variantIds.[0].productOffer.validTo}}">
+                    <i class="bi bi-eye"></i>
+                  </button>
+                </div>
+
+                {{else}}
                 <div data-bs-toggle="tooltip" title="Add offer">
-                  <button class="btn btn-sm btn-outline-warning add-offer-btn" data-productid="{{this._id}}"
-                    data-bs-toggle="modal" data-bs-target="#offerModal">
+                  <button class="btn btn-sm btn-outline-warning add-offer-btn" data-bs-toggle="modal"
+                    data-bs-target="#offerModal" data-id="{{this._id}}" data-producttype="car"
+                    data-name="{{this.name}}">
                     <i class="bi bi-percent"></i>
                   </button>
                 </div>
+                {{/if}}
+                {{else}}
+                {{#if this.offer.productOffer.isActive}}
+                <!-- Add Offer -->
+                <div data-bs-toggle="tooltip" title="Remove offer">
+                  <button class="btn btn-sm btn-outline-danger remove-offer-btn" data-bs-toggle="modal"
+                    data-bs-target="#removeOfferModal" data-id="{{this._id}}" data-producttype="accessory"
+                    data-name="{{this.name}}">
+                    <i class="bi bi-trash-fill"></i>
+                  </button>
+                </div>
+
+                {{else if this.productOffer.isConfigured}}
+                <div data-bs-toggle="tooltip" title="View configured offer">
+                  <button class="btn btn-sm btn-outline-info view-offer-btn" data-bs-toggle="modal"
+                    data-bs-target="#offerViewModal" data-discount-type="{{this.productOffer.discountType}}"
+                    data-discount-value="{{this.productOffer.discountValue}}"
+                    data-valid-from="{{this.productOffer.validFrom}}" data-valid-to="{{this.productOffer.validTo}}">
+                    <i class="bi bi-eye"></i>
+                  </button>
+                </div>
+
+                {{else}}
+                <div data-bs-toggle="tooltip" title="Add offer">
+                  <button class="btn btn-sm btn-outline-warning add-offer-btn" data-bs-toggle="modal"
+                    data-bs-target="#offerModal" data-id="{{this._id}}" data-producttype="accessory"
+                    data-name="{{this.name}}">
+                    <i class="bi bi-percent"></i>
+                  </button>
+                </div>
+                {{/if}}
+                {{/if}}
+
 
                 {{#if this.engine}}
 
@@ -318,7 +395,7 @@
   </div>
 </div>
 
-<!-- Offer Modal -->
+<!--Add Offer Modal -->
 <div class="modal fade" id="offerModal" tabindex="-1">
   <div class="modal-dialog modal-dialog-centered">
     <div class="modal-content">
@@ -331,35 +408,32 @@
 
         <div class="modal-body">
 
-          <input type="hidden" id="offerProductId">
-
           <div class="mb-3">
             <label class="form-label">Discount Type</label>
-            <select class="form-select" name="discountType" required>
+            <select class="form-select" name="discountType">
               <option value="Percentage">Percentage (%)</option>
               <option value="Price">Fixed Price</option>
             </select>
           </div>
 
-          <div class="mb-3">
+          <div class="mb-2">
             <label class="form-label">Discount Value</label>
-            <input type="number" class="form-control" name="discountValue" required>
+            <input type="number" class="form-control" name="discountValue">
+            <small class="text-danger" id="dicountError"></small>
           </div>
 
           <div class="row">
-            <div class="col-md-6 mb-3">
+            <div class="col-md-6 mb-2">
               <label class="form-label">Valid From</label>
-              <input type="date" class="form-control" name="validFrom" required>
+              <input type="datetime-local" class="form-control" name="validFrom">
+              <small class="text-danger" id="ValidateFromtError"></small>
             </div>
-            <div class="col-md-6 mb-3">
-              <label class="form-label">Valid To</label>
-              <input type="date" class="form-control" name="validTo" required>
-            </div>
-          </div>
 
-          <div class="mb-3">
-            <label class="form-label">Usage Limit</label>
-            <input type="number" class="form-control" name="usageLimit" required>
+            <div class="col-md-6 mb-2">
+              <label class="form-label">Valid To</label>
+              <input type="datetime-local" class="form-control" name="validTo">
+              <small class="text-danger" id="ValidateTotError"></small>
+            </div>
           </div>
 
         </div>
@@ -374,6 +448,78 @@
     </div>
   </div>
 </div>
+
+
+<!--View  Offer Modal -->
+<div class="modal fade" id="offerViewModal" tabindex="-1">
+  <div class="modal-dialog modal-dialog-centered">
+    <div class="modal-content">
+
+      <div class="modal-header">
+        <h5 class="modal-title fw-bold">Offer Details</h5>
+        <button class="btn-close" data-bs-dismiss="modal"></button>
+      </div>
+
+      <div class="modal-body">
+
+        <div class="mb-3">
+          <label class="form-label fw-semibold">Discount Type</label>
+          <div class="form-control-plaintext" id="viewDiscountType">—</div>
+        </div>
+
+        <div class="mb-3">
+          <label class="form-label fw-semibold">Discount Value</label>
+          <div class="form-control-plaintext" id="viewDiscountValue">—</div>
+        </div>
+
+        <div class="row">
+          <div class="col-md-6 mb-3">
+            <label class="form-label fw-semibold">Valid From</label>
+            <div class="form-control-plaintext" id="viewValidFrom">—</div>
+          </div>
+
+          <div class="col-md-6 mb-3">
+            <label class="form-label fw-semibold">Valid To</label>
+            <div class="form-control-plaintext" id="viewValidTo">—</div>
+          </div>
+        </div>
+
+      </div>
+
+      <div class="modal-footer">
+        <button class="btn btn-secondary w-100" data-bs-dismiss="modal">
+          Close
+        </button>
+      </div>
+
+    </div>
+  </div>
+</div>
+
+<!-- Remove Offer Confirmation Modal -->
+<div class="modal fade" id="removeOfferModal" tabindex="-1">
+  <div class="modal-dialog modal-dialog-centered">
+    <div class="modal-content">
+
+      <div class="modal-header">
+        <h5 class="modal-title">Remove Offer</h5>
+        <button class="btn-close" data-bs-dismiss="modal"></button>
+      </div>
+
+      <div class="modal-body">
+        Are you sure you want to remove this offer?
+      </div>
+
+      <div class="modal-footer">
+        <button id="confirmRemoveOffer" class="btn btn-danger w-100">
+          Yes, Remove
+        </button>
+      </div>
+
+    </div>
+  </div>
+</div>
+
 
 
 <!-- Filter Modal -->
@@ -451,56 +597,3 @@
 
 <!-- <script src="/js/admin/car-product.js"></script> -->
 <script src="/js/admin/productManagement.js"></script>
-<script>
-  let selectedProductId = null;
-
-  // Capture product ID when clicking Add Offer
-  document.querySelectorAll(".add-offer-btn").forEach(btn => {
-    btn.addEventListener("click", () => {
-      selectedProductId = btn.dataset.productid;
-      document.getElementById("offerProductId").value = selectedProductId;
-    });
-  });
-
-  // Submit offer
-  document.getElementById("offerForm").addEventListener("submit", async (e) => {
-    e.preventDefault();
-
-    const form = e.target;
-    const productId = document.getElementById("offerProductId").value;
-
-    const offerData = {
-      productId,
-      discountType: form.discountType.value,
-      discountValue: form.discountValue.value,
-      validFrom: form.validFrom.value,
-      validTo: form.validTo.value,
-      usageLimit: form.usageLimit.value,
-    };
-
-    try {
-      const res = await axios.post(
-        "/admin/offers/add",
-        offerData
-      );
-
-      if (res.data.success) {
-        Swal.fire({
-          icon: "success",
-          title: "Offer Applied",
-          timer: 1500,
-          showConfirmButton: false
-        });
-
-        const modal = bootstrap.Modal.getInstance(
-          document.getElementById("offerModal")
-        );
-        modal.hide();
-
-        form.reset();
-      }
-    } catch (err) {
-      Swal.fire("Error", err.response?.data?.message || "Something went wrong", "error");
-    }
-  });
-</script>

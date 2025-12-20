@@ -27,6 +27,11 @@ const offerSchema = new Schema(
       default: true,
       index: true,
     },
+    isConfigured: {
+      type: Boolean,
+      default: false,
+      index: true,
+    },
   },
   { _id: false }
 );

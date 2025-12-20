@@ -289,6 +289,29 @@ const addToCart = async (req, res, next) => {
         variantId: productType === "car" ? variantId : null,
         quantity: 1,
         price: variantCar?.price || product.price,
+        offerPrice:
+          variantCar?.offerPrices?.finalPrice ||
+          product?.offerPrices?.finalPrice ||
+          null,
+        appliedOffer: {
+          source:
+            variantCar?.appliedOffer?.source ||
+            product?.appliedOffer?.source ||
+            null,
+          discountType:
+            variantCar?.appliedOffer?.discountType ||
+            product?.appliedOffer?.discountType ||
+            null,
+          discountValue:
+            variantCar?.appliedOffer?.discountValue ||
+            product?.appliedOffer?.discountValue ||
+            null,
+          isActive: variantCar?.offerPrices?.finalPrice
+            ? true
+            : false || product?.offerPrices?.finalPrice
+            ? true
+            : false || null,
+        },
       });
     }
 

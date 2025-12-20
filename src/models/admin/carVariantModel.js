@@ -4,7 +4,7 @@ const offerSchema = new mongoose.Schema(
   {
     discountType: {
       type: String,
-      enum: ["Percentage", "Flat"],
+      enum: ["Percentage", "Price"],
       required: true,
     },
     discountValue: {
@@ -24,6 +24,11 @@ const offerSchema = new mongoose.Schema(
     isActive: {
       type: Boolean,
       default: true,
+      index: true,
+    },
+    isConfigured: {
+      type: Boolean,
+      default: false,
       index: true,
     },
   },

@@ -222,6 +222,15 @@ route.patch(
   checkSession,
   softDelete
 );
+// ================= PRODUCT OFFER ===================
+const {
+  addProductOffer,
+} = require("../controllers/admin/product.offer.controller");
+route.put(
+  "/products-management/add-offer/:productId",
+  checkSession,
+  addProductOffer
+);
 
 // ====================== ORDER ======================
 const {

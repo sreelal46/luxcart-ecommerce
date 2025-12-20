@@ -476,15 +476,51 @@ ${
     }
   });
 
+  // view offers
+  document.querySelectorAll(".view-offer-btn").forEach((btn) => {
+    btn.addEventListener("click", () => {
+      document.getElementById("viewDiscountType").textContent =
+        btn.dataset.discountType;
+
+      document.getElementById("viewDiscountValue").textContent =
+        btn.dataset.discountType === "Percentage"
+          ? btn.dataset.discountValue + "%"
+          : "₹" + btn.dataset.discountValue;
+
+      document.getElementById("viewValidFrom").textContent = new Date(
+        btn.dataset.validFrom
+      ).toLocaleString();
+
+      document.getElementById("viewValidTo").textContent = new Date(
+        btn.dataset.validTo
+      ).toLocaleString();
+    });
+  });
+
   // Remove Offer Modal
   document.addEventListener("click", (e) => {
-    if (e.target.closest(".remove-offer-btn")) {
-      const btn = e.target.closest(".remove-offer-btn");
+    const btn = e.target.closest(".remove-offer-btn");
+    if (!btn) return;
 
-      document.getElementById("removeOfferProductId").value = btn.dataset.id;
-      document.getElementById("removeOfferProductName").innerText =
-        btn.dataset.name;
-    }
+    document.getElementById("removeOfferProductId").value = btn.dataset.id;
+    document.getElementById("removeOfferProductName").innerText =
+      btn.dataset.name;
+
+    document.getElementById("removeDiscountType").innerText =
+      btn.dataset.discountType || "—";
+
+    document.getElementById("removeDiscountValue").innerText =
+      btn.dataset.discountType === "Percentage"
+        ? `${btn.dataset.discountValue}%`
+        : `₹${btn.dataset.discountValue}`;
+
+    document.getElementById("removeValidFrom").innerText = btn.dataset.validFrom
+      ? new Date(btn.dataset.validFrom).toLocaleString()
+      : "—";
+
+    document.getElementById("removeValidTo").innerText = btn.dataset.validTo
+      ? new Date(btn.dataset.validTo).toLocaleString()
+      : "—";
   });
 
   const offerForm = document.getElementById("offerForm");
@@ -498,15 +534,15 @@ ${
   const toError = document.getElementById("ValidateTotError");
 
   /* ===============================
-   HELPERS
-================================ */
+           HELPERS
+     ================================ */
   function isEmpty(value) {
     return !value || value.trim() === "";
   }
 
-  /* ===============================
-   LIVE VALIDATION
-================================ */
+  /*===============================
+        LIVE VALIDATION
+   ============================== */
 
   // Discount
   discountInput.addEventListener("input", () => {
@@ -569,8 +605,18 @@ ${
   /* ===============================
    SUBMIT
 ================================ */
-  const addOfferBtn = document.getElementById("addOffer");
-  const categoryId = addOfferBtn.getAttribute("data-id");
+  document.addEventListener("click", (e) => {
+    const btn = e.target.closest(".add-offer-btn");
+    if (!btn) return;
+
+    const categoryId = btn.dataset.id;
+    const categoryName = btn.dataset.name;
+
+    console.log(categoryId, categoryName);
+
+    // store for submit
+    document.getElementById("offerForm").dataset.categoryId = categoryId;
+  });
 
   // helper: normalize date to minute precision
   function normalizeToMinute(date) {
@@ -631,6 +677,7 @@ ${
     }
 
     if (!isValid) return;
+    const categoryId = offerForm.dataset.categoryId;
 
     try {
       const res = await axios.put(
@@ -673,12 +720,24 @@ ${
     }
   });
 
-  const removeOffer = document.getElementById("removeOffer");
-  const confirmRemoveOffer = document.getElementById("confirmRemoveOffer");
-  const dltCategoryId = removeOffer.getAttribute("data-id");
+  document.addEventListener("click", (e) => {
+    const btn = e.target.closest(".remove-offer-btn");
+    if (!btn) return;
+
+    const categoryId = btn.dataset.id;
+    const categoryName = btn.dataset.name;
+
+    console.log("Delete offer for:", categoryId, categoryName);
+
+    // store ID for confirmation button
+    document.getElementById("confirmRemoveOffer").dataset.categoryId =
+      categoryId;
+  });
 
   confirmRemoveOffer.addEventListener("click", async () => {
     try {
+      const dltCategoryId =
+        document.getElementById("confirmRemoveOffer").dataset.categoryId;
       const res = await axios.patch(
         `/admin/categorys-management/remove-offer/${dltCategoryId}`
       );

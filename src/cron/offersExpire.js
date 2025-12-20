@@ -51,10 +51,11 @@ cron.schedule("* * * * *", async () => {
         await CarVariant.updateMany({ product_id: { $in: carIds } }, pipeline);
       }
     }
-    console.log("================================================");
-    console.log("[CRON] Expired category offers handled correctly");
-    console.log("================================================");
   } catch (err) {
     console.error("[CRON ERROR]", err);
   }
 });
+
+console.log("================================================");
+console.log("[CRON] Expired category offers handled correctly");
+console.log("================================================");

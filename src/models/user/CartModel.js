@@ -31,6 +31,17 @@ const cartItemSchema = new Schema(
     },
     lineTotal: { type: Number, default: 0 },
     price: { type: Number, required: true },
+    offerPrice: { type: Number, default: null },
+    appliedOffer: {
+      source: {
+        type: String, // "PRODUCT" | "CATEGORY"
+      },
+      discountType: {
+        type: String, // "Percentage" | "Price"
+      },
+      discountValue: Number,
+      isActive: Boolean,
+    },
   },
   { _id: true, timestamps: true }
 );

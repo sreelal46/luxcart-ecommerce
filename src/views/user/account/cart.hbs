@@ -51,9 +51,19 @@
             {{!-- PRICE --}}
             {{#if carId}}
             <div class="price-box">
-              <span class="offer-price">₹ {{formatPrice this.price}}</span>
+              {{#if this.appliedOffer.isActive}}
+              <span class="offer-price">₹ {{formatPrice this.offerPrice}}</span>
               <span class="original-price">₹ {{formatPrice this.price}}</span>
-              <span class="discount">(50% OFF)</span>
+              <span class="discount">
+                {{#if (eq this.appliedOffer.discountType "Percentage")}}
+                {{this.appliedOffer.discountValue}}% OFF
+                {{else}}
+                ₹ {{formatPrice this.appliedOffer.discountValue}}
+                {{/if}}
+              </span>
+              {{else}}
+              <span class="offer-price">₹ {{formatPrice this.price}}</span>
+              {{/if}}
             </div>
             {{else}}
             <div class="price-box">

@@ -35,6 +35,11 @@ const categorySchema = mongoose.Schema(
         default: false,
         index: true,
       },
+      isConfigured: {
+        type: Boolean,
+        default: false,
+        index: true,
+      },
     },
     discountedPrice: { type: Number, default: null },
     isListed: { type: Boolean, default: true },

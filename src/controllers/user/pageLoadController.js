@@ -188,7 +188,10 @@ const loadSingleCarProduct = async (req, res, next) => {
       .populate("brand_id", "name")
       .populate("category_id", "name")
       .populate("product_type_id", "name")
-      .populate("variantIds", "image_url stock color price")
+      .populate(
+        "variantIds",
+        "image_url stock color price offerPrices appliedOffer"
+      )
       .lean();
     // Active variant
     if (!selectedVariantId) {
