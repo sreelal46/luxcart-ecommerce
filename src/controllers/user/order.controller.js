@@ -73,10 +73,10 @@ const createOrder = async (req, res, next) => {
       const taxAmount = baseAmount * (taxRate / 100);
       const itemFinalAmount = baseAmount + taxAmount;
 
-      const itemAdvance =
-        paymentMethod === "COD"
-          ? Math.round((itemFinalAmount * advancePercentage) / 100)
-          : itemFinalAmount;
+      // const itemAdvance =
+      //   paymentMethod === "COD"
+      //     ? Math.round((itemFinalAmount * advancePercentage) / 100)
+      //     : itemFinalAmount;
 
       return {
         carId: item.carId || null,
@@ -87,9 +87,10 @@ const createOrder = async (req, res, next) => {
           : item.accessoryId?.name || null,
         quantity: item.quantity,
         price: item.price,
+        offerPrice: item.offerPrice || null,
         accessoryTax: item.accessoryId ? taxAmount : null,
         totalItemAmount: item.accessoryId ? itemFinalAmount : item.price,
-        advanceAmount: itemAdvance,
+        advanceAmount: item.advanceAmount,
       };
     });
 

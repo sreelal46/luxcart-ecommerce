@@ -48,7 +48,7 @@ const updateOfferStatuses = async (now) => {
       "offer.isActive": true,
       "offer.validTo": { $lte: now },
     },
-    { $set: { "offer.isActive": false } }
+    { $set: { "offer.isActive": false, "offer.isConfigured": false } }
   );
 
   // Activate accessory product offers

@@ -283,34 +283,20 @@ const addToCart = async (req, res, next) => {
     }
 
     if (!item) {
+      // Let the pre-save hook handle price and offer calculation
       cart.items.push({
         carId: productType === "car" ? productId : null,
         accessoryId: productType === "accessory" ? productId : null,
         variantId: productType === "car" ? variantId : null,
         quantity: 1,
-        price: variantCar?.price || product.price,
-        offerPrice:
-          variantCar?.offerPrices?.finalPrice ||
-          product?.offerPrices?.finalPrice ||
-          null,
+        // These will be calculated in pre-save hook
+        price: 0,
+        offerPrice: null,
         appliedOffer: {
-          source:
-            variantCar?.appliedOffer?.source ||
-            product?.appliedOffer?.source ||
-            null,
-          discountType:
-            variantCar?.appliedOffer?.discountType ||
-            product?.appliedOffer?.discountType ||
-            null,
-          discountValue:
-            variantCar?.appliedOffer?.discountValue ||
-            product?.appliedOffer?.discountValue ||
-            null,
-          isActive: variantCar?.offerPrices?.finalPrice
-            ? true
-            : false || product?.offerPrices?.finalPrice
-            ? true
-            : false || null,
+          source: null,
+          discountType: null,
+          discountValue: null,
+          isActive: false,
         },
       });
     }

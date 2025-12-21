@@ -410,11 +410,11 @@ document.addEventListener("click", function (e) {
 
   document.getElementById("viewValidFrom").textContent = new Date(
     validFrom
-  ).toLocaleDateString("en-IN");
+  ).toLocaleString();
 
   document.getElementById("viewValidTo").textContent = new Date(
     validTo
-  ).toLocaleDateString("en-IN");
+  ).toLocaleString();
 
   // Store data ONLY on delete-from-view button
   const deleteBtn = document.getElementById("deleteOfferFromView");
@@ -557,7 +557,7 @@ document.addEventListener("click", (e) => {
 
   const confirmBtn = document.getElementById("confirmRemoveOffer");
 
-  // 🔥 reset previous state
+  // reset previous state
   confirmBtn.dataset.productId = "";
   confirmBtn.dataset.productType = "";
 
