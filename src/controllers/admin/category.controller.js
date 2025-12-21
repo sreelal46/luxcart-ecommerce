@@ -137,7 +137,6 @@ const addOfferToCategory = async (req, res, next) => {
     const { discountType, discountValue, validFrom, validTo } = req.body;
 
     /* ========== VALIDATION ========== */
-
     if (!["Percentage", "Price"].includes(discountType)) {
       return res
         .status(BAD_REQUEST)
@@ -168,8 +167,7 @@ const addOfferToCategory = async (req, res, next) => {
     const now = new Date();
     const isActive = new Date(validFrom) <= now && new Date(validTo) > now;
 
-    /* ========== UPDATE CATEGORY ========== */
-
+    /* ========== UPDATE CATEGORY - CRON WILL HANDLE PRODUCT UPDATES ========== */
     const category = await Category.findByIdAndUpdate(
       categoryId,
       {
@@ -177,8 +175,8 @@ const addOfferToCategory = async (req, res, next) => {
           offer: {
             discountType,
             discountValue,
-            validFrom,
-            validTo,
+            validFrom: new Date(validFrom),
+            validTo: new Date(validTo),
             isActive,
             isConfigured: true,
           },
@@ -193,162 +191,14 @@ const addOfferToCategory = async (req, res, next) => {
         .json({ success: false, alert: "Category not found" });
     }
 
-    /* ========== PRICE CALCULATOR ========== */
-
-    const categoryPriceExpr = {
-      $round: [
-        discountType === "Percentage"
-          ? {
-              $subtract: [
-                "$price",
-                {
-                  $multiply: ["$price", { $divide: [discountValue, 100] }],
-                },
-              ],
-            }
-          : { $subtract: ["$price", discountValue] },
-        0,
-      ],
-    };
-
-    let result;
-
-    /* ========== ACCESSORIES ========== */
-
-    if (category.product === "Accessories") {
-      result = await Accessory.updateMany({ category_id: category._id }, [
-        {
-          $set: {
-            categoryOffer: category.offer,
-            "offerPrices.categoryPrice": categoryPriceExpr,
-          },
-        },
-        {
-          $set: {
-            "offerPrices.finalPrice": {
-              $let: {
-                vars: {
-                  best: {
-                    $cond: [
-                      { $gt: ["$offerPrices.productPrice", 0] },
-                      {
-                        $min: [
-                          "$offerPrices.productPrice",
-                          "$offerPrices.categoryPrice",
-                        ],
-                      },
-                      "$offerPrices.categoryPrice",
-                    ],
-                  },
-                },
-                in: {
-                  $cond: [{ $lt: ["$$best", "$price"] }, "$$best", null],
-                },
-              },
-            },
-            appliedOffer: {
-              $cond: [
-                {
-                  $and: [
-                    { $gt: ["$offerPrices.productPrice", 0] },
-                    {
-                      $lt: [
-                        "$offerPrices.productPrice",
-                        "$offerPrices.categoryPrice",
-                      ],
-                    },
-                  ],
-                },
-                {
-                  source: "PRODUCT",
-                  discountType: "$productOffer.discountType",
-                  discountValue: "$productOffer.discountValue",
-                },
-                {
-                  source: "CATEGORY",
-                  discountType,
-                  discountValue,
-                },
-              ],
-            },
-          },
-        },
-      ]);
-    }
-
-    /* ========== CARS → VARIANTS ========== */
-
-    if (category.product === "Car") {
-      const cars = await Car.find({ category_id: category._id }, { _id: 1 });
-      const carIds = cars.map((c) => c._id);
-
-      result = await CarVariant.updateMany({ product_id: { $in: carIds } }, [
-        {
-          $set: {
-            categoryOffer: category.offer,
-            "offerPrices.categoryPrice": categoryPriceExpr,
-          },
-        },
-        {
-          $set: {
-            "offerPrices.finalPrice": {
-              $let: {
-                vars: {
-                  best: {
-                    $cond: [
-                      { $gt: ["$offerPrices.productPrice", 0] },
-                      {
-                        $min: [
-                          "$offerPrices.productPrice",
-                          "$offerPrices.categoryPrice",
-                        ],
-                      },
-                      "$offerPrices.categoryPrice",
-                    ],
-                  },
-                },
-                in: {
-                  $cond: [{ $lt: ["$$best", "$price"] }, "$$best", null],
-                },
-              },
-            },
-            appliedOffer: {
-              $cond: [
-                {
-                  $and: [
-                    { $gt: ["$offerPrices.productPrice", 0] },
-                    {
-                      $lt: [
-                        "$offerPrices.productPrice",
-                        "$offerPrices.categoryPrice",
-                      ],
-                    },
-                  ],
-                },
-                {
-                  source: "PRODUCT",
-                  discountType: "$productOffer.discountType",
-                  discountValue: "$productOffer.discountValue",
-                },
-                {
-                  source: "CATEGORY",
-                  discountType,
-                  discountValue,
-                },
-              ],
-            },
-          },
-        },
-      ]);
-    }
-
-    if (!result?.matchedCount) {
-      return res
-        .status(BAD_REQUEST)
-        .json({ success: false, alert: "No products found" });
-    }
-
-    res.status(OK).json({ success: true, alert: "Category offer applied" });
+    res.status(OK).json({
+      success: true,
+      alert: isActive
+        ? "Category offer applied. All products will update shortly."
+        : `Category offer scheduled. Will activate automatically on ${new Date(
+            validFrom
+          ).toLocaleDateString()}.`,
+    });
   } catch (err) {
     next(err);
   }
@@ -358,9 +208,10 @@ const removeOfferToCategory = async (req, res, next) => {
   try {
     const { categoryId } = req.params;
 
+    /* ========== REMOVE CATEGORY OFFER - CRON WILL HANDLE CLEANUP ========== */
     const category = await Category.findByIdAndUpdate(
       categoryId,
-      { $set: { "offer.isActive": false, "offer.isConfigured": false } },
+      { $unset: { offer: "" } },
       { new: true }
     );
 
@@ -370,48 +221,10 @@ const removeOfferToCategory = async (req, res, next) => {
         .json({ success: false, alert: "Category not found" });
     }
 
-    const pipeline = [
-      { $unset: ["categoryOffer", "offerPrices.categoryPrice"] },
-      {
-        $set: {
-          "offerPrices.finalPrice": {
-            $cond: [
-              {
-                $and: [
-                  { $gt: ["$offerPrices.productPrice", 0] },
-                  { $lt: ["$offerPrices.productPrice", "$price"] },
-                ],
-              },
-              "$offerPrices.productPrice",
-              null,
-            ],
-          },
-          appliedOffer: {
-            $cond: [
-              { $gt: ["$offerPrices.productPrice", 0] },
-              {
-                source: "PRODUCT",
-                discountType: "$productOffer.discountType",
-                discountValue: "$productOffer.discountValue",
-              },
-              null,
-            ],
-          },
-        },
-      },
-    ];
-
-    if (category.product === "Accessories") {
-      await Accessory.updateMany({ category_id: categoryId }, pipeline);
-    }
-
-    if (category.product === "Car") {
-      const cars = await Car.find({ category_id: categoryId }, { _id: 1 });
-      const carIds = cars.map((c) => c._id);
-      await CarVariant.updateMany({ product_id: { $in: carIds } }, pipeline);
-    }
-
-    res.status(OK).json({ success: true, alert: "Category offer removed" });
+    res.status(OK).json({
+      success: true,
+      alert: "Category offer removed. All product prices will reset shortly.",
+    });
   } catch (err) {
     next(err);
   }
