@@ -34,6 +34,7 @@ const offerSchema = new mongoose.Schema(
   },
   { _id: false }
 );
+
 const carVariantSchema = new mongoose.Schema(
   {
     product_id: {

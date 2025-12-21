@@ -136,6 +136,8 @@ const addOfferToCategory = async (req, res, next) => {
     const { categoryId } = req.params;
     const { discountType, discountValue, validFrom, validTo } = req.body;
 
+    /* ========== VALIDATION ========== */
+
     if (!["Percentage", "Price"].includes(discountType)) {
       return res
         .status(BAD_REQUEST)
@@ -144,11 +146,11 @@ const addOfferToCategory = async (req, res, next) => {
 
     if (
       discountType === "Percentage" &&
-      (discountValue < 1 || discountValue > 100)
+      (discountValue <= 0 || discountValue > 100)
     ) {
       return res
         .status(BAD_REQUEST)
-        .json({ success: false, alert: "Percentage must be 1–100" });
+        .json({ success: false, alert: "Percentage must be between 1–100" });
     }
 
     if (discountType === "Price" && discountValue <= 0) {
@@ -166,6 +168,14 @@ const addOfferToCategory = async (req, res, next) => {
     const now = new Date();
     const isActive = new Date(validFrom) <= now && new Date(validTo) > now;
 
+    if (!isActive) {
+      return res
+        .status(BAD_REQUEST)
+        .json({ success: false, alert: "Offer is not active yet" });
+    }
+
+    /* ========== UPDATE CATEGORY ========== */
+
     const category = await Category.findByIdAndUpdate(
       categoryId,
       {
@@ -175,8 +185,7 @@ const addOfferToCategory = async (req, res, next) => {
             discountValue,
             validFrom,
             validTo,
-            isActive,
-            isConfigured: true,
+            isActive: true,
           },
         },
       },
@@ -188,8 +197,157 @@ const addOfferToCategory = async (req, res, next) => {
         .status(BAD_REQUEST)
         .json({ success: false, alert: "Category not found" });
     }
-    console.log(category);
-    res.status(OK).json({ success: true, alert: "Category offer saved" });
+
+    /* ========== PRICE CALCULATOR ========== */
+
+    const categoryPriceExpr =
+      discountType === "Percentage"
+        ? {
+            $subtract: [
+              "$price",
+              { $multiply: ["$price", discountValue / 100] },
+            ],
+          }
+        : { $subtract: ["$price", discountValue] };
+
+    let result;
+
+    /* ========== ACCESSORIES ========== */
+
+    if (category.product === "Accessories") {
+      result = await Accessory.updateMany({ category_id: category._id }, [
+        {
+          $set: {
+            categoryOffer: category.offer,
+            "offerPrices.categoryPrice": categoryPriceExpr,
+          },
+        },
+        {
+          $set: {
+            "offerPrices.finalPrice": {
+              $let: {
+                vars: {
+                  best: {
+                    $cond: [
+                      { $gt: ["$offerPrices.productPrice", 0] },
+                      {
+                        $min: [
+                          "$offerPrices.productPrice",
+                          "$offerPrices.categoryPrice",
+                        ],
+                      },
+                      "$offerPrices.categoryPrice",
+                    ],
+                  },
+                },
+                in: {
+                  $cond: [{ $lt: ["$$best", "$price"] }, "$$best", null],
+                },
+              },
+            },
+            appliedOffer: {
+              $cond: [
+                {
+                  $and: [
+                    { $gt: ["$offerPrices.productPrice", 0] },
+                    {
+                      $lt: [
+                        "$offerPrices.productPrice",
+                        "$offerPrices.categoryPrice",
+                      ],
+                    },
+                  ],
+                },
+                {
+                  source: "PRODUCT",
+                  discountType: "$productOffer.discountType",
+                  discountValue: "$productOffer.discountValue",
+                },
+                {
+                  source: "CATEGORY",
+                  discountType,
+                  discountValue,
+                },
+              ],
+            },
+          },
+        },
+      ]);
+    }
+
+    /* ========== CARS → VARIANTS ========== */
+
+    if (category.product === "Car") {
+      const cars = await Car.find({ category_id: category._id }, { _id: 1 });
+      const carIds = cars.map((c) => c._id);
+
+      result = await CarVariant.updateMany({ product_id: { $in: carIds } }, [
+        {
+          $set: {
+            categoryOffer: category.offer,
+            "offerPrices.categoryPrice": categoryPriceExpr,
+          },
+        },
+        {
+          $set: {
+            "offerPrices.finalPrice": {
+              $let: {
+                vars: {
+                  best: {
+                    $cond: [
+                      { $gt: ["$offerPrices.productPrice", 0] },
+                      {
+                        $min: [
+                          "$offerPrices.productPrice",
+                          "$offerPrices.categoryPrice",
+                        ],
+                      },
+                      "$offerPrices.categoryPrice",
+                    ],
+                  },
+                },
+                in: {
+                  $cond: [{ $lt: ["$$best", "$price"] }, "$$best", null],
+                },
+              },
+            },
+            appliedOffer: {
+              $cond: [
+                {
+                  $and: [
+                    { $gt: ["$offerPrices.productPrice", 0] },
+                    {
+                      $lt: [
+                        "$offerPrices.productPrice",
+                        "$offerPrices.categoryPrice",
+                      ],
+                    },
+                  ],
+                },
+                {
+                  source: "PRODUCT",
+                  discountType: "$productOffer.discountType",
+                  discountValue: "$productOffer.discountValue",
+                },
+                {
+                  source: "CATEGORY",
+                  discountType,
+                  discountValue,
+                },
+              ],
+            },
+          },
+        },
+      ]);
+    }
+
+    if (!result?.matchedCount) {
+      return res
+        .status(BAD_REQUEST)
+        .json({ success: false, alert: "No products found" });
+    }
+
+    res.status(OK).json({ success: true, alert: "Category offer applied" });
   } catch (err) {
     next(err);
   }
@@ -201,14 +359,7 @@ const removeOfferToCategory = async (req, res, next) => {
 
     const category = await Category.findByIdAndUpdate(
       categoryId,
-      {
-        $set: {
-          "offer.isActive": false,
-          "offer.isConfigured": false,
-          "offer.validFrom": null,
-          "offer.validTo": null,
-        },
-      },
+      { $set: { "offer.isActive": false } },
       { new: true }
     );
 
@@ -219,9 +370,7 @@ const removeOfferToCategory = async (req, res, next) => {
     }
 
     const pipeline = [
-      {
-        $unset: ["categoryOffer", "offerPrices.categoryPrice"],
-      },
+      { $unset: ["categoryOffer", "offerPrices.categoryPrice"] },
       {
         $set: {
           "offerPrices.finalPrice": {
@@ -238,12 +387,7 @@ const removeOfferToCategory = async (req, res, next) => {
           },
           appliedOffer: {
             $cond: [
-              {
-                $and: [
-                  { $gt: ["$offerPrices.productPrice", 0] },
-                  { $lt: ["$offerPrices.productPrice", "$price"] },
-                ],
-              },
+              { $gt: ["$offerPrices.productPrice", 0] },
               {
                 source: "PRODUCT",
                 discountType: "$productOffer.discountType",
@@ -263,13 +407,10 @@ const removeOfferToCategory = async (req, res, next) => {
     if (category.product === "Car") {
       const cars = await Car.find({ category_id: categoryId }, { _id: 1 });
       const carIds = cars.map((c) => c._id);
-
       await CarVariant.updateMany({ product_id: { $in: carIds } }, pipeline);
     }
 
-    res
-      .status(OK)
-      .json({ success: true, alert: "Category offer removed successfully" });
+    res.status(OK).json({ success: true, alert: "Category offer removed" });
   } catch (err) {
     next(err);
   }

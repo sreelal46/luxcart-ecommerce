@@ -1,11 +1,11 @@
 const mongoose = require("mongoose");
 const { Schema } = mongoose;
 
-const offerSchema = new Schema(
+const offerSchema = new mongoose.Schema(
   {
     discountType: {
       type: String,
-      enum: ["Percentage", "Flat"],
+      enum: ["Percentage", "Price"],
       required: true,
     },
     discountValue: {
