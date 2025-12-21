@@ -128,7 +128,6 @@ document.addEventListener("DOMContentLoaded", () => {
     showCarsBtn.classList.remove("active");
   });
 });
-
 // ---------- STATE ----------
 const state = {
   page: 1,
@@ -151,6 +150,7 @@ async function loadProducts(page = 1, search = state.search) {
   if (!res.data.success) return;
 
   const { fullProducts, totalPages } = res.data;
+  console.log(fullProducts);
   state.page = page;
   state.search = search;
 
@@ -175,8 +175,78 @@ function renderProducts(data) {
 
   data.forEach((item, index) => {
     const isCar = !!item.engine;
+    const variant = isCar ? item.variantIds?.[0] : null;
+    const price = isCar ? variant?.price : item.price;
 
-    const price = isCar ? item.variantIds?.[0]?.price : item.price;
+    const offer = isCar ? variant?.productOffer : item.productOffer;
+
+    /* ===== OFFER BADGE ===== */
+    let offerBadge = `
+      <span class="badge rounded-pill bg-danger">NO OFFER</span>
+    `;
+
+    if (offer?.isActive) {
+      if (offer.discountType === "Percentage") {
+        offerBadge = `
+          <span class="badge rounded-pill bg-success">
+            ${offer.discountValue}% OFF
+          </span>
+        `;
+      } else {
+        offerBadge = `
+          <span class="badge rounded-pill bg-success">
+            ₹ ${offer.discountValue.toLocaleString("en-IN")} OFF
+          </span>
+        `;
+      }
+    }
+
+    /* ===== OFFER ACTION BUTTON ===== */
+    let offerActionBtn = `
+      <div data-bs-toggle="tooltip" title="Add offer">
+        <button
+          class="btn btn-sm btn-outline-warning add-offer-btn"
+          data-bs-toggle="modal"
+          data-bs-target="#offerModal"
+          data-id="${item._id}"
+          data-producttype="${isCar ? "car" : "accessory"}"
+          data-name="${item.name}">
+          <i class="bi bi-percent"></i>
+        </button>
+      </div>
+    `;
+
+    if (offer?.isConfigured) {
+      offerActionBtn = `
+        <div data-bs-toggle="tooltip" title="View configured offer">
+          <button
+            class="btn btn-sm btn-outline-info view-offer-btn"
+            data-bs-toggle="modal"
+            data-bs-target="#offerViewModal"
+            data-discount-type="${offer.discountType}"
+            data-discount-value="${offer.discountValue}"
+            data-valid-from="${offer.validFrom}"
+            data-valid-to="${offer.validTo}"
+            data-productid="${item._id}">
+            <i class="bi bi-eye"></i>
+          </button>
+        </div>
+      `;
+    }
+
+    if (offer?.isActive) {
+      offerActionBtn = `
+        <div data-bs-toggle="tooltip" title="Remove offer">
+          <button
+            class="btn btn-sm btn-outline-danger remove-offer-btn"
+            data-bs-toggle="modal"
+            data-bs-target="#removeOfferModal"
+            data-productid="${item._id}">
+            <i class="bi bi-trash"></i>
+          </button>
+        </div>
+      `;
+    }
 
     const viewLink = isCar
       ? `/admin/products-management/view-car-product/${item._id}`
@@ -204,50 +274,35 @@ function renderProducts(data) {
         </td>
 
         <td class="text-center">
-          <span class="badge rounded-pill bg-success">
-            10% OFF
-          </span>
+          ${offerBadge}
         </td>
 
         <td class="text-center">
           ${
             item.isListed
-              ? `<span class="badge bg-success-subtle text-success fw-semibold">Listed</span>`
-              : `<span class="badge bg-danger-subtle text-danger fw-semibold">Unlisted</span>`
+              ? `<span class="badge bg-success-subtle text-success">Listed</span>`
+              : `<span class="badge bg-danger-subtle text-danger">Unlisted</span>`
           }
         </td>
 
         <td class="text-center">
-          <div class="d-flex justify-content-center align-items-center gap-2">
+          <div class="d-flex justify-content-center gap-2">
+            ${offerActionBtn}
 
-            <!-- Add Offer -->
-            <div data-bs-toggle="tooltip" title="Add offer">
-              <button
-                class="btn btn-sm btn-outline-warning add-offer-btn"
-                data-productid="${item._id}"
-                data-bs-toggle="modal"
-                data-bs-target="#offerModal">
-                <i class="bi bi-percent"></i>
-              </button>
-            </div>
-
-            <!-- View -->
             <div data-bs-toggle="tooltip" title="View product">
               <a href="${viewLink}" class="btn btn-sm btn-outline-primary">
                 <i class="bi bi-eye"></i>
               </a>
             </div>
 
-            <!-- Edit -->
             <div data-bs-toggle="tooltip" title="Edit product">
               <a href="${editLink}" class="btn btn-sm btn-outline-success">
                 <i class="bi bi-pencil"></i>
               </a>
             </div>
 
-            <!-- List / Unlist -->
             <div
-              class="form-check form-switch m-0"
+              class="form-check form-switch"
               data-bs-toggle="tooltip"
               title="${item.isListed ? "Unlist product" : "List product"}">
               <input
@@ -258,7 +313,6 @@ function renderProducts(data) {
                 data-bs-toggle="modal"
                 data-bs-target="#confirmListModal">
             </div>
-
           </div>
         </td>
       </tr>
@@ -439,6 +493,12 @@ offerForm.addEventListener("submit", async (e) => {
         timer: 1400,
         showConfirmButton: false,
       }).then(() => location.reload());
+    } else {
+      Swal.fire({
+        icon: "error",
+        title: "Error",
+        text: data?.alert || "Somthing went wrong",
+      });
     }
   } catch (err) {
     Swal.fire({
@@ -460,7 +520,7 @@ document.addEventListener("click", (e) => {
 confirmRemoveOffer.addEventListener("click", async () => {
   try {
     const res = await axios.patch(
-      `/admin/products/remove-offer/${confirmRemoveOffer.dataset.productId}`,
+      `/admin/products-management/remove-offer/${confirmRemoveOffer.dataset.productId}`,
       {
         productType: confirmRemoveOffer.dataset.productType,
       }
@@ -477,6 +537,12 @@ confirmRemoveOffer.addEventListener("click", async () => {
         timer: 1200,
         showConfirmButton: false,
       }).then(() => location.reload());
+    } else {
+      Swal.fire({
+        icon: "error",
+        title: "Error",
+        text: data?.alert || "Somthing went wrong",
+      });
     }
   } catch {
     Swal.fire("Error", "Failed to remove offer", "error");

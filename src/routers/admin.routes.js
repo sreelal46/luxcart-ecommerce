@@ -130,6 +130,8 @@ route.patch(
   checkSession,
   softDeleteCategory
 );
+
+//offers
 route.put("/categorys-management/add-offer/:categoryId", addOfferToCategory);
 route.patch(
   "/categorys-management/remove-offer/:categoryId",
@@ -225,11 +227,17 @@ route.patch(
 // ================= PRODUCT OFFER ===================
 const {
   addProductOffer,
+  removeProductOffer,
 } = require("../controllers/admin/product.offer.controller");
 route.put(
   "/products-management/add-offer/:productId",
   checkSession,
   addProductOffer
+);
+route.put(
+  "/products-management/remove-offer/:productId",
+  checkSession,
+  removeProductOffer
 );
 
 // ====================== ORDER ======================

@@ -8,8 +8,9 @@ const addProductOffer = async (req, res, next) => {
     const { discountType, discountValue, validFrom, validTo, productType } =
       req.body;
     const { productId } = req.params;
-    console.log(req.body);
-    console.log("ProductId", productId);
+
+    /* ========== VALIDATION ========== */
+
     if (!["Percentage", "Price"].includes(discountType)) {
       return res
         .status(BAD_REQUEST)
@@ -18,7 +19,7 @@ const addProductOffer = async (req, res, next) => {
 
     if (
       discountType === "Percentage" &&
-      (discountValue < 1 || discountValue > 100)
+      (discountValue <= 0 || discountValue > 100)
     ) {
       return res
         .status(BAD_REQUEST)
@@ -40,61 +41,219 @@ const addProductOffer = async (req, res, next) => {
     const now = new Date();
     const isActive = new Date(validFrom) <= now && new Date(validTo) > now;
 
+    // if (!isActive) {
+    //   return res
+    //     .status(BAD_REQUEST)
+    //     .json({ success: false, alert: "Offer is not active yet" });
+    // }
+
     const offerPayload = {
       discountType,
       discountValue,
       validFrom,
       validTo,
-      isActive,
+      isActive: isActive,
       isConfigured: true,
     };
 
+    /* ========== PRICE EXPRESSION ========== */
+
+    const productPriceExpr = {
+      $round: [
+        discountType === "Percentage"
+          ? {
+              $subtract: [
+                "$price",
+                {
+                  $multiply: ["$price", { $divide: [discountValue, 100] }],
+                },
+              ],
+            }
+          : { $subtract: ["$price", discountValue] },
+        0,
+      ],
+    };
+
+    /* ========== ACCESSORY ========== */
+
     if (productType === "accessory") {
-      await Accessory.findByIdAndUpdate(productId, {
-        $set: { productOffer: offerPayload },
-      });
+      await Accessory.updateOne({ _id: productId }, [
+        {
+          $set: {
+            productOffer: offerPayload,
+            "offerPrices.productPrice": productPriceExpr,
+          },
+        },
+        {
+          $set: {
+            "offerPrices.finalPrice": {
+              $let: {
+                vars: {
+                  best: {
+                    $cond: [
+                      { $gt: ["$offerPrices.categoryPrice", 0] },
+                      {
+                        $min: [
+                          "$offerPrices.productPrice",
+                          "$offerPrices.categoryPrice",
+                        ],
+                      },
+                      "$offerPrices.productPrice",
+                    ],
+                  },
+                },
+                in: {
+                  $cond: [{ $lt: ["$$best", "$price"] }, "$$best", null],
+                },
+              },
+            },
+            appliedOffer: {
+              $cond: [
+                {
+                  $and: [
+                    { $gt: ["$offerPrices.categoryPrice", 0] },
+                    {
+                      $lt: [
+                        "$offerPrices.categoryPrice",
+                        "$offerPrices.productPrice",
+                      ],
+                    },
+                  ],
+                },
+                {
+                  source: "CATEGORY",
+                  discountType: "$categoryOffer.discountType",
+                  discountValue: "$categoryOffer.discountValue",
+                },
+                {
+                  source: "PRODUCT",
+                  discountType,
+                  discountValue,
+                },
+              ],
+            },
+          },
+        },
+      ]);
     }
+
+    /* ========== CAR → VARIANTS ========== */
 
     if (productType === "car") {
-      await CarVariant.updateMany(
-        { product_id: productId },
-        { $set: { productOffer: offerPayload } }
-      );
+      await CarVariant.updateMany({ product_id: productId }, [
+        {
+          $set: {
+            productOffer: offerPayload,
+            "offerPrices.productPrice": productPriceExpr,
+          },
+        },
+        {
+          $set: {
+            "offerPrices.finalPrice": {
+              $let: {
+                vars: {
+                  best: {
+                    $cond: [
+                      { $gt: ["$offerPrices.categoryPrice", 0] },
+                      {
+                        $min: [
+                          "$offerPrices.productPrice",
+                          "$offerPrices.categoryPrice",
+                        ],
+                      },
+                      "$offerPrices.productPrice",
+                    ],
+                  },
+                },
+                in: {
+                  $cond: [{ $lt: ["$$best", "$price"] }, "$$best", null],
+                },
+              },
+            },
+            appliedOffer: {
+              $cond: [
+                {
+                  $and: [
+                    { $gt: ["$offerPrices.categoryPrice", 0] },
+                    {
+                      $lt: [
+                        "$offerPrices.categoryPrice",
+                        "$offerPrices.productPrice",
+                      ],
+                    },
+                  ],
+                },
+                {
+                  source: "CATEGORY",
+                  discountType: "$categoryOffer.discountType",
+                  discountValue: "$categoryOffer.discountValue",
+                },
+                {
+                  source: "PRODUCT",
+                  discountType,
+                  discountValue,
+                },
+              ],
+            },
+          },
+        },
+      ]);
     }
 
-    return res
-      .status(OK)
-      .json({ success: true, alert: "Product offer applied" });
+    res.status(OK).json({ success: true, alert: "Product offer applied" });
   } catch (err) {
-    console.error(err);
     next(err);
   }
 };
+
 const removeProductOffer = async (req, res, next) => {
   try {
     const { productId } = req.params;
     const { productType } = req.body;
 
-    const unsetPayload = {
-      productOffer: null,
-      "offerPrices.productPrice": null,
-      appliedOffer: null,
-    };
+    const pipeline = [
+      {
+        $unset: ["productOffer", "offerPrices.productPrice"],
+      },
+      {
+        $set: {
+          "offerPrices.finalPrice": {
+            $cond: [
+              {
+                $and: [
+                  { $gt: ["$offerPrices.categoryPrice", 0] },
+                  { $lt: ["$offerPrices.categoryPrice", "$price"] },
+                ],
+              },
+              "$offerPrices.categoryPrice",
+              null,
+            ],
+          },
+          appliedOffer: {
+            $cond: [
+              { $gt: ["$offerPrices.categoryPrice", 0] },
+              {
+                source: "CATEGORY",
+                discountType: "$categoryOffer.discountType",
+                discountValue: "$categoryOffer.discountValue",
+              },
+              null,
+            ],
+          },
+        },
+      },
+    ];
 
     if (productType === "accessory") {
-      await Accessory.findByIdAndUpdate(productId, { $set: unsetPayload });
+      await Accessory.updateOne({ _id: productId }, pipeline);
     }
 
     if (productType === "car") {
-      await CarVariant.updateMany(
-        { product_id: productId },
-        { $set: unsetPayload }
-      );
+      await CarVariant.updateMany({ product_id: productId }, pipeline);
     }
 
     res.status(OK).json({ success: true, alert: "Product offer removed" });
   } catch (err) {
-    console.error(err);
     next(err);
   }
 };

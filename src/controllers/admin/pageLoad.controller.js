@@ -174,7 +174,10 @@ const loadProduct = async (req, res, next) => {
       .sort({ createdAt: -1 })
       .populate("brand_id", "name")
       .populate("category_id", "name")
-      .populate("variantIds", "price stock")
+      .populate(
+        "variantIds",
+        "price stock offerPrices appliedOffer productOffer"
+      )
       .skip((page - 1) * limit)
       .limit(limit)
       .lean();
@@ -217,7 +220,10 @@ const loadProduct = async (req, res, next) => {
       .populate("brand_id", "name")
       .populate("category_id", "name")
       .populate("product_type_id", "name")
-      .populate("variantIds", "price stock")
+      .populate(
+        "variantIds",
+        "price stock offerPrices appliedOffer productOffer"
+      )
       .lean();
 
     const accessories = await Accessory.find({})

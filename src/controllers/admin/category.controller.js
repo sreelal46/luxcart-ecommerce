@@ -200,15 +200,21 @@ const addOfferToCategory = async (req, res, next) => {
 
     /* ========== PRICE CALCULATOR ========== */
 
-    const categoryPriceExpr =
-      discountType === "Percentage"
-        ? {
-            $subtract: [
-              "$price",
-              { $multiply: ["$price", discountValue / 100] },
-            ],
-          }
-        : { $subtract: ["$price", discountValue] };
+    const categoryPriceExpr = {
+      $round: [
+        discountType === "Percentage"
+          ? {
+              $subtract: [
+                "$price",
+                {
+                  $multiply: ["$price", { $divide: [discountValue, 100] }],
+                },
+              ],
+            }
+          : { $subtract: ["$price", discountValue] },
+        0,
+      ],
+    };
 
     let result;
 
