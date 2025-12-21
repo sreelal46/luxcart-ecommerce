@@ -41,12 +41,6 @@ const addProductOffer = async (req, res, next) => {
     const now = new Date();
     const isActive = new Date(validFrom) <= now && new Date(validTo) > now;
 
-    // if (!isActive) {
-    //   return res
-    //     .status(BAD_REQUEST)
-    //     .json({ success: false, alert: "Offer is not active yet" });
-    // }
-
     const offerPayload = {
       discountType,
       discountValue,
@@ -210,6 +204,9 @@ const removeProductOffer = async (req, res, next) => {
   try {
     const { productId } = req.params;
     const { productType } = req.body;
+
+    console.log("productId", productId);
+    console.log("productType", productType);
 
     const pipeline = [
       {

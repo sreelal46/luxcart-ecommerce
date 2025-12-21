@@ -168,12 +168,6 @@ const addOfferToCategory = async (req, res, next) => {
     const now = new Date();
     const isActive = new Date(validFrom) <= now && new Date(validTo) > now;
 
-    if (!isActive) {
-      return res
-        .status(BAD_REQUEST)
-        .json({ success: false, alert: "Offer is not active yet" });
-    }
-
     /* ========== UPDATE CATEGORY ========== */
 
     const category = await Category.findByIdAndUpdate(
@@ -185,7 +179,8 @@ const addOfferToCategory = async (req, res, next) => {
             discountValue,
             validFrom,
             validTo,
-            isActive: true,
+            isActive,
+            isConfigured: true,
           },
         },
       },
@@ -365,7 +360,7 @@ const removeOfferToCategory = async (req, res, next) => {
 
     const category = await Category.findByIdAndUpdate(
       categoryId,
-      { $set: { "offer.isActive": false } },
+      { $set: { "offer.isActive": false, "offer.isConfigured": false } },
       { new: true }
     );
 

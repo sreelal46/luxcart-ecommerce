@@ -79,6 +79,10 @@
                 ₹ {{formatPrice this.variantIds.[0].appliedOffer.discountValue}} OFF
               </span>
               {{/if}}
+              {{else if this.variantIds.[0].productOffer.isConfigured}}
+              <span class="badge rounded-pill bg-success">
+                CONFIGUERD
+              </span>
               {{else}}
               <span class="badge rounded-pill bg-danger">
                 NO OFFER
@@ -95,6 +99,10 @@
                 ₹ {{formatPrice this.appliedOffer.discountValue}} OFF
               </span>
               {{/if}}
+              {{else if this.productOffer.isConfigured}}
+              <span class="badge rounded-pill bg-success">
+                CONFIGUERD
+              </span>
               {{else}}
               <span class="badge rounded-pill bg-danger">
                 NO OFFER
@@ -135,7 +143,8 @@
                     data-discount-type="{{this.variantIds.[0].productOffer.discountType}}"
                     data-discount-value="{{this.variantIds.[0].productOffer.discountValue}}"
                     data-valid-from="{{this.variantIds.[0].productOffer.validFrom}}"
-                    data-valid-to="{{this.variantIds.[0].productOffer.validTo}}" data-productid="{{this._id}}">
+                    data-valid-to="{{this.variantIds.[0].productOffer.validTo}}" data-productid="{{this._id}}"
+                    data-producttype="car">
                     <i class="bi bi-eye"></i>
                   </button>
                 </div>
@@ -151,7 +160,6 @@
                 {{/if}}
                 {{else}}
                 {{#if this.offer.productOffer.isActive}}
-                <!-- Add Offer -->
                 <div data-bs-toggle="tooltip" title="Remove offer">
                   <button class="btn btn-sm btn-outline-danger remove-offer-btn" data-bs-toggle="modal"
                     data-bs-target="#removeOfferModal" data-id="{{this._id}}" data-producttype="accessory"
@@ -165,7 +173,8 @@
                   <button class="btn btn-sm btn-outline-info view-offer-btn" data-bs-toggle="modal"
                     data-bs-target="#offerViewModal" data-discount-type="{{this.productOffer.discountType}}"
                     data-discount-value="{{this.productOffer.discountValue}}"
-                    data-valid-from="{{this.productOffer.validFrom}}" data-valid-to="{{this.productOffer.validTo}}">
+                    data-valid-from="{{this.productOffer.validFrom}}" data-valid-to="{{this.productOffer.validTo}}"
+                    data-producttype="accessory">
                     <i class="bi bi-eye"></i>
                   </button>
                 </div>
@@ -486,11 +495,18 @@
 
       </div>
 
-      <div class="modal-footer">
+      <div class="modal-footer d-flex gap-2">
+        <button id="deleteOfferFromView" class="btn btn-danger w-100" data-bs-toggle="modal"
+          data-bs-target="#removeOfferModal">
+          Delete Offer
+        </button>
+
+
         <button class="btn btn-secondary w-100" data-bs-dismiss="modal">
           Close
         </button>
       </div>
+
 
     </div>
   </div>
@@ -519,6 +535,7 @@
     </div>
   </div>
 </div>
+
 
 
 

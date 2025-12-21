@@ -234,7 +234,7 @@ route.put(
   checkSession,
   addProductOffer
 );
-route.put(
+route.patch(
   "/products-management/remove-offer/:productId",
   checkSession,
   removeProductOffer

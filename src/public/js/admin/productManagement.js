@@ -199,6 +199,10 @@ function renderProducts(data) {
           </span>
         `;
       }
+    } else if (offer.isConfigured) {
+      offerBadge = `<span class="badge rounded-pill bg-success">
+            CONFIGUERD
+          </span>`;
     }
 
     /* ===== OFFER ACTION BUTTON ===== */
@@ -227,6 +231,7 @@ function renderProducts(data) {
             data-discount-value="${offer.discountValue}"
             data-valid-from="${offer.validFrom}"
             data-valid-to="${offer.validTo}"
+            data-producttype="${isCar ? "car" : "accessory"}"
             data-productid="${item._id}">
             <i class="bi bi-eye"></i>
           </button>
@@ -241,6 +246,7 @@ function renderProducts(data) {
             class="btn btn-sm btn-outline-danger remove-offer-btn"
             data-bs-toggle="modal"
             data-bs-target="#removeOfferModal"
+            data-producttype="${isCar ? "car" : "accessory"}"
             data-productid="${item._id}">
             <i class="bi bi-trash"></i>
           </button>
@@ -381,6 +387,41 @@ const toError = document.getElementById("ValidateTotError");
 
 const confirmRemoveOffer = document.getElementById("confirmRemoveOffer");
 
+/* ---------------- VIEW OFFER ---------------- */
+document.addEventListener("click", function (e) {
+  const btn = e.target.closest(".view-offer-btn");
+  if (!btn) return;
+
+  const {
+    discountType,
+    discountValue,
+    validFrom,
+    validTo,
+    productid,
+    producttype,
+  } = btn.dataset;
+
+  document.getElementById("viewDiscountType").textContent = discountType;
+
+  document.getElementById("viewDiscountValue").textContent =
+    discountType === "Percentage"
+      ? `${discountValue}%`
+      : `₹ ${Number(discountValue).toLocaleString("en-IN")}`;
+
+  document.getElementById("viewValidFrom").textContent = new Date(
+    validFrom
+  ).toLocaleDateString("en-IN");
+
+  document.getElementById("viewValidTo").textContent = new Date(
+    validTo
+  ).toLocaleDateString("en-IN");
+
+  // Store data ONLY on delete-from-view button
+  const deleteBtn = document.getElementById("deleteOfferFromView");
+  deleteBtn.dataset.productId = productid;
+  deleteBtn.dataset.productType = producttype;
+});
+
 /* ---------------- HELPERS ---------------- */
 const isEmpty = (v) => !v || v.trim() === "";
 
@@ -513,38 +554,66 @@ offerForm.addEventListener("submit", async (e) => {
 document.addEventListener("click", (e) => {
   const btn = e.target.closest(".remove-offer-btn");
   if (!btn) return;
-  confirmRemoveOffer.dataset.productId = btn.dataset.id;
-  confirmRemoveOffer.dataset.productType = btn.dataset.producttype;
+
+  const confirmBtn = document.getElementById("confirmRemoveOffer");
+
+  // 🔥 reset previous state
+  confirmBtn.dataset.productId = "";
+  confirmBtn.dataset.productType = "";
+
+  confirmBtn.dataset.productId = btn.dataset.id;
+  confirmBtn.dataset.productType = btn.dataset.producttype;
 });
 
-confirmRemoveOffer.addEventListener("click", async () => {
-  try {
-    const res = await axios.patch(
-      `/admin/products-management/remove-offer/${confirmRemoveOffer.dataset.productId}`,
-      {
-        productType: confirmRemoveOffer.dataset.productType,
+/* ---------------- REMOVE FROM VIEW OFFER ---------------- */
+document.getElementById("deleteOfferFromView").addEventListener("click", () => {
+  const confirmBtn = document.getElementById("confirmRemoveOffer");
+
+  // 🔥 reset previous state
+  confirmBtn.dataset.productId = "";
+  confirmBtn.dataset.productType = "";
+
+  confirmBtn.dataset.productId = document.getElementById(
+    "deleteOfferFromView"
+  ).dataset.productId;
+  confirmBtn.dataset.productType = document.getElementById(
+    "deleteOfferFromView"
+  ).dataset.productType;
+});
+
+document
+  .getElementById("confirmRemoveOffer")
+  .addEventListener("click", async function () {
+    try {
+      const productId = this.dataset.productId;
+      const productType = this.dataset.productType;
+
+      if (!productId) {
+        Swal.fire("Error", "Invalid product reference", "error");
+        return;
       }
-    );
 
-    if (res.data.success) {
-      bootstrap.Modal.getInstance(
-        document.getElementById("removeOfferModal")
-      ).hide();
+      const res = await axios.patch(
+        `/admin/products-management/remove-offer/${productId}`,
+        { productType }
+      );
 
-      Swal.fire({
-        icon: "success",
-        title: "Offer Removed",
-        timer: 1200,
-        showConfirmButton: false,
-      }).then(() => location.reload());
-    } else {
-      Swal.fire({
-        icon: "error",
-        title: "Error",
-        text: data?.alert || "Somthing went wrong",
-      });
+      if (res.data.success) {
+        bootstrap.Modal.getInstance(
+          document.getElementById("removeOfferModal")
+        ).hide();
+
+        Swal.fire({
+          icon: "success",
+          title: "Offer Removed",
+          timer: 1200,
+          showConfirmButton: false,
+        }).then(() => location.reload());
+      } else {
+        Swal.fire("Error", res.data.alert || "Failed", "error");
+      }
+    } catch (err) {
+      console.error(err);
+      Swal.fire("Error", "Server error", "error");
     }
-  } catch {
-    Swal.fire("Error", "Failed to remove offer", "error");
-  }
-});
+  });
