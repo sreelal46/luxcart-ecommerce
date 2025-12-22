@@ -4,11 +4,12 @@ const {
   NOT_FOUND,
   BAD_REQUEST,
 } = require("../../constant/statusCode");
-const CarVariant = require("../../models/admin/carVariantModel");
-const Car = require("../../models/admin/productCarModal");
 const Category = require("../../models/admin/categoryModel");
-const Accessory = require("../../models/admin/productAccessoryModal");
-const mongoose = require("mongoose");
+const {
+  recalculateAllPrices,
+  recalculateAccessoryPrices,
+  recalculateCarVariantPrices,
+} = require("../../cron/offersCron");
 
 const addCategory = async (req, res, next) => {
   try {
@@ -167,7 +168,7 @@ const addOfferToCategory = async (req, res, next) => {
     const now = new Date();
     const isActive = new Date(validFrom) <= now && new Date(validTo) > now;
 
-    /* ========== UPDATE CATEGORY - CRON WILL HANDLE PRODUCT UPDATES ========== */
+    /* ========== UPDATE CATEGORY ========== */
     const category = await Category.findByIdAndUpdate(
       categoryId,
       {
@@ -177,7 +178,7 @@ const addOfferToCategory = async (req, res, next) => {
             discountValue,
             validFrom: new Date(validFrom),
             validTo: new Date(validTo),
-            isActive,
+            isActive: isActive, // ✅ FIX: Use calculated value
             isConfigured: true,
           },
         },
@@ -191,10 +192,15 @@ const addOfferToCategory = async (req, res, next) => {
         .json({ success: false, alert: "Category not found" });
     }
 
+    // ✅ FIX: Trigger immediate price recalculation if offer is active
+    if (isActive) {
+      await recalculateAllPrices(now);
+    }
+
     res.status(OK).json({
       success: true,
       alert: isActive
-        ? "Category offer applied. All products will update shortly."
+        ? "Category offer applied successfully!"
         : `Category offer scheduled. Will activate automatically on ${new Date(
             validFrom
           ).toLocaleDateString()}.`,
@@ -208,7 +214,7 @@ const removeOfferToCategory = async (req, res, next) => {
   try {
     const { categoryId } = req.params;
 
-    /* ========== REMOVE CATEGORY OFFER - CRON WILL HANDLE CLEANUP ========== */
+    /* ========== REMOVE CATEGORY OFFER ========== */
     const category = await Category.findByIdAndUpdate(
       categoryId,
       { $unset: { offer: "" } },
@@ -221,9 +227,48 @@ const removeOfferToCategory = async (req, res, next) => {
         .json({ success: false, alert: "Category not found" });
     }
 
+    // ✅ FIX: Immediately recalculate all prices
+    const now = new Date();
+    await recalculateAllPrices(now);
+
     res.status(OK).json({
       success: true,
-      alert: "Category offer removed. All product prices will reset shortly.",
+      alert: "Category offer removed successfully!",
+    });
+  } catch (err) {
+    next(err);
+  }
+};
+
+const removeProductOffer = async (req, res, next) => {
+  try {
+    const { productId } = req.params;
+    const { productType } = req.body;
+
+    /* ========== REMOVE OFFER ========== */
+    if (productType === "accessory") {
+      await Accessory.updateOne(
+        { _id: productId },
+        { $unset: { productOffer: "" } }
+      );
+    } else if (productType === "car") {
+      await CarVariant.updateMany(
+        { product_id: productId },
+        { $unset: { productOffer: "" } }
+      );
+    }
+
+    // ✅ FIX: Immediately recalculate prices for affected products
+    const now = new Date();
+    if (productType === "accessory") {
+      await recalculateAccessoryPrices();
+    } else if (productType === "car") {
+      await recalculateCarVariantPrices();
+    }
+
+    res.status(OK).json({
+      success: true,
+      alert: "Product offer removed successfully!",
     });
   } catch (err) {
     next(err);

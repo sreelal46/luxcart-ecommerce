@@ -74,10 +74,9 @@
             <th>#</th>
             <th>Name</th>
             <th>Type</th>
-            <th>Description</th>
-            <th class="text-center">Products</th>
-            <th>Offer</th>
-            <th>Status</th>
+            <th class="text-center">Description</th>
+            <th class="text-center">Offer</th>
+            <th class="text-center">Status</th>
             <th class="text-center">Actions</th>
           </tr>
         </thead>
@@ -101,11 +100,6 @@
               {{this.description}}
             </td>
 
-            <td class="text-center">
-              <span class="badge bg-light text-dark border">
-                total product
-              </span>
-            </td>
 
             <td>
               {{#if this.offer.isActive}}
@@ -122,7 +116,7 @@
 
               {{else if this.offer.isConfigured}}
               <span class="badge rounded-pill bg-success">
-                Offer Configured
+                CONFIGURED
               </span>
               {{else}}
               <span class="badge rounded-pill bg-danger">

@@ -601,4 +601,12 @@ const stopOfferCron = () => {
   console.log("🛑 [OFFER CRON] Stopped");
 };
 
-// module.exports = { startOfferCron, stopOfferCron };
+// In offerCron.js
+module.exports = {
+  startOfferCron,
+  stopOfferCron,
+  recalculateAllPrices,
+  recalculateAccessoryPrices,
+  recalculateCarVariantPrices,
+  updateOfferStatuses,
+};

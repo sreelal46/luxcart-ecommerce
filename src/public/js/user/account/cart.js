@@ -175,3 +175,235 @@ document.addEventListener("DOMContentLoaded", () => {
     }
   });
 });
+
+// ========================================
+// COUPON MODAL FUNCTIONALITY
+// ========================================
+
+// Open Coupon Modal
+document
+  .getElementById("applyCouponBtn")
+  ?.addEventListener("click", function () {
+    document.getElementById("couponModal").classList.add("show");
+  });
+
+// Close Modal - X Button
+document.getElementById("closeModal")?.addEventListener("click", function () {
+  closeModal();
+});
+
+// Close modal when clicking outside
+document.getElementById("couponModal")?.addEventListener("click", function (e) {
+  if (e.target === this) {
+    closeModal();
+  }
+});
+
+// Close Modal Function
+function closeModal() {
+  document.getElementById("couponModal").classList.remove("show");
+}
+
+// Apply Coupon Buttons
+document.querySelectorAll(".apply-btn").forEach((button) => {
+  button.addEventListener("click", function (e) {
+    e.preventDefault();
+    const couponCode = this.getAttribute("data-coupon");
+    applyCoupon(couponCode);
+  });
+});
+
+// Apply Coupon Function
+function applyCoupon(couponCode) {
+  // Add your AJAX call here to apply the coupon
+  console.log("Applying coupon:", couponCode);
+
+  // Example: Send coupon to backend
+  /*
+  fetch('/api/apply-coupon', {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/json',
+    },
+    body: JSON.stringify({ couponCode: couponCode })
+  })
+  .then(response => response.json())
+  .then(data => {
+    if(data.success) {
+      showAlert('Coupon applied successfully!', 'success');
+      // Reload or update cart
+      location.reload();
+    } else {
+      showAlert(data.message || 'Failed to apply coupon', 'error');
+    }
+  })
+  .catch(error => {
+    console.error('Error:', error);
+    showAlert('Something went wrong!', 'error');
+  });
+  */
+
+  // For now, just show alert and close modal
+  showAlert(`Coupon ${couponCode} applied successfully!`, "success");
+  closeModal();
+}
+
+// ========================================
+// CART QUANTITY FUNCTIONALITY
+// ========================================
+
+// Increase Quantity
+document.querySelectorAll(".qty-btn.plus").forEach((button) => {
+  button.addEventListener("click", function (e) {
+    e.preventDefault();
+    e.stopPropagation();
+    const itemId = this.getAttribute("data-itemid");
+    updateQuantity(itemId, "increase");
+  });
+});
+
+// Decrease Quantity
+document.querySelectorAll(".qty-btn.minus").forEach((button) => {
+  button.addEventListener("click", function (e) {
+    e.preventDefault();
+    e.stopPropagation();
+    const itemId = this.getAttribute("data-itemid");
+    updateQuantity(itemId, "decrease");
+  });
+});
+
+// Update Quantity Function
+function updateQuantity(itemId, action) {
+  // Add your AJAX call here
+  console.log("Update quantity:", itemId, action);
+
+  // Example AJAX call
+  /*
+  fetch('/cart/update-quantity', {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/json',
+    },
+    body: JSON.stringify({ itemId, action })
+  })
+  .then(response => response.json())
+  .then(data => {
+    if(data.success) {
+      // Update the quantity display
+      const qtyElement = document.querySelector(`.qty-value[data-itemid="${itemId}"]`);
+      if(qtyElement) {
+        qtyElement.textContent = data.newQuantity;
+        qtyElement.setAttribute('data-qty', data.newQuantity);
+      }
+      // Update prices
+      location.reload(); // or update UI dynamically
+    } else {
+      showAlert(data.message || 'Failed to update quantity', 'error');
+    }
+  })
+  .catch(error => {
+    console.error('Error:', error);
+    showAlert('Something went wrong!', 'error');
+  });
+  */
+}
+
+// ========================================
+// REMOVE ITEM FUNCTIONALITY
+// ========================================
+
+// Remove Accessory
+document.querySelectorAll(".remove-acc").forEach((button) => {
+  button.addEventListener("click", function (e) {
+    e.preventDefault();
+    e.stopPropagation();
+    const itemId = this.getAttribute("data-itemid");
+    removeItem(itemId, "accessory");
+  });
+});
+
+// Remove Car
+document.querySelectorAll(".remove-car").forEach((button) => {
+  button.addEventListener("click", function (e) {
+    e.preventDefault();
+    e.stopPropagation();
+    const itemId = this.getAttribute("data-itemid");
+    removeItem(itemId, "car");
+  });
+});
+
+// Remove Item Function
+function removeItem(itemId, type) {
+  if (!confirm("Are you sure you want to remove this item?")) {
+    return;
+  }
+
+  // Add your AJAX call here
+  console.log("Removing item:", itemId, type);
+
+  // Example AJAX call
+  /*
+  fetch('/cart/remove-item', {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/json',
+    },
+    body: JSON.stringify({ itemId, type })
+  })
+  .then(response => response.json())
+  .then(data => {
+    if(data.success) {
+      showAlert('Item removed from cart', 'success');
+      location.reload();
+    } else {
+      showAlert(data.message || 'Failed to remove item', 'error');
+    }
+  })
+  .catch(error => {
+    console.error('Error:', error);
+    showAlert('Something went wrong!', 'error');
+  });
+  */
+}
+
+// ========================================
+// TOAST NOTIFICATION FUNCTION
+// ========================================
+
+function showAlert(message, type = "success") {
+  const alertBox = document.getElementById("mobileAlert");
+
+  // Set icon based on type
+  let icon = "";
+  let colorClass = "";
+
+  if (type === "success") {
+    icon = '<i class="bi bi-check-circle-fill success-icon"></i>';
+    colorClass = "message-green";
+  } else if (type === "error") {
+    icon = '<i class="bi bi-x-circle-fill error-icon"></i>';
+    colorClass = "message-red";
+  } else if (type === "warning") {
+    icon = '<i class="bi bi-exclamation-triangle-fill yellow-icon"></i>';
+    colorClass = "message-yellow";
+  }
+
+  alertBox.innerHTML = `${icon}<span class="${colorClass}">${message}</span>`;
+  alertBox.classList.add("show");
+
+  // Hide after 3 seconds
+  setTimeout(() => {
+    alertBox.classList.remove("show");
+  }, 3000);
+}
+
+// ========================================
+// MOBILE PLACE ORDER BUTTON
+// ========================================
+
+document
+  .querySelector(".place-order-btn")
+  ?.addEventListener("click", function () {
+    const cartId = "{{cart._id}}"; // This will be replaced by Handlebars
+    window.location.href = `/cart/checkout-step-1/${cartId}`;
+  });
