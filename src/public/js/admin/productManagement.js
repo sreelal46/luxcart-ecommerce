@@ -387,10 +387,12 @@ const toError = document.getElementById("ValidateTotError");
 
 const confirmRemoveOffer = document.getElementById("confirmRemoveOffer");
 
-/* ---------------- VIEW OFFER ---------------- */
+/* ================================
+   VIEW OFFER MODAL
+================================ */
 document.addEventListener("click", function (e) {
-  const btn = e.target.closest(".view-offer-btn");
-  if (!btn) return;
+  const viewBtn = e.target.closest(".view-offer-btn");
+  if (!viewBtn) return;
 
   const {
     discountType,
@@ -399,9 +401,11 @@ document.addEventListener("click", function (e) {
     validTo,
     productid,
     producttype,
-  } = btn.dataset;
+    name,
+  } = viewBtn.dataset;
 
-  document.getElementById("viewDiscountType").textContent = discountType;
+  // Fill View Offer Modal
+  document.getElementById("viewDiscountType").textContent = discountType || "—";
 
   document.getElementById("viewDiscountValue").textContent =
     discountType === "Percentage"
@@ -416,10 +420,52 @@ document.addEventListener("click", function (e) {
     validTo
   ).toLocaleString();
 
-  // Store data ONLY on delete-from-view button
+  // Store ALL data on Delete button inside View modal
   const deleteBtn = document.getElementById("deleteOfferFromView");
-  deleteBtn.dataset.productId = productid;
-  deleteBtn.dataset.productType = producttype;
+
+  deleteBtn.dataset.discountType = discountType;
+  deleteBtn.dataset.discountValue = discountValue;
+  deleteBtn.dataset.validFrom = validFrom;
+  deleteBtn.dataset.validTo = validTo;
+  deleteBtn.dataset.productid = productid; // IMPORTANT: lowercase
+  deleteBtn.dataset.producttype = producttype;
+  deleteBtn.dataset.productname = name;
+});
+
+/* ================================
+   REMOVE OFFER MODAL (BOTH FLOWS)
+================================ */
+function fillRemoveOfferModal(btn) {
+  const { discountType, discountValue, validFrom, validTo, productid, name } =
+    btn.dataset;
+
+  document.getElementById("removeOfferProductName").textContent =
+    name || "this product";
+
+  document.getElementById("removeDiscountType").textContent =
+    discountType || "—";
+
+  document.getElementById("removeDiscountValue").textContent =
+    discountType === "Percentage"
+      ? `${discountValue}%`
+      : `₹ ${Number(discountValue).toLocaleString("en-IN")}`;
+
+  document.getElementById("removeValidFrom").textContent = new Date(
+    validFrom
+  ).toLocaleString();
+
+  document.getElementById("removeValidTo").textContent = new Date(
+    validTo
+  ).toLocaleString();
+
+  document.getElementById("removeOfferProductId").value = productid;
+}
+
+document.addEventListener("click", function (e) {
+  const removeBtn = e.target.closest(".remove-offer-btn, #deleteOfferFromView");
+  if (!removeBtn) return;
+
+  fillRemoveOfferModal(removeBtn);
 });
 
 /* ---------------- HELPERS ---------------- */

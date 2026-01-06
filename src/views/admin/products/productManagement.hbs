@@ -130,8 +130,12 @@
                 <!-- Add Offer -->
                 <div data-bs-toggle="tooltip" title="Remove offer">
                   <button class="btn btn-sm btn-outline-danger remove-offer-btn" data-bs-toggle="modal"
-                    data-bs-target="#removeOfferModal" data-id="{{this._id}}" data-producttype="car"
-                    data-name="{{this.name}}">
+                    data-bs-target="#removeOfferModal" data-id="{{this._id}}"
+                    data-discount-type="{{this.variantIds.[0].productOffer.discountType}}"
+                    data-discount-value="{{this.variantIds.[0].productOffer.discountValue}}"
+                    data-valid-from="{{this.variantIds.[0].productOffer.validFrom}}"
+                    data-valid-to="{{this.variantIds.[0].productOffer.validTo}}" data-productid="{{this._id}}"
+                    data-producttype="car" data-name="{{this.name}}">
                     <i class="bi bi-trash-fill"></i>
                   </button>
                 </div>
@@ -144,7 +148,8 @@
                     data-discount-value="{{this.variantIds.[0].productOffer.discountValue}}"
                     data-valid-from="{{this.variantIds.[0].productOffer.validFrom}}"
                     data-valid-to="{{this.variantIds.[0].productOffer.validTo}}" data-productid="{{this._id}}"
-                    data-producttype="car">
+                    data-producttype="car" data-name="{{this.name}}">
+
                     <i class="bi bi-eye"></i>
                   </button>
                 </div>
@@ -162,8 +167,11 @@
                 {{#if this.offer.productOffer.isActive}}
                 <div data-bs-toggle="tooltip" title="Remove offer">
                   <button class="btn btn-sm btn-outline-danger remove-offer-btn" data-bs-toggle="modal"
-                    data-bs-target="#removeOfferModal" data-id="{{this._id}}" data-producttype="accessory"
-                    data-name="{{this.name}}">
+                    data-bs-target="#removeOfferModal" data-id="{{this._id}}" data-name="{{this.name}}"
+                    data-discount-type="{{this.productOffer.discountType}}"
+                    data-discount-value="{{this.productOffer.discountValue}}"
+                    data-valid-from="{{this.productOffer.validFrom}}" data-valid-to="{{this.productOffer.validTo}}"
+                    data-producttype="accessory">
                     <i class="bi bi-trash-fill"></i>
                   </button>
                 </div>
@@ -172,7 +180,7 @@
                 <div data-bs-toggle="tooltip" title="View configured offer">
                   <button class="btn btn-sm btn-outline-info view-offer-btn" data-bs-toggle="modal"
                     data-bs-target="#offerViewModal" data-discount-type="{{this.productOffer.discountType}}"
-                    data-discount-value="{{this.productOffer.discountValue}}"
+                    data-discount-value="{{this.productOffer.discountValue}}" data-name="{{this.name}}"
                     data-valid-from="{{this.productOffer.validFrom}}" data-valid-to="{{this.productOffer.validTo}}"
                     data-producttype="accessory">
                     <i class="bi bi-eye"></i>
@@ -518,16 +526,47 @@
     <div class="modal-content">
 
       <div class="modal-header">
-        <h5 class="modal-title">Remove Offer</h5>
+        <h5 class="modal-title fw-bold text-danger">Remove Offer</h5>
         <button class="btn-close" data-bs-dismiss="modal"></button>
       </div>
 
       <div class="modal-body">
-        Are you sure you want to remove this offer?
+        <p>
+          Are you sure you want to remove the offer from
+          <strong id="removeOfferProductName"></strong>?
+        </p>
+
+        <hr>
+
+        <!-- OFFER DETAILS (VIEW ONLY) -->
+        <div class="mb-2">
+          <small class="text-muted">Discount Type</small>
+          <div class="fw-semibold" id="removeDiscountType">—</div>
+        </div>
+
+        <div class="mb-2">
+          <small class="text-muted">Discount Value</small>
+          <div class="fw-semibold" id="removeDiscountValue">—</div>
+        </div>
+
+        <div class="mb-2">
+          <small class="text-muted">Valid From</small>
+          <div class="fw-semibold" id="removeValidFrom">—</div>
+        </div>
+
+        <div class="mb-2">
+          <small class="text-muted">Valid To</small>
+          <div class="fw-semibold" id="removeValidTo">—</div>
+        </div>
+
+        <input type="hidden" id="removeOfferProductId">
       </div>
 
       <div class="modal-footer">
-        <button id="confirmRemoveOffer" class="btn btn-danger w-100">
+        <button class="btn btn-secondary" data-bs-dismiss="modal">
+          Cancel
+        </button>
+        <button class="btn btn-danger" id="confirmRemoveOffer">
           Yes, Remove
         </button>
       </div>
@@ -535,6 +574,7 @@
     </div>
   </div>
 </div>
+
 
 
 

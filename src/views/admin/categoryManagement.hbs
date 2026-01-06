@@ -152,9 +152,10 @@
                 {{else if this.offer.isConfigured}}
                 <div data-bs-toggle="tooltip" title="View Configured offer">
                   <button class="btn btn-sm btn-outline-info view-offer-btn" data-bs-toggle="modal"
-                    data-bs-target="#offerViewModal" data-discount-type="{{this.offer.discountType}}"
-                    data-discount-value="{{this.offer.discountValue}}" data-valid-from="{{this.offer.validFrom}}"
-                    data-valid-to="{{this.offer.validTo}}">
+                    data-name="{{this.name}}" data-bs-target="#offerViewModal"
+                    data-discount-type="{{this.offer.discountType}}" data-discount-value="{{this.offer.discountValue}}"
+                    data-valid-from="{{this.offer.validFrom}}" data-valid-to="{{this.offer.validTo}}"
+                    data-id="{{this._id}}">
                     <i class="bi bi-eye"></i>
                   </button>
                 </div>
@@ -297,9 +298,10 @@
       </div>
 
       <div class="modal-footer">
-        <!-- <button class="btn btn-danger w-100" data-bs-dismiss="modal">
-          Delete offer
-        </button> -->
+        <button id="deleteOfferFromView" class="btn btn-danger w-100">
+          Delete Offer
+        </button>
+
         <button class="btn btn-secondary w-100" data-bs-dismiss="modal">
           Close
         </button>

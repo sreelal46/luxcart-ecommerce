@@ -14,7 +14,7 @@ document.addEventListener("DOMContentLoaded", () => {
   const editDescriptionError = document.getElementById("editDescriptionError");
   const editCategoryNameInput = document.getElementById("editCategoryName");
   const editCategoryNameError = document.getElementById("editNameError");
-
+  let currentOffer = {};
   //category name validation
   function categoryNameValidation(input, error) {
     const categoryName = input.value.trim();
@@ -476,52 +476,102 @@ ${
     }
   });
 
-  // view offers
+  /* ===============================
+   VIEW OFFER MODAL
+================================ */
   document.querySelectorAll(".view-offer-btn").forEach((btn) => {
     btn.addEventListener("click", () => {
+      currentOffer = {
+        id: btn.dataset.id,
+        name: btn.dataset.name,
+        discountType: btn.dataset.discountType,
+        discountValue: btn.dataset.discountValue,
+        validFrom: btn.dataset.validFrom,
+        validTo: btn.dataset.validTo,
+      };
+
       document.getElementById("viewDiscountType").textContent =
-        btn.dataset.discountType;
+        currentOffer.discountType;
 
       document.getElementById("viewDiscountValue").textContent =
-        btn.dataset.discountType === "Percentage"
-          ? btn.dataset.discountValue + "%"
-          : "₹" + btn.dataset.discountValue;
+        currentOffer.discountType === "Percentage"
+          ? `${currentOffer.discountValue}%`
+          : `₹${currentOffer.discountValue}`;
 
       document.getElementById("viewValidFrom").textContent = new Date(
-        btn.dataset.validFrom
+        currentOffer.validFrom
       ).toLocaleString();
 
       document.getElementById("viewValidTo").textContent = new Date(
-        btn.dataset.validTo
+        currentOffer.validTo
       ).toLocaleString();
+      document.getElementById("removeOfferProductName").innerText =
+        currentOffer.name || "";
     });
   });
 
-  // Remove Offer Modal
+  /* ===============================
+   REUSABLE REMOVE MODAL FILLER
+================================ */
+  function populateRemoveOfferModal(data) {
+    document.getElementById("removeOfferProductId").value = data.id;
+
+    document.getElementById("removeDiscountType").innerText =
+      data.discountType || "—";
+
+    document.getElementById("removeDiscountValue").innerText =
+      data.discountType === "Percentage"
+        ? `${data.discountValue}%`
+        : `₹${data.discountValue}`;
+
+    document.getElementById("removeValidFrom").innerText = data.validFrom
+      ? new Date(data.validFrom).toLocaleString()
+      : "—";
+
+    document.getElementById("removeValidTo").innerText = data.validTo
+      ? new Date(data.validTo).toLocaleString()
+      : "—";
+
+    // CRITICAL
+    document.getElementById("confirmRemoveOffer").dataset.categoryId = data.id;
+  }
+
+  /* ===============================
+   TRASH ICON → REMOVE MODAL
+================================ */
   document.addEventListener("click", (e) => {
     const btn = e.target.closest(".remove-offer-btn");
     if (!btn) return;
 
-    document.getElementById("removeOfferProductId").value = btn.dataset.id;
+    const data = {
+      id: btn.dataset.id,
+      name: btn.dataset.name,
+      discountType: btn.dataset.discountType,
+      discountValue: btn.dataset.discountValue,
+      validFrom: btn.dataset.validFrom,
+      validTo: btn.dataset.validTo,
+    };
+
+    populateRemoveOfferModal(data);
+
     document.getElementById("removeOfferProductName").innerText =
-      btn.dataset.name;
-
-    document.getElementById("removeDiscountType").innerText =
-      btn.dataset.discountType || "—";
-
-    document.getElementById("removeDiscountValue").innerText =
-      btn.dataset.discountType === "Percentage"
-        ? `${btn.dataset.discountValue}%`
-        : `₹${btn.dataset.discountValue}`;
-
-    document.getElementById("removeValidFrom").innerText = btn.dataset.validFrom
-      ? new Date(btn.dataset.validFrom).toLocaleString()
-      : "—";
-
-    document.getElementById("removeValidTo").innerText = btn.dataset.validTo
-      ? new Date(btn.dataset.validTo).toLocaleString()
-      : "—";
+      data.name || "";
   });
+
+  /* ===============================
+   VIEW MODAL → DELETE BUTTON
+================================ */
+  document
+    .getElementById("deleteOfferFromView")
+    .addEventListener("click", () => {
+      bootstrap.Modal.getInstance(
+        document.getElementById("offerViewModal")
+      ).hide();
+
+      populateRemoveOfferModal(currentOffer);
+
+      new bootstrap.Modal(document.getElementById("removeOfferModal")).show();
+    });
 
   const offerForm = document.getElementById("offerForm");
 
@@ -738,14 +788,16 @@ ${
     try {
       const dltCategoryId =
         document.getElementById("confirmRemoveOffer").dataset.categoryId;
+
       const res = await axios.patch(
         `/admin/categorys-management/remove-offer/${dltCategoryId}`
       );
+
       if (res.data.success) {
-        const modal = bootstrap.Modal.getInstance(
+        bootstrap.Modal.getInstance(
           document.getElementById("removeOfferModal")
-        );
-        modal.hide();
+        ).hide();
+
         Swal.fire({
           icon: "success",
           title: "Offer Removed!",
@@ -753,22 +805,17 @@ ${
           timer: 1400,
           showConfirmButton: false,
         }).then(() => window.location.reload());
-      } else {
-        Swal.fire({
-          icon: "warning",
-          title: "Failed",
-          text: res.data.alert || "Failed to add category.",
-        });
       }
     } catch (error) {
       console.log("Error from remove offer from category", error);
       Swal.fire({
         icon: "error",
         title: "Error",
-        text: error.response?.data?.alert || "INTERNEL SERVER ERROR.",
+        text: error.response?.data?.alert || "INTERNAL SERVER ERROR.",
       });
     }
   });
+
   // FIRST LOAD
   loadCategories(1);
 });
