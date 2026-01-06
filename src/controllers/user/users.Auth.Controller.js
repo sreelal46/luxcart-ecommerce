@@ -14,6 +14,7 @@ const User = require("../../models/user/UserModel");
 const bcrypt = require("bcrypt");
 const emailSending = require("../../services/sendEmail");
 const OTP = require("../../models/common/OTPModal");
+const Referral = require("../../models/user/referral.Model");
 
 //creating new user and verifying existingn that user and sending OTP
 const createUser = async (req, res, next) => {
@@ -35,20 +36,63 @@ const createUser = async (req, res, next) => {
 
     //hashing password
     const salt = await bcrypt.genSalt(parseInt(process.env.BCRYPT_SALT_ROUNDS));
-    const hashPassword = await bcrypt.hash(password, salt);
+    const hashedPassword = await bcrypt.hash(password, salt);
+    function generateReferralCode(name) {
+      return (
+        name.slice(0, 3).toUpperCase() +
+        Math.random().toString(36).substring(2, 6).toUpperCase()
+      );
+    }
+    // 3. Generate user's own referral code
+    let newReferralCode;
+    let codeExists = true;
 
-    //creating new user
+    while (codeExists) {
+      newReferralCode = generateReferralCode(name);
+      codeExists = await User.findOne({ referralCode: newReferralCode });
+    }
+
+    // 4. Create user object
     const newUser = new User({
       name,
       email,
-      password: hashPassword,
-      // referralCode,
+      password: hashedPassword,
+      referralCode: newReferralCode,
     });
+
+    let referrer = null;
+
+    // 5. If referral code provided
+    if (referralCode) {
+      referrer = await User.findOne({
+        referralCode,
+        isActive: true,
+      });
+
+      if (referrer) {
+        newUser.referredBy = referrer._id;
+      }
+      if (!referrer) {
+        return res
+          .status(NOT_FOUND)
+          .json({ success: false, alert: "Invalid Referral Code" });
+      }
+    }
+
+    // 6. Save user
     await newUser.save();
+
+    // 7. Create referral record (NO REWARD HERE)
+    if (referrer) {
+      await Referral.create({
+        referrer: referrer._id,
+        referredUser: newUser._id,
+        status: "pending",
+      });
+    }
 
     //Email sending with OTP
     await emailSending(email, newUser.id, "verification");
-
     //OTP sended userID and veryfication type
     req.session.userId = newUser.id;
     req.session.email = email;

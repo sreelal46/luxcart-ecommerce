@@ -44,4 +44,9 @@ const loadOrderDetailPage = async (req, res, next) => {
     next(error);
   }
 };
-module.exports = { loadWishlistPage, loadOrderDetailPage };
+const loadReferralsPgae = async (req, res, next) => {
+  try {
+    res.render("user/account/referrals", { layout: "userAccountLayout" });
+  } catch (error) {}
+};
+module.exports = { loadWishlistPage, loadOrderDetailPage, loadReferralsPgae };

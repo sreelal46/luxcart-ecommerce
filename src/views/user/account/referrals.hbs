@@ -1,0 +1,99 @@
+<style>
+  .referral-code-box {
+    background: #f8f9fa;
+    border-radius: 8px;
+    padding: 12px;
+    font-weight: 600;
+    letter-spacing: 1px;
+  }
+
+  .status-badge {
+    font-size: 12px;
+    padding: 6px 10px;
+    border-radius: 20px;
+  }
+</style>
+
+<section class="col-lg-9 col-xl-10 p-4">
+
+  <!-- My Referrals -->
+  <div class="card border-0 shadow-sm mb-4">
+    <div class="card-body">
+      <h5 class="fw-bold mb-3">My Referrals</h5>
+      <p class="text-muted mb-2">
+        Share this code with friends and earn rewards when they make their first purchase
+      </p>
+
+      <div class="d-flex align-items-center gap-2 mb-3">
+        <div class="flex-grow-1 referral-code-box">JOHN500</div>
+        <button class="btn btn-dark">
+          <i class="bi bi-clipboard"></i>
+        </button>
+      </div>
+
+      <div class="border rounded p-3 w-25">
+        <small class="text-muted">Total Referrals</small>
+        <h4 class="fw-bold mb-0">2</h4>
+      </div>
+    </div>
+  </div>
+
+  <!-- Referral History -->
+  <div class="card border-0 shadow-sm">
+    <div class="card-body">
+      <h6 class="fw-bold mb-3">Referral History</h6>
+
+      <div class="table-responsive">
+        <table class="table align-middle mb-0">
+          <thead class="table-light">
+            <tr>
+              <th>Name</th>
+              <th>Date</th>
+              <th>Status</th>
+              <th>Reward</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td>
+                <div class="fw-semibold">Jane Smith</div>
+                <small class="text-muted">jane@example.com</small>
+              </td>
+              <td>May 20, 2023</td>
+              <td>
+                <span class="badge bg-success-subtle text-success status-badge">
+                  Completed
+                </span>
+              </td>
+              <td>
+                <span class="fw-bold">
+                  ₹500
+                </span>
+              </td>
+            </tr>
+
+            <tr>
+              <td>
+                <div class="fw-semibold">Mike Johnson</div>
+                <small class="text-muted">mike@example.com</small>
+              </td>
+              <td>June 5, 2023</td>
+              <td>
+                <span class="badge bg-warning-subtle text-warning status-badge">
+                  Pending
+                </span>
+              </td>
+              <td>
+                <span class="fw-bold">
+                  -
+                </span>
+              </td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+
+    </div>
+  </div>
+
+</section>

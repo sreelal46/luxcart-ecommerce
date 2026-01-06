@@ -8,7 +8,7 @@ const Car = require("../models/admin/productCarModal");
  * Cron job to manage all offer operations
  * Runs every hour at minute 0
  */
-const offerStatusCron = cron.schedule("* * * * *", async () => {
+const offerStatusCron = cron.schedule("0 0 * * *", async () => {
   try {
     console.log("[OFFER CRON] Starting offer management...");
     const now = new Date();
