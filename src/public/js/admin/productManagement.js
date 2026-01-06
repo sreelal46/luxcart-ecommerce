@@ -429,7 +429,7 @@ document.addEventListener("click", function (e) {
   deleteBtn.dataset.validTo = validTo;
   deleteBtn.dataset.productid = productid; // IMPORTANT: lowercase
   deleteBtn.dataset.producttype = producttype;
-  deleteBtn.dataset.productname = name;
+  deleteBtn.dataset.name = name;
 });
 
 /* ================================
@@ -459,6 +459,7 @@ function fillRemoveOfferModal(btn) {
   ).toLocaleString();
 
   document.getElementById("removeOfferProductId").value = productid;
+  document.getElementById("removeOfferProductId").value = name;
 }
 
 document.addEventListener("click", function (e) {
