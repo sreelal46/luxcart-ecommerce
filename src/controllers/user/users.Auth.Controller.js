@@ -15,6 +15,7 @@ const bcrypt = require("bcrypt");
 const emailSending = require("../../services/sendEmail");
 const OTP = require("../../models/common/OTPModal");
 const Referral = require("../../models/user/referral.Model");
+const Wallet = require("../../models/user/walletsModel");
 
 //creating new user and verifying existingn that user and sending OTP
 const createUser = async (req, res, next) => {
@@ -59,7 +60,9 @@ const createUser = async (req, res, next) => {
       password: hashedPassword,
       referralCode: newReferralCode,
     });
-
+    await Wallet.create({
+      userId: newUser._id,
+    });
     let referrer = null;
 
     // 5. If referral code provided
@@ -72,13 +75,12 @@ const createUser = async (req, res, next) => {
       if (referrer) {
         newUser.referredBy = referrer._id;
       }
-      if (!referrer) {
-        return res
-          .status(NOT_FOUND)
-          .json({ success: false, alert: "Invalid Referral Code" });
-      }
     }
-
+    if (!referrer) {
+      return res
+        .status(NOT_FOUND)
+        .json({ success: false, alert: "Invalid Referral Code" });
+    }
     // 6. Save user
     await newUser.save();
 
