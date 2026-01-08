@@ -315,7 +315,13 @@ route.patch(
   checkSession,
   blockOrUnblockUser
 );
-
+// ====================== COUPON ====================
+const {
+  loadCouponPage,
+  addCoupon,
+} = require("../controllers/admin/coupon.Controller");
+route.get("/coupons-management", checkSession, loadCouponPage);
+route.post("/coupons-management/addCoupon", checkSession, addCoupon);
 // ====================== MISC ======================
 route.get("/sales-report", checkSession, async (req, res) => {
   const sales = [
@@ -343,10 +349,6 @@ route.get("/sales-report", checkSession, async (req, res) => {
 
 route.get("/wallet", checkSession, (req, res) => {
   res.render("admin/walletView");
-});
-
-route.get("/coupons-management", checkSession, (req, res) => {
-  res.render("admin/couponsManagement");
 });
 
 route.get("/settings", checkSession, (req, res) => {

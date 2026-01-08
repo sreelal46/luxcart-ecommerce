@@ -48,110 +48,82 @@
             <th>#</th>
             <th>Coupon Code</th>
             <th>Discount</th>
+            <th>Min Order</th>
             <th>Valid Period</th>
+            <th>Usage</th>
             <th>Status</th>
             <th class="text-center">Actions</th>
           </tr>
         </thead>
 
         <tbody id="couponsTableBody">
-
-          <!-- Coupon 1 -->
+          {{#each coupons}}
           <tr>
-            <td class="fw-semibold text-muted">1</td>
+            <td class="fw-semibold text-muted">{{inc @index}}</td>
 
             <td class="fw-semibold text-dark">
-              WELCOME50
+              {{this.code}}
             </td>
 
             <td>
-              <span class="badge bg-success-subtle text-success fw-semibold">
-                50%
+              {{#if (eq this.discountType "percentage")}}
+              <span class="badge bg-success-subtle text-success">
+                {{this.discountValue}}%
               </span>
+              {{else}}
+              <span class="badge bg-info-subtle text-info">
+                ₹{{formatPrice this.discountValue}}
+              </span>
+              {{/if}}
+            </td>
+
+            <td class="text-muted">
+              ₹{{formatPrice this.minOrderAmount}}
             </td>
 
             <td class="text-muted text-nowrap">
-              2025-10-01 – 2025-12-31
+              {{formattedDate this.validFrom}} – {{formattedDate this.validTo}}
             </td>
 
             <td>
-              <span class="badge bg-success-subtle text-success fw-semibold">
-                Active
+              <span class="badge bg-secondary-subtle text-secondary">
+                {{this.usedBy.length}}
               </span>
+            </td>
+
+            <td>
+              {{#if this.isActive}}
+              <span class="badge bg-success-subtle text-success">Active</span>
+              {{else}}
+              <span class="badge bg-danger-subtle text-danger">Inactive</span>
+              {{/if}}
             </td>
 
             <td class="text-center">
               <div class="d-flex justify-content-center gap-2">
 
-                <!-- Edit -->
-                <div data-bs-toggle="tooltip" title="Edit coupon">
-                  <button class="btn btn-sm btn-outline-success" data-bs-toggle="modal"
-                    data-bs-target="#editCouponModal" data-code="WELCOME50" data-discounttype="percentage"
-                    data-discount="50" data-validfrom="2025-10-01" data-validto="2025-12-31" data-usagelimit="100">
-                    <i class="bi bi-pencil"></i>
-                  </button>
-                </div>
+                <!-- EDIT -->
+                <button class="btn btn-sm btn-outline-success edit-coupon-btn" data-bs-toggle="modal"
+                  data-bs-target="#editCouponModal" data-id="{{this._id}}" data-code="{{this.code}}"
+                  data-discounttype="{{this.discountType}}" data-discountvalue="{{this.discountValue}}"
+                  data-minorder="{{this.minOrderAmount}}" data-validfrom="{{this.validFrom}}"
+                  data-validto="{{this.validTo}}" data-active="{{this.isActive}}">
+                  <i class="bi bi-pencil"></i>
+                </button>
 
-                <!-- Delete -->
-                <div data-bs-toggle="tooltip" title="Delete coupon">
-                  <button class="btn btn-sm btn-outline-danger" data-bs-toggle="modal"
-                    data-bs-target="#deleteCouponModal" data-code="WELCOME50">
-                    <i class="bi bi-trash"></i>
-                  </button>
-                </div>
+                <!-- DELETE -->
+                <button class="btn btn-sm btn-outline-danger delete-coupon-btn" data-bs-toggle="modal"
+                  data-bs-target="#deleteCouponModal" data-id="{{this._id}}" data-code="{{this.code}}">
+                  <i class="bi bi-trash"></i>
+                </button>
 
               </div>
             </td>
           </tr>
-
-          <!-- Coupon 2 -->
-          <tr>
-            <td class="fw-semibold text-muted">2</td>
-
-            <td class="fw-semibold text-dark">
-              FLAT200
-            </td>
-
-            <td>
-              <span class="badge bg-info-subtle text-info fw-semibold">
-                ₹200
-              </span>
-            </td>
-
-            <td class="text-muted text-nowrap">
-              2025-10-15 – 2025-11-30
-            </td>
-
-            <td>
-              <span class="badge bg-success-subtle text-success fw-semibold">
-                Active
-              </span>
-            </td>
-
-            <td class="text-center">
-              <div class="d-flex justify-content-center gap-2">
-
-                <div data-bs-toggle="tooltip" title="Edit coupon">
-                  <button class="btn btn-sm btn-outline-success" data-bs-toggle="modal"
-                    data-bs-target="#editCouponModal" data-code="FLAT200" data-discounttype="fixed" data-discount="200"
-                    data-validfrom="2025-10-15" data-validto="2025-11-30" data-usagelimit="50">
-                    <i class="bi bi-pencil"></i>
-                  </button>
-                </div>
-
-                <div data-bs-toggle="tooltip" title="Delete coupon">
-                  <button class="btn btn-sm btn-outline-danger" data-bs-toggle="modal"
-                    data-bs-target="#deleteCouponModal" data-code="FLAT200">
-                    <i class="bi bi-trash"></i>
-                  </button>
-                </div>
-
-              </div>
-            </td>
-          </tr>
-
+          {{/each}}
         </tbody>
       </table>
+
 
     </div>
   </div>
@@ -170,35 +142,70 @@
       <div class="modal-body">
         <form id="addCouponForm">
           <div class="row g-3">
+
+            <!-- Coupon Code -->
             <div class="col-md-6">
               <label class="form-label fw-semibold">Coupon Code</label>
-              <input type="text" class="form-control form-control-lg" name="code" required>
+              <input type="text" class="form-control form-control-lg text-uppercase" name="code">
             </div>
+
+            <!-- Discount Type -->
             <div class="col-md-6">
               <label class="form-label fw-semibold">Discount Type</label>
-              <select class="form-select form-select-lg" name="discountType" required>
+              <select class="form-select form-select-lg" name="discountType" id="discountType">
                 <option value="">Select Type</option>
                 <option value="percentage">Percentage</option>
-                <option value="fixed">Fixed Amount</option>
+                <option value="flat">Fixed Amount</option>
               </select>
             </div>
+
+            <!-- Discount Value -->
             <div class="col-md-6">
-              <label class="form-label fw-semibold">Discount</label>
-              <input type="number" class="form-control form-control-lg" name="discount" required min="0">
+              <label class="form-label fw-semibold">Discount Value</label>
+              <input type="number" class="form-control form-control-lg" name="discount" min="1">
             </div>
+
+            <!-- Minimum Order -->
             <div class="col-md-6">
-              <label class="form-label fw-semibold">Usage Limit</label>
-              <input type="number" class="form-control form-control-lg" name="usageLimit" required min="1">
+              <label class="form-label fw-semibold">Minimum Order Amount (₹)</label>
+              <input type="number" class="form-control form-control-lg" name="minOrderAmount" min="0">
             </div>
+
+            <!-- Total Usage Limit -->
+            <div class="col-md-6">
+              <label class="form-label fw-semibold">Total Usage Limit</label>
+              <input type="number" class="form-control form-control-lg" name="usageLimit" min="1">
+            </div>
+
+            <!-- Per User Limit -->
+            <div class="col-md-6">
+              <label class="form-label fw-semibold">Usage Per User</label>
+              <input type="number" class="form-control form-control-lg" name="perUserLimit" min="1">
+            </div>
+
+            <!-- Status -->
+            <div class="col-md-6">
+              <label class="form-label fw-semibold">Status</label>
+              <select class="form-select form-select-lg" name="isActive">
+                <option value="true">Active</option>
+                <option value="false">Inactive</option>
+              </select>
+            </div>
+
+            <!-- Valid From -->
             <div class="col-md-6">
               <label class="form-label fw-semibold">Valid From</label>
-              <input type="date" class="form-control form-control-lg" name="validFrom" required>
+              <input type="date" class="form-control form-control-lg" name="validFrom">
             </div>
+
+            <!-- Valid To -->
             <div class="col-md-6">
               <label class="form-label fw-semibold">Valid To</label>
-              <input type="date" class="form-control form-control-lg" name="validTo" required>
+              <input type="date" class="form-control form-control-lg" name="validTo">
             </div>
+
           </div>
+
           <div class="text-end mt-4">
             <button type="button" class="btn btn-secondary btn-lg me-2" data-bs-dismiss="modal">Close</button>
             <button type="submit" class="btn btn-primary btn-lg ">Add Coupon</button>
@@ -209,55 +216,96 @@
   </div>
 </div>
 
-<!-- Edit Coupon Modal (similar layout) -->
+<!-- Edit Coupon Modal -->
 <div class="modal fade" id="editCouponModal" tabindex="-1" aria-labelledby="editCouponModalLabel" aria-hidden="true">
   <div class="modal-dialog modal-dialog-centered modal-lg">
     <div class="modal-content rounded-4 shadow-lg">
+
       <div class="modal-header bg-warning text-dark">
-        <h5 class="modal-title fw-bold" id="editCouponModalLabel"><i class="bi bi-pencil-square me-2"></i> Edit Coupon
+        <h5 class="modal-title fw-bold" id="editCouponModalLabel">
+          <i class="bi bi-pencil-square me-2"></i> Edit Coupon
         </h5>
         <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
       </div>
+
       <div class="modal-body">
         <form id="editCouponForm">
           <div class="row g-3">
+
+            <!-- Coupon Code -->
             <div class="col-md-6">
               <label class="form-label fw-semibold">Coupon Code</label>
-              <input type="text" class="form-control form-control-lg" name="code" required>
+              <input type="text" class="form-control form-control-lg text-uppercase" name="code">
             </div>
+
+            <!-- Discount Type -->
             <div class="col-md-6">
               <label class="form-label fw-semibold">Discount Type</label>
-              <select class="form-select form-select-lg" name="discountType" required>
+              <select class="form-select form-select-lg" name="discountType" id="editDiscountType">
                 <option value="percentage">Percentage</option>
                 <option value="fixed">Fixed Amount</option>
               </select>
             </div>
+
+            <!-- Discount Value -->
             <div class="col-md-6">
-              <label class="form-label fw-semibold">Discount</label>
-              <input type="number" class="form-control form-control-lg" name="discount" min="0" required>
+              <label class="form-label fw-semibold">Discount Value</label>
+              <input type="number" class="form-control form-control-lg" name="discount" min="1">
             </div>
+
+            <!-- Minimum Order -->
             <div class="col-md-6">
-              <label class="form-label fw-semibold">Usage Limit</label>
-              <input type="number" class="form-control form-control-lg" name="usageLimit" min="1" required>
+              <label class="form-label fw-semibold">Minimum Order Amount (₹)</label>
+              <input type="number" class="form-control form-control-lg" name="minOrderAmount" min="0">
             </div>
+
+            <!-- Total Usage -->
+            <div class="col-md-6">
+              <label class="form-label fw-semibold">Total Usage Limit</label>
+              <input type="number" class="form-control form-control-lg" name="usageLimit" min="1">
+            </div>
+
+            <!-- Per User -->
+            <div class="col-md-6">
+              <label class="form-label fw-semibold">Usage Per User</label>
+              <input type="number" class="form-control form-control-lg" name="perUserLimit" min="1">
+            </div>
+
+            <!-- Status -->
+            <div class="col-md-6">
+              <label class="form-label fw-semibold">Status</label>
+              <select class="form-select form-select-lg" name="isActive">
+                <option value="true">Active</option>
+                <option value="false">Inactive</option>
+              </select>
+            </div>
+
+            <!-- Valid From -->
             <div class="col-md-6">
               <label class="form-label fw-semibold">Valid From</label>
-              <input type="date" class="form-control form-control-lg" name="validFrom" required>
+              <input type="date" class="form-control form-control-lg" name="validFrom">
             </div>
+
+            <!-- Valid To -->
             <div class="col-md-6">
               <label class="form-label fw-semibold">Valid To</label>
-              <input type="date" class="form-control form-control-lg" name="validTo" required>
+              <input type="date" class="form-control form-control-lg" name="validTo">
             </div>
+
           </div>
+
           <div class="text-end mt-4">
-            <button type="button" class="btn btn-secondary btn-lg  me-2" data-bs-dismiss="modal">Close</button>
-            <button type="submit" class="btn btn-warning btn-lg ">Update Coupon</button>
+            <button type="button" class="btn btn-secondary btn-lg me-2" data-bs-dismiss="modal">Close</button>
+            <button type="submit" class="btn btn-warning btn-lg">Update Coupon</button>
           </div>
+
         </form>
       </div>
+
     </div>
   </div>
 </div>
+
 
 
 <!-- Delete Confirmation Modal -->
@@ -280,11 +328,4 @@
     </div>
   </div>
 </div>
-<script>
-  function initTooltips() {
-    document.querySelectorAll('[data-bs-toggle="tooltip"]').forEach((el) => {
-      new bootstrap.Tooltip(el);
-    });
-  }
-  document.addEventListener("DOMContentLoaded", initTooltips)
-</script>
+<script src="/js/admin/couponsManagement.js"></script>
