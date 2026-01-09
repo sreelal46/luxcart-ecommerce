@@ -112,16 +112,11 @@
                   <i class="bi bi-pencil"></i>
                 </button>
 
-                <!-- DELETE -->
-                <!-- <button class="btn btn-sm btn-outline-danger delete-coupon-btn" data-id="{{this._id}}"
-                  data-code="{{this.code}}">
-                  <i class="bi bi-trash"></i>
-                </button> -->
                 <!-- List / Unlist -->
-                <div class="form-check form-switch m-0" data-bs-toggle="tooltip"
-                  title="{{#if this.isListed}}Unlist product{{else}}List product{{/if}}">
-                  <input class="form-check-input" type="checkbox" data-id="{{this._id}}" {{#if
-                    this.isListed}}checked{{/if}}>
+                <div class="form-check form-switch m-0 update-coupon-btn"
+                  title="{{#if this.isListed}}Unlist{{else}}List{{/if}} Coupon">
+                  <input class="form-check-input" type="checkbox" data-id="{{this._id}}" data-code="{{this.code}}" {{#if
+                    this.isListed}}checked{{/if}} />
                 </div>
 
 
@@ -318,22 +313,32 @@
 
 
 <!-- Delete Confirmation Modal -->
-<div class="modal fade" id="confirmListModal" tabindex="-1" aria-labelledby="deleteCouponModalLabel" aria-hidden="true">
+<!-- Confirm List / Unlist Modal -->
+<div class="modal fade" id="confirmListModal" tabindex="-1" aria-hidden="true">
   <div class="modal-dialog modal-dialog-centered">
     <div class="modal-content rounded-4 shadow-lg">
       <div class="modal-header bg-danger text-white">
-        <h5 class="modal-title fw-bold" id="deleteCouponModalLabel"><i class="bi bi-exclamation-triangle-fill me-2"></i>
-          Delete Coupon</h5>
+        <h5 class="modal-title fw-bold">
+          <i class="bi bi-exclamation-triangle-fill me-2"></i>
+          Confirm Action
+        </h5>
         <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
       </div>
+
       <div class="modal-body">
-        <p class="fs-6">Are you sure you want to delete the coupon <strong id="deleteCouponName"></strong>?</p>
+        <p id="confirmMessage" class="fs-6"></p>
       </div>
+
       <div class="modal-footer">
-        <button type="button" class="btn btn-secondary rounded-pill" data-bs-dismiss="modal">Cancel</button>
-        <button type="button" class="btn btn-danger rounded-pill" id="confirmDeleteCoupon">Delete</button>
+        <button type="button" class="btn btn-secondary rounded-pill" data-bs-dismiss="modal">
+          Cancel
+        </button>
+        <button type="button" class="btn btn-danger rounded-pill" id="confirmListUnlistBtn">
+          Confirm
+        </button>
       </div>
     </div>
   </div>
 </div>
+
 <script src="/js/admin/couponsManagement.js"></script>

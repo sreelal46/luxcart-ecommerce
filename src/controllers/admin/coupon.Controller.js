@@ -1,4 +1,9 @@
-const { OK, CONFLICT, BAD_REQUEST } = require("../../constant/statusCode");
+const {
+  OK,
+  CONFLICT,
+  BAD_REQUEST,
+  NOT_FOUND,
+} = require("../../constant/statusCode");
 const Coupon = require("../../models/admin/couponModel");
 
 const loadCouponPage = async (req, res, next) => {
@@ -189,8 +194,44 @@ const editCoupon = async (req, res, next) => {
 
 const softDeleteCoupon = async (req, res, next) => {
   try {
-    const couponId = req.params.couponId;
-    res.status(OK).json({ success: true });
-  } catch (error) {}
+    const { couponId } = req.params;
+    const { status } = req.body;
+
+    if (!couponId) {
+      return res.status(BAD_REQUEST).json({
+        success: false,
+        alert: "Coupon id not found",
+      });
+    }
+
+    if (typeof status !== "boolean") {
+      return res.status(BAD_REQUEST).json({
+        success: false,
+        alert: "Invalid status value",
+      });
+    }
+
+    const coupon = await Coupon.findByIdAndUpdate(
+      couponId,
+      { isListed: status },
+      { new: true }
+    );
+
+    if (!coupon) {
+      return res.status(NOT_FOUND).json({
+        success: false,
+        alert: "Coupon not found",
+      });
+    }
+
+    res.status(OK).json({
+      success: true,
+      isListed: coupon.isListed,
+    });
+  } catch (error) {
+    console.log("error from coupon list/unlist", error);
+    next(error);
+  }
 };
+
 module.exports = { loadCouponPage, addCoupon, editCoupon, softDeleteCoupon };

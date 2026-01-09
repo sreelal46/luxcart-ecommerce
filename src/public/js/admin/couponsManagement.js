@@ -263,62 +263,73 @@ document.addEventListener("DOMContentLoaded", () => {
     });
 
   let selectedCouponId = null;
+  let selectedCouponCode = "";
+  let selectedAction = "";
+  let selectedCheckbox = null;
 
   /* ============================
-   OPEN DELETE MODAL
-   ============================ */
+     OPEN CONFIRM MODAL
+     ============================ */
   document.addEventListener("click", (e) => {
-    const deleteBtn = e.target.closest(".delete-coupon-btn");
-    if (!deleteBtn) return;
+    const wrapper = e.target.closest(".update-coupon-btn");
+    if (!wrapper) return;
 
-    // store selected coupon id
-    selectedCouponId = deleteBtn.dataset.id;
+    const checkbox = wrapper.querySelector(".form-check-input");
+    if (!checkbox) return;
 
-    // show coupon code in modal
-    document.getElementById("deleteCouponName").innerText =
-      deleteBtn.dataset.code || "";
+    // prevent checkbox toggle
+    e.preventDefault();
 
-    // open modal
-    const modalEl = document.getElementById("confirmListModal");
-    const modal = new bootstrap.Modal(modalEl);
+    selectedCheckbox = checkbox;
+    selectedCouponId = checkbox.dataset.id;
+    selectedCouponCode = checkbox.dataset.code;
+
+    selectedAction = checkbox.checked ? "unlist" : "list";
+
+    document.getElementById("confirmMessage").innerHTML = `
+      Are you sure you want to <strong>${selectedAction.toUpperCase()}</strong>
+      the coupon <strong>${selectedCouponCode}</strong>?
+    `;
+
+    const modal = new bootstrap.Modal(
+      document.getElementById("confirmListModal")
+    );
     modal.show();
   });
 
   /* ============================
-   CONFIRM DELETE
-   ============================ */
+     CONFIRM LIST / UNLIST
+     ============================ */
   document
-    .getElementById("confirmDeleteCoupon")
+    .getElementById("confirmListUnlistBtn")
     .addEventListener("click", async () => {
       if (!selectedCouponId) return;
 
       try {
         const res = await axios.patch(
-          `/admin/coupons-management/softDeleteCoupon/${selectedCouponId}`
+          `/admin/coupons-management/softDeleteCoupon/${selectedCouponId}`,
+          {
+            status: selectedAction === "list",
+          }
         );
 
         if (res.data.success) {
-          // close modal
+          // toggle checkbox manually
+          selectedCheckbox.checked = !selectedCheckbox.checked;
+
           bootstrap.Modal.getInstance(
             document.getElementById("confirmListModal")
           ).hide();
 
           Swal.fire({
             icon: "success",
-            title: "Coupon Updated",
-            text: "Coupon has been listed / unlisted successfully.",
-            timer: 1400,
+            title: `Coupon ${selectedAction}ed`,
+            text: `Coupon has been ${selectedAction}ed successfully.`,
+            timer: 1500,
             showConfirmButton: false,
           }).then(() => window.location.reload());
-        } else {
-          Swal.fire({
-            icon: "warning",
-            title: "Failed",
-            text: res.data.alert || "Failed to listed / unlisted coupon.",
-          });
         }
       } catch (error) {
-        console.error("Error listed / unlisted coupon", error);
         Swal.fire({
           icon: "error",
           title: "Error",
@@ -328,12 +339,15 @@ document.addEventListener("DOMContentLoaded", () => {
     });
 
   /* ============================
-   RESET ON MODAL CLOSE
-   ============================ */
+     RESET ON MODAL CLOSE
+     ============================ */
   document
     .getElementById("confirmListModal")
     .addEventListener("hidden.bs.modal", () => {
       selectedCouponId = null;
-      document.getElementById("deleteCouponName").innerText = "";
+      selectedCouponCode = "";
+      selectedAction = "";
+      selectedCheckbox = null;
+      document.getElementById("confirmMessage").innerHTML = "";
     });
 });
