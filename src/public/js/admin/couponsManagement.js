@@ -51,9 +51,20 @@ document.addEventListener("DOMContentLoaded", () => {
         return false;
       }
 
-      if (input.type === "number" && Number(value) <= 0) {
-        showError(input, "Value must be greater than zero");
-        return false;
+      if (input.type === "number") {
+        const num = Number(value);
+
+        // Minimum Order Amount → allow 0
+        if (name === "minOrderAmount" && num < 0) {
+          showError(input, "Minimum order cannot be negative");
+          return false;
+        }
+
+        // All other number fields must be > 0
+        if (name !== "minOrderAmount" && num <= 0) {
+          showError(input, "Value must be greater than zero");
+          return false;
+        }
       }
 
       if (name === "validFrom") {
@@ -164,8 +175,35 @@ document.addEventListener("DOMContentLoaded", () => {
     });
 
   /* ===============================
-     EDIT COUPON (AXIOS)
+     EDIT COUPON
      =============================== */
+  document.addEventListener("click", (e) => {
+    const btn = e.target.closest(".edit-coupon-btn");
+    if (!btn) return;
+
+    const modal = document.getElementById("editCouponModal");
+    modal.dataset.id = btn.dataset.id;
+
+    const form = modal.querySelector("#editCouponForm");
+
+    // helper for date input
+    const formatDate = (dateStr) => {
+      if (!dateStr) return "";
+      return new Date(dateStr).toISOString().split("T")[0];
+    };
+
+    form.elements["code"].value = btn.dataset.code || "";
+    form.elements["discountType"].value = btn.dataset.discounttype || "";
+    form.elements["discount"].value = btn.dataset.discountvalue || "";
+    form.elements["minOrderAmount"].value = btn.dataset.minorder || "";
+    form.elements["usageLimit"].value = btn.dataset.usagelimit || "";
+    form.elements["perUserLimit"].value = btn.dataset.usageperuser || "";
+    form.elements["isActive"].value =
+      btn.dataset.active === "true" ? "true" : "false";
+    form.elements["validFrom"].value = formatDate(btn.dataset.validfrom);
+    form.elements["validTo"].value = formatDate(btn.dataset.validto);
+  });
+
   document
     .getElementById("editCouponForm")
     .addEventListener("submit", async (e) => {
@@ -192,14 +230,110 @@ document.addEventListener("DOMContentLoaded", () => {
       data.isActive = data.isActive === "true";
 
       try {
-        const res = await axios.put(`/admin/coupons/${couponId}`, data);
+        const res = await axios.put(
+          `/admin/coupons-management/editCoupon/${couponId}`,
+          data
+        );
 
         if (res.data.success) {
           bootstrap.Modal.getInstance(modal).hide();
-          location.reload();
+          form.reset();
+          Swal.fire({
+            icon: "success",
+            title: "Coupon Edited!",
+            text: "The Coupon has been Edited successfully.",
+            timer: 1400,
+            showConfirmButton: false,
+          }).then(() => window.location.reload());
+        } else {
+          Swal.fire({
+            icon: "warning",
+            title: "Failed",
+            text: res.data.alert || "Failed to edit coupon.",
+          });
         }
-      } catch (err) {
-        alert(err.response?.data?.message || "Failed to update coupon");
+      } catch (error) {
+        console.error("Error from offer edit coupon", error);
+        Swal.fire({
+          icon: "error",
+          title: "Error",
+          text: error.response?.data?.alert || "INTERNAL SERVER ERROR",
+        });
       }
+    });
+
+  let selectedCouponId = null;
+
+  /* ============================
+   OPEN DELETE MODAL
+   ============================ */
+  document.addEventListener("click", (e) => {
+    const deleteBtn = e.target.closest(".delete-coupon-btn");
+    if (!deleteBtn) return;
+
+    // store selected coupon id
+    selectedCouponId = deleteBtn.dataset.id;
+
+    // show coupon code in modal
+    document.getElementById("deleteCouponName").innerText =
+      deleteBtn.dataset.code || "";
+
+    // open modal
+    const modalEl = document.getElementById("confirmListModal");
+    const modal = new bootstrap.Modal(modalEl);
+    modal.show();
+  });
+
+  /* ============================
+   CONFIRM DELETE
+   ============================ */
+  document
+    .getElementById("confirmDeleteCoupon")
+    .addEventListener("click", async () => {
+      if (!selectedCouponId) return;
+
+      try {
+        const res = await axios.patch(
+          `/admin/coupons-management/softDeleteCoupon/${selectedCouponId}`
+        );
+
+        if (res.data.success) {
+          // close modal
+          bootstrap.Modal.getInstance(
+            document.getElementById("confirmListModal")
+          ).hide();
+
+          Swal.fire({
+            icon: "success",
+            title: "Coupon Updated",
+            text: "Coupon has been listed / unlisted successfully.",
+            timer: 1400,
+            showConfirmButton: false,
+          }).then(() => window.location.reload());
+        } else {
+          Swal.fire({
+            icon: "warning",
+            title: "Failed",
+            text: res.data.alert || "Failed to listed / unlisted coupon.",
+          });
+        }
+      } catch (error) {
+        console.error("Error listed / unlisted coupon", error);
+        Swal.fire({
+          icon: "error",
+          title: "Error",
+          text: error.response?.data?.alert || "INTERNAL SERVER ERROR",
+        });
+      }
+    });
+
+  /* ============================
+   RESET ON MODAL CLOSE
+   ============================ */
+  document
+    .getElementById("confirmListModal")
+    .addEventListener("hidden.bs.modal", () => {
+      selectedCouponId = null;
+      document.getElementById("deleteCouponName").innerText = "";
     });
 });

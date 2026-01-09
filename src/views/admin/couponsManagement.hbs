@@ -92,10 +92,10 @@
             </td>
 
             <td>
-              {{#if this.isActive}}
-              <span class="badge bg-success-subtle text-success">Active</span>
+              {{#if this.isListed}}
+              <span class="badge bg-success-subtle text-success">List</span>
               {{else}}
-              <span class="badge bg-danger-subtle text-danger">Inactive</span>
+              <span class="badge bg-danger-subtle text-danger">Unlist</span>
               {{/if}}
             </td>
 
@@ -107,15 +107,24 @@
                   data-bs-target="#editCouponModal" data-id="{{this._id}}" data-code="{{this.code}}"
                   data-discounttype="{{this.discountType}}" data-discountvalue="{{this.discountValue}}"
                   data-minorder="{{this.minOrderAmount}}" data-validfrom="{{this.validFrom}}"
+                  data-usagePerUser="{{this.usagePerUser}}" data-usageLimit="{{this.usageLimit}}"
                   data-validto="{{this.validTo}}" data-active="{{this.isActive}}">
                   <i class="bi bi-pencil"></i>
                 </button>
 
                 <!-- DELETE -->
-                <button class="btn btn-sm btn-outline-danger delete-coupon-btn" data-bs-toggle="modal"
-                  data-bs-target="#deleteCouponModal" data-id="{{this._id}}" data-code="{{this.code}}">
+                <!-- <button class="btn btn-sm btn-outline-danger delete-coupon-btn" data-id="{{this._id}}"
+                  data-code="{{this.code}}">
                   <i class="bi bi-trash"></i>
-                </button>
+                </button> -->
+                <!-- List / Unlist -->
+                <div class="form-check form-switch m-0" data-bs-toggle="tooltip"
+                  title="{{#if this.isListed}}Unlist product{{else}}List product{{/if}}">
+                  <input class="form-check-input" type="checkbox" data-id="{{this._id}}" {{#if
+                    this.isListed}}checked{{/if}}>
+                </div>
+
+
 
               </div>
             </td>
@@ -186,9 +195,9 @@
             <!-- Status -->
             <div class="col-md-6">
               <label class="form-label fw-semibold">Status</label>
-              <select class="form-select form-select-lg" name="isActive">
-                <option value="true">Active</option>
-                <option value="false">Inactive</option>
+              <select class="form-select form-select-lg" name="isListed">
+                <option value="true">Listed</option>
+                <option value="false">Unlisted</option>
               </select>
             </div>
 
@@ -309,8 +318,7 @@
 
 
 <!-- Delete Confirmation Modal -->
-<div class="modal fade" id="deleteCouponModal" tabindex="-1" aria-labelledby="deleteCouponModalLabel"
-  aria-hidden="true">
+<div class="modal fade" id="confirmListModal" tabindex="-1" aria-labelledby="deleteCouponModalLabel" aria-hidden="true">
   <div class="modal-dialog modal-dialog-centered">
     <div class="modal-content rounded-4 shadow-lg">
       <div class="modal-header bg-danger text-white">

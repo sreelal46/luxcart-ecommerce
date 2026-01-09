@@ -17,6 +17,14 @@ const couponSchema = new mongoose.Schema(
       type: Number,
       required: true,
     },
+    usagePerUser: {
+      type: Number,
+      required: true,
+    },
+    usageLimit: {
+      type: Number,
+      required: true,
+    },
     minOrderAmount: {
       type: Number,
       default: 0,
@@ -29,7 +37,7 @@ const couponSchema = new mongoose.Schema(
       type: Date,
       required: true,
     },
-    isActive: {
+    isListed: {
       type: Boolean,
       default: true,
     },

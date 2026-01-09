@@ -319,9 +319,17 @@ route.patch(
 const {
   loadCouponPage,
   addCoupon,
+  editCoupon,
+  softDeleteCoupon,
 } = require("../controllers/admin/coupon.Controller");
 route.get("/coupons-management", checkSession, loadCouponPage);
 route.post("/coupons-management/addCoupon", checkSession, addCoupon);
+route.put("/coupons-management/editCoupon/:couponId", checkSession, editCoupon);
+route.patch(
+  "/coupons-management/softDeleteCoupon/:couponId",
+  checkSession,
+  softDeleteCoupon
+);
 // ====================== MISC ======================
 route.get("/sales-report", checkSession, async (req, res) => {
   const sales = [
