@@ -14,8 +14,34 @@ const categorySchema = mongoose.Schema(
       type: String,
     },
     offer: {
-      type: String,
+      discountType: {
+        type: String,
+        enum: ["Percentage", "Price"],
+        index: true,
+      },
+      discountValue: Number,
+
+      validFrom: {
+        type: Date,
+        index: true,
+      },
+      validTo: {
+        type: Date,
+        index: true,
+      },
+
+      isActive: {
+        type: Boolean,
+        default: false,
+        index: true,
+      },
+      isConfigured: {
+        type: Boolean,
+        default: false,
+        index: true,
+      },
     },
+    discountedPrice: { type: Number, default: null },
     isListed: { type: Boolean, default: true },
     createdAt: { type: Date, default: Date.now },
   },

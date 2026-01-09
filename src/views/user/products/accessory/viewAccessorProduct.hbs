@@ -46,7 +46,33 @@
       <div class="col-lg-5">
         <div class="price-box">
           <div class="d-flex justify-content-between align-items-center mb-3">
-            <div class="price">₹{{formatPrice accessory.price}}</div>
+            {{#if accessory.offerPrices.finalPrice}}
+            <div class="price-wrapper">
+
+              <div class="price offer-price">
+                ₹{{formatPrice accessory.offerPrices.finalPrice}}
+
+                <span class="offer-badge">
+                  {{#if (eq accessory.appliedOffer.discountType "Percentage")}}
+                  {{accessory.appliedOffer.discountValue}}% OFF
+                  {{else}}
+                  ₹{{formatPrice accessory.appliedOffer.discountValue}} OFF
+                  {{/if}}
+                </span>
+              </div>
+
+              <div class="price original-price">
+                ₹{{formatPrice accessory.price}}
+              </div>
+
+            </div>
+            {{else}}
+            <div class="price">
+              ₹{{formatPrice accessory.price}}
+            </div>
+            {{/if}}
+
+
             <button id="wishlistBtn" data-accessoryid="{{accessory._id}}"
               style="border: none; background-color: transparent;">
               <i id="heartIcon" class="bi bi-heart fs-5 text-muted"></i>

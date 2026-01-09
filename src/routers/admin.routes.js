@@ -1,16 +1,21 @@
 const express = require("express");
 const route = express.Router();
 const upload = require("../config/multer");
-const Brand = require("../models/admin/brandModal");
 
-//check session
+// ====================== ADMIN LAYOUT ======================
+route.use((req, res, next) => {
+  res.locals.layout = "adminLayout";
+  next();
+});
+
+// ====================== AUTH MIDDLEWARE ======================
 const {
   checkSession,
   isLogin,
   isPasswordChange,
 } = require("../middlewares/admin/adminAuth");
 
-//page loading
+// ====================== PAGE LOAD CONTROLLERS ======================
 const {
   adminLoadLoginPage,
   loadDashboard,
@@ -30,6 +35,7 @@ const {
   usersManagement,
   usersManagementDetail,
 } = require("../controllers/admin/pageLoad.controller");
+
 const {
   loadOrderManagement,
   loadOneOrder,
@@ -37,7 +43,8 @@ const {
   loadReturnReq,
   loadCancelReq,
 } = require("../controllers/admin/pageLoadTwo.controller");
-//auth controller
+
+// ====================== AUTH CONTROLLERS ======================
 const {
   verifyadmin,
   emailVerification,
@@ -45,97 +52,55 @@ const {
   PasswordChanging,
   resendOTP,
 } = require("../controllers/admin/adminAuth.controller");
-//user controller
-const { blockOrUnblockUser } = require("../controllers/admin/user.controller");
 
-//brand controller
+// ====================== AUTH ROUTES ======================
+route.get("/login", isLogin, adminLoadLoginPage);
+route.post("/login", verifyadmin);
+
+route.get("/logout", checkSession, (req, res) => {
+  req.session.destroy((err) => {
+    if (err) {
+      console.error(err);
+      return res.redirect("/admin/dashboard");
+    }
+    res.clearCookie("admin.sid");
+    res.redirect("/admin/login");
+  });
+});
+
+// forgot password
+route.get("/verify-email-page", loadEmailVerify);
+route.post("/verify-email", emailVerification);
+
+route.get("/otp-verify-page", loadOTPVerify);
+route.post("/otp-verify", OTPVerification);
+
+route.get("/change-password-page", isPasswordChange, loadChangePassword);
+route.post("/change-password", PasswordChanging);
+
+route.get("/resend-otp", resendOTP);
+
+// ====================== DASHBOARD ======================
+route.get("/dashboard", checkSession, loadDashboard);
+
+// ====================== BRAND ======================
 const {
   addBrand,
   editBrand,
   softDeleteBrand,
 } = require("../controllers/admin/brand.controller");
 
-//category controller
-const {
-  addCategory,
-  editCategory,
-  softDeleteCategory,
-} = require("../controllers/admin/category.controller");
-
-//Type controller
-const {
-  addType,
-  editType,
-  softDeleteType,
-} = require("../controllers/admin/type.controller");
-
-//Product Controller
-const {
-  addCarProduct,
-  editCarProduct,
-  softDelete,
-  addAccessoriesProduct,
-  editAccessories,
-} = require("../controllers/admin/product.controller");
-
-//Order controller
-const {
-  updateOrderStatus,
-  updateSingleItemStatus,
-  returnApprove,
-  returnReject,
-  cancelApprove,
-  cancelReject,
-} = require("../controllers/admin/order.Controller");
-//=========================================code section=======================================================
-
-// Setup for admin layout for these routes only
-route.use((req, res, next) => {
-  res.locals.layout = "adminLayout";
-  next();
-});
-
-// Admin Auth
-route.get("/login", isLogin, adminLoadLoginPage);
-route.post("/login", verifyadmin);
-route.get("/logout", (req, res) => {
-  //session destroying
-  req.session.destroy((err) => {
-    if (err) {
-      console.error("Error destroying session:", err);
-      return res.redirect("/admin/dashboard");
-    }
-    res.clearCookie("admin.sid");
-    res.status(OK).redirect("/admin/login");
-  });
-});
-
-//forgot-password setup
-route.get("/verify-email-page", loadEmailVerify);
-route.post("/verify-email", emailVerification);
-route.get("/otp-verify-page", loadOTPVerify);
-route.post("/otp-verify", OTPVerification);
-route.get("/change-password-page", isPasswordChange, loadChangePassword);
-route.post("/change-password", PasswordChanging);
-
-//resend OTP
-route.get("/resend-otp", resendOTP);
-
-// Dashboard
-route.get("/dashboard", checkSession, loadDashboard);
-
-/// Brand Management
 route.get("/brands-management", checkSession, loadBrands);
 route.post(
   "/brands-management/add-brand",
-  upload.single("image"),
   checkSession,
+  upload.single("image"),
   addBrand
 );
 route.put(
   "/brands-management/edit-brand/:id",
-  upload.single("image"),
   checkSession,
+  upload.single("image"),
   editBrand
 );
 route.patch(
@@ -144,7 +109,15 @@ route.patch(
   softDeleteBrand
 );
 
-//Category Management
+// ====================== CATEGORY ======================
+const {
+  addCategory,
+  editCategory,
+  softDeleteCategory,
+  addOfferToCategory,
+  removeOfferToCategory,
+} = require("../controllers/admin/category.controller");
+
 route.get("/categorys-management", checkSession, loadCategory);
 route.post("/categorys-management/add-category", checkSession, addCategory);
 route.put(
@@ -158,7 +131,19 @@ route.patch(
   softDeleteCategory
 );
 
-//Type Management
+//offers
+route.put("/categorys-management/add-offer/:categoryId", addOfferToCategory);
+route.patch(
+  "/categorys-management/remove-offer/:categoryId",
+  removeOfferToCategory
+);
+// ====================== TYPE ======================
+const {
+  addType,
+  editType,
+  softDeleteType,
+} = require("../controllers/admin/type.controller");
+
 route.get("/types-management", checkSession, loadType);
 route.post("/types-management/add-type", checkSession, addType);
 route.put("/types-management/edit-type/:id", checkSession, editType);
@@ -168,15 +153,23 @@ route.patch(
   softDeleteType
 );
 
-//======================================PRODUCT MANAGEMENT===============================
+// ====================== PRODUCT ======================
+const {
+  addCarProduct,
+  editCarProduct,
+  softDelete,
+  addAccessoriesProduct,
+  editAccessories,
+} = require("../controllers/admin/product.controller");
 
-//Product Management
 route.get("/products-management", checkSession, loadProduct);
+
+// car
 route.get("/products-management/add-car-product", checkSession, loadCarProduct);
 route.post(
   "/products-management/add-car-product",
-  upload.any(),
   checkSession,
+  upload.any(),
   addCarProduct
 );
 route.get(
@@ -191,21 +184,12 @@ route.get(
 );
 route.put(
   "/products-management/edit-car-product/:id",
-  upload.any(),
   checkSession,
+  upload.any(),
   editCarProduct
 );
 
-//soft delete car and accessories
-route.patch(
-  "/products-management/soft-delete-product/:id",
-  checkSession,
-  softDelete
-);
-
-//======================================ACCESSORY===============================
-
-//load add accessories page
+// accessories
 route.get(
   "/products-management/add-accessories-product",
   checkSession,
@@ -213,8 +197,8 @@ route.get(
 );
 route.post(
   "/products-management/add-accessories-product",
-  upload.any(),
   checkSession,
+  upload.any(),
   addAccessoriesProduct
 );
 route.get(
@@ -229,16 +213,46 @@ route.get(
 );
 route.put(
   "/products-management/edit-accessories-product/:id",
-  upload.any(),
   checkSession,
+  upload.any(),
   editAccessories
 );
 
-//=======================================ORDER MANAGEMENT==========================
+// soft delete
+route.patch(
+  "/products-management/soft-delete-product/:id",
+  checkSession,
+  softDelete
+);
+// ================= PRODUCT OFFER ===================
+const {
+  addProductOffer,
+  removeProductOffer,
+} = require("../controllers/admin/product.offer.controller");
+route.put(
+  "/products-management/add-offer/:productId",
+  checkSession,
+  addProductOffer
+);
+route.patch(
+  "/products-management/remove-offer/:productId",
+  checkSession,
+  removeProductOffer
+);
+
+// ====================== ORDER ======================
+const {
+  updateOrderStatus,
+  updateSingleItemStatus,
+  returnApprove,
+  returnReject,
+  cancelApprove,
+  cancelReject,
+} = require("../controllers/admin/order.controller");
 
 route.get("/orders-management", checkSession, loadOrderManagement);
-
 route.get("/orders-management/view-order/:orderId", checkSession, loadOneOrder);
+
 route.patch(
   "/orders-management/update-status/:orderId",
   checkSession,
@@ -249,7 +263,8 @@ route.patch(
   checkSession,
   updateSingleItemStatus
 );
-//=======================================ORDER MANAGEMENT ( RETURN & CANCEL )==========================
+
+// return
 route.get(
   "/orders-management/return-request-management",
   checkSession,
@@ -265,6 +280,8 @@ route.patch(
   checkSession,
   returnReject
 );
+
+// cancel
 route.get(
   "/orders-management/cancel-request-management",
   checkSession,
@@ -281,12 +298,40 @@ route.patch(
   cancelReject
 );
 
+// ====================== STOCK ======================
 route.get("/stock-management", checkSession, loadStockPage);
 
-route.get("/products-management/view-categories-product", (req, res) => {
-  res.render("admin/products/accessories/view-accessories-product");
-});
-route.get("/sales-report", async (req, res) => {
+// ====================== USERS ======================
+const { blockOrUnblockUser } = require("../controllers/admin/user.controller");
+
+route.get("/users-management", checkSession, usersManagement);
+route.get(
+  "/users-management/user-details/:userId",
+  checkSession,
+  usersManagementDetail
+);
+route.patch(
+  "/users-management/block-unblock-user/:id",
+  checkSession,
+  blockOrUnblockUser
+);
+// ====================== COUPON ====================
+const {
+  loadCouponPage,
+  addCoupon,
+  editCoupon,
+  softDeleteCoupon,
+} = require("../controllers/admin/coupon.Controller");
+route.get("/coupons-management", checkSession, loadCouponPage);
+route.post("/coupons-management/addCoupon", checkSession, addCoupon);
+route.put("/coupons-management/editCoupon/:couponId", checkSession, editCoupon);
+route.patch(
+  "/coupons-management/softDeleteCoupon/:couponId",
+  checkSession,
+  softDeleteCoupon
+);
+// ====================== MISC ======================
+route.get("/sales-report", checkSession, async (req, res) => {
   const sales = [
     {
       buyer: "John Doe",
@@ -307,26 +352,14 @@ route.get("/sales-report", async (req, res) => {
       total: 3000,
     },
   ];
-  res.render("admin/salesReport", { layout: "adminLayout", sales });
+  res.render("admin/salesReport", { sales });
 });
 
-route.get("/wallet", (req, res) => {
+route.get("/wallet", checkSession, (req, res) => {
   res.render("admin/walletView");
 });
 
-route.get("/coupons-management", (req, res) => {
-  res.render("admin/couponsManagement");
-});
-
-//=======================================USER MANAGEMENT==========================
-
-//view all user
-route.get("/users-management", checkSession, usersManagement);
-route.get("/users-management/user-details/:userId", usersManagementDetail);
-//block user
-route.patch("/users-management/block-unblock-user/:id", blockOrUnblockUser);
-
-route.get("/settings", (req, res) => {
+route.get("/settings", checkSession, (req, res) => {
   res.render("admin/settings");
 });
 

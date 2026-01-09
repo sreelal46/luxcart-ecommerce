@@ -328,20 +328,21 @@ document.addEventListener("DOMContentLoaded", () => {
             </div>
 
             <!-- List / Unlist -->
-            <div
-              data-bs-toggle="tooltip"
-              title="${t.isListed ? "Unlist type" : "List type"}">
-              <button
-                class="btn btn-sm ${
-                  t.isListed ? "btn-outline-warning" : "btn-outline-success"
-                }"
-                data-bs-toggle="modal"
-                data-bs-target="#deleteTypeModal"
-                data-id="${t._id}"
-                data-name="${t.name}">
-                <i class="bi ${t.isListed ? "bi-eye-slash" : "bi-eye"}"></i>
-              </button>
-            </div>
+<div class="form-check form-switch m-0"
+     data-bs-toggle="tooltip"
+     title="${t.isListed ? "Unlist type" : "List type"}">
+
+  <input
+    class="form-check-input type-toggle-status"
+    type="checkbox"
+    data-id="${t._id}"
+    data-name="${t.name}"
+    ${t.isListed ? "checked" : ""}
+    data-bs-toggle="modal"
+    data-bs-target="#deleteTypeModal"
+  >
+
+</div>
 
           </div>
         </td>

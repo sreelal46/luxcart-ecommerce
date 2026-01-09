@@ -1,15 +1,21 @@
-const { OK, BAD_REQUEST, NOT_FOUND } = require("../../constant/statusCode");
+const {
+  OK,
+  BAD_REQUEST,
+  NOT_FOUND,
+  CONFLICT,
+} = require("../../constant/statusCode");
 const carVariant = require("../../models/admin/carVariantModel");
 const Accessory = require("../../models/admin/productAccessoryModal");
 const Order = require("../../models/user/OrderModel");
-const Return = require("../../models/user/ReturnModel");
+const Referral = require("../../models/user/referral.Model");
 const mongoose = require("mongoose");
+const Wallet = require("../../models/user/walletsModel");
+const updateWallet = require("../helper/wallectBalanceCalculater");
 
 const updateOrderStatus = async (req, res, next) => {
   try {
     const { orderId } = req.params;
     const { status, target } = req.body;
-    console.log("Target", target);
 
     const STATUS_TIME_MAP = {
       placed: "placedAt",
@@ -56,6 +62,44 @@ const updateOrderStatus = async (req, res, next) => {
     });
 
     await order.save();
+    async function processReferralAfterDelivery(order) {
+      const deliveredBefore = await Order.findOne({
+        userId: order.userId,
+        "items.fulfillmentStatus.status": "delivered",
+        _id: { $ne: order._id },
+      });
+
+      if (deliveredBefore) return;
+
+      const referral = await Referral.findOne({
+        referredUser: order.userId,
+        status: "pending",
+        rewardGiven: false,
+      });
+
+      if (!referral) return;
+
+      await updateWallet({
+        userId: referral.referrer,
+        amount: 200,
+        type: "referral",
+        flow: "credit",
+        message: "Referral bonus",
+      });
+
+      await updateWallet({
+        userId: order.userId,
+        amount: 100,
+        type: "referral",
+        flow: "credit",
+        message: "Referral bonus",
+      });
+
+      referral.status = "completed";
+      referral.rewardGiven = true;
+      await referral.save();
+    }
+    await processReferralAfterDelivery(order);
 
     res.status(OK).json({ success: true });
   } catch (error) {
@@ -67,8 +111,6 @@ const updateSingleItemStatus = async (req, res, next) => {
   try {
     const { orderId, itemId } = req.params;
     const { status } = req.body;
-    console.log("Order id", orderId);
-    console.log("item id", itemId);
     const STATUS_TIME_MAP = {
       placed: "placedAt",
       confirmed: "confirmedAt",
@@ -124,6 +166,45 @@ const updateSingleItemStatus = async (req, res, next) => {
         .json({ success: false, alert: "Item not found or already updated" });
     }
 
+    async function processReferralAfterDelivery(order) {
+      const deliveredBefore = await Order.findOne({
+        userId: order.userId,
+        "items.fulfillmentStatus.status": "delivered",
+        _id: { $ne: order._id },
+      });
+
+      if (deliveredBefore) return;
+
+      const referral = await Referral.findOne({
+        referredUser: order.userId,
+        status: "pending",
+        rewardGiven: false,
+      });
+
+      if (!referral) return;
+
+      await updateWallet({
+        userId: referral.referrer,
+        amount: 200,
+        type: "referral",
+        flow: "credit",
+        message: "Referral bonus",
+      });
+
+      await updateWallet({
+        userId: order.userId,
+        amount: 100,
+        type: "referral",
+        flow: "credit",
+        message: "Referral bonus",
+      });
+
+      referral.status = "completed";
+      referral.rewardGiven = true;
+      await referral.save();
+    }
+    const order = await Order.findById(orderId);
+    await processReferralAfterDelivery(order);
     res.status(OK).json({ success: true });
   } catch (error) {
     console.error("Error updating item status", error);
@@ -161,11 +242,13 @@ const cancelApprove = async (req, res, next) => {
         subtotal: 1,
         taxAmount: 1,
         paymentMethod: 1,
+        orderId: 1,
+        userId: 1,
       }
     );
 
     if (!order) {
-      return res.status(400).json({
+      return res.status(BAD_REQUEST).json({
         success: false,
         alert: "Cancel already processed or invalid",
       });
@@ -196,38 +279,6 @@ const cancelApprove = async (req, res, next) => {
     const newTotalAmount = newSubTotal + newTaxAmount;
     const newAdvanceAmount = order.advanceAmount - itemAdvanceAmount;
     const newRemainingAmount = newTotalAmount - newAdvanceAmount;
-    console.log(
-      "==================================itemAdvanceAmount================="
-    );
-    console.log(itemAdvanceAmount);
-    console.log(
-      "==================================itemTaxAmount================="
-    );
-    console.log(itemTaxAmount);
-    console.log(
-      "==================================paymentMethod================="
-    );
-    console.log(paymentMethod);
-    console.log(
-      "==================================newSubTotal================="
-    );
-    console.log(newSubTotal);
-    console.log(
-      "==================================newTaxAmount================="
-    );
-    console.log(newTaxAmount);
-    console.log(
-      "==================================newAdvanceAmount================="
-    );
-    console.log(newAdvanceAmount);
-    console.log(
-      "==================================newTaxAmount================="
-    );
-    console.log(newTaxAmount);
-    console.log(
-      "==================================newRemainingAmount================="
-    );
-    console.log(newRemainingAmount);
     /* =============================
        ATOMIC UPDATE
     ============================= */
@@ -263,7 +314,7 @@ const cancelApprove = async (req, res, next) => {
     );
 
     if (updateResult.modifiedCount === 0) {
-      return res.status(400).json({
+      return res.status(BAD_REQUEST).json({
         success: false,
         alert: "Cancel already approved",
       });
@@ -286,9 +337,18 @@ const cancelApprove = async (req, res, next) => {
         { $inc: { stock: quantity } }
       );
     }
+
+    await updateWallet({
+      userId: order.userId,
+      amount: paymentMethod ? itemAdvanceAmount : itemTotalAmount,
+      type: "cancel",
+      flow: "credit",
+      message: `Order refund (${order.orderId})`,
+    });
+
     /* =============================
-       SUCCESS
-    ============================= */
+                SUCCESS
+       ============================= */
     res.json({
       success: true,
       message: "Cancel approved successfully",
@@ -358,6 +418,8 @@ const returnApprove = async (req, res, next) => {
         totalAmount: 1,
         subtotal: 1,
         taxAmount: 1,
+        orderId: 1,
+        userId: 1,
       }
     );
 
@@ -393,35 +455,6 @@ const returnApprove = async (req, res, next) => {
     const newTotalAmount = newSubTotal + newTaxAmount;
     const newAdvanceAmount = order.advanceAmount - itemAdvanceAmount;
     const newRemainingAmount = newTotalAmount - newAdvanceAmount;
-    console.log("================================== RETURN =================");
-    console.log(
-      "==================================itemAdvanceAmount================="
-    );
-    console.log(itemAdvanceAmount);
-    console.log(
-      "==================================itemTaxAmount================="
-    );
-    console.log(itemTaxAmount);
-    console.log(
-      "==================================newSubTotal================="
-    );
-    console.log(newSubTotal);
-    console.log(
-      "==================================newTaxAmount================="
-    );
-    console.log(newTaxAmount);
-    console.log(
-      "==================================newAdvanceAmount================="
-    );
-    console.log(newAdvanceAmount);
-    console.log(
-      "==================================newTaxAmount================="
-    );
-    console.log(newTaxAmount);
-    console.log(
-      "==================================newRemainingAmount================="
-    );
-    console.log(newRemainingAmount);
     /* =============================
        ATOMIC UPDATE
     ============================= */
@@ -474,10 +507,17 @@ const returnApprove = async (req, res, next) => {
         { $inc: { stock: quantity } }
       );
     }
-
+    await updateWallet({
+      userId: order.userId,
+      amount: itemTotalAmount,
+      type: "return",
+      flow: "credit",
+      message: `Order refund (${order.orderId})`,
+    });
     /* =============================
        SUCCESS
     ============================= */
+
     res.json({
       success: true,
       message: "Cancel approved successfully",
@@ -513,7 +553,7 @@ const returnReject = async (req, res, next) => {
       });
     }
 
-    res.json({ success: true });
+    res.status(OK).json({ success: true });
   } catch (error) {
     console.log("Error from return reject", error);
     next(error);

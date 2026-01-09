@@ -39,7 +39,20 @@ module.exports = function (passport) {
 
             return done(null, user);
           }
+          function generateReferralCode(name) {
+            return (
+              name.slice(0, 3).toUpperCase() +
+              Math.random().toString(36).substring(2, 6).toUpperCase()
+            );
+          }
+          // 3. Generate user's own referral code
+          let newReferralCode;
+          let codeExists = true;
 
+          while (codeExists) {
+            newReferralCode = generateReferralCode(profile.displayName);
+            codeExists = await User.findOne({ referralCode: newReferralCode });
+          }
           // New Google user creation
           const newUser = await User.create({
             googleId: profile.id,
@@ -47,6 +60,7 @@ module.exports = function (passport) {
             email,
             profileImage_url: profile.photos?.[0]?.value || null,
             authProvider: "google",
+            referralCode: newReferralCode,
           });
 
           return done(null, newUser);

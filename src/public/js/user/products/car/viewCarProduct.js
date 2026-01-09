@@ -12,9 +12,11 @@ const defaultVariantId = document.getElementById("variantId").value;
 // -----------------------------------------------------------
 async function changeVariantReq(button) {
   const priceBox = document.querySelector(".price");
+  const originalPrice = document.querySelector(".original-price");
   const carouselInner = document.querySelector(
     "#carImageCarousel .carousel-inner"
   );
+
   const carousel = bootstrap.Carousel.getOrCreateInstance(
     document.getElementById("carImageCarousel")
   );
@@ -33,61 +35,73 @@ async function changeVariantReq(button) {
       `/cars-collection/view-car-product/${productId}?variantId=${variantId}`
     );
 
-    if (res.data.success) {
-      cartItems = res.data.inCartVariants;
-      changingVariantStock = res.data.variant.stock;
+    if (!res.data.success) return;
 
-      console.log("Variant stock from changeVariantReq", changingVariantStock);
+    const variant = res.data.variant;
 
-      // Price animation
-      gsap.fromTo(
-        priceBox,
-        { scale: 0.9, opacity: 0.7 },
-        { scale: 1, opacity: 1, duration: 0.3 }
-      );
-      priceBox.textContent = "₹ " + formatPrice(res.data.variant.price);
+    cartItems = res.data.inCartVariants;
+    changingVariantStock = variant.stock;
+    inCart = res.data.inCart;
 
-      // Image animation
-      gsap.from("#carImageCarousel", {
-        opacity: 0,
-        x: -60,
-        duration: 1,
-        ease: "power2.out",
+    /* ===== PRICE ANIMATION ===== */
+    gsap.fromTo(
+      priceBox,
+      { scale: 0.9, opacity: 0.7 },
+      { scale: 1, opacity: 1, duration: 0.3 }
+    );
+
+    /* ===== PRICE RENDER (IMPORTANT PART) ===== */
+    if (variant.offerPrices?.finalPrice) {
+      originalPrice.innerHTML = "";
+      const discountText =
+        variant.appliedOffer.discountType === "Percentage"
+          ? `${variant.appliedOffer.discountValue}% OFF`
+          : `₹${formatPrice(variant.appliedOffer.discountValue)} OFF`;
+
+      priceBox.innerHTML = `
+      <div class="price-wrapper">
+        <div class="offer-price">
+          ₹${formatPrice(variant.offerPrices.finalPrice)}
+          <span class="offer-badge">${discountText}</span>
+        </div>
+        <div class="price original-price">
+          ₹${formatPrice(variant.price)}
+        </div>
+        </div>
+      `;
+    } else {
+      priceBox.innerHTML = `
+        ₹${formatPrice(variant.price)}
+      `;
+    }
+
+    /* ===== IMAGE UPDATE ===== */
+    if (carouselInner) {
+      carouselInner.innerHTML = "";
+
+      variant.image_url.forEach((img, i) => {
+        const div = document.createElement("div");
+        div.className = `carousel-item ${i === 0 ? "active" : ""}`;
+
+        const imgEl = document.createElement("img");
+        imgEl.src = img;
+        imgEl.className = "d-block w-100 car-main-img";
+
+        div.appendChild(imgEl);
+        carouselInner.appendChild(div);
       });
 
-      // Update carousel images
-      if (carouselInner) {
-        carouselInner.innerHTML = "";
-        res.data.variant.image_url.forEach((img, i) => {
-          const div = document.createElement("div");
-          div.className = "carousel-item" + (i === 0 ? " active" : "");
-
-          const zoomDiv = document.createElement("div");
-          zoomDiv.className = "zoom-container";
-
-          const imageElem = document.createElement("img");
-          imageElem.src = img;
-          imageElem.className = "d-block w-100 car-main-img";
-          imageElem.alt = button.getAttribute("data-color");
-
-          zoomDiv.appendChild(imageElem);
-          div.appendChild(zoomDiv);
-          carouselInner.appendChild(div);
-        });
-
-        carousel.to(0);
-      }
-
-      // Highlight selected variant
-      document
-        .querySelectorAll(".variant-btn")
-        .forEach((btn) => btn.classList.remove("active"));
-      button.classList.add("active");
-
-      inCart = res.data.inCart;
+      carousel.to(0);
     }
-  } catch (error) {
-    console.log("Error from changing variant", error);
+
+    /* ===== ACTIVE VARIANT ===== */
+    document
+      .querySelectorAll(".variant-btn")
+      .forEach((btn) => btn.classList.remove("active"));
+
+    button.classList.add("active");
+  } catch (err) {
+    console.error("Variant change error:", err);
   }
 
   updateCartButton(inCart, changingVariantStock);

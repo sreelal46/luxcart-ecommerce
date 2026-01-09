@@ -1,5 +1,3 @@
-// /js/user/account/cart.js
-
 document.addEventListener("DOMContentLoaded", () => {
   // ---------- TOAST ----------
   function showMobileAlert(message, notification) {
@@ -175,3 +173,116 @@ document.addEventListener("DOMContentLoaded", () => {
     }
   });
 });
+
+// ========================================
+// COUPON MODAL FUNCTIONALITY
+// ========================================
+
+// Open Coupon Modal
+document
+  .getElementById("applyCouponBtn")
+  ?.addEventListener("click", function () {
+    document.getElementById("couponModal").classList.add("show");
+  });
+
+// Close Modal - X Button
+document.getElementById("closeModal")?.addEventListener("click", function () {
+  closeModal();
+});
+
+// Close modal when clicking outside
+document.getElementById("couponModal")?.addEventListener("click", function (e) {
+  if (e.target === this) {
+    closeModal();
+  }
+});
+
+// Close Modal Function
+function closeModal() {
+  document.getElementById("couponModal").classList.remove("show");
+}
+
+// Apply Coupon Buttons
+document.querySelectorAll(".apply-btn").forEach((button) => {
+  button.addEventListener("click", function (e) {
+    e.preventDefault();
+    const couponCode = this.getAttribute("data-coupon");
+    applyCoupon(couponCode);
+  });
+});
+
+// Apply Coupon Function
+function applyCoupon(couponCode) {
+  // Add your AJAX call here to apply the coupon
+  console.log("Applying coupon:", couponCode);
+
+  // Example: Send coupon to backend
+  /*
+  fetch('/api/apply-coupon', {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/json',
+    },
+    body: JSON.stringify({ couponCode: couponCode })
+  })
+  .then(response => response.json())
+  .then(data => {
+    if(data.success) {
+      showAlert('Coupon applied successfully!', 'success');
+      // Reload or update cart
+      location.reload();
+    } else {
+      showAlert(data.message || 'Failed to apply coupon', 'error');
+    }
+  })
+  .catch(error => {
+    console.error('Error:', error);
+    showAlert('Something went wrong!', 'error');
+  });
+  */
+
+  // For now, just show alert and close modal
+  showAlert(`Coupon ${couponCode} applied successfully!`, "success");
+  closeModal();
+}
+// ========================================
+// TOAST NOTIFICATION FUNCTION
+// ========================================
+
+function showAlert(message, type = "success") {
+  const alertBox = document.getElementById("mobileAlert");
+
+  // Set icon based on type
+  let icon = "";
+  let colorClass = "";
+
+  if (type === "success") {
+    icon = '<i class="bi bi-check-circle-fill success-icon"></i>';
+    colorClass = "message-green";
+  } else if (type === "error") {
+    icon = '<i class="bi bi-x-circle-fill error-icon"></i>';
+    colorClass = "message-red";
+  } else if (type === "warning") {
+    icon = '<i class="bi bi-exclamation-triangle-fill yellow-icon"></i>';
+    colorClass = "message-yellow";
+  }
+
+  alertBox.innerHTML = `${icon}<span class="${colorClass}">${message}</span>`;
+  alertBox.classList.add("show");
+
+  // Hide after 3 seconds
+  setTimeout(() => {
+    alertBox.classList.remove("show");
+  }, 3000);
+}
+
+// ========================================
+// MOBILE PLACE ORDER BUTTON
+// ========================================
+
+document
+  .querySelector(".place-order-btn")
+  ?.addEventListener("click", function () {
+    const cartId = "{{cart._id}}"; // This will be replaced by Handlebars
+    window.location.href = `/cart/checkout-step-1/${cartId}`;
+  });

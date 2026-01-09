@@ -28,6 +28,7 @@ const orderItemSchema = new Schema(
 
     /* PRICING */
     price: { type: Number, required: true },
+    offerPrice: { type: Number, default: null },
     accessoryTax: { type: Number, default: null },
     quantity: { type: Number, required: true, min: 1 },
     advanceAmount: { type: Number, default: null },

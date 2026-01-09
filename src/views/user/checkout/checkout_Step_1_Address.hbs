@@ -70,12 +70,17 @@
               cart.totalAmount}}</span></div>
           <!-- <div class="summary-row"><span>Discount</span><span>₹28,000</span></div> -->
           <div class="summary-row"><span>Shipping</span><span>Free</span></div>
+          {{#if cart.discount}}
+          <div class="summary-row"><span>Discount</span><span>₹ {{formatPrice cart.discount}}</span></div>
+          {{/if}}
           {{#if cart.accessoryTax}}
           <div class="summary-row"><span>Tax<span class="fw-semibold">(GST {{taxRate}}% Only for
                 Accessory)</span></span><span>₹ {{formatPrice cart.accessoryTax}}</span></div>
           {{else}}
           <div class="summary-row"><span>Tax</span><span>₹ 0</span></div>
           {{/if}}
+
+
 
           <hr>
           <div class="summary-row" style="font-weight:700"><span>Total</span><span>₹ {{formatPrice

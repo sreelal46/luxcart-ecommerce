@@ -1,0 +1,217 @@
+<style>
+  .referral-code-box {
+    background: #f8f9fa;
+    border-radius: 8px;
+    padding: 12px;
+    font-weight: 600;
+    letter-spacing: 1px;
+  }
+
+  .status-badge {
+    font-size: 12px;
+    padding: 6px 10px;
+    border-radius: 20px;
+  }
+
+  /* ===============================
+   Slide-in Toast MSG
+=============================== */
+
+  .mobile-alert {
+    position: fixed;
+    bottom: 20px;
+    left: 50%;
+    transform: translateX(-50%) translateY(100px);
+    background: #111;
+    color: #fff;
+    padding: 12px 20px;
+    border-radius: 14px;
+    font-size: 14px;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    opacity: 0;
+    pointer-events: none;
+    transition: all 0.35s ease;
+    box-shadow: 0 6px 22px rgba(0, 0, 0, 0.25);
+    z-index: 9999;
+  }
+
+  .mobile-alert.show {
+    opacity: 1;
+    transform: translateX(-50%) translateY(0);
+  }
+
+  button {
+    padding: 10px 20px;
+    background: #000;
+    color: #fff;
+    border: none;
+    border-radius: 10px;
+    cursor: pointer;
+    font-size: 16px;
+  }
+
+  @media (min-width: 768px) {
+    .mobile-alert {
+      top: 20px;
+      bottom: auto;
+      transform: translateX(-50%) translateY(-100px);
+    }
+
+    .mobile-alert.show {
+      transform: translateX(-50%) translateY(0);
+    }
+  }
+
+  .message-green {
+    color: #00ff7f;
+  }
+
+  .message-red {
+    color: #ff4d4d;
+  }
+
+  .message-yellow {
+    color: #ffcc00;
+  }
+
+  .success-icon,
+  .error-icon {
+    font-size: 16px;
+    /* same size */
+    margin-right: 6px;
+    /* space */
+    vertical-align: middle;
+  }
+
+  .success-icon {
+    color: #00ff7f;
+    /* green */
+  }
+
+  .error-icon {
+    color: #dc3545;
+    /* red */
+  }
+
+  .yellow-icon {
+    color: #ffcc00;
+    /* red */
+  }
+</style>
+<div id="mobileAlert" class="mobile-alert"></div>
+<section class="col-lg-9 col-xl-10 p-4">
+
+  <!-- My Referrals -->
+  <div class="card border-0 shadow-sm mb-4">
+    <div class="card-body">
+      <h5 class="fw-bold mb-3">My Referrals</h5>
+      <p class="text-muted mb-2">
+        Share this code with friends and earn rewards when they make their first purchase
+      </p>
+      <div class="d-flex align-items-center gap-2 mb-3">
+        <div class="flex-grow-1 referral-code-box" id="referralCode">
+          {{referralCode}}
+        </div>
+        <button class="btn btn-dark" onclick="copyReferralCode()">
+          <i class="bi bi-clipboard"></i>
+        </button>
+      </div>
+
+
+      <div class="border rounded p-3 w-25">
+        <small class="text-muted">Total Referrals</small>
+        <h4 class="fw-bold mb-0">{{result.length}}</h4>
+      </div>
+    </div>
+  </div>
+
+  <!-- Referral History -->
+  <div class="card border-0 shadow-sm">
+    <div class="card-body">
+      <h6 class="fw-bold mb-3">Referral History</h6>
+
+      <div class="table-responsive">
+        {{#if result.length}}
+        <table class="table align-middle mb-0">
+          <thead class="table-light">
+            <tr>
+              <th>Name</th>
+              <th>Date</th>
+              <th>Status</th>
+              <th>Reward</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr>
+              {{#each result}}
+              <td>
+                <div class="fw-semibold">{{this.name}}</div>
+                <small class="text-muted">{{this.email}}</small>
+              </td>
+              <td>{{this.joinedAt}}</td>
+              <td>
+                {{#if (eq this.status "completed")}}
+                <span class="badge bg-success-subtle text-success status-badge">
+                  Completed
+                </span>
+                {{else}}
+                <span class="badge bg-warning-subtle text-warning status-badge">
+                  Pending
+                </span>
+                {{/if}}
+              </td>
+              <td>
+                {{#if (eq this.reward "Credited")}}
+                <span class="badge bg-success-subtle text-success status-badge">
+                  Credited
+                </span>
+                {{else}}
+                <span class="badge bg-warning-subtle text-warning status-badge">
+                  Pending
+                </span>
+                {{/if}}
+              </td>
+            </tr>
+            {{/each}}
+
+          </tbody>
+        </table>
+        {{else}}
+        <p>No referrals yet. Share your referral code!</p>
+        {{/if}}
+      </div>
+
+    </div>
+  </div>
+
+</section>
+<script>
+  function showMobileAlert(message, notification) {
+    const alertBox = document.getElementById("mobileAlert");
+    if (notification === "success") {
+      alertBox.innerHTML = `<i class="bi bi-check-circle-fill success-icon"></i><span class="message-green">${message}</span>`;
+      alertBox.classList.add("show");
+    } else if (notification === "error") {
+      alertBox.innerHTML = `<i class="bi bi-x-circle-fill error-icon"></i><span class="message-red">${message}</span>`;
+      alertBox.classList.add("show");
+    } else if (notification === "warning") {
+      alertBox.innerHTML = `<i class="bi bi-exclamation-triangle-fill yellow-icon"></i><span class="message-yellow">${message}</span>`;
+      alertBox.classList.add("show");
+    }
+
+    setTimeout(() => {
+      alertBox.classList.remove("show");
+    }, 2000);
+  }
+  function copyReferralCode() {
+    const text = document.getElementById("referralCode").innerText;
+
+    navigator.clipboard.writeText(text).then(() => {
+      showMobileAlert("Referral code copied!", "success");
+    }).catch(() => {
+      showMobileAlert("Failed to copy", "error");
+    });
+  }
+</script>

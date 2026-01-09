@@ -46,7 +46,31 @@
       <div class="col-lg-5">
         <div class="price-box">
           <div class="d-flex justify-content-between align-items-center mb-3">
-            <div class="price">₹ {{formatPrice singleCar.variantIds.[0].price}}</div>
+            {{#if singleCar.variantIds.[0].offerPrices.finalPrice}}
+            <div class="price-wrapper">
+
+              <div class="price offer-price">
+                ₹{{formatPrice singleCar.variantIds.[0].offerPrices.finalPrice}}
+                <span class="offer-badge">
+                  {{#if (eq singleCar.variantIds.[0].appliedOffer.discountType "Percentage")}}
+                  {{singleCar.variantIds.[0].appliedOffer.discountValue}}% OFF
+                  {{else}}
+                  ₹{{formatPrice singleCar.variantIds.[0].appliedOffer.discountValue}} OFF
+                  {{/if}}
+                </span>
+              </div>
+
+              <div class="price original-price">
+                ₹{{formatPrice singleCar.variantIds.[0].price}}
+              </div>
+
+            </div>
+            {{else}}
+            <div class="price">
+              ₹{{formatPrice singleCar.variantIds.[0].price}}
+            </div>
+            {{/if}}
+            <!-- <div class="price">₹ {{formatPrice singleCar.variantIds.[0].price}}</div> -->
             <button id="wishlistBtn" data-carid="{{singleCar._id}}" data-variantId="{{singleCar.variantIds.[0]._id}}"
               style="border: none; background-color: transparent;">
               <i id="heartIcon" class="bi bi-heart fs-5 text-muted"></i>
@@ -58,7 +82,7 @@
           <!-- VARIANT BUTTONS -->
           {{#if (gt (length singleCar.variantIds) 1)}}
           <div class="variant-section mb-3">
-            <h5 class="fw-semibold mb-3">Variants</h5>
+            <!-- <h5 class="fw-semibold mb-3">Variants</h5> -->
             <div class="variant-section-button d-flex flex-wrap gap-2">
               {{#each singleCar.variantIds}}
               <!-- <button class="variant-btn btn btn-outline-dark {{#if @first}}active{{/if}} "

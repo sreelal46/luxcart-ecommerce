@@ -36,6 +36,8 @@ const {
 const {
   loadWishlistPage,
   loadOrderDetailPage,
+  loadReferralsPage,
+  loadwalletPage,
 } = require("../controllers/user/pageLoadThree.controller");
 
 const {
@@ -192,6 +194,10 @@ route.delete(
 );
 route.get("/account/change-password", checkSession, loadChangePassword);
 route.post("/account/change-password/:userId", checkSession, changePassword);
+
+//referrals
+route.get("/account/referrals", checkSession, loadReferralsPage);
+route.get("/account/wallet", checkSession, loadwalletPage);
 
 //cart management
 route.get("/cart", checkSession, loadCartPage);

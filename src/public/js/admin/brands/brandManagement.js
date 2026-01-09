@@ -400,20 +400,24 @@ document.addEventListener("DOMContentLoaded", () => {
             </div>
 
             <!-- List / Unlist -->
-            <div
-              data-bs-toggle="tooltip"
-              title="${isListed ? "Unlist brand" : "List brand"}">
-              <button
-                class="btn btn-sm ${
-                  isListed ? "btn-outline-warning" : "btn-outline-success"
-                } toggle-brand-status-btn"
-                data-bs-toggle="modal"
-                data-bs-target="#deleteConfirmModal"
-                data-id="${_id}"
-                data-name="${name}">
-                <i class="bi ${isListed ? "bi-eye-slash" : "bi-eye"}"></i>
-              </button>
-            </div>
+
+<div class="form-check form-switch m-0"
+     data-bs-toggle="tooltip"
+     title="${isListed ? "Unlist brand" : "List brand"}">
+
+  <input
+    class="form-check-input brand-toggle-status"
+    type="checkbox"
+    data-id="${_id}"
+    data-name="${name}"
+    ${isListed ? "checked" : ""}
+    data-bs-toggle="modal"
+    data-bs-target="#deleteConfirmModal"
+  >
+
+</div>
+
+
 
           </div>
         </td>
