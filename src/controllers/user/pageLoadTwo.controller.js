@@ -1,5 +1,6 @@
 const { OK, FORBIDDEN } = require("../../constant/statusCode");
 const CarVariant = require("../../models/admin/carVariantModel");
+const Coupon = require("../../models/admin/couponModel");
 const Accessory = require("../../models/admin/productAccessoryModal");
 const Address = require("../../models/user/addressModel");
 const Cart = require("../../models/user/CartModel");
@@ -153,10 +154,12 @@ const loadCartPage = async (req, res, next) => {
       .populate("items.carId")
       .populate("items.accessoryId")
       .lean();
+    const coupons = await Coupon.find({ isListed: true }).lean();
 
     res.status(OK).render("user/account/cart", {
       cart,
       taxRate,
+      coupons,
     });
   } catch (error) {
     console.error("Error loading cart page:", error);

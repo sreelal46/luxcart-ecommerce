@@ -189,18 +189,20 @@
       </div>
 
       <!-- Coupon Items -->
+      {{#each coupons}}
       <div class="coupon-item">
         <div class="coupon-left">
           <i class="bi bi-tag-fill coupon-icon"></i>
           <div class="coupon-details">
-            <h6>LUX10</h6>
-            <p>Save ₹10,000</p>
+            <h6>{{this.code}}</h6>
+            <!-- <p>Save ₹10,000</p> -->
           </div>
         </div>
         <button class="apply-btn" data-coupon="LUX10">Apply</button>
       </div>
+      {{/each}}
 
-      <div class="coupon-item">
+      <!-- <div class="coupon-item">
         <div class="coupon-left">
           <i class="bi bi-tag-fill coupon-icon"></i>
           <div class="coupon-details">
@@ -220,7 +222,7 @@
           </div>
         </div>
         <button class="apply-btn" data-coupon="FIRST20">Apply</button>
-      </div>
+      </div> -->
 
 
     </div>
