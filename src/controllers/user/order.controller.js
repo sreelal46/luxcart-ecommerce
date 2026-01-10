@@ -110,8 +110,9 @@ const createOrder = async (req, res, next) => {
       remainingAmount: remainingAmount || null,
       subtotal: cart.totalAmount - cart.accessoryTax,
       taxAmount: cart.accessoryTax,
-      discount: cart.discount,
+      discount: cart.discountedPrice,
       totalAmount: cart.totalAfterAll,
+      appliedCoupon: cart.appliedCoupon,
     });
     await order.save();
 
@@ -121,6 +122,7 @@ const createOrder = async (req, res, next) => {
     cart.accessoryTax = 0;
     cart.discount = 0;
     cart.totalAfterAll = 0;
+    cart.appliedCoupon = {};
     await cart.save();
 
     // Reduce stock

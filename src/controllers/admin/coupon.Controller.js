@@ -195,7 +195,6 @@ const editCoupon = async (req, res, next) => {
 const softDeleteCoupon = async (req, res, next) => {
   try {
     const { couponId } = req.params;
-    const { status } = req.body;
 
     if (!couponId) {
       return res.status(BAD_REQUEST).json({
@@ -204,24 +203,18 @@ const softDeleteCoupon = async (req, res, next) => {
       });
     }
 
-    if (typeof status !== "boolean") {
-      return res.status(BAD_REQUEST).json({
-        success: false,
-        alert: "Invalid status value",
-      });
-    }
-
-    const coupon = await Coupon.findByIdAndUpdate(
-      couponId,
-      { isListed: status },
-      { new: true }
-    );
-
+    const coupon = await Coupon.findById(couponId);
+    console.log("updated coupon", coupon);
     if (!coupon) {
       return res.status(NOT_FOUND).json({
         success: false,
         alert: "Coupon not found",
       });
+    }
+    if (coupon.isListed) {
+      await Coupon.updateOne({ _id: couponId }, { $set: { isListed: false } });
+    } else {
+      await Coupon.updateOne({ _id: couponId }, { $set: { isListed: true } });
     }
 
     res.status(OK).json({

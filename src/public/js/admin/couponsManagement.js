@@ -307,10 +307,7 @@ document.addEventListener("DOMContentLoaded", () => {
 
       try {
         const res = await axios.patch(
-          `/admin/coupons-management/softDeleteCoupon/${selectedCouponId}`,
-          {
-            status: selectedAction === "list",
-          }
+          `/admin/coupons-management/softDeleteCoupon/${selectedCouponId}`
         );
 
         if (res.data.success) {

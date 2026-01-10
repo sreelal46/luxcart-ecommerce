@@ -200,10 +200,16 @@ route.get("/account/referrals", checkSession, loadReferralsPage);
 route.get("/account/wallet", checkSession, loadwalletPage);
 
 //cart management
+const {
+  applyCoupon,
+  removeCoupon,
+} = require("../controllers/user/cart.controller");
 route.get("/cart", checkSession, loadCartPage);
 route.post("/cart/add", checkSession, addToCart);
 route.delete("/cart/remove-product/:itemId", checkSession, deleteFromCart);
 route.put("/cart/change-quantity/:itemId", checkSession, changeQuantity);
+route.patch("/cart/add-coupon/:couponId", checkSession, applyCoupon);
+route.patch("/cart/remove-coupon", checkSession, removeCoupon);
 
 // checkout management
 route.get("/cart/checkout-step-1/:cartId", checkSession, loadCheckoutStep1);

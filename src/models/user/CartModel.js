@@ -4,13 +4,12 @@ const { Schema } = mongoose;
 const Car = require("../admin/productCarModal");
 const CarVariant = require("../admin/carVariantModel");
 const Accessory = require("../admin/productAccessoryModal");
+const Coupon = require("../admin/couponModel");
 
 const taxRate = parseInt(process.env.ACCESSORY_TAX_RATE) || 0;
 const advancePercent = parseInt(process.env.ADVANCE_PAYMENT_PERCENTAGE) || 0;
 
 /* ================= MONEY ROUNDING ================= */
-// Use 2 decimals (safe for payments)
-// For INR only, you can change to Math.round(value)
 const roundMoney = (value) => Math.round(value * 100) / 100;
 
 /* ================= CART ITEM ================= */
@@ -63,6 +62,15 @@ const cartSchema = new Schema(
 
     items: [cartItemSchema],
 
+    // Applied coupon details
+    appliedCoupon: {
+      couponId: { type: Schema.Types.ObjectId, ref: "Coupon", default: null },
+      code: { type: String, default: null },
+      discountType: { type: String, default: null },
+      discountValue: { type: Number, default: null },
+      couponDiscount: { type: Number, default: 0 },
+    },
+
     discountedPrice: { type: Number, default: 0 },
     carTotal: { type: Number, default: 0 },
     accessoryTotal: { type: Number, default: 0 },
@@ -74,6 +82,123 @@ const cartSchema = new Schema(
   },
   { timestamps: true }
 );
+
+/* ================= APPLY COUPON METHOD ================= */
+cartSchema.methods.applyCoupon = async function (couponId) {
+  try {
+    // Find coupon
+    const coupon = await Coupon.findOne({
+      _id: couponId,
+      isListed: true,
+    });
+
+    if (!coupon)
+      return {
+        success: false,
+        alert: "Invalid coupon code",
+      };
+
+    const now = new Date();
+
+    // Validate coupon dates
+    if (now < new Date(coupon.validFrom) || now > new Date(coupon.validTo))
+      return {
+        success: false,
+        alert: "Coupon has expired or is not yet valid",
+      };
+
+    // Check usage limit
+    if (coupon.usedBy.length >= coupon.usageLimit)
+      return {
+        success: false,
+        alert: "Coupon usage limit exceeded",
+      };
+
+    // Check per-user usage
+    const userUsageCount = coupon.usedBy.filter(
+      (id) => id.toString() === this.userId.toString()
+    ).length;
+
+    if (userUsageCount >= coupon.usagePerUser)
+      return {
+        success: false,
+        alert: "You have already used this coupon maximum times",
+      };
+
+    // Calculate total before coupon (after product/category offers)
+    await this.save(); // Ensure cart calculations are up-to-date
+
+    // Check minimum order amount
+    if (this.totalAmount < coupon.minOrderAmount)
+      return {
+        success: false,
+        alert: `Minimum order amount of ₹${coupon.minOrderAmount} required`,
+      };
+
+    // Calculate coupon discount
+    let couponDiscount = 0;
+    if (coupon.discountType === "flat") {
+      couponDiscount = coupon.discountValue;
+    } else if (coupon.discountType === "percentage") {
+      couponDiscount = roundMoney(
+        (this.totalAmount * coupon.discountValue) / 100
+      );
+    }
+
+    // Ensure discount doesn't exceed total
+    couponDiscount = Math.min(couponDiscount, this.totalAmount);
+
+    // Store coupon details
+    this.appliedCoupon = {
+      couponId: coupon._id,
+      code: coupon.code,
+      discountType: coupon.discountType,
+      discountValue: coupon.discountValue,
+      couponDiscount: roundMoney(couponDiscount),
+    };
+
+    // Recalculate totalAfterAll
+    const totalAfterCoupon = roundMoney(this.totalAmount - couponDiscount);
+    this.totalAfterAll = roundMoney(totalAfterCoupon + this.accessoryTax);
+
+    await this.save();
+
+    return {
+      success: true,
+      alert: "Coupon applied successfully",
+      couponDiscount: this.appliedCoupon.couponDiscount,
+      totalAfterAll: this.totalAfterAll,
+    };
+  } catch (error) {
+    console.log("error from apply coupon", error);
+    return {
+      success: false,
+      alert: "Server error",
+    };
+  }
+};
+
+/* ================= REMOVE COUPON METHOD ================= */
+cartSchema.methods.removeCoupon = async function () {
+  this.appliedCoupon = {
+    couponId: null,
+    code: null,
+    discountType: null,
+    discountValue: null,
+    couponDiscount: 0,
+  };
+
+  // Recalculate without coupon
+  this.totalAfterAll = roundMoney(this.totalAmount + this.accessoryTax);
+
+  await this.save();
+
+  return {
+    success: true,
+    message: "Coupon removed successfully",
+    totalAfterAll: this.totalAfterAll,
+  };
+};
 
 /* ================= PRE SAVE ================= */
 cartSchema.pre("save", async function (next) {
@@ -247,6 +372,7 @@ cartSchema.pre("save", async function (next) {
     this.carTotal = roundMoney(carTotal);
     this.accessoryTotal = roundMoney(accessoryTotal);
 
+    // Total discount from product/category offers
     this.discountedPrice = roundMoney(
       carTotal -
         carTotalWithDiscount +
@@ -257,11 +383,20 @@ cartSchema.pre("save", async function (next) {
       accessoryTotalWithDiscount * (taxRate / 100)
     );
 
+    // Total after product/category offers (before coupon)
     this.totalAmount = roundMoney(
       carTotalWithDiscount + accessoryTotalWithDiscount
     );
 
-    this.totalAfterAll = roundMoney(this.totalAmount + this.accessoryTax);
+    // Calculate final total with coupon if applied
+    if (this.appliedCoupon?.couponId) {
+      const totalAfterCoupon = roundMoney(
+        this.totalAmount - this.appliedCoupon.couponDiscount
+      );
+      this.totalAfterAll = roundMoney(totalAfterCoupon + this.accessoryTax);
+    } else {
+      this.totalAfterAll = roundMoney(this.totalAmount + this.accessoryTax);
+    }
 
     this.totalAdvanceAmount = roundMoney(totalAdvanceAmount);
 
