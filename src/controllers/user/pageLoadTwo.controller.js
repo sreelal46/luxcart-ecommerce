@@ -128,6 +128,106 @@ const loadOrderPage = async (req, res, next) => {
 //load cart page
 const loadCartPage = async (req, res, next) => {
   try {
+    const userId = req.user._id;
+    const now = new Date();
+
+    // =====================================
+    // 1. Load cart
+    // =====================================
+    let cart = await Cart.findOne({ userId });
+
+    if (!cart || !cart.items.length) {
+      return res.status(OK).render("user/account/cart", {
+        cart: null,
+        taxRate,
+        coupons: [],
+        cartTotal: 0,
+      });
+    }
+
+    // Force recalculation (expire offers, price changes)
+    cart.markModified("items");
+    await cart.save();
+
+    // Re-fetch populated cart
+    cart = await Cart.findOne({ userId })
+      .populate("items.variantId")
+      .populate("items.carId")
+      .populate("items.accessoryId")
+      .lean();
+    // =====================================
+    // 2. Load all eligible coupons in ONE query
+    // =====================================
+    const coupons = await Coupon.find({
+      isListed: true,
+      validFrom: { $lte: now },
+      validTo: { $gt: now },
+      minOrderAmount: { $lte: cart.totalAmount },
+    }).lean(); // includes usedBy
+    // =====================================
+    // 3. Filter coupons by usage limits
+    // =====================================
+    const availableCoupons = coupons
+      .filter((coupon) => {
+        // total usage limit
+        if (coupon.usedBy.length >= coupon.usageLimit) return false;
+
+        // per user usage
+        const userUsageCount = coupon.usedBy.filter(
+          (id) => id.toString() === userId.toString()
+        ).length;
+
+        if (userUsageCount >= coupon.usagePerUser) return false;
+
+        return true;
+      })
+      .map((coupon) => {
+        // =====================================
+        // 4. Calculate potential discount
+        // =====================================
+        let potentialDiscount = 0;
+
+        if (coupon.discountType === "flat") {
+          potentialDiscount = coupon.discountValue;
+        } else if (coupon.discountType === "percentage") {
+          potentialDiscount =
+            Math.round(
+              ((cart.totalAmount * coupon.discountValue) / 100) * 100
+            ) / 100;
+        }
+
+        // Never allow discount more than cart total
+        potentialDiscount = Math.min(potentialDiscount, cart.totalAmount);
+
+        return {
+          _id: coupon._id,
+          code: coupon.code,
+          discountType: coupon.discountType,
+          discountValue: coupon.discountValue,
+          minOrderAmount: coupon.minOrderAmount,
+          validFrom: coupon.validFrom,
+          validTo: coupon.validTo,
+          potentialDiscount,
+        };
+      });
+
+    // =====================================
+    // 5. Render Cart Page
+    // =====================================
+    res.status(OK).render("user/account/cart", {
+      cart,
+      taxRate,
+      coupons: availableCoupons,
+      cartTotal: cart.totalAmount,
+    });
+  } catch (error) {
+    console.error("[LOAD CART ERROR]:", error);
+    res.status(500).render("error/500");
+  }
+};
+
+const loadCartPage55 = async (req, res, next) => {
+  try {
     if (!req.session.user) {
       return res.redirect("/login");
     }
@@ -144,7 +244,7 @@ const loadCartPage = async (req, res, next) => {
       });
     }
 
-    // 🔥 FORCE recalculation (expires offers)
+    // FORCE recalculation (expires offers)
     cart.markModified("items");
     await cart.save();
 
@@ -166,8 +266,6 @@ const loadCartPage = async (req, res, next) => {
     next(error);
   }
 };
-
-module.exports = { loadCartPage };
 
 //load checkout
 const loadCheckoutStep1 = async (req, res, next) => {

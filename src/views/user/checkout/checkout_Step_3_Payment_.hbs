@@ -146,8 +146,9 @@
 
           <div class="summary-row"><span>Price ({{cart.items.length}} items)</span><span>{{formatPrice
               cart.totalAmount}}</span></div>
-          {{#if cart.discount}}
-          <div class="summary-row"><span>Discount</span><span>₹ {{formatPrice cart.discount}}</span></div>
+          {{#if cart.discountedPrice}}
+          <div class="summary-row"><span>Discount</span><span class="text-danger">₹ {{formatPrice
+              cart.discountedPrice}}</span></div>
           {{/if}}
           <div class="summary-row"><span>Shipping</span><span>Free</span></div>
           {{#if cart.accessoryTax}}
