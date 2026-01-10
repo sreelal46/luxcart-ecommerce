@@ -88,12 +88,10 @@ const editCoupon = async (req, res, next) => {
 
     let {
       code,
-      discountType,
       discount,
       minOrderAmount,
       usageLimit,
       perUserLimit,
-      isListed,
       validFrom,
       validTo,
     } = req.body;
@@ -104,10 +102,9 @@ const editCoupon = async (req, res, next) => {
     minOrderAmount = Number(minOrderAmount);
     usageLimit = Number(usageLimit);
     perUserLimit = Number(perUserLimit);
-    isActive = isActive === "true";
 
     // Required fields
-    if (!code || !discountType || !validFrom || !validTo) {
+    if (!code || !validFrom || !validTo) {
       return res.status(BAD_REQUEST).json({
         success: false,
         alert: "Missing required fields",
@@ -132,13 +129,6 @@ const editCoupon = async (req, res, next) => {
       return res.status(BAD_REQUEST).json({
         success: false,
         alert: "Discount must be greater than 0",
-      });
-    }
-
-    if (discountType === "percentage" && discount > 100) {
-      return res.status(BAD_REQUEST).json({
-        success: false,
-        alert: "Percentage discount cannot exceed 100%",
       });
     }
 
@@ -170,12 +160,10 @@ const editCoupon = async (req, res, next) => {
       couponId,
       {
         code,
-        discountType,
         discountValue: discount,
         minOrderAmount,
         usageLimit,
         usagePerUser: perUserLimit,
-        isListed,
         validFrom,
         validTo,
       },

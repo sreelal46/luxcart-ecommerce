@@ -107,10 +107,11 @@
                   data-bs-target="#editCouponModal" data-id="{{this._id}}" data-code="{{this.code}}"
                   data-discounttype="{{this.discountType}}" data-discountvalue="{{this.discountValue}}"
                   data-minorder="{{this.minOrderAmount}}" data-validfrom="{{this.validFrom}}"
-                  data-usagePerUser="{{this.usagePerUser}}" data-usageLimit="{{this.usageLimit}}"
-                  data-validto="{{this.validTo}}" data-active="{{this.isActive}}">
+                  data-validto="{{this.validTo}}" data-usageperuser="{{this.usagePerUser}}"
+                  data-usagelimit="{{this.usageLimit}}">
                   <i class="bi bi-pencil"></i>
                 </button>
+
 
                 <!-- List / Unlist -->
                 <div class="form-check form-switch m-0 update-coupon-btn"
@@ -159,7 +160,7 @@
               <select class="form-select form-select-lg" name="discountType" id="discountType">
                 <option value="">Select Type</option>
                 <option value="percentage">Percentage</option>
-                <option value="flat">Fixed Amount</option>
+                <option value="flat">Flat</option>
               </select>
             </div>
 
@@ -243,13 +244,13 @@
             </div>
 
             <!-- Discount Type -->
-            <div class="col-md-6">
+            <!-- <div class="col-md-6">
               <label class="form-label fw-semibold">Discount Type</label>
               <select class="form-select form-select-lg" name="discountType" id="editDiscountType">
                 <option value="percentage">Percentage</option>
-                <option value="fixed">Fixed Amount</option>
+                <option value="fixed">Fixed</option>
               </select>
-            </div>
+            </div> -->
 
             <!-- Discount Value -->
             <div class="col-md-6">
@@ -273,15 +274,6 @@
             <div class="col-md-6">
               <label class="form-label fw-semibold">Usage Per User</label>
               <input type="number" class="form-control form-control-lg" name="perUserLimit" min="1">
-            </div>
-
-            <!-- Status -->
-            <div class="col-md-6">
-              <label class="form-label fw-semibold">Status</label>
-              <select class="form-select form-select-lg" name="isActive">
-                <option value="true">Active</option>
-                <option value="false">Inactive</option>
-              </select>
             </div>
 
             <!-- Valid From -->

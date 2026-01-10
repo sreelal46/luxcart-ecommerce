@@ -186,22 +186,34 @@ document.addEventListener("DOMContentLoaded", () => {
 
     const form = modal.querySelector("#editCouponForm");
 
-    // helper for date input
+    // Helper to format date for <input type="date">
     const formatDate = (dateStr) => {
       if (!dateStr) return "";
-      return new Date(dateStr).toISOString().split("T")[0];
+      const d = new Date(dateStr);
+      if (isNaN(d)) return "";
+      return d.toISOString().split("T")[0]; // YYYY-MM-DD
     };
 
+    // Fill text / number inputs
     form.elements["code"].value = btn.dataset.code || "";
-    form.elements["discountType"].value = btn.dataset.discounttype || "";
     form.elements["discount"].value = btn.dataset.discountvalue || "";
     form.elements["minOrderAmount"].value = btn.dataset.minorder || "";
     form.elements["usageLimit"].value = btn.dataset.usagelimit || "";
     form.elements["perUserLimit"].value = btn.dataset.usageperuser || "";
-    form.elements["isActive"].value =
-      btn.dataset.active === "true" ? "true" : "false";
-    form.elements["validFrom"].value = formatDate(btn.dataset.validfrom);
-    form.elements["validTo"].value = formatDate(btn.dataset.validto);
+
+    // // Fill select inputs
+    // if (form.elements["discountType"]) {
+    //   const type = btn.dataset.discounttype || "percentage";
+    //   form.elements["discountType"].value = type.toLowerCase();
+    // }
+
+    // Fill date inputs
+    if (form.elements["validFrom"]) {
+      form.elements["validFrom"].value = formatDate(btn.dataset.validfrom);
+    }
+    if (form.elements["validTo"]) {
+      form.elements["validTo"].value = formatDate(btn.dataset.validto);
+    }
   });
 
   document

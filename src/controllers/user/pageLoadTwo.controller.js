@@ -155,25 +155,35 @@ const loadCartPage = async (req, res, next) => {
       .populate("items.carId")
       .populate("items.accessoryId")
       .lean();
+
+    const cartTotal = Number(cart.totalAmount) || 0;
+
     // =====================================
-    // 2. Load all eligible coupons in ONE query
+    // 2. Load all eligible coupons
     // =====================================
     const coupons = await Coupon.find({
       isListed: true,
       validFrom: { $lte: now },
       validTo: { $gt: now },
-      minOrderAmount: { $lte: cart.totalAmount },
-    }).lean(); // includes usedBy
+      minOrderAmount: { $lte: cartTotal },
+    }).lean(); // includes usedBy array
+
     // =====================================
     // 3. Filter coupons by usage limits
     // =====================================
     const availableCoupons = coupons
       .filter((coupon) => {
-        // total usage limit
-        if (coupon.usedBy.length >= coupon.usageLimit) return false;
+        // Minimum cart value check
+        if (cartTotal < coupon.minOrderAmount) return false;
 
-        // per user usage
-        const userUsageCount = coupon.usedBy.filter(
+        // Remove corrupted/null values from usedBy
+        const cleanUsedBy = (coupon.usedBy || []).filter((id) => id);
+
+        // Total usage limit
+        if (cleanUsedBy.length >= coupon.usageLimit) return false;
+
+        // Per user usage limit
+        const userUsageCount = cleanUsedBy.filter(
           (id) => id.toString() === userId.toString()
         ).length;
 
@@ -182,22 +192,16 @@ const loadCartPage = async (req, res, next) => {
         return true;
       })
       .map((coupon) => {
-        // =====================================
-        // 4. Calculate potential discount
-        // =====================================
         let potentialDiscount = 0;
 
         if (coupon.discountType === "flat") {
           potentialDiscount = coupon.discountValue;
-        } else if (coupon.discountType === "percentage") {
+        } else {
           potentialDiscount =
-            Math.round(
-              ((cart.totalAmount * coupon.discountValue) / 100) * 100
-            ) / 100;
+            Math.round(((cartTotal * coupon.discountValue) / 100) * 100) / 100;
         }
 
-        // Never allow discount more than cart total
-        potentialDiscount = Math.min(potentialDiscount, cart.totalAmount);
+        potentialDiscount = Math.min(potentialDiscount, cartTotal);
 
         return {
           _id: coupon._id,
@@ -212,17 +216,17 @@ const loadCartPage = async (req, res, next) => {
       });
 
     // =====================================
-    // 5. Render Cart Page
+    // 4. Render Cart Page
     // =====================================
     res.status(OK).render("user/account/cart", {
       cart,
       taxRate,
       coupons: availableCoupons,
-      cartTotal: cart.totalAmount,
+      cartTotal: cartTotal,
     });
   } catch (error) {
     console.error("[LOAD CART ERROR]:", error);
-    res.status(500).render("error/500");
+    next(error);
   }
 };
 

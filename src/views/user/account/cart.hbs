@@ -138,7 +138,8 @@
               - ₹{{formatPrice cart.appliedCoupon.couponDiscount}}
             </span>
 
-            <button class="btn btn-sm btn-outline-danger" id="removeCouponBtn" title="Remove coupon">
+            <button class="btn btn-sm btn-outline-danger" id="removeCouponBtn"
+              data-couponid="{{cart.appliedCoupon.couponId}}" title="Remove coupon">
               ✕
             </button>
           </div>
@@ -207,11 +208,19 @@
 
     <!-- Body -->
     <div class="coupon-modal-body">
+
       <!-- Accessory Note -->
       <div class="accessory-note">
         <i class="bi bi-info-circle-fill"></i>
-        <p><strong>Note:</strong> Coupons are only applicable for accessories</p>
+        <div>
+          <strong>Note:</strong>
+          <p><strong>Coupons are only applicable for accessories</strong></p>
+          <p><strong>Only one coupon can be applied per order</strong></p>
+        </div>
       </div>
+
+
+      {{#if coupons.length}}
 
       <!-- Coupon Items -->
       {{#each coupons}}
@@ -249,8 +258,18 @@
       </div>
       {{/each}}
 
+      {{else}}
+
+      <!-- No coupons -->
+      <div class="no-coupons">
+        <i class="bi bi-ticket-perforated"></i>
+        <p>No coupons available right now</p>
+      </div>
+
+      {{/if}}
 
     </div>
+
   </div>
 </div>
 

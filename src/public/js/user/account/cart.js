@@ -175,7 +175,7 @@ document.addEventListener("DOMContentLoaded", () => {
 });
 
 // ========================================
-// COUPON MODAL FUNCTIONALITY (BUG FREE)
+// COUPON MODAL FUNCTIONALITY
 // ========================================
 
 document.addEventListener("DOMContentLoaded", () => {
@@ -242,24 +242,25 @@ async function applyCoupon(couponCode, couponId) {
 // ========================================
 // REMOVE COUPON (AXIOS)
 // ========================================
-document
-  .getElementById("removeCouponBtn")
-  ?.addEventListener("click", async () => {
-    try {
-      const res = await axios.patch("/cart/remove-coupon");
+const removeCouponBtn = document.getElementById("removeCouponBtn");
+removeCouponBtn.addEventListener("click", async () => {
+  try {
+    const res = await axios.patch(`/cart/remove-coupon`);
 
-      if (res.data.success) {
-        showAlert(`Coupon Removed successfully!`, "success");
-        document.getElementById("couponModal").classList.remove("show");
-        setTimeout(() => location.reload(), 600);
-      } else {
-        showAlert(res.data.message || "Failed to Removed coupon", "error");
-      }
-    } catch (error) {
-      console.error("Coupon error:", error);
-      showAlert(error.response?.data?.alert || "Something went wrong", "error");
+    if (res.data.success) {
+      showAlert(`Coupon Removed successfully!`, "success");
+      document.getElementById("couponModal").classList.remove("show");
+      setTimeout(() => location.reload(), 600);
+    } else {
+      showAlert(res.data.message || "Failed to Removed coupon", "error");
+      document.getElementById("couponModal").classList.remove("show");
     }
-  });
+  } catch (error) {
+    console.error("Coupon error:", error);
+    showAlert(error.response?.data?.alert || "Something went wrong", "error");
+    document.getElementById("couponModal").classList.remove("show");
+  }
+});
 
 // ========================================
 // TOAST NOTIFICATION FUNCTION

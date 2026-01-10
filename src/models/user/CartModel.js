@@ -86,17 +86,12 @@ const cartSchema = new Schema(
 /* ================= APPLY COUPON METHOD ================= */
 cartSchema.methods.applyCoupon = async function (couponId) {
   try {
-    // Find coupon
     const coupon = await Coupon.findOne({
       _id: couponId,
       isListed: true,
     });
 
-    if (!coupon)
-      return {
-        success: false,
-        alert: "Invalid coupon code",
-      };
+    if (!coupon) return { success: false, alert: "Invalid coupon code" };
 
     const now = new Date();
 
@@ -107,15 +102,17 @@ cartSchema.methods.applyCoupon = async function (couponId) {
         alert: "Coupon has expired or is not yet valid",
       };
 
-    // Check usage limit
-    if (coupon.usedBy.length >= coupon.usageLimit)
-      return {
-        success: false,
-        alert: "Coupon usage limit exceeded",
-      };
+    // ---------------------------------
+    // CLEAN corrupted usedBy entries
+    // ---------------------------------
+    const cleanUsedBy = (coupon.usedBy || []).filter((id) => id);
 
-    // Check per-user usage
-    const userUsageCount = coupon.usedBy.filter(
+    // Total usage limit
+    if (cleanUsedBy.length >= coupon.usageLimit)
+      return { success: false, alert: "Coupon usage limit exceeded" };
+
+    // Per-user usage
+    const userUsageCount = cleanUsedBy.filter(
       (id) => id.toString() === this.userId.toString()
     ).length;
 
@@ -125,30 +122,34 @@ cartSchema.methods.applyCoupon = async function (couponId) {
         alert: "You have already used this coupon maximum times",
       };
 
-    // Calculate total before coupon (after product/category offers)
-    await this.save(); // Ensure cart calculations are up-to-date
+    // Ensure cart totals are fresh
+    await this.save();
 
-    // Check minimum order amount
+    // Minimum order check
     if (this.totalAmount < coupon.minOrderAmount)
       return {
         success: false,
         alert: `Minimum order amount of ₹${coupon.minOrderAmount} required`,
       };
 
-    // Calculate coupon discount
+    // ---------------------------------
+    // Calculate discount
+    // ---------------------------------
     let couponDiscount = 0;
+
     if (coupon.discountType === "flat") {
       couponDiscount = coupon.discountValue;
-    } else if (coupon.discountType === "percentage") {
+    } else {
       couponDiscount = roundMoney(
         (this.totalAmount * coupon.discountValue) / 100
       );
     }
 
-    // Ensure discount doesn't exceed total
     couponDiscount = Math.min(couponDiscount, this.totalAmount);
 
-    // Store coupon details
+    // ---------------------------------
+    // Save coupon into cart
+    // ---------------------------------
     this.appliedCoupon = {
       couponId: coupon._id,
       code: coupon.code,
@@ -157,7 +158,6 @@ cartSchema.methods.applyCoupon = async function (couponId) {
       couponDiscount: roundMoney(couponDiscount),
     };
 
-    // Recalculate totalAfterAll
     const totalAfterCoupon = roundMoney(this.totalAmount - couponDiscount);
     this.totalAfterAll = roundMoney(totalAfterCoupon + this.accessoryTax);
 
@@ -171,33 +171,63 @@ cartSchema.methods.applyCoupon = async function (couponId) {
     };
   } catch (error) {
     console.log("error from apply coupon", error);
-    return {
-      success: false,
-      alert: "Server error",
-    };
+    return { success: false, alert: "Server error" };
   }
 };
 
 /* ================= REMOVE COUPON METHOD ================= */
-cartSchema.methods.removeCoupon = async function () {
-  this.appliedCoupon = {
-    couponId: null,
-    code: null,
-    discountType: null,
-    discountValue: null,
-    couponDiscount: 0,
-  };
+cartSchema.methods.removeCoupon = async function (userId, couponId) {
+  try {
+    const coupon = await Coupon.findById(couponId);
+    if (!coupon) {
+      return { success: true, alert: "Coupon not found" };
+    }
 
-  // Recalculate without coupon
-  this.totalAfterAll = roundMoney(this.totalAmount + this.accessoryTax);
+    // ---------------------------------------
+    // Clean corrupted values
+    // ---------------------------------------
+    const cleanUsedBy = (coupon.usedBy || []).filter((id) => id);
 
-  await this.save();
+    // Find LAST usage of this user
+    const index = cleanUsedBy
+      .map((id) => id.toString())
+      .lastIndexOf(userId.toString());
 
-  return {
-    success: true,
-    message: "Coupon removed successfully",
-    totalAfterAll: this.totalAfterAll,
-  };
+    if (index === -1) {
+      return { success: true, alert: "Coupon already removed" };
+    }
+
+    // ---------------------------------------
+    // Remove ONLY that one occurrence
+    // ---------------------------------------
+    cleanUsedBy.splice(index, 1);
+
+    coupon.usedBy = cleanUsedBy;
+    await coupon.save();
+
+    // ---------------------------------------
+    // Remove coupon from cart
+    // ---------------------------------------
+    this.appliedCoupon = {
+      couponId: null,
+      code: null,
+      discountType: null,
+      discountValue: null,
+      couponDiscount: 0,
+    };
+
+    this.totalAfterAll = roundMoney(this.totalAmount + this.accessoryTax);
+    await this.save();
+
+    return {
+      success: true,
+      alert: "Coupon removed successfully",
+      totalAfterAll: this.totalAfterAll,
+    };
+  } catch (error) {
+    console.error("[REMOVE COUPON]", error);
+    return { success: false, alert: "Server error" };
+  }
 };
 
 /* ================= PRE SAVE ================= */
@@ -388,7 +418,35 @@ cartSchema.pre("save", async function (next) {
       carTotalWithDiscount + accessoryTotalWithDiscount
     );
 
-    // Calculate final total with coupon if applied
+    /* ========== VALIDATE APPLIED COUPON ========== */
+    if (this.appliedCoupon?.couponId) {
+      let isCouponValid = false;
+
+      const coupon = await Coupon.findById(this.appliedCoupon.couponId).lean();
+
+      if (coupon) {
+        const validFrom = new Date(coupon.validFrom);
+        const validTo = new Date(coupon.validTo);
+
+        // Check if coupon is listed, not expired, and currently valid
+        if (coupon.isListed === true && validFrom <= now && validTo > now) {
+          isCouponValid = true;
+        }
+      }
+
+      // If coupon is invalid, remove it from cart
+      if (!isCouponValid) {
+        this.appliedCoupon = {
+          couponId: null,
+          code: null,
+          discountType: null,
+          discountValue: null,
+          couponDiscount: 0,
+        };
+      }
+    }
+
+    // Calculate final total with coupon if applied and valid
     if (this.appliedCoupon?.couponId) {
       const totalAfterCoupon = roundMoney(
         this.totalAmount - this.appliedCoupon.couponDiscount
