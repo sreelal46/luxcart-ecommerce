@@ -71,13 +71,26 @@ const cartSchema = new Schema(
       couponDiscount: { type: Number, default: 0 },
     },
 
-    discountedPrice: { type: Number, default: 0 },
+    // Individual category totals at base price
     carTotal: { type: Number, default: 0 },
     accessoryTotal: { type: Number, default: 0 },
+
+    // Tax calculation
     accessoryTax: { type: Number, default: 0 },
 
+    // Total amount at base prices (before any offers)
     totalAmount: { type: Number, default: 0 },
+
+    // Total amount after product/category offers applied (before coupon)
+    totalOfferAmount: { type: Number, default: 0 },
+
+    // Total discount from product/category offers + coupon
+    discountedPrice: { type: Number, default: 0 },
+
+    // Final total after all discounts (offers + coupon) and taxes
     totalAfterAll: { type: Number, default: 0 },
+
+    // Total advance payment amount required
     totalAdvanceAmount: { type: Number, default: 0 },
   },
   { timestamps: true }
@@ -95,23 +108,21 @@ cartSchema.methods.applyCoupon = async function (couponId) {
 
     const now = new Date();
 
-    // Validate coupon dates
+    // Validate coupon expiry dates
     if (now < new Date(coupon.validFrom) || now > new Date(coupon.validTo))
       return {
         success: false,
         alert: "Coupon has expired or is not yet valid",
       };
 
-    // ---------------------------------
-    // CLEAN corrupted usedBy entries
-    // ---------------------------------
+    // Clean corrupted usedBy entries (remove null/undefined values)
     const cleanUsedBy = (coupon.usedBy || []).filter((id) => id);
 
-    // Total usage limit
+    // Check total usage limit
     if (cleanUsedBy.length >= coupon.usageLimit)
       return { success: false, alert: "Coupon usage limit exceeded" };
 
-    // Per-user usage
+    // Check per-user usage limit
     const userUsageCount = cleanUsedBy.filter(
       (id) => id.toString() === this.userId.toString()
     ).length;
@@ -122,34 +133,34 @@ cartSchema.methods.applyCoupon = async function (couponId) {
         alert: "You have already used this coupon maximum times",
       };
 
-    // Ensure cart totals are fresh
+    // Ensure cart totals are fresh before applying coupon
     await this.save();
 
-    // Minimum order check
-    if (this.totalAmount < coupon.minOrderAmount)
+    // Validate minimum order amount requirement
+    // Use totalOfferAmount (price after offers) for minimum order check
+    if (this.totalOfferAmount < coupon.minOrderAmount)
       return {
         success: false,
         alert: `Minimum order amount of ₹${coupon.minOrderAmount} required`,
       };
 
-    // ---------------------------------
-    // Calculate discount
-    // ---------------------------------
+    // Calculate coupon discount based on type
     let couponDiscount = 0;
 
     if (coupon.discountType === "flat") {
+      // Flat discount: direct amount off
       couponDiscount = coupon.discountValue;
     } else {
+      // Percentage discount: calculate from totalOfferAmount
       couponDiscount = roundMoney(
-        (this.totalAmount * coupon.discountValue) / 100
+        (this.totalOfferAmount * coupon.discountValue) / 100
       );
     }
 
-    couponDiscount = Math.min(couponDiscount, this.totalAmount);
+    // Ensure discount doesn't exceed total offer amount
+    couponDiscount = Math.min(couponDiscount, this.totalOfferAmount);
 
-    // ---------------------------------
-    // Save coupon into cart
-    // ---------------------------------
+    // Store coupon details in cart
     this.appliedCoupon = {
       couponId: coupon._id,
       code: coupon.code,
@@ -158,7 +169,8 @@ cartSchema.methods.applyCoupon = async function (couponId) {
       couponDiscount: roundMoney(couponDiscount),
     };
 
-    const totalAfterCoupon = roundMoney(this.totalAmount - couponDiscount);
+    // Calculate final total: totalOfferAmount - couponDiscount + tax
+    const totalAfterCoupon = roundMoney(this.totalOfferAmount - couponDiscount);
     this.totalAfterAll = roundMoney(totalAfterCoupon + this.accessoryTax);
 
     await this.save();
@@ -183,12 +195,10 @@ cartSchema.methods.removeCoupon = async function (userId, couponId) {
       return { success: true, alert: "Coupon not found" };
     }
 
-    // ---------------------------------------
-    // Clean corrupted values
-    // ---------------------------------------
+    // Clean corrupted usedBy values (remove null/undefined)
     const cleanUsedBy = (coupon.usedBy || []).filter((id) => id);
 
-    // Find LAST usage of this user
+    // Find the last occurrence of this user's ID
     const index = cleanUsedBy
       .map((id) => id.toString())
       .lastIndexOf(userId.toString());
@@ -197,17 +207,13 @@ cartSchema.methods.removeCoupon = async function (userId, couponId) {
       return { success: true, alert: "Coupon already removed" };
     }
 
-    // ---------------------------------------
-    // Remove ONLY that one occurrence
-    // ---------------------------------------
+    // Remove only that one occurrence from usedBy array
     cleanUsedBy.splice(index, 1);
 
     coupon.usedBy = cleanUsedBy;
     await coupon.save();
 
-    // ---------------------------------------
-    // Remove coupon from cart
-    // ---------------------------------------
+    // Clear coupon data from cart
     this.appliedCoupon = {
       couponId: null,
       code: null,
@@ -216,7 +222,8 @@ cartSchema.methods.removeCoupon = async function (userId, couponId) {
       couponDiscount: 0,
     };
 
-    this.totalAfterAll = roundMoney(this.totalAmount + this.accessoryTax);
+    // Recalculate total without coupon: totalOfferAmount + tax
+    this.totalAfterAll = roundMoney(this.totalOfferAmount + this.accessoryTax);
     await this.save();
 
     return {
@@ -230,33 +237,40 @@ cartSchema.methods.removeCoupon = async function (userId, couponId) {
   }
 };
 
-/* ================= PRE SAVE ================= */
+/* ================= PRE SAVE HOOK ================= */
 cartSchema.pre("save", async function (next) {
   try {
     const now = new Date();
 
-    let carTotal = 0;
-    let accessoryTotal = 0;
-    let carTotalWithDiscount = 0;
-    let accessoryTotalWithDiscount = 0;
-    let totalAdvanceAmount = 0;
+    // Initialize tracking variables for calculations
+    let carTotal = 0; // Total car price at base prices
+    let accessoryTotal = 0; // Total accessory price at base prices
+    let carTotalWithDiscount = 0; // Total car price after offers
+    let accessoryTotalWithDiscount = 0; // Total accessory price after offers
+    let totalAdvanceAmount = 0; // Total advance payment required
 
+    /* ========== LOOP THROUGH EACH CART ITEM ========== */
     for (const item of this.items) {
-      /* ========== ACCESSORY ========== */
+      /* ========== PROCESS ACCESSORY ITEMS ========== */
       if (item.accessoryId) {
         const accessory = await Accessory.findById(item.accessoryId).lean();
+
+        // Skip if accessory not found or not listed
         if (!accessory || accessory.isListed === false) continue;
 
+        // Set base price from accessory
         item.price = roundMoney(accessory.price);
 
         let finalPrice = item.price;
         let hasOffer = false;
         let offerSource = null;
 
-        // Product offer
+        // Check for active product offer
         if (accessory.productOffer?.isConfigured) {
           const from = new Date(accessory.productOffer.validFrom);
           const to = new Date(accessory.productOffer.validTo);
+
+          // Validate offer is within valid date range and has valid price
           if (
             from <= now &&
             to > now &&
@@ -268,10 +282,12 @@ cartSchema.pre("save", async function (next) {
           }
         }
 
-        // Category offer
+        // Check for active category offer
         if (accessory.categoryOffer?.isConfigured) {
           const from = new Date(accessory.categoryOffer.validFrom);
           const to = new Date(accessory.categoryOffer.validTo);
+
+          // Validate offer and check if it's better than product offer
           if (
             from <= now &&
             to > now &&
@@ -285,6 +301,7 @@ cartSchema.pre("save", async function (next) {
           }
         }
 
+        // Apply the best offer found (if any)
         if (hasOffer && finalPrice < item.price) {
           item.offerPrice = roundMoney(finalPrice);
           item.appliedOffer = {
@@ -301,6 +318,7 @@ cartSchema.pre("save", async function (next) {
           };
           item.lineTotal = roundMoney(item.offerPrice * item.quantity);
         } else {
+          // No valid offer, use base price
           item.offerPrice = null;
           item.appliedOffer = {
             source: null,
@@ -311,30 +329,38 @@ cartSchema.pre("save", async function (next) {
           item.lineTotal = roundMoney(item.price * item.quantity);
         }
 
+        // Calculate advance amount based on final price (offer or base)
         const baseAdvancePrice = item.offerPrice ?? item.price;
         item.advanceAmount = roundMoney(
           baseAdvancePrice * item.quantity * (advancePercent / 100)
         );
 
+        // Add to running totals
         totalAdvanceAmount += item.advanceAmount;
         accessoryTotal += item.price * item.quantity;
         accessoryTotalWithDiscount += item.lineTotal;
       }
 
-      /* ========== CAR VARIANT ========== */
+      /* ========== PROCESS CAR VARIANT ITEMS ========== */
       if (item.variantId) {
         const variant = await CarVariant.findById(item.variantId).lean();
+
+        // Skip if variant not found or not listed
         if (!variant || variant.isListed === false) continue;
 
+        // Set base price from variant
         item.price = roundMoney(variant.price);
 
         let finalPrice = item.price;
         let hasOffer = false;
         let offerSource = null;
 
+        // Check for active product offer
         if (variant.productOffer?.isConfigured) {
           const from = new Date(variant.productOffer.validFrom);
           const to = new Date(variant.productOffer.validTo);
+
+          // Validate offer is within valid date range and has valid price
           if (
             from <= now &&
             to > now &&
@@ -346,9 +372,12 @@ cartSchema.pre("save", async function (next) {
           }
         }
 
+        // Check for active category offer
         if (variant.categoryOffer?.isConfigured) {
           const from = new Date(variant.categoryOffer.validFrom);
           const to = new Date(variant.categoryOffer.validTo);
+
+          // Validate offer and check if it's better than product offer
           if (
             from <= now &&
             to > now &&
@@ -362,6 +391,7 @@ cartSchema.pre("save", async function (next) {
           }
         }
 
+        // Apply the best offer found (if any)
         if (hasOffer && finalPrice < item.price) {
           item.offerPrice = roundMoney(finalPrice);
           item.appliedOffer = {
@@ -378,6 +408,7 @@ cartSchema.pre("save", async function (next) {
           };
           item.lineTotal = roundMoney(item.offerPrice * item.quantity);
         } else {
+          // No valid offer, use base price
           item.offerPrice = null;
           item.appliedOffer = {
             source: null,
@@ -388,39 +419,45 @@ cartSchema.pre("save", async function (next) {
           item.lineTotal = roundMoney(item.price * item.quantity);
         }
 
+        // Calculate advance amount based on final price (offer or base)
         const baseAdvancePrice = item.offerPrice ?? item.price;
         item.advanceAmount = roundMoney(
           baseAdvancePrice * item.quantity * (advancePercent / 100)
         );
 
+        // Add to running totals
         totalAdvanceAmount += item.advanceAmount;
         carTotal += item.price * item.quantity;
         carTotalWithDiscount += item.lineTotal;
       }
     }
 
+    /* ========== UPDATE CART LEVEL TOTALS ========== */
+
+    // Store category totals at base prices
     this.carTotal = roundMoney(carTotal);
     this.accessoryTotal = roundMoney(accessoryTotal);
 
-    // Total discount from product/category offers
-    this.discountedPrice = roundMoney(
-      carTotal -
-        carTotalWithDiscount +
-        (accessoryTotal - accessoryTotalWithDiscount)
+    // Calculate total at base prices (before any offers)
+    this.totalAmount = roundMoney(carTotal + accessoryTotal);
+
+    // Calculate total after product/category offers (stored for internal use)
+    const totalAfterOffers = roundMoney(
+      carTotalWithDiscount + accessoryTotalWithDiscount
     );
 
+    // Store this in totalOfferAmount field
+    this.totalOfferAmount = totalAfterOffers;
+
+    // Calculate tax on accessories (after offers applied)
     this.accessoryTax = roundMoney(
       accessoryTotalWithDiscount * (taxRate / 100)
-    );
-
-    // Total after product/category offers (before coupon)
-    this.totalAmount = roundMoney(
-      carTotalWithDiscount + accessoryTotalWithDiscount
     );
 
     /* ========== VALIDATE APPLIED COUPON ========== */
     if (this.appliedCoupon?.couponId) {
       let isCouponValid = false;
+      let recalculatedDiscount = 0;
 
       const coupon = await Coupon.findById(this.appliedCoupon.couponId).lean();
 
@@ -430,11 +467,34 @@ cartSchema.pre("save", async function (next) {
 
         // Check if coupon is listed, not expired, and currently valid
         if (coupon.isListed === true && validFrom <= now && validTo > now) {
-          isCouponValid = true;
+          // Check minimum order amount requirement
+          if (totalAfterOffers >= coupon.minOrderAmount) {
+            isCouponValid = true;
+
+            // Recalculate coupon discount based on current cart total
+            if (coupon.discountType === "flat") {
+              recalculatedDiscount = coupon.discountValue;
+            } else {
+              // Percentage discount
+              recalculatedDiscount = roundMoney(
+                (totalAfterOffers * coupon.discountValue) / 100
+              );
+            }
+
+            // Ensure discount doesn't exceed total after offers
+            recalculatedDiscount = Math.min(
+              recalculatedDiscount,
+              totalAfterOffers
+            );
+
+            // Update coupon discount with recalculated value
+            this.appliedCoupon.couponDiscount =
+              roundMoney(recalculatedDiscount);
+          }
         }
       }
 
-      // If coupon is invalid, remove it from cart
+      // Remove invalid or expired coupon from cart
       if (!isCouponValid) {
         this.appliedCoupon = {
           couponId: null,
@@ -446,16 +506,29 @@ cartSchema.pre("save", async function (next) {
       }
     }
 
-    // Calculate final total with coupon if applied and valid
+    /* ========== CALCULATE FINAL TOTAL AND DISCOUNTS ========== */
+
+    // Calculate total discount from product/category offers and coupon
+    let totalDiscount = this.totalAmount - totalAfterOffers; // Discount from offers
+
     if (this.appliedCoupon?.couponId) {
+      // Add coupon discount to total discount
+      totalDiscount += this.appliedCoupon.couponDiscount;
+
+      // With coupon: totalAfterOffers - couponDiscount + tax
       const totalAfterCoupon = roundMoney(
-        this.totalAmount - this.appliedCoupon.couponDiscount
+        totalAfterOffers - this.appliedCoupon.couponDiscount
       );
       this.totalAfterAll = roundMoney(totalAfterCoupon + this.accessoryTax);
     } else {
-      this.totalAfterAll = roundMoney(this.totalAmount + this.accessoryTax);
+      // Without coupon: totalAfterOffers + tax
+      this.totalAfterAll = roundMoney(totalAfterOffers + this.accessoryTax);
     }
 
+    // Store total discount (offers + coupon)
+    this.discountedPrice = roundMoney(totalDiscount);
+
+    // Store total advance amount
     this.totalAdvanceAmount = roundMoney(totalAdvanceAmount);
 
     next();

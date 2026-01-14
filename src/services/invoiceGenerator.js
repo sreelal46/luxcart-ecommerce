@@ -1,11 +1,10 @@
-// generateInvoice.js - Enhanced with Return Items Table (Fixed - No Blank Space)
+// generateInvoice.js - Fixed Version with Correct Offer Price and Amount Calculation
 const PDFDocument = require("pdfkit");
 const fs = require("fs");
 const path = require("path");
 
 function formatCurrency(value) {
   const num = Number(value || 0);
-  // Format number with Indian numbering system
   const formatted = num.toLocaleString("en-IN", {
     minimumFractionDigits: 2,
     maximumFractionDigits: 2,
@@ -275,8 +274,7 @@ function generateInvoice(order, outputPath, options = {}) {
     .text(companyInfo.city, 305, doc.y + 3)
     .text(`GSTIN: ${companyInfo.gstin}`, 305, doc.y + 3);
 
-  // FIXED: Calculate the correct currentY based on both columns
-  currentY = Math.max(leftY, doc.y) + 15; // Reduced from 20 to 15
+  currentY = Math.max(leftY, doc.y) + 15;
 
   // ========== FILTER ITEMS BY STATUS ==========
   const activeItems = order.items.filter((item) => {
@@ -294,7 +292,6 @@ function generateInvoice(order, outputPath, options = {}) {
     return status === "RETURNED";
   });
 
-  // Track if we've rendered any section yet
   let hasRenderedAnySection = false;
 
   // ========== ACTIVE ORDER ITEMS TABLE ==========
@@ -319,12 +316,10 @@ function generateInvoice(order, outputPath, options = {}) {
 
   // ========== CANCELLED ITEMS TABLE ==========
   if (cancelledItems.length > 0) {
-    // Add spacing only if we already rendered a section
     if (hasRenderedAnySection) {
       currentY += 15;
     }
 
-    // Check if we need a new page
     if (currentY > 650) {
       doc.addPage();
       currentY = 40;
@@ -351,12 +346,10 @@ function generateInvoice(order, outputPath, options = {}) {
 
   // ========== RETURNED ITEMS TABLE ==========
   if (returnedItems.length > 0) {
-    // Add spacing only if we already rendered a section
     if (hasRenderedAnySection) {
       currentY += 15;
     }
 
-    // Check if we need a new page
     if (currentY > 650) {
       doc.addPage();
       currentY = 40;
@@ -381,10 +374,19 @@ function generateInvoice(order, outputPath, options = {}) {
     hasRenderedAnySection = true;
   }
 
-  // ========== PAYMENT SUMMARY ==========
-  currentY += 10; // Small gap before payment summary
+  // ========== CALCULATE FINAL AMOUNT TO PAY ==========
+  const totalAmount = Number(order.totalAmount || 0);
+  const advancePaid = Number(order.advanceAmount || 0);
+  const refundedCancelled = Number(order.refundedAmount || 0);
+  const refundedReturned = Number(order.returnRefundAmount || 0);
 
-  // Check if we need a new page for summary
+  // Calculate: Total - Advance - Refunds = Amount to Pay
+  const finalAmountToPay =
+    totalAmount - advancePaid - refundedCancelled - refundedReturned;
+
+  // ========== ENHANCED PAYMENT SUMMARY ==========
+  currentY += 10;
+
   if (currentY > 600) {
     doc.addPage();
     currentY = 40;
@@ -395,82 +397,136 @@ function generateInvoice(order, outputPath, options = {}) {
 
   const summaryLines = [];
 
+  // 1. Subtotal
   summaryLines.push({
     label: "Subtotal",
     value: formatCurrency(order.subtotal || 0),
     color: colors.secondary,
+    fontSize: 9,
   });
 
+  // 2. Shipping Charges (if applicable)
+  if (order.shippingCharges && Number(order.shippingCharges) > 0) {
+    summaryLines.push({
+      label: "Shipping Charges",
+      value: `+ ${formatCurrency(order.shippingCharges)}`,
+      color: colors.secondary,
+      fontSize: 9,
+    });
+  }
+
+  // 3. Tax
   const taxPercent = order.taxPercent || "";
-  const taxLabel = taxPercent ? `Tax (${taxPercent}%)` : "Tax";
+  const taxLabel = taxPercent ? `Tax (${taxPercent}%)` : "Total Tax";
   summaryLines.push({
     label: taxLabel,
-    value: formatCurrency(order.taxAmount || 0),
+    value: `+ ${formatCurrency(order.taxAmount || 0)}`,
     color: colors.secondary,
+    fontSize: 9,
   });
 
-  summaryLines.push({
-    label: "Total Amount",
-    value: formatCurrency(order.totalAmount || 0),
-    color: colors.primary,
-  });
+  // 4. Coupon Discount (if applied)
+  if (order.couponDetails && order.couponDetails.code) {
+    const couponLine = {
+      label: `Coupon: ${order.couponDetails.code}`,
+      value: `- ${formatCurrency(order.couponDetails.couponDiscount)}`,
+      color: colors.success,
+      fontSize: 9,
+      isCoupon: true,
+      couponType: order.couponDetails.discountType,
+      couponValue: order.couponDetails.discountValue,
+    };
+    summaryLines.push(couponLine);
+  }
 
+  // 5. Additional Discount (if any)
   if (order.discount && Number(order.discount) > 0) {
     summaryLines.push({
-      label: "Discount",
-      value: `- ${formatCurrency(order.discount)}`,
+      label: "Additional Discount",
+      value: `- ${formatCurrency(
+        order.couponDetails && order.couponDetails.code
+          ? order?.discount - order?.couponDetails?.couponDiscount
+          : order?.discount
+      )}`,
       color: colors.success,
+      fontSize: 9,
     });
   }
 
-  if (order.refundedAmount && Number(order.refundedAmount) > 0) {
-    summaryLines.push({
-      label: "Refunded (Cancelled)",
-      value: `- ${formatCurrency(order.refundedAmount)}`,
-      color: colors.danger,
-    });
-  }
+  // Divider before total
+  summaryLines.push({ isDivider: true });
 
-  if (order.returnRefundAmount && Number(order.returnRefundAmount) > 0) {
-    summaryLines.push({
-      label: "Refunded (Returned)",
-      value: `- ${formatCurrency(order.returnRefundAmount)}`,
-      color: colors.warning,
-    });
-  }
+  // 6. Total Amount
+  summaryLines.push({
+    label: "Total Amount",
+    value: formatCurrency(totalAmount),
+    color: colors.primary,
+    fontSize: 10,
+    isBold: true,
+  });
 
-  if (order.advanceAmount && Number(order.advanceAmount) > 0) {
+  // Divider before deductions
+  summaryLines.push({ isDivider: true });
+
+  // 7. Advance Payment (if any)
+  if (advancePaid > 0) {
     summaryLines.push({
       label: "Advance Paid",
-      value: `- ${formatCurrency(order.advanceAmount)}`,
-      color: colors.success,
+      value: `- ${formatCurrency(advancePaid)}`,
+      color: colors.accent,
+      fontSize: 9,
     });
   }
 
+  // 8. Cancelled Items Refund (if any)
+  if (refundedCancelled > 0) {
+    summaryLines.push({
+      label: "Refunded (Cancelled)",
+      value: `- ${formatCurrency(refundedCancelled)}`,
+      color: colors.danger,
+      fontSize: 9,
+    });
+  }
+
+  // 9. Returned Items Refund (if any)
+  if (refundedReturned > 0) {
+    summaryLines.push({
+      label: "Refunded (Returned)",
+      value: `- ${formatCurrency(refundedReturned)}`,
+      color: colors.warning,
+      fontSize: 9,
+    });
+  }
+
+  // Calculate dynamic height
   const headerHeight = 20;
   const labelFontSize = 9;
   const paddingTop = 12;
   const paddingBottom = 12;
-  const gapBetweenLines = 6;
+  const gapBetweenLines = 7;
+  const dividerHeight = 8;
 
   doc.fontSize(labelFontSize);
   let measuredLinesHeight = 0;
   summaryLines.forEach((ln) => {
-    const h = doc.heightOfString(ln.label, { width: summaryWidth - 24 });
-    measuredLinesHeight += h + gapBetweenLines;
+    if (ln.isDivider) {
+      measuredLinesHeight += dividerHeight;
+    } else {
+      const h = doc.heightOfString(ln.label, { width: summaryWidth - 24 });
+      measuredLinesHeight += h + gapBetweenLines;
+    }
   });
 
-  const dividerExtra = 10;
-  const totalLabelHeight = 15;
+  const finalAmountHeight = 18;
   const computedHeight =
     paddingTop +
     headerHeight +
     measuredLinesHeight +
-    dividerExtra +
-    totalLabelHeight +
+    finalAmountHeight +
     paddingBottom;
-  const summaryHeight = Math.max(115, computedHeight);
+  const summaryHeight = Math.max(130, computedHeight);
 
+  // Shadow effect
   doc.save();
   doc
     .roundedRect(summaryX + 2, currentY + 2, summaryWidth, summaryHeight, 6)
@@ -478,6 +534,7 @@ function generateInvoice(order, outputPath, options = {}) {
     .fill("#000000");
   doc.restore();
 
+  // Main box
   doc
     .roundedRect(summaryX, currentY, summaryWidth, summaryHeight, 6)
     .lineWidth(0.5)
@@ -487,56 +544,142 @@ function generateInvoice(order, outputPath, options = {}) {
   const labelX = summaryX + 12;
   const valueX = summaryX + summaryWidth - 12;
 
+  // Header
   doc
     .fontSize(11)
     .fillColor(colors.primary)
     .text("PAYMENT SUMMARY", labelX, summaryY);
   summaryY += headerHeight;
 
+  // Render each line
   summaryLines.forEach((ln) => {
-    const lineValueStr = ln.value;
-    const lineFontSize = lineValueStr.length > 15 ? 8 : 9;
+    if (ln.isDivider) {
+      doc
+        .moveTo(labelX, summaryY + 2)
+        .lineTo(valueX, summaryY + 2)
+        .strokeColor(colors.border)
+        .lineWidth(0.5)
+        .stroke();
+      summaryY += dividerHeight;
+      return;
+    }
 
-    doc
-      .fontSize(9)
-      .fillColor(ln.color || colors.secondary)
-      .text(ln.label, labelX, summaryY, { width: summaryWidth - 36 });
+    const lineFontSize = ln.fontSize || 9;
+    const lineFont = ln.isBold ? "DejaVuBold" : "DejaVu";
+
+    try {
+      doc.font(lineFont);
+    } catch (e) {
+      // Fallback
+    }
+
+    // Special styling for coupon
+    if (ln.isCoupon) {
+      doc.save();
+      doc
+        .rect(labelX - 4, summaryY - 2, summaryWidth - 16, 16)
+        .fillOpacity(0.1)
+        .fill(colors.success);
+      doc.restore();
+    }
+
+    // Label
     doc
       .fontSize(lineFontSize)
       .fillColor(ln.color || colors.secondary)
+      .text(ln.label, labelX, summaryY, { width: summaryWidth - 80 });
+
+    // Value
+    const valueStr = ln.value;
+    const valueFontSize =
+      valueStr.length > 15 ? Math.max(7, lineFontSize - 2) : lineFontSize;
+
+    doc
+      .fontSize(valueFontSize)
+      .fillColor(ln.color || colors.secondary)
       .text(ln.value, valueX - 110, summaryY, { width: 110, align: "right" });
+
     summaryY +=
       doc.heightOfString(ln.label, { width: summaryWidth - 24 }) +
       gapBetweenLines;
   });
 
+  // Final divider
   doc
     .moveTo(labelX, summaryY + 2)
     .lineTo(valueX, summaryY + 2)
     .strokeColor(colors.border)
-    .lineWidth(0.5)
+    .lineWidth(1)
     .stroke();
-  summaryY += dividerExtra;
+  summaryY += 10;
 
-  const finalAmount = order.remainingAmount || order.totalAmount || 0;
-
-  // Calculate if amount needs smaller font
-  const amountStr = formatCurrency(finalAmount);
+  // Amount to Pay - Highlighted (FIXED CALCULATION)
+  const amountStr = formatCurrency(finalAmountToPay);
   const amountFontSize = amountStr.length > 15 ? 11 : 13;
+
+  try {
+    doc.font("DejaVuBold");
+  } catch (e) {
+    // Fallback
+  }
 
   doc
     .fontSize(11)
     .fillColor(colors.primary)
     .text("Amount to Pay", labelX, summaryY);
+
+  // Highlight box for final amount
+  doc.save();
+  doc
+    .roundedRect(valueX - 115, summaryY - 3, 115, 18, 3)
+    .fillOpacity(0.1)
+    .fill(colors.accent);
+  doc.restore();
+
   doc
     .fontSize(amountFontSize)
     .fillColor(colors.accent)
-    .text(formatCurrency(finalAmount), valueX - 110, summaryY, {
+    .text(formatCurrency(finalAmountToPay), valueX - 110, summaryY, {
       width: 110,
       align: "right",
     });
 
   currentY = currentY + summaryHeight + 12;
+
+  // ========== PAYMENT METHOD & STATUS INFO ==========
+  if (order.paymentMethod || order.paymentId || order.trackingId) {
+    doc
+      .fontSize(9)
+      .fillColor(colors.secondary)
+      .text("Payment Details:", marginLeft, currentY);
+    currentY += 12;
+
+    if (order.paymentMethod) {
+      doc
+        .fontSize(8)
+        .fillColor(colors.primary)
+        .text(`Method: ${order.paymentMethod}`, marginLeft + 10, currentY);
+      currentY += 11;
+    }
+
+    if (order.paymentId) {
+      doc
+        .fontSize(8)
+        .fillColor(colors.secondary)
+        .text(`Payment ID: ${order.paymentId}`, marginLeft + 10, currentY);
+      currentY += 11;
+    }
+
+    if (order.trackingId) {
+      doc
+        .fontSize(8)
+        .fillColor(colors.secondary)
+        .text(`Tracking ID: ${order.trackingId}`, marginLeft + 10, currentY);
+      currentY += 11;
+    }
+
+    currentY += 8;
+  }
 
   // ========== AMOUNT IN WORDS ==========
   doc
@@ -546,10 +689,15 @@ function generateInvoice(order, outputPath, options = {}) {
   doc
     .fontSize(9)
     .fillColor(colors.primary)
-    .text(numberToWords(Math.floor(finalAmount)), marginLeft, currentY + 11, {
-      width: pageWidth * 0.7,
-      lineGap: 2,
-    });
+    .text(
+      numberToWords(Math.floor(finalAmountToPay)),
+      marginLeft,
+      currentY + 11,
+      {
+        width: pageWidth * 0.7,
+        lineGap: 2,
+      }
+    );
 
   currentY = doc.y + 18;
 
@@ -640,7 +788,7 @@ function generateInvoice(order, outputPath, options = {}) {
   });
 }
 
-// ========== HELPER: RENDER ITEMS TABLE ==========
+// ========== HELPER: RENDER ITEMS TABLE (FIXED) ==========
 function renderItemsTable(
   doc,
   items,
@@ -657,14 +805,14 @@ function renderItemsTable(
   const tableTop = currentY;
   const descX = marginLeft;
   const qtyX = 175;
-  const unitPriceX = 215;
+  const priceX = 215;
   const taxX = 305;
   const advanceX = 395;
   const totalX = 485;
 
   const descWidth = qtyX - descX - 8;
   const qtyWidth = 30;
-  const unitPriceWidth = 85;
+  const priceWidth = 85;
   const taxWidth = 85;
   const advanceWidth = 85;
   const totalWidth = 75;
@@ -684,8 +832,8 @@ function renderItemsTable(
     .fillColor("#ffffff")
     .text("DESCRIPTION", descX + 6, tableTop + 7)
     .text("QTY", qtyX + 2, tableTop + 7, { width: qtyWidth, align: "center" })
-    .text("PRICE", unitPriceX - 5, tableTop + 7, {
-      width: unitPriceWidth,
+    .text("PRICE", priceX - 5, tableTop + 7, {
+      width: priceWidth,
       align: "right",
     })
     .text("TAX", taxX - 5, tableTop + 7, { width: taxWidth, align: "right" })
@@ -706,11 +854,29 @@ function renderItemsTable(
     const description = item.description || item.name || "Item";
     const qty = item.qty || item.quantity || 1;
     const price = item.price || 0;
+    const offerPrice = item.offerPrice;
     const taxAmount = item.tax || 0;
     const total = item.total || 0;
     const status = (item.status || "").toUpperCase().trim();
     const refundAmount = item.refundAmount || 0;
     const advanceAmount = item.advanceAmount || 0;
+
+    // Determine which price to display
+    let displayPrice = price;
+    let hasOfferPrice = false;
+
+    if (
+      offerPrice !== undefined &&
+      offerPrice !== null &&
+      offerPrice !== "Null" &&
+      offerPrice !== ""
+    ) {
+      const offerNum = Number(offerPrice);
+      if (!isNaN(offerNum) && offerNum > 0) {
+        displayPrice = offerNum;
+        hasOfferPrice = true;
+      }
+    }
 
     const descHeight = doc.heightOfString(description, {
       width: descWidth - 6,
@@ -723,7 +889,7 @@ function renderItemsTable(
       doc.addPage();
       currentY = 40;
 
-      // Redraw header on new page
+      // Redraw header
       doc
         .rect(marginLeft, currentY, pageWidth, 22)
         .lineWidth(0.5)
@@ -737,8 +903,8 @@ function renderItemsTable(
           width: qtyWidth,
           align: "center",
         })
-        .text("PRICE", unitPriceX - 5, currentY + 7, {
-          width: unitPriceWidth,
+        .text("PRICE", priceX - 5, currentY + 7, {
+          width: priceWidth,
           align: "right",
         })
         .text("TAX", taxX - 5, currentY + 7, {
@@ -786,20 +952,54 @@ function renderItemsTable(
       align: "center",
     });
 
-    // Unit Price
+    // Price (with offer price logic)
+    if (hasOfferPrice) {
+      // Show original price with strikethrough
+      doc
+        .fontSize(7)
+        .fillColor(colors.secondary)
+        .text(formatCurrency(price), priceX - 5, currentY - 2, {
+          width: priceWidth,
+          align: "right",
+        });
+
+      // Draw strikethrough line
+      const priceText = formatCurrency(price);
+      const priceWidth2 = doc.widthOfString(priceText, { fontSize: 7 });
+      doc
+        .moveTo(priceX + priceWidth - priceWidth2 - 5, currentY + 3)
+        .lineTo(priceX + priceWidth - 5, currentY + 3)
+        .strokeColor(colors.secondary)
+        .lineWidth(0.5)
+        .stroke();
+
+      // Show offer price in green
+      doc
+        .fontSize(8)
+        .fillColor(colors.success)
+        .text(formatCurrency(displayPrice), priceX - 5, currentY + 8, {
+          width: priceWidth,
+          align: "right",
+        });
+    } else {
+      // Show regular price
+      doc
+        .fontSize(8)
+        .fillColor(colors.secondary)
+        .text(formatCurrency(displayPrice), priceX - 5, currentY, {
+          width: priceWidth,
+          align: "right",
+        });
+    }
+
+    // Tax
     doc
       .fontSize(8)
       .fillColor(colors.secondary)
-      .text(formatCurrency(price), unitPriceX - 5, currentY, {
-        width: unitPriceWidth,
+      .text(formatCurrency(taxAmount), taxX - 5, currentY, {
+        width: taxWidth,
         align: "right",
       });
-
-    // Tax
-    doc.text(formatCurrency(taxAmount), taxX - 5, currentY, {
-      width: taxWidth,
-      align: "right",
-    });
 
     // Advance Amount
     doc
@@ -810,7 +1010,7 @@ function renderItemsTable(
         align: "right",
       });
 
-    // Total - Simple display without strikethrough
+    // Total
     if (isAdjustment && refundAmount > 0) {
       doc
         .fontSize(8)
@@ -840,7 +1040,6 @@ function renderItemsTable(
     .lineWidth(0.5)
     .stroke();
 
-  // Return currentY WITHOUT adding extra spacing - let the caller control spacing
   return currentY;
 }
 
