@@ -379,10 +379,19 @@ function generateInvoice(order, outputPath, options = {}) {
   const advancePaid = Number(order.advanceAmount || 0);
   const refundedCancelled = Number(order.refundedAmount || 0);
   const refundedReturned = Number(order.returnRefundAmount || 0);
+  const remainingAmount = Number(order.remainingAmount || 0);
 
   // Calculate: Total - Advance - Refunds = Amount to Pay
+  const calculatedAmountToPay = Math.max(
+    0,
+    totalAmount - advancePaid - refundedCancelled - refundedReturned
+  );
   const finalAmountToPay =
-    totalAmount - advancePaid - refundedCancelled - refundedReturned;
+    remainingAmount !== undefined && remainingAmount !== null
+      ? Math.max(0, remainingAmount)
+      : calculatedAmountToPay;
+  // const finalAmountToPay =
+  //   totalAmount - advancePaid - refundedCancelled - refundedReturned;
 
   // ========== ENHANCED PAYMENT SUMMARY ==========
   currentY += 10;
@@ -614,7 +623,9 @@ function generateInvoice(order, outputPath, options = {}) {
   summaryY += 10;
 
   // Amount to Pay - Highlighted (FIXED CALCULATION)
-  const amountStr = formatCurrency(finalAmountToPay);
+  const amountStr = formatCurrency(
+    remainingAmount ? remainingAmount : finalAmountToPay
+  );
   const amountFontSize = amountStr.length > 15 ? 11 : 13;
 
   try {
@@ -639,10 +650,15 @@ function generateInvoice(order, outputPath, options = {}) {
   doc
     .fontSize(amountFontSize)
     .fillColor(colors.accent)
-    .text(formatCurrency(finalAmountToPay), valueX - 110, summaryY, {
-      width: 110,
-      align: "right",
-    });
+    .text(
+      formatCurrency(remainingAmount ? remainingAmount : finalAmountToPay),
+      valueX - 110,
+      summaryY,
+      {
+        width: 110,
+        align: "right",
+      }
+    );
 
   currentY = currentY + summaryHeight + 12;
 
@@ -690,7 +706,9 @@ function generateInvoice(order, outputPath, options = {}) {
     .fontSize(9)
     .fillColor(colors.primary)
     .text(
-      numberToWords(Math.floor(finalAmountToPay)),
+      numberToWords(
+        Math.floor(remainingAmount ? remainingAmount : finalAmountToPay)
+      ),
       marginLeft,
       currentY + 11,
       {

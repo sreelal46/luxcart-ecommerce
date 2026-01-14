@@ -337,6 +337,42 @@
       align-items: flex-start;
     }
   }
+
+  .item-price-box {
+    margin-top: 8px;
+    padding: 10px 12px;
+    background: #f9fafb;
+    border-radius: 8px;
+    border: 1px solid #eee;
+    font-size: 13px;
+  }
+
+  .price-row {
+    display: flex;
+    justify-content: space-between;
+    padding: 3px 0;
+    color: #333;
+  }
+
+  .price-row:not(:last-child) {
+    border-bottom: 1px dashed #e5e7eb;
+  }
+
+  .price-row span:last-child {
+    font-weight: 600;
+  }
+
+  .price-row.offer span:last-child {
+    color: #198754;
+  }
+
+  .price-row.advance span:last-child {
+    color: #0d6efd;
+  }
+
+  .price-row.refund span:last-child {
+    color: #dc3545;
+  }
 </style>
 
 <div class="wrap-orderdetail">
@@ -378,8 +414,8 @@
       </span>
     </div>
 
-    <div>
-      <div class="os-label">Advance Amount Paid</div>
+    <!-- <div>
+      <div class="os-label">Total Advance Amount</div>
       <span class="os-value">
         ₹ {{#if order.advanceAmount}}
         {{formatPrice order.advanceAmount}}
@@ -387,29 +423,24 @@
         0
         {{/if}}
       </span>
-    </div>
-
+    </div> -->
+    {{#if order.remainingAmount}}
     <div>
       <div class="os-label">Remaining Amount</div>
       <span class="os-value">
-        ₹ {{#if order.remainingAmount}}
-        {{formatPrice order.remainingAmount}}
-        {{else}}
-        0
-        {{/if}}
+        ₹ {{formatPrice order.remainingAmount}}
       </span>
     </div>
+    {{/if}}
 
+    {{#if order.totalRefundAmount}}
     <div>
-      <div class="os-label">Refund Amount</div>
+      <div class="os-label">Total Refund Amount</div>
       <span class="os-value">
-        ₹ {{#if order.totalRefundAmount}}
-        {{formatPrice order.totalRefundAmount}}
-        {{else}}
-        0
-        {{/if}}
+        ₹ {{formatPrice order.totalRefundAmount}}
       </span>
     </div>
+    {{/if}}
   </div>
 
   <!-- ADDRESS -->
@@ -437,6 +468,7 @@
     {{#each order.items}}
     <div class="user-item-row">
 
+      <!-- LEFT IMAGE -->
       <div class="user-item-image">
         {{#if this.carId}}
         <img src="{{this.variantId.image_url.[0]}}">
@@ -445,39 +477,83 @@
         {{/if}}
       </div>
 
+      <!-- CENTER INFO -->
       <div class="user-item-info">
+
         <div class="user-item-title">
           {{#if this.carId}}{{this.carId.name}}{{else}}{{this.accessoryId.name}}{{/if}}
         </div>
 
         <div class="user-item-meta">Qty {{this.quantity}}</div>
 
+        <!-- PRICE BREAKDOWN -->
+        <div class="item-price-box">
+
+          <div class="price-row">
+            <span>Price</span>
+            <span>₹ {{formatPrice this.price}}</span>
+          </div>
+
+          <div class="price-row">
+            <span>Price</span>
+            <span>₹ {{formatPrice this.price}}</span>
+          </div>
+
+          {{#if this.offerPrice}}
+          <div class="price-row offer">
+            <span>Offer Price</span>
+            <span>₹ {{formatPrice this.offerPrice}}</span>
+          </div>
+          {{/if}}
+
+          {{#if this.advanceAmount}}
+          <div class="price-row advance">
+            <span>Advance Paid</span>
+            <span>₹ {{formatPrice this.advanceAmount}}</span>
+          </div>
+          {{/if}}
+
+          {{#if this.cancel.approvedAt}}
+          <div class="price-row refund">
+            <span>Refunded (Cancelled)</span>
+            <span>- ₹ {{formatPrice this.cancel.refundAmount}}</span>
+          </div>
+          {{/if}}
+
+          {{#if this.return.approvedAt}}
+          <div class="price-row refund">
+            <span>Refunded (Returned)</span>
+            <span>- ₹ {{formatPrice this.return.refundAmount}}</span>
+          </div>
+          {{/if}}
+
+        </div>
+
+
+        <!-- ORDER PROGRESS -->
         <div class="order-progress
-  {{#if this.cancel.approvedAt}}is-cancelled{{/if}}
-  {{#if this.return.approvedAt}}is-returned{{/if}}
-">
+      {{#if this.cancel.approvedAt}}is-cancelled{{/if}}
+      {{#if this.return.approvedAt}}is-returned{{/if}}
+    ">
 
           <div class="progress-track">
             <div class="progress-fill
-      {{#if this.fulfillmentStatus.confirmedAt}}confirmed{{/if}}
-      {{#if this.fulfillmentStatus.shippedAt}} shipped{{/if}}
-      {{#if this.fulfillmentStatus.out_for_deliveryAt}}out_for_delivery{{/if}}
-      {{#if this.fulfillmentStatus.deliveredAt}} delivered{{/if}}
-    "></div>
+          {{#if this.fulfillmentStatus.confirmedAt}}confirmed{{/if}}
+          {{#if this.fulfillmentStatus.shippedAt}}shipped{{/if}}
+          {{#if this.fulfillmentStatus.out_for_deliveryAt}}out_for_delivery{{/if}}
+          {{#if this.fulfillmentStatus.deliveredAt}}delivered{{/if}}
+        "></div>
           </div>
 
           <div class="progress-steps">
-            <!-- PLACED -->
+
             <div class="step done">
               <div class="step-dot"></div>
               <div class="step-label">Placed</div>
               <div class="step-date">{{formattedDate this.fulfillmentStatus.placedAt}}</div>
             </div>
 
-            <!-- CONFIRMED -->
-            <div class="step
-      {{#if this.fulfillmentStatus.confirmedAt}}done
-      {{else if (eq this.fulfillmentStatus.status " confirmed")}}current{{/if}}">
+            <div class="step {{#if this.fulfillmentStatus.confirmedAt}}done{{/if}}">
               <div class="step-dot"></div>
               <div class="step-label">Confirmed</div>
               {{#if this.fulfillmentStatus.confirmedAt}}
@@ -485,19 +561,15 @@
               {{/if}}
             </div>
 
-            <!-- SHIPPED -->
-            <div class="step
-      {{#if this.fulfillmentStatus.shippedAt}}done
-      {{else if (eq this.fulfillmentStatus.status " shipped")}}current{{/if}}">
+            <div class="step {{#if this.fulfillmentStatus.shippedAt}}done{{/if}}">
               <div class="step-dot"></div>
               <div class="step-label">Shipped</div>
               {{#if this.fulfillmentStatus.shippedAt}}
               <div class="step-date">{{formattedDate this.fulfillmentStatus.shippedAt}}</div>
               {{/if}}
             </div>
-            <div class="step
-      {{#if this.fulfillmentStatus.out_for_deliveryAt}}done
-      {{else if (eq this.fulfillmentStatus.status " out_for_delivery")}}current{{/if}}">
+
+            <div class="step {{#if this.fulfillmentStatus.out_for_deliveryAt}}done{{/if}}">
               <div class="step-dot"></div>
               <div class="step-label">Out for Delivery</div>
               {{#if this.fulfillmentStatus.out_for_deliveryAt}}
@@ -505,41 +577,20 @@
               {{/if}}
             </div>
 
-            <!-- DELIVERED -->
-            {{#if (eq this.fulfillmentStatus.status "delivered")}}
-            <div class="step
-      {{#if this.fulfillmentStatus.deliveredAt}}done
-      {{else if (eq this.fulfillmentStatus.status " delivered")}}current{{/if}}">
-              <div class="step-dot"></div>
-              <div class="step-label">Delivered</div>
-              {{#if this.fulfillmentStatus.deliveredAt}}
-              <div class="step-date">{{formattedDate this.fulfillmentStatus.deliveredAt}}</div>
-              {{/if}}
-            </div>
-            {{else if this.cancel.approvedAt}}
-            <div class="step
-      {{#if this.fulfillmentStatus.deliveredAt}}done
-      {{else if (eq this.fulfillmentStatus.status " delivered")}}current{{/if}}">
+            {{#if this.cancel.approvedAt}}
+            <div class="step done cancelled">
               <div class="step-dot"></div>
               <div class="step-label">Cancelled</div>
-              {{#if this.cancel.approvedAt}}
               <div class="step-date">{{formattedDate this.cancel.approvedAt}}</div>
-              {{/if}}
             </div>
             {{else if this.return.approvedAt}}
-            <div class="step
-      {{#if this.fulfillmentStatus.deliveredAt}}done
-      {{else if (eq this.fulfillmentStatus.status " delivered")}}current{{/if}}">
+            <div class="step done returned">
               <div class="step-dot"></div>
               <div class="step-label">Returned</div>
-              {{#if this.return.approvedAt}}
               <div class="step-date">{{formattedDate this.return.approvedAt}}</div>
-              {{/if}}
             </div>
             {{else}}
-            <div class="step
-      {{#if this.fulfillmentStatus.deliveredAt}}done
-      {{else if (eq this.fulfillmentStatus.status " delivered")}}current{{/if}}">
+            <div class="step {{#if this.fulfillmentStatus.deliveredAt}}done{{/if}}">
               <div class="step-dot"></div>
               <div class="step-label">Delivered</div>
               {{#if this.fulfillmentStatus.deliveredAt}}
@@ -548,70 +599,65 @@
             </div>
             {{/if}}
 
-
           </div>
         </div>
-
-
       </div>
 
       <!-- RIGHT SIDE -->
       <div class="item-right">
+
         {{#if this.return.approvedAt}}
-        <button class="item-action-btn return" disabled>
-          Return Approved
-        </button>
+        <button class="item-action-btn return" disabled>Return Approved</button>
+
         {{else if this.return.rejectedAt}}
-        <button class="item-action-btn return" disabled>
-          Return Rejected
-        </button>
+        <button class="item-action-btn return" disabled>Return Rejected</button>
+
         {{else if this.return.requested}}
-        <button class="item-action-btn return" disabled>
-          Return Requested
-        </button>
+        <button class="item-action-btn return" disabled>Return Requested</button>
+
         {{else if (eq this.fulfillmentStatus.status "delivered")}}
         {{#if this.carId}}
-        <button class="item-action-btn return" disabled>
-          No Return
-        </button>
+        <button class="item-action-btn return" disabled>No Return</button>
         {{else}}
         <button class="item-action-btn return" data-orderid="{{../order._id}}" data-itemid="{{this._id}}"
           data-bs-toggle="modal" data-bs-target="#returnModal">
           Return
         </button>
         {{/if}}
+
         {{else if this.cancel.approvedAt}}
-        <button class="item-action-btn cancel" disabled>
-          Cancelled
-        </button>
+        <button class="item-action-btn cancel" disabled>Cancelled</button>
+
         {{else if this.cancel.rejectedAt}}
-        <button class="item-action-btn cancel" disabled>
-          Cancel Rejected
-        </button>
+        <button class="item-action-btn cancel" disabled>Cancel Rejected</button>
+
         {{else if this.cancel.requested}}
-        <button class="item-action-btn cancel" disabled>
-          Cancel Requested
-        </button>
+        <button class="item-action-btn cancel" disabled>Cancel Requested</button>
+
         {{else if (eq this.fulfillmentStatus.status "out_for_delivery")}}
-        <button class="item-action-btn cancel" disabled>
-          Cancel
-        </button>
-        {{else if (or (eq this.fulfillmentStatus.status "placed")
-        (eq this.fulfillmentStatus.status "confirmed")
-        (eq this.fulfillmentStatus.status "shipped"))}}
+        <button class="item-action-btn cancel" disabled>Cancel</button>
+
+        {{else}}
         <button class="item-action-btn cancel" data-orderid="{{../order._id}}" data-itemid="{{this._id}}"
           data-bs-toggle="modal" data-bs-target="#cancelModal">
           Cancel
         </button>
         {{/if}}
+
+        <!-- FINAL ITEM TOTAL -->
         <div class="user-item-price">
+          {{#if this.offerPrice}}
+          ₹ {{formatPrice this.offerPrice}}
+          {{else}}
           ₹ {{formatPrice this.price}}
+          {{/if}}
         </div>
 
       </div>
 
     </div>
     {{/each}}
+
   </div>
 
 

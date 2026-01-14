@@ -556,6 +556,7 @@ const downloadInvoice = async (req, res, next) => {
     };
 
     await generateInvoice(invoiceData, filePath, options);
+    console.log(invoiceData);
 
     setTimeout(() => {
       return res.download(filePath, `invoice_${order.orderId}.pdf`, (err) => {

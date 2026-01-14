@@ -36,6 +36,7 @@ const cartItemSchema = new Schema(
     },
 
     price: { type: Number, required: true },
+    accessoryTax: { type: Number, required: true },
     offerPrice: { type: Number, default: null },
     lineTotal: { type: Number, default: 0 },
     advanceAmount: { type: Number, default: 0 },
@@ -331,6 +332,7 @@ cartSchema.pre("save", async function (next) {
 
         // Calculate advance amount based on final price (offer or base)
         const baseAdvancePrice = item.offerPrice ?? item.price;
+        item.accessoryTax = roundMoney(baseAdvancePrice * (taxRate / 100));
         item.advanceAmount = roundMoney(
           baseAdvancePrice * item.quantity * (advancePercent / 100)
         );
