@@ -69,9 +69,11 @@ const createOrder = async (req, res, next) => {
     };
 
     const orderItems = cart.items.map((item) => {
-      const baseAmount = item.price * item.quantity;
+      const baseAmount = item.offerPrice
+        ? item.offerPrice * item.quantity
+        : item.price * item.quantity;
       const taxAmount = baseAmount * (taxRate / 100);
-      const itemFinalAmount = baseAmount + taxAmount;
+      const itemFinalAmount = baseAmount + taxAmount - item.advanceAmount;
 
       return {
         carId: item.carId || null,
@@ -108,10 +110,11 @@ const createOrder = async (req, res, next) => {
       paymentMethod,
       advanceAmount: advanceAmount || null,
       remainingAmount: remainingAmount || null,
-      subtotal: cart.totalAmount - cart.accessoryTax,
+      subtotal: cart.totalAmount,
       taxAmount: cart.accessoryTax,
-      discount: cart.discount,
+      discount: cart.discountedPrice,
       totalAmount: cart.totalAfterAll,
+      appliedCoupon: cart.appliedCoupon,
     });
     await order.save();
 
@@ -121,6 +124,7 @@ const createOrder = async (req, res, next) => {
     cart.accessoryTax = 0;
     cart.discount = 0;
     cart.totalAfterAll = 0;
+    cart.appliedCoupon = {};
     await cart.save();
 
     // Reduce stock

@@ -118,8 +118,32 @@
 
         <div class="d-flex justify-content-between mb-3">
           <span class="text-muted">Tax <span class="fw-semibold">(GST {{taxRate}}% Only for Accessory)</span></span>
+          {{#if cart.accessoryTax}}
           <span class="fw-semibold">₹ {{formatPrice cart.accessoryTax}}</span>
+          {{else}}
+          <span class="fw-semibold">₹ 0</span>
+          {{/if}}
         </div>
+        {{#if cart.appliedCoupon.code}}
+        <div class="d-flex justify-content-between align-items-center mb-3 bg-light p-2 rounded">
+          <span class="text-muted">
+            Applied Coupon:
+            <strong class="text-dark">{{cart.appliedCoupon.code}}</strong>
+          </span>
+
+          <div class="d-flex align-items-center gap-2">
+            <span class="fw-semibold text-success">
+              - ₹{{formatPrice cart.appliedCoupon.couponDiscount}}
+            </span>
+
+            <button class="btn btn-sm btn-outline-danger" id="removeCouponBtn"
+              data-couponid="{{cart.appliedCoupon.couponId}}" title="Remove coupon">
+              ✕
+            </button>
+          </div>
+        </div>
+        {{/if}}
+
 
         <hr>
 
@@ -127,6 +151,18 @@
           <h6 class="fw-bold">Total Amount</h6>
           <h6 class="fw-bold">₹ {{formatPrice cart.totalAfterAll}}</h6>
         </div>
+        {{#if cart.discountedPrice}}
+        <!-- Savings Banner -->
+        <div class="alert alert-success d-flex justify-content-between align-items-center py-2 px-3 mb-3" role="alert">
+          <span class="fw-semibold text-success">
+            Your Total Savings on this order
+          </span>
+          <span class="fw-semibold text-success">
+            ₹ {{formatPrice cart.discountedPrice}}
+          </span>
+        </div>
+        {{/if}}
+
 
         <button class="btn btn-orange w-100 mb-3" id="applyCouponBtn">Apply Coupon</button>
         <a href="/cart/checkout-step-1/{{cart._id}}" class="btn btn-black w-100">Proceed to Checkout</a>
@@ -182,48 +218,68 @@
 
     <!-- Body -->
     <div class="coupon-modal-body">
+
       <!-- Accessory Note -->
       <div class="accessory-note">
         <i class="bi bi-info-circle-fill"></i>
-        <p><strong>Note:</strong> Coupons are only applicable for accessories</p>
+        <div>
+          <strong>Note:</strong>
+          <p><strong>Coupons are only applicable for accessories</strong></p>
+          <p><strong>Only one coupon can be applied per order</strong></p>
+        </div>
       </div>
+
+
+      {{#if coupons.length}}
 
       <!-- Coupon Items -->
+      {{#each coupons}}
       <div class="coupon-item">
         <div class="coupon-left">
           <i class="bi bi-tag-fill coupon-icon"></i>
+
           <div class="coupon-details">
-            <h6>LUX10</h6>
-            <p>Save ₹10,000</p>
+            <h6 class="coupon-code">{{this.code}}</h6>
+
+            {{#if (eq this.discountType "percentage")}}
+            <p class="coupon-discount">
+              Get <strong>{{this.discountValue}}%</strong> off
+            </p>
+            {{else}}
+            <p class="coupon-discount">
+              Flat <strong>₹{{formatPrice this.discountValue}}</strong> off
+            </p>
+            {{/if}}
+
+            <p class="coupon-min">
+              Min Order: ₹{{formatPrice this.minOrderAmount}}
+            </p>
+
+            <p class="coupon-validity">
+              Valid till: {{formattedDate this.validTo}}
+            </p>
           </div>
         </div>
-        <button class="apply-btn" data-coupon="LUX10">Apply</button>
+
+        <button class="apply-btn" data-coupon="{{this.code}}" data-id="{{this._id}}"
+          data-discount="{{this.discountValue}}" data-type="{{this.discountType}}" data-min="{{this.minOrderAmount}}">
+          Apply
+        </button>
+      </div>
+      {{/each}}
+
+      {{else}}
+
+      <!-- No coupons -->
+      <div class="no-coupons">
+        <i class="bi bi-ticket-perforated"></i>
+        <p>No coupons available right now</p>
       </div>
 
-      <div class="coupon-item">
-        <div class="coupon-left">
-          <i class="bi bi-tag-fill coupon-icon"></i>
-          <div class="coupon-details">
-            <h6>PREMIUM15</h6>
-            <p>Save ₹15,000</p>
-          </div>
-        </div>
-        <button class="apply-btn" data-coupon="PREMIUM15">Apply</button>
-      </div>
-
-      <div class="coupon-item">
-        <div class="coupon-left">
-          <i class="bi bi-tag-fill coupon-icon"></i>
-          <div class="coupon-details">
-            <h6>FIRST20</h6>
-            <p>Save ₹20,000</p>
-          </div>
-        </div>
-        <button class="apply-btn" data-coupon="FIRST20">Apply</button>
-      </div>
-
+      {{/if}}
 
     </div>
+
   </div>
 </div>
 

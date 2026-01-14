@@ -178,73 +178,90 @@ document.addEventListener("DOMContentLoaded", () => {
 // COUPON MODAL FUNCTIONALITY
 // ========================================
 
-// Open Coupon Modal
-document
-  .getElementById("applyCouponBtn")
-  ?.addEventListener("click", function () {
-    document.getElementById("couponModal").classList.add("show");
+document.addEventListener("DOMContentLoaded", () => {
+  const modal = document.getElementById("couponModal");
+  const openBtn = document.getElementById("applyCouponBtn");
+  const closeBtn = document.getElementById("closeModal");
+
+  // OPEN MODAL
+  openBtn?.addEventListener("click", () => {
+    modal.classList.add("show");
+    document.body.style.overflow = "hidden"; // prevent background scroll
   });
 
-// Close Modal - X Button
-document.getElementById("closeModal")?.addEventListener("click", function () {
-  closeModal();
-});
+  // CLOSE MODAL (X BUTTON)
+  closeBtn?.addEventListener("click", closeModal);
 
-// Close modal when clicking outside
-document.getElementById("couponModal")?.addEventListener("click", function (e) {
-  if (e.target === this) {
-    closeModal();
+  // CLOSE MODAL (Click outside)
+  modal?.addEventListener("click", (e) => {
+    if (e.target === modal) closeModal();
+  });
+
+  // EVENT DELEGATION FOR APPLY BUTTONS (CRITICAL FIX)
+  document.addEventListener("click", function (e) {
+    if (e.target.classList.contains("apply-btn")) {
+      e.preventDefault();
+      const couponCode = e.target.dataset.coupon;
+      const couponId = e.target.dataset.id;
+
+      if (!couponId) {
+        showAlert("Invalid coupon", "error");
+        return;
+      }
+
+      applyCoupon(couponCode, couponId);
+    }
+  });
+
+  function closeModal() {
+    modal.classList.remove("show");
+    document.body.style.overflow = "";
   }
 });
 
-// Close Modal Function
-function closeModal() {
-  document.getElementById("couponModal").classList.remove("show");
-}
+// ========================================
+// APPLY COUPON (AXIOS)
+// ========================================
 
-// Apply Coupon Buttons
-document.querySelectorAll(".apply-btn").forEach((button) => {
-  button.addEventListener("click", function (e) {
-    e.preventDefault();
-    const couponCode = this.getAttribute("data-coupon");
-    applyCoupon(couponCode);
-  });
+async function applyCoupon(couponCode, couponId) {
+  try {
+    const res = await axios.patch(`/cart/add-coupon/${couponId}`);
+
+    if (res.data.success) {
+      showAlert(`Coupon ${couponCode} applied successfully!`, "success");
+      document.getElementById("couponModal").classList.remove("show");
+      setTimeout(() => location.reload(), 600);
+    } else {
+      showAlert(res.data.message || "Failed to apply coupon", "error");
+    }
+  } catch (error) {
+    console.error("Coupon error:", error);
+    showAlert(error.response?.data?.alert || "Something went wrong", "error");
+  }
+}
+// ========================================
+// REMOVE COUPON (AXIOS)
+// ========================================
+const removeCouponBtn = document.getElementById("removeCouponBtn");
+removeCouponBtn.addEventListener("click", async () => {
+  try {
+    const res = await axios.patch(`/cart/remove-coupon`);
+
+    if (res.data.success) {
+      showAlert(`Coupon Removed successfully!`, "success");
+      document.getElementById("couponModal").classList.remove("show");
+      setTimeout(() => location.reload(), 600);
+    } else {
+      showAlert(res.data.message || "Failed to Removed coupon", "error");
+      document.getElementById("couponModal").classList.remove("show");
+    }
+  } catch (error) {
+    console.error("Coupon error:", error);
+    showAlert(error.response?.data?.alert || "Something went wrong", "error");
+    document.getElementById("couponModal").classList.remove("show");
+  }
 });
 
-// Apply Coupon Function
-function applyCoupon(couponCode) {
-  // Add your AJAX call here to apply the coupon
-  console.log("Applying coupon:", couponCode);
-
-  // Example: Send coupon to backend
-  /*
-  fetch('/api/apply-coupon', {
-    method: 'POST',
-    headers: {
-      'Content-Type': 'application/json',
-    },
-    body: JSON.stringify({ couponCode: couponCode })
-  })
-  .then(response => response.json())
-  .then(data => {
-    if(data.success) {
-      showAlert('Coupon applied successfully!', 'success');
-      // Reload or update cart
-      location.reload();
-    } else {
-      showAlert(data.message || 'Failed to apply coupon', 'error');
-    }
-  })
-  .catch(error => {
-    console.error('Error:', error);
-    showAlert('Something went wrong!', 'error');
-  });
-  */
-
-  // For now, just show alert and close modal
-  showAlert(`Coupon ${couponCode} applied successfully!`, "success");
-  closeModal();
-}
 // ========================================
 // TOAST NOTIFICATION FUNCTION
 // ========================================

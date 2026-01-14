@@ -332,7 +332,9 @@ const deleteFromCart = async (req, res, next) => {
     cart.items = cart.items.filter((item) =>
       item._id.toString() === itemId ? false : true
     );
-
+    if (cart.items.length === 0) {
+      cart.appliedCoupon = null;
+    }
     // Save to trigger pre('save')
     await cart.save();
 
@@ -401,9 +403,9 @@ const downloadInvoice = async (req, res, next) => {
   try {
     const orderId = req.params.orderId;
 
-    const order = await Order.findById(orderId).populate(
-      "items.carId items.variantId items.accessoryId"
-    );
+    const order = await Order.findById(orderId)
+      .populate("items.carId items.variantId items.accessoryId")
+      .populate("appliedCoupon.couponId"); // Populate coupon details
 
     if (!order) {
       return res.status(NOT_FOUND).json({ message: "Order not found" });
@@ -416,16 +418,13 @@ const downloadInvoice = async (req, res, next) => {
 
     // Format items with status categorization
     const formattedItems = order.items.map((item) => {
-      // Check if cancelled
       const isCancelled =
         item.fulfillmentStatus.status === "cancelled" &&
         item.cancel?.approvedAt;
 
-      // Check if returned
       const isReturned =
         item.fulfillmentStatus.status === "returned" && item.return?.approvedAt;
 
-      // Determine status
       let status = "ACTIVE";
       let refundAmount = 0;
 
@@ -437,7 +436,6 @@ const downloadInvoice = async (req, res, next) => {
         refundAmount = item.return.refundAmount || 0;
       }
 
-      // Get product description
       const description =
         item.accessoryId?.name ||
         (item.carId?.name && item.variantId?.color
@@ -448,6 +446,7 @@ const downloadInvoice = async (req, res, next) => {
         description,
         qty: item.quantity,
         price: item.price,
+        offerPrice: item.offerPrice,
         tax: item.accessoryTax || 0,
         advanceAmount: item.advanceAmount || 0,
         status,
@@ -456,7 +455,7 @@ const downloadInvoice = async (req, res, next) => {
       };
     });
 
-    // Calculate refunded amounts separately
+    // Calculate refunded amounts
     const refundedAmount = order.items.reduce(
       (sum, item) =>
         sum + (item.cancel?.approvedAt ? item.cancel.refundAmount || 0 : 0),
@@ -469,15 +468,27 @@ const downloadInvoice = async (req, res, next) => {
       0
     );
 
-    // Calculate actual remaining amount after all deductions
+    // Calculate totals
     const totalRefunds = refundedAmount + returnRefundAmount;
     const advanceAmount = order.advanceAmount || 0;
     const discount = order.discount || 0;
+    const shippingCharges = order.shippingCharges || 0;
 
     const remainingAmount = Math.max(
       0,
       order.totalAmount - totalRefunds - advanceAmount - discount
     );
+
+    // Prepare coupon details if applied
+    let couponDetails = null;
+    if (order.appliedCoupon && order.appliedCoupon.code) {
+      couponDetails = {
+        code: order.appliedCoupon.code,
+        discountType: order.appliedCoupon.discountType,
+        discountValue: order.appliedCoupon.discountValue,
+        couponDiscount: order.appliedCoupon.couponDiscount || 0,
+      };
+    }
 
     const invoiceData = {
       orderId: order.orderId,
@@ -487,21 +498,33 @@ const downloadInvoice = async (req, res, next) => {
 
       items: formattedItems,
 
+      // Detailed pricing breakdown
       subtotal: order.subtotal,
       taxAmount: order.taxAmount,
-      taxPercent: order.taxPercent, // If you have tax percentage
+      taxPercent: order.taxPercent,
+      shippingCharges: shippingCharges,
+
+      // Coupon information
+      couponDetails: couponDetails,
+
+      // Discounts and adjustments
+      discount: discount,
+      advanceAmount: advanceAmount,
+      refundedAmount: refundedAmount,
+      returnRefundAmount: returnRefundAmount,
+      totalRefundAmount: order.totalRefundAmount || totalRefunds,
+
+      // Final amounts
       totalAmount: order.totalAmount,
+      remainingAmount: remainingAmount,
 
-      discount: order.discount || 0,
-      advanceAmount: order.advanceAmount || 0,
-
-      refundedAmount, // Cancelled items refund
-      returnRefundAmount, // Returned items refund
-
-      remainingAmount,
+      // Payment info
       paymentStatus: order.paymentStatus,
+      paymentMethod: order.paymentMethod,
+      paymentId: order.paymentId,
+      trackingId: order.trackingId,
 
-      address: order.address, // Pass full address object
+      address: order.address,
     };
 
     const invoiceDir = path.join(__dirname, "../../public/invoices");
@@ -511,7 +534,6 @@ const downloadInvoice = async (req, res, next) => {
 
     const filePath = path.join(invoiceDir, `invoice_${order.orderId}.pdf`);
 
-    // Optional: Add company info and custom terms
     const options = {
       companyInfo: {
         name: "LUXCART India Pvt. Ltd.",
@@ -534,19 +556,14 @@ const downloadInvoice = async (req, res, next) => {
     };
 
     await generateInvoice(invoiceData, filePath, options);
+    console.log(invoiceData);
 
-    // Small delay to ensure file is written
     setTimeout(() => {
       return res.download(filePath, `invoice_${order.orderId}.pdf`, (err) => {
         if (err) {
           console.error("Download error:", err);
           next(err);
         }
-
-        // Optional: Delete file after download
-        // fs.unlink(filePath, (unlinkErr) => {
-        //   if (unlinkErr) console.error("Cleanup error:", unlinkErr);
-        // });
       });
     }, 1000);
   } catch (error) {

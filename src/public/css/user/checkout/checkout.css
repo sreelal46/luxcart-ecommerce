@@ -150,8 +150,8 @@ h1 {
 .summary-card hr {
   border: none;
   height: 1px;
-  background: #eee;
-  margin: 12px 0;
+  background: #000000;
+  margin: 5px 0;
 }
 
 /* -------- PAYMENT OPTION -------- */

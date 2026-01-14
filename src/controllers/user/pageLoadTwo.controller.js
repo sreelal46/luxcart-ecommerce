@@ -1,5 +1,6 @@
 const { OK, FORBIDDEN } = require("../../constant/statusCode");
 const CarVariant = require("../../models/admin/carVariantModel");
+const Coupon = require("../../models/admin/couponModel");
 const Accessory = require("../../models/admin/productAccessoryModal");
 const Address = require("../../models/user/addressModel");
 const Cart = require("../../models/user/CartModel");
@@ -127,6 +128,110 @@ const loadOrderPage = async (req, res, next) => {
 //load cart page
 const loadCartPage = async (req, res, next) => {
   try {
+    const userId = req.user._id;
+    const now = new Date();
+
+    // =====================================
+    // 1. Load cart
+    // =====================================
+    let cart = await Cart.findOne({ userId });
+
+    if (!cart || !cart.items.length) {
+      return res.status(OK).render("user/account/cart", {
+        cart: null,
+        taxRate,
+        coupons: [],
+        cartTotal: 0,
+      });
+    }
+
+    // Force recalculation (expire offers, price changes)
+    cart.markModified("items");
+    await cart.save();
+
+    // Re-fetch populated cart
+    cart = await Cart.findOne({ userId })
+      .populate("items.variantId")
+      .populate("items.carId")
+      .populate("items.accessoryId")
+      .lean();
+
+    const cartTotal = Number(cart.totalAmount) || 0;
+
+    // =====================================
+    // 2. Load all eligible coupons
+    // =====================================
+    const coupons = await Coupon.find({
+      isListed: true,
+      validFrom: { $lte: now },
+      validTo: { $gt: now },
+      minOrderAmount: { $lte: cartTotal },
+    }).lean(); // includes usedBy array
+
+    // =====================================
+    // 3. Filter coupons by usage limits
+    // =====================================
+    const availableCoupons = coupons
+      .filter((coupon) => {
+        // Minimum cart value check
+        if (cartTotal < coupon.minOrderAmount) return false;
+
+        // Remove corrupted/null values from usedBy
+        const cleanUsedBy = (coupon.usedBy || []).filter((id) => id);
+
+        // Total usage limit
+        if (cleanUsedBy.length >= coupon.usageLimit) return false;
+
+        // Per user usage limit
+        const userUsageCount = cleanUsedBy.filter(
+          (id) => id.toString() === userId.toString()
+        ).length;
+
+        if (userUsageCount >= coupon.usagePerUser) return false;
+
+        return true;
+      })
+      .map((coupon) => {
+        let potentialDiscount = 0;
+
+        if (coupon.discountType === "flat") {
+          potentialDiscount = coupon.discountValue;
+        } else {
+          potentialDiscount =
+            Math.round(((cartTotal * coupon.discountValue) / 100) * 100) / 100;
+        }
+
+        potentialDiscount = Math.min(potentialDiscount, cartTotal);
+
+        return {
+          _id: coupon._id,
+          code: coupon.code,
+          discountType: coupon.discountType,
+          discountValue: coupon.discountValue,
+          minOrderAmount: coupon.minOrderAmount,
+          validFrom: coupon.validFrom,
+          validTo: coupon.validTo,
+          potentialDiscount,
+        };
+      });
+
+    // =====================================
+    // 4. Render Cart Page
+    // =====================================
+    res.status(OK).render("user/account/cart", {
+      cart,
+      taxRate,
+      coupons: availableCoupons,
+      cartTotal: cartTotal,
+    });
+  } catch (error) {
+    console.error("[LOAD CART ERROR]:", error);
+    next(error);
+  }
+};
+
+const loadCartPage55 = async (req, res, next) => {
+  try {
     if (!req.session.user) {
       return res.redirect("/login");
     }
@@ -143,7 +248,7 @@ const loadCartPage = async (req, res, next) => {
       });
     }
 
-    // 🔥 FORCE recalculation (expires offers)
+    // FORCE recalculation (expires offers)
     cart.markModified("items");
     await cart.save();
 
@@ -153,18 +258,18 @@ const loadCartPage = async (req, res, next) => {
       .populate("items.carId")
       .populate("items.accessoryId")
       .lean();
+    const coupons = await Coupon.find({ isListed: true }).lean();
 
     res.status(OK).render("user/account/cart", {
       cart,
       taxRate,
+      coupons,
     });
   } catch (error) {
     console.error("Error loading cart page:", error);
     next(error);
   }
 };
-
-module.exports = { loadCartPage };
 
 //load checkout
 const loadCheckoutStep1 = async (req, res, next) => {
