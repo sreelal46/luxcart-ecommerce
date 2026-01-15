@@ -1,4 +1,5 @@
 require("dotenv").config();
+require("./cron/offersCron");
 const path = require("path");
 const express = require("express");
 const app = express();

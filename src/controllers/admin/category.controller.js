@@ -1,5 +1,15 @@
-const { OK, CONFLICT, NOT_FOUND } = require("../../constant/statusCode");
+const {
+  OK,
+  CONFLICT,
+  NOT_FOUND,
+  BAD_REQUEST,
+} = require("../../constant/statusCode");
 const Category = require("../../models/admin/categoryModel");
+const {
+  recalculateAllPrices,
+  recalculateAccessoryPrices,
+  recalculateCarVariantPrices,
+} = require("../../cron/offersCron");
 
 const addCategory = async (req, res, next) => {
   try {
@@ -121,4 +131,154 @@ const softDeleteCategory = async (req, res, next) => {
     next(error);
   }
 };
-module.exports = { addCategory, editCategory, softDeleteCategory };
+
+const addOfferToCategory = async (req, res, next) => {
+  try {
+    const { categoryId } = req.params;
+    const { discountType, discountValue, validFrom, validTo } = req.body;
+
+    /* ========== VALIDATION ========== */
+    if (!["Percentage", "Price"].includes(discountType)) {
+      return res
+        .status(BAD_REQUEST)
+        .json({ success: false, alert: "Invalid discount type" });
+    }
+
+    if (
+      discountType === "Percentage" &&
+      (discountValue <= 0 || discountValue > 100)
+    ) {
+      return res
+        .status(BAD_REQUEST)
+        .json({ success: false, alert: "Percentage must be between 1–100" });
+    }
+
+    if (discountType === "Price" && discountValue <= 0) {
+      return res
+        .status(BAD_REQUEST)
+        .json({ success: false, alert: "Price discount must be > 0" });
+    }
+
+    if (new Date(validFrom) >= new Date(validTo)) {
+      return res
+        .status(BAD_REQUEST)
+        .json({ success: false, alert: "Invalid date range" });
+    }
+
+    const now = new Date();
+    const isActive = new Date(validFrom) <= now && new Date(validTo) > now;
+
+    /* ========== UPDATE CATEGORY ========== */
+    const category = await Category.findByIdAndUpdate(
+      categoryId,
+      {
+        $set: {
+          offer: {
+            discountType,
+            discountValue,
+            validFrom: new Date(validFrom),
+            validTo: new Date(validTo),
+            isActive: isActive, // ✅ FIX: Use calculated value
+            isConfigured: true,
+          },
+        },
+      },
+      { new: true }
+    );
+
+    if (!category) {
+      return res
+        .status(BAD_REQUEST)
+        .json({ success: false, alert: "Category not found" });
+    }
+
+    // ✅ FIX: Trigger immediate price recalculation if offer is active
+    if (isActive) {
+      await recalculateAllPrices(now);
+    }
+
+    res.status(OK).json({
+      success: true,
+      alert: isActive
+        ? "Category offer applied successfully!"
+        : `Category offer scheduled. Will activate automatically on ${new Date(
+            validFrom
+          ).toLocaleDateString()}.`,
+    });
+  } catch (err) {
+    next(err);
+  }
+};
+
+const removeOfferToCategory = async (req, res, next) => {
+  try {
+    const { categoryId } = req.params;
+
+    /* ========== REMOVE CATEGORY OFFER ========== */
+    const category = await Category.findByIdAndUpdate(
+      categoryId,
+      { $unset: { offer: "" } },
+      { new: true }
+    );
+
+    if (!category) {
+      return res
+        .status(BAD_REQUEST)
+        .json({ success: false, alert: "Category not found" });
+    }
+
+    // ✅ FIX: Immediately recalculate all prices
+    const now = new Date();
+    await recalculateAllPrices(now);
+
+    res.status(OK).json({
+      success: true,
+      alert: "Category offer removed successfully!",
+    });
+  } catch (err) {
+    next(err);
+  }
+};
+
+const removeProductOffer = async (req, res, next) => {
+  try {
+    const { productId } = req.params;
+    const { productType } = req.body;
+
+    /* ========== REMOVE OFFER ========== */
+    if (productType === "accessory") {
+      await Accessory.updateOne(
+        { _id: productId },
+        { $unset: { productOffer: "" } }
+      );
+    } else if (productType === "car") {
+      await CarVariant.updateMany(
+        { product_id: productId },
+        { $unset: { productOffer: "" } }
+      );
+    }
+
+    // ✅ FIX: Immediately recalculate prices for affected products
+    const now = new Date();
+    if (productType === "accessory") {
+      await recalculateAccessoryPrices();
+    } else if (productType === "car") {
+      await recalculateCarVariantPrices();
+    }
+
+    res.status(OK).json({
+      success: true,
+      alert: "Product offer removed successfully!",
+    });
+  } catch (err) {
+    next(err);
+  }
+};
+
+module.exports = {
+  addCategory,
+  editCategory,
+  softDeleteCategory,
+  addOfferToCategory,
+  removeOfferToCategory,
+};

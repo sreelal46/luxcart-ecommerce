@@ -38,6 +38,26 @@
   .btn-outline-secondary:hover {
     background-color: #f8f9fa;
   }
+
+  .admin-table tbody tr {
+    height: 84px;
+  }
+
+  .admin-table th,
+  .admin-table td {
+    padding: 16px 18px;
+    vertical-align: middle;
+  }
+
+  .admin-table th {
+    font-weight: 600;
+  }
+
+  .admin-table .badge {
+    padding: 6px 12px;
+    font-size: 12px;
+    font-weight: 600;
+  }
 </style>
 
 <div class="container py-4">
@@ -159,45 +179,69 @@
             <i class="bi bi-clock-history me-2 text-secondary"></i>Transaction History
           </h5>
 
-          <div class="table-responsive">
-            <table class="table align-middle table-hover">
-              <thead class="table-light">
-                <tr class="text-secondary">
-                  <th>#</th>
-                  <th>Order ID</th>
-                  <th>Date</th>
-                  <th>Amount</th>
-                  <th>Status</th>
-                </tr>
-              </thead>
+          <div class="card shadow-sm mb-5 border-0">
+            <div class="card-body table-responsive p-0">
 
-              <tbody>
-                {{#each orders}}
-                <tr>
-                  <td>{{inc @index}}</td>
-                  <td class="fw-semibold">{{this.orderId}}</td>
-                  <td>{{formatDate this.createdAt}}</td>
-                  <td>₹{{this.totalAmount}}</td>
-                  <td>
-                    {{#if (eq this.paymentStatus "paid")}}
-                    <span class="badge rounded-pill bg-success bg-opacity-10 text-success px-3 py-1">Paid</span>
-                    {{else if (eq this.paymentStatus "pending")}}
-                    <span class="badge rounded-pill bg-warning bg-opacity-25 text-dark px-3 py-1">Pending</span>
-                    {{else}}
-                    <span class="badge rounded-pill bg-danger bg-opacity-10 text-danger px-3 py-1">Failed</span>
-                    {{/if}}
-                  </td>
-                </tr>
-                {{else}}
-                <tr>
-                  <td colspan="5" class="text-center text-muted py-4">
-                    No transactions found
-                  </td>
-                </tr>
-                {{/each}}
-              </tbody>
-            </table>
+              <table class="table table-hover align-middle mb-0 admin-table">
+                <thead class="table-light">
+                  <tr>
+                    <th>#</th>
+                    <th>Order ID</th>
+                    <th>Date</th>
+                    <th class="text-end">Amount (₹)</th>
+                    <th>Status</th>
+                  </tr>
+                </thead>
+
+                <tbody>
+                  {{#each orders}}
+                  <tr>
+                    <td class="fw-semibold text-muted">
+                      {{inc @index}}
+                    </td>
+
+                    <td class="fw-semibold text-dark">
+                      {{this.orderId}}
+                    </td>
+
+                    <td class="text-muted text-nowrap">
+                      {{formatDate this.createdAt}}
+                    </td>
+
+                    <td class="fw-semibold text-end">
+                      ₹{{this.totalAmount}}
+                    </td>
+
+                    <td>
+                      {{#if (eq this.paymentStatus "paid")}}
+                      <span class="badge bg-success-subtle text-success fw-semibold">
+                        Paid
+                      </span>
+                      {{else if (eq this.paymentStatus "pending")}}
+                      <span class="badge bg-warning-subtle text-warning fw-semibold">
+                        Pending
+                      </span>
+                      {{else}}
+                      <span class="badge bg-danger-subtle text-danger fw-semibold">
+                        Failed
+                      </span>
+                      {{/if}}
+                    </td>
+                  </tr>
+                  {{else}}
+                  <tr>
+                    <td colspan="5" class="text-center text-muted py-4">
+                      No transactions found
+                    </td>
+                  </tr>
+                  {{/each}}
+                </tbody>
+
+              </table>
+
+            </div>
           </div>
+
 
         </div>
       </div>

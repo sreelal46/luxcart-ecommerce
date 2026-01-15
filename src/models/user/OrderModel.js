@@ -28,6 +28,7 @@ const orderItemSchema = new Schema(
 
     /* PRICING */
     price: { type: Number, required: true },
+    offerPrice: { type: Number, default: null },
     accessoryTax: { type: Number, default: null },
     quantity: { type: Number, required: true, min: 1 },
     advanceAmount: { type: Number, default: null },
@@ -155,6 +156,13 @@ const orderSchema = new Schema(
     subtotal: { type: Number, required: true },
     taxAmount: { type: Number, default: 0 },
     discount: { type: Number, default: 0 },
+    appliedCoupon: {
+      couponId: { type: Schema.Types.ObjectId, ref: "Coupon", default: null },
+      code: { type: String, default: null },
+      discountType: { type: String, default: null },
+      discountValue: { type: Number, default: null },
+      couponDiscount: { type: Number, default: 0 },
+    },
     shippingCharges: { type: Number, default: 0 },
     totalAmount: { type: Number, required: true },
 

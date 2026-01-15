@@ -36,6 +36,8 @@ const {
 const {
   loadWishlistPage,
   loadOrderDetailPage,
+  loadReferralsPage,
+  loadwalletPage,
 } = require("../controllers/user/pageLoadThree.controller");
 
 const {
@@ -193,20 +195,27 @@ route.delete(
 route.get("/account/change-password", checkSession, loadChangePassword);
 route.post("/account/change-password/:userId", checkSession, changePassword);
 
+//referrals
+route.get("/account/referrals", checkSession, loadReferralsPage);
+route.get("/account/wallet", checkSession, loadwalletPage);
+
 //cart management
+const {
+  applyCoupon,
+  removeCoupon,
+} = require("../controllers/user/cart.controller");
 route.get("/cart", checkSession, loadCartPage);
 route.post("/cart/add", checkSession, addToCart);
 route.delete("/cart/remove-product/:itemId", checkSession, deleteFromCart);
 route.put("/cart/change-quantity/:itemId", checkSession, changeQuantity);
+route.patch("/cart/add-coupon/:couponId", checkSession, applyCoupon);
+route.patch("/cart/remove-coupon", checkSession, removeCoupon);
 
 // checkout management
 route.get("/cart/checkout-step-1/:cartId", checkSession, loadCheckoutStep1);
 route.get("/cart/checkout-step-2/:addressId", checkSession, loadCheckoutStep2);
-route.get(
-  "/cart/checkout-step-3/:paymentMethod",
-  checkSession,
-  loadCheckoutStep3
-);
+const { payment } = require("../controllers/user/checkout.countroller");
+route.post("/cart/create-payment/:paymentMethod", checkSession, payment);
 route.post("/cart/checkout/create-order/:cartId", checkSession, createOrder);
 route.get("/cart/checkout-step-4/:orderId", checkSession, loadCheckoutStep4);
 

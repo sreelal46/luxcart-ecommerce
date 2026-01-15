@@ -1,5 +1,3 @@
-// /js/user/account/cart.js
-
 document.addEventListener("DOMContentLoaded", () => {
   // ---------- TOAST ----------
   function showMobileAlert(message, notification) {
@@ -175,3 +173,133 @@ document.addEventListener("DOMContentLoaded", () => {
     }
   });
 });
+
+// ========================================
+// COUPON MODAL FUNCTIONALITY
+// ========================================
+
+document.addEventListener("DOMContentLoaded", () => {
+  const modal = document.getElementById("couponModal");
+  const openBtn = document.getElementById("applyCouponBtn");
+  const closeBtn = document.getElementById("closeModal");
+
+  // OPEN MODAL
+  openBtn?.addEventListener("click", () => {
+    modal.classList.add("show");
+    document.body.style.overflow = "hidden"; // prevent background scroll
+  });
+
+  // CLOSE MODAL (X BUTTON)
+  closeBtn?.addEventListener("click", closeModal);
+
+  // CLOSE MODAL (Click outside)
+  modal?.addEventListener("click", (e) => {
+    if (e.target === modal) closeModal();
+  });
+
+  // EVENT DELEGATION FOR APPLY BUTTONS (CRITICAL FIX)
+  document.addEventListener("click", function (e) {
+    if (e.target.classList.contains("apply-btn")) {
+      e.preventDefault();
+      const couponCode = e.target.dataset.coupon;
+      const couponId = e.target.dataset.id;
+
+      if (!couponId) {
+        showAlert("Invalid coupon", "error");
+        return;
+      }
+
+      applyCoupon(couponCode, couponId);
+    }
+  });
+
+  function closeModal() {
+    modal.classList.remove("show");
+    document.body.style.overflow = "";
+  }
+});
+
+// ========================================
+// APPLY COUPON (AXIOS)
+// ========================================
+
+async function applyCoupon(couponCode, couponId) {
+  try {
+    const res = await axios.patch(`/cart/add-coupon/${couponId}`);
+
+    if (res.data.success) {
+      showAlert(`Coupon ${couponCode} applied successfully!`, "success");
+      document.getElementById("couponModal").classList.remove("show");
+      setTimeout(() => location.reload(), 600);
+    } else {
+      showAlert(res.data.message || "Failed to apply coupon", "error");
+    }
+  } catch (error) {
+    console.error("Coupon error:", error);
+    showAlert(error.response?.data?.alert || "Something went wrong", "error");
+  }
+}
+// ========================================
+// REMOVE COUPON (AXIOS)
+// ========================================
+const removeCouponBtn = document.getElementById("removeCouponBtn");
+removeCouponBtn.addEventListener("click", async () => {
+  try {
+    const res = await axios.patch(`/cart/remove-coupon`);
+
+    if (res.data.success) {
+      showAlert(`Coupon Removed successfully!`, "success");
+      document.getElementById("couponModal").classList.remove("show");
+      setTimeout(() => location.reload(), 600);
+    } else {
+      showAlert(res.data.message || "Failed to Removed coupon", "error");
+      document.getElementById("couponModal").classList.remove("show");
+    }
+  } catch (error) {
+    console.error("Coupon error:", error);
+    showAlert(error.response?.data?.alert || "Something went wrong", "error");
+    document.getElementById("couponModal").classList.remove("show");
+  }
+});
+
+// ========================================
+// TOAST NOTIFICATION FUNCTION
+// ========================================
+
+function showAlert(message, type = "success") {
+  const alertBox = document.getElementById("mobileAlert");
+
+  // Set icon based on type
+  let icon = "";
+  let colorClass = "";
+
+  if (type === "success") {
+    icon = '<i class="bi bi-check-circle-fill success-icon"></i>';
+    colorClass = "message-green";
+  } else if (type === "error") {
+    icon = '<i class="bi bi-x-circle-fill error-icon"></i>';
+    colorClass = "message-red";
+  } else if (type === "warning") {
+    icon = '<i class="bi bi-exclamation-triangle-fill yellow-icon"></i>';
+    colorClass = "message-yellow";
+  }
+
+  alertBox.innerHTML = `${icon}<span class="${colorClass}">${message}</span>`;
+  alertBox.classList.add("show");
+
+  // Hide after 3 seconds
+  setTimeout(() => {
+    alertBox.classList.remove("show");
+  }, 3000);
+}
+
+// ========================================
+// MOBILE PLACE ORDER BUTTON
+// ========================================
+
+document
+  .querySelector(".place-order-btn")
+  ?.addEventListener("click", function () {
+    const cartId = "{{cart._id}}"; // This will be replaced by Handlebars
+    window.location.href = `/cart/checkout-step-1/${cartId}`;
+  });

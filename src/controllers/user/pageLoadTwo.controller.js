@@ -1,5 +1,6 @@
 const { OK, FORBIDDEN } = require("../../constant/statusCode");
 const CarVariant = require("../../models/admin/carVariantModel");
+const Coupon = require("../../models/admin/couponModel");
 const Accessory = require("../../models/admin/productAccessoryModal");
 const Address = require("../../models/user/addressModel");
 const Cart = require("../../models/user/CartModel");
@@ -127,47 +128,145 @@ const loadOrderPage = async (req, res, next) => {
 //load cart page
 const loadCartPage = async (req, res, next) => {
   try {
-    const userId = req.session.user._id;
-    const cart = await Cart.findOne({ userId }, null, {
-      sort: { createdAt: -1 },
-    })
-      .populate("items.carId")
-      .populate("items.variantId")
-      .populate("items.accessoryId");
+    const userId = req.user._id;
+    const now = new Date();
 
-    if (cart) {
-      for (let item of cart.items) {
-        // Variant price update
-        if (item.variantId) {
-          const newPrice = item.variantId.price;
+    // =====================================
+    // 1. Load cart
+    // =====================================
+    let cart = await Cart.findOne({ userId });
 
-          // Update DB
-          await Cart.updateOne(
-            { userId, "items.variantId": item.variantId._id },
-            { $set: { "items.$.price": newPrice } }
-          );
-
-          // Update the returned object too
-          item.price = newPrice;
-        }
-
-        // Accessory price update
-        if (item.accessoryId) {
-          const newPrice = item.accessoryId.price;
-
-          await Cart.updateOne(
-            { userId, "items.accessoryId": item.accessoryId._id },
-            { $set: { "items.$.price": newPrice } }
-          );
-
-          item.price = newPrice;
-        }
-      }
+    if (!cart || !cart.items.length) {
+      return res.status(OK).render("user/account/cart", {
+        cart: null,
+        taxRate,
+        coupons: [],
+        cartTotal: 0,
+      });
     }
 
-    res.status(OK).render("user/account/cart", { cart, taxRate });
+    // Force recalculation (expire offers, price changes)
+    cart.markModified("items");
+    await cart.save();
+
+    // Re-fetch populated cart
+    cart = await Cart.findOne({ userId })
+      .populate("items.variantId")
+      .populate("items.carId")
+      .populate("items.accessoryId")
+      .lean();
+
+    const cartTotal = Number(cart.totalAmount) || 0;
+
+    // =====================================
+    // 2. Load all eligible coupons
+    // =====================================
+    const coupons = await Coupon.find({
+      isListed: true,
+      validFrom: { $lte: now },
+      validTo: { $gt: now },
+      minOrderAmount: { $lte: cartTotal },
+    }).lean(); // includes usedBy array
+
+    // =====================================
+    // 3. Filter coupons by usage limits
+    // =====================================
+    const availableCoupons = coupons
+      .filter((coupon) => {
+        // Minimum cart value check
+        if (cartTotal < coupon.minOrderAmount) return false;
+
+        // Remove corrupted/null values from usedBy
+        const cleanUsedBy = (coupon.usedBy || []).filter((id) => id);
+
+        // Total usage limit
+        if (cleanUsedBy.length >= coupon.usageLimit) return false;
+
+        // Per user usage limit
+        const userUsageCount = cleanUsedBy.filter(
+          (id) => id.toString() === userId.toString()
+        ).length;
+
+        if (userUsageCount >= coupon.usagePerUser) return false;
+
+        return true;
+      })
+      .map((coupon) => {
+        let potentialDiscount = 0;
+
+        if (coupon.discountType === "flat") {
+          potentialDiscount = coupon.discountValue;
+        } else {
+          potentialDiscount =
+            Math.round(((cartTotal * coupon.discountValue) / 100) * 100) / 100;
+        }
+
+        potentialDiscount = Math.min(potentialDiscount, cartTotal);
+
+        return {
+          _id: coupon._id,
+          code: coupon.code,
+          discountType: coupon.discountType,
+          discountValue: coupon.discountValue,
+          minOrderAmount: coupon.minOrderAmount,
+          validFrom: coupon.validFrom,
+          validTo: coupon.validTo,
+          potentialDiscount,
+        };
+      });
+
+    // =====================================
+    // 4. Render Cart Page
+    // =====================================
+    res.status(OK).render("user/account/cart", {
+      cart,
+      taxRate,
+      coupons: availableCoupons,
+      cartTotal: cartTotal,
+    });
   } catch (error) {
-    console.log("Error from cart page load", error);
+    console.error("[LOAD CART ERROR]:", error);
+    next(error);
+  }
+};
+
+const loadCartPage55 = async (req, res, next) => {
+  try {
+    if (!req.session.user) {
+      return res.redirect("/login");
+    }
+
+    const userId = req.session.user._id;
+
+    // Fetch cart as mongoose document
+    let cart = await Cart.findOne({ userId });
+
+    if (!cart || !cart.items.length) {
+      return res.status(OK).render("user/account/cart", {
+        cart: null,
+        taxRate,
+      });
+    }
+
+    // FORCE recalculation (expires offers)
+    cart.markModified("items");
+    await cart.save();
+
+    // Re-fetch lean version for rendering
+    cart = await Cart.findOne({ userId })
+      .populate("items.variantId")
+      .populate("items.carId")
+      .populate("items.accessoryId")
+      .lean();
+    const coupons = await Coupon.find({ isListed: true }).lean();
+
+    res.status(OK).render("user/account/cart", {
+      cart,
+      taxRate,
+      coupons,
+    });
+  } catch (error) {
+    console.error("Error loading cart page:", error);
     next(error);
   }
 };
@@ -225,17 +324,11 @@ const loadCheckoutStep3 = async (req, res, next) => {
     if (!paymentMethod) return res.status(FORBIDDEN).redirect("/cart");
     if (!cart.items.length) return res.status(FORBIDDEN).redirect("/cart");
 
-    const advancePercentage = parseInt(process.env.ADVANCE_PAYMENT_PERCENTAGE);
-
-    // total amount = cart total
-    const advanceAmount = Math.round(
-      (cart.totalAfterAll * advancePercentage) / 100
-    );
     await cart.save();
     res.status(OK).render("user/checkout/checkout_Step_3_Payment_", {
       cart,
       taxRate,
-      advanceAmount,
+      advanceAmount: cart.totalAdvanceAmount,
     });
   } catch (error) {
     console.log("Error from load checkout page");

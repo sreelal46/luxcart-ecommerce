@@ -100,13 +100,15 @@
                 </div>
 
                 <!-- List / Unlist -->
-                <div data-bs-toggle="tooltip" title="{{#if this.isListed}}Unlist type{{else}}List type{{/if}}">
-                  <button class="btn btn-sm {{#if this.isListed}}btn-outline-warning{{else}}btn-outline-success{{/if}}"
-                    data-bs-toggle="modal" data-bs-target="#deleteTypeModal" data-id="{{this._id}}"
-                    data-name="{{this.name}}">
-                    <i class="bi {{#if this.isListed}}bi-eye-slash{{else}}bi-eye{{/if}}"></i>
-                  </button>
+                <div class="form-check form-switch m-0" data-bs-toggle="tooltip"
+                  title="{{#if this.isListed}}Unlist type{{else}}List type{{/if}}">
+
+                  <input class="form-check-input type-toggle-status" type="checkbox" data-id="{{this._id}}"
+                    data-name="{{this.name}}" {{#if this.isListed}}checked{{/if}} data-bs-toggle="modal"
+                    data-bs-target="#deleteTypeModal">
+
                 </div>
+
 
               </div>
             </td>

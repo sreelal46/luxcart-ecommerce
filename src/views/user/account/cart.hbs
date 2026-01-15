@@ -49,17 +49,25 @@
             {{/if}}
 
             {{!-- PRICE --}}
-            {{#if carId}}
+            {{#if this.appliedOffer.isActive}}
             <div class="price-box">
-              <span class="offer-price">₹ {{formatPrice this.price}}</span>
+              {{#if this.appliedOffer.isActive}}
+              <span class="offer-price">₹ {{formatPrice this.offerPrice}}</span>
               <span class="original-price">₹ {{formatPrice this.price}}</span>
-              <span class="discount">(50% OFF)</span>
+              <span class="discount">
+                {{#if (eq this.appliedOffer.discountType "Percentage")}}
+                {{this.appliedOffer.discountValue}}% OFF
+                {{else}}
+                ₹ {{formatPrice this.appliedOffer.discountValue}}
+                {{/if}}
+              </span>
+              {{else}}
+              <span class="offer-price">₹ {{formatPrice this.price}}</span>
+              {{/if}}
             </div>
             {{else}}
             <div class="price-box">
-              <span class="offer-price">₹ {{formatPrice this.lineTotal}}</span>
-              <span class="original-price">₹ {{formatPrice this.lineTotal}}</span>
-              <span class="discount">(50% OFF)</span>
+              <span class="offer-price">₹ {{formatPrice this.price}}</span>
             </div>
             {{/if}}
             <div class="price-box">
@@ -103,11 +111,6 @@
           <span class="fw-semibold">₹ {{formatPrice cart.totalAmount}}</span>
         </div>
 
-        <!-- <div class="d-flex justify-content-between mb-2">
-          <span class="text-muted">Discount</span>
-          <span class="fw-semibold"></span>
-        </div> -->
-
         <div class="d-flex justify-content-between mb-2">
           <span class="text-muted">Shipping</span>
           <span class="fw-semibold">Free</span>
@@ -115,8 +118,32 @@
 
         <div class="d-flex justify-content-between mb-3">
           <span class="text-muted">Tax <span class="fw-semibold">(GST {{taxRate}}% Only for Accessory)</span></span>
+          {{#if cart.accessoryTax}}
           <span class="fw-semibold">₹ {{formatPrice cart.accessoryTax}}</span>
+          {{else}}
+          <span class="fw-semibold">₹ 0</span>
+          {{/if}}
         </div>
+        {{#if cart.appliedCoupon.code}}
+        <div class="d-flex justify-content-between align-items-center mb-3 bg-light p-2 rounded">
+          <span class="text-muted">
+            Applied Coupon:
+            <strong class="text-dark">{{cart.appliedCoupon.code}}</strong>
+          </span>
+
+          <div class="d-flex align-items-center gap-2">
+            <span class="fw-semibold text-success">
+              - ₹{{formatPrice cart.appliedCoupon.couponDiscount}}
+            </span>
+
+            <button class="btn btn-sm btn-outline-danger" id="removeCouponBtn"
+              data-couponid="{{cart.appliedCoupon.couponId}}" title="Remove coupon">
+              ✕
+            </button>
+          </div>
+        </div>
+        {{/if}}
+
 
         <hr>
 
@@ -124,8 +151,20 @@
           <h6 class="fw-bold">Total Amount</h6>
           <h6 class="fw-bold">₹ {{formatPrice cart.totalAfterAll}}</h6>
         </div>
+        {{#if cart.discountedPrice}}
+        <!-- Savings Banner -->
+        <div class="alert alert-success d-flex justify-content-between align-items-center py-2 px-3 mb-3" role="alert">
+          <span class="fw-semibold text-success">
+            Your Total Savings on this order
+          </span>
+          <span class="fw-semibold text-success">
+            ₹ {{formatPrice cart.discountedPrice}}
+          </span>
+        </div>
+        {{/if}}
 
-        <button class="btn btn-orange w-100 mb-3">Apply Coupon</button>
+
+        <button class="btn btn-orange w-100 mb-3" id="applyCouponBtn">Apply Coupon</button>
         <a href="/cart/checkout-step-1/{{cart._id}}" class="btn btn-black w-100">Proceed to Checkout</a>
 
         <p class="text-center text-muted small mt-3">
@@ -147,7 +186,7 @@
       <img src="/images/emptyCart.svg" class="empty-cart-img" alt="Empty Cart">
 
       <h3 class="empty-cart-title">Your Cart is Empty</h3>
-      <p class="empty-cart-text">Looks like you haven’t added anything yet.</p>
+      <p class="empty-cart-text">Looks like you haven't added anything yet.</p>
 
       <a href="/" class="btn btn-dark continue-btn">Continue Shopping</a>
 
@@ -165,5 +204,83 @@
   <button class="place-order-btn btn btn-dark px-4 py-2 rounded-3">Place Order</button>
 </div>
 {{/if}}
+
+<!-- Coupon Modal -->
+<div class="coupon-modal" id="couponModal">
+  <div class="coupon-modal-content">
+    <!-- Header -->
+    <div class="coupon-modal-header">
+      <h5>Available Coupons</h5>
+      <button class="close-modal" id="closeModal">
+        <i class="bi bi-x"></i>
+      </button>
+    </div>
+
+    <!-- Body -->
+    <div class="coupon-modal-body">
+
+      <!-- Accessory Note -->
+      <div class="accessory-note">
+        <i class="bi bi-info-circle-fill"></i>
+        <div>
+          <strong>Note:</strong>
+          <p><strong>Coupons are only applicable for accessories</strong></p>
+          <p><strong>Only one coupon can be applied per order</strong></p>
+        </div>
+      </div>
+
+
+      {{#if coupons.length}}
+
+      <!-- Coupon Items -->
+      {{#each coupons}}
+      <div class="coupon-item">
+        <div class="coupon-left">
+          <i class="bi bi-tag-fill coupon-icon"></i>
+
+          <div class="coupon-details">
+            <h6 class="coupon-code">{{this.code}}</h6>
+
+            {{#if (eq this.discountType "percentage")}}
+            <p class="coupon-discount">
+              Get <strong>{{this.discountValue}}%</strong> off
+            </p>
+            {{else}}
+            <p class="coupon-discount">
+              Flat <strong>₹{{formatPrice this.discountValue}}</strong> off
+            </p>
+            {{/if}}
+
+            <p class="coupon-min">
+              Min Order: ₹{{formatPrice this.minOrderAmount}}
+            </p>
+
+            <p class="coupon-validity">
+              Valid till: {{formattedDate this.validTo}}
+            </p>
+          </div>
+        </div>
+
+        <button class="apply-btn" data-coupon="{{this.code}}" data-id="{{this._id}}"
+          data-discount="{{this.discountValue}}" data-type="{{this.discountType}}" data-min="{{this.minOrderAmount}}">
+          Apply
+        </button>
+      </div>
+      {{/each}}
+
+      {{else}}
+
+      <!-- No coupons -->
+      <div class="no-coupons">
+        <i class="bi bi-ticket-perforated"></i>
+        <p>No coupons available right now</p>
+      </div>
+
+      {{/if}}
+
+    </div>
+
+  </div>
+</div>
 
 <script src="/js/user/account/cart.js"></script>

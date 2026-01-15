@@ -14,7 +14,7 @@ document.addEventListener("DOMContentLoaded", () => {
   const editDescriptionError = document.getElementById("editDescriptionError");
   const editCategoryNameInput = document.getElementById("editCategoryName");
   const editCategoryNameError = document.getElementById("editNameError");
-
+  let currentOffer = {};
   //category name validation
   function categoryNameValidation(input, error) {
     const categoryName = input.value.trim();
@@ -349,30 +349,32 @@ document.addEventListener("DOMContentLoaded", () => {
         <td class="text-center">
           <div class="d-flex justify-content-center align-items-center gap-2">
 ${
-  c.offer
-    ? `                <!-- Remove Offer -->
-                <div data-bs-toggle="tooltip" title="Remove offer">
-                  <button class="btn btn-sm btn-outline-warning add-offer-btn" data-bs-toggle="modal"
-                    data-bs-target="#addOfferModal" data-id="{{this._id}}" data-name="{{this.name}}">
-                    <i class="bi bi-percent"></i>
-                  </button>
-                </div>`
-    : `            <!-- ADD OFFER -->
-            <div data-bs-toggle="tooltip" title="Add offer">
-              <button
-                class="btn btn-sm btn-outline-warning add-offer-btn"
-                data-bs-toggle="modal"
-                data-bs-target="#addOfferModal"
-                data-id="${c._id}"
-                data-name="${c.name}">
-                <i class="bi bi-percent"></i>
-              </button>
-            </div>`
+  c.offer.isActive
+    ? `
+      <!-- REMOVE OFFER -->
+      <div data-bs-toggle="tooltip" title="Remove offer">
+        <button
+          class="btn btn-sm btn-outline-danger remove-offer-btn"
+          data-bs-toggle="modal"
+          data-bs-target="#removeOfferModal"
+          data-id="${c._id}"
+          data-name="${c.name}">
+          <i class="bi bi-trash-fill"></i>
+        </button>
+      </div>`
+    : `
+      <!-- ADD OFFER -->
+      <div data-bs-toggle="tooltip" title="Add offer">
+        <button
+          class="btn btn-sm btn-outline-success add-offer-btn"
+          data-bs-toggle="modal"
+          data-bs-target="#offerModal"
+          data-id="${c._id}"
+          data-name="${c.name}">
+          <i class="bi bi-percent"></i>
+        </button>
+      </div>`
 }
-
-
-
-
             <!-- EDIT -->
             <div data-bs-toggle="tooltip" title="Edit category">
               <button
@@ -466,6 +468,353 @@ ${
 
   const debouncedSearch = debounce(loadCategories, 400);
   searchInput.addEventListener("input", debouncedSearch);
+  // Add Offer Modal
+  document.addEventListener("click", (e) => {
+    if (e.target.closest(".add-offer-btn")) {
+      const btn = e.target.closest(".add-offer-btn");
+      document.getElementById("offerProductId").value = btn.dataset.id;
+    }
+  });
+
+  /* ===============================
+   VIEW OFFER MODAL
+================================ */
+  document.querySelectorAll(".view-offer-btn").forEach((btn) => {
+    btn.addEventListener("click", () => {
+      currentOffer = {
+        id: btn.dataset.id,
+        name: btn.dataset.name,
+        discountType: btn.dataset.discountType,
+        discountValue: btn.dataset.discountValue,
+        validFrom: btn.dataset.validFrom,
+        validTo: btn.dataset.validTo,
+      };
+
+      document.getElementById("viewDiscountType").textContent =
+        currentOffer.discountType;
+
+      document.getElementById("viewDiscountValue").textContent =
+        currentOffer.discountType === "Percentage"
+          ? `${currentOffer.discountValue}%`
+          : `₹${currentOffer.discountValue}`;
+
+      document.getElementById("viewValidFrom").textContent = new Date(
+        currentOffer.validFrom
+      ).toLocaleString();
+
+      document.getElementById("viewValidTo").textContent = new Date(
+        currentOffer.validTo
+      ).toLocaleString();
+      document.getElementById("removeOfferProductName").innerText =
+        currentOffer.name || "";
+    });
+  });
+
+  /* ===============================
+   REUSABLE REMOVE MODAL FILLER
+================================ */
+  function populateRemoveOfferModal(data) {
+    document.getElementById("removeOfferProductId").value = data.id;
+
+    document.getElementById("removeDiscountType").innerText =
+      data.discountType || "—";
+
+    document.getElementById("removeDiscountValue").innerText =
+      data.discountType === "Percentage"
+        ? `${data.discountValue}%`
+        : `₹${data.discountValue}`;
+
+    document.getElementById("removeValidFrom").innerText = data.validFrom
+      ? new Date(data.validFrom).toLocaleString()
+      : "—";
+
+    document.getElementById("removeValidTo").innerText = data.validTo
+      ? new Date(data.validTo).toLocaleString()
+      : "—";
+
+    // CRITICAL
+    document.getElementById("confirmRemoveOffer").dataset.categoryId = data.id;
+  }
+
+  /* ===============================
+   TRASH ICON → REMOVE MODAL
+================================ */
+  document.addEventListener("click", (e) => {
+    const btn = e.target.closest(".remove-offer-btn");
+    if (!btn) return;
+
+    const data = {
+      id: btn.dataset.id,
+      name: btn.dataset.name,
+      discountType: btn.dataset.discountType,
+      discountValue: btn.dataset.discountValue,
+      validFrom: btn.dataset.validFrom,
+      validTo: btn.dataset.validTo,
+    };
+
+    populateRemoveOfferModal(data);
+
+    document.getElementById("removeOfferProductName").innerText =
+      data.name || "";
+  });
+
+  /* ===============================
+   VIEW MODAL → DELETE BUTTON
+================================ */
+  document
+    .getElementById("deleteOfferFromView")
+    .addEventListener("click", () => {
+      bootstrap.Modal.getInstance(
+        document.getElementById("offerViewModal")
+      ).hide();
+
+      populateRemoveOfferModal(currentOffer);
+
+      new bootstrap.Modal(document.getElementById("removeOfferModal")).show();
+    });
+
+  const offerForm = document.getElementById("offerForm");
+
+  const discountInput = offerForm.discountValue;
+  const validFromInput = offerForm.validFrom;
+  const validToInput = offerForm.validTo;
+
+  const discountError = document.getElementById("dicountError");
+  const fromError = document.getElementById("ValidateFromtError");
+  const toError = document.getElementById("ValidateTotError");
+
+  /* ===============================
+           HELPERS
+     ================================ */
+  function isEmpty(value) {
+    return !value || value.trim() === "";
+  }
+
+  /*===============================
+        LIVE VALIDATION
+   ============================== */
+
+  // Discount
+  discountInput.addEventListener("input", () => {
+    const value = Number(discountInput.value);
+
+    if (!value || value <= 0) {
+      discountError.textContent = "Enter a valid positive number";
+    } else {
+      discountError.textContent = "";
+    }
+  });
+
+  // helper: remove seconds & milliseconds
+  function normalizeToMinute(date) {
+    date.setSeconds(0, 0);
+    return date;
+  }
+
+  // Valid From
+  validFromInput.addEventListener("change", () => {
+    if (isEmpty(validFromInput.value)) {
+      fromError.textContent = "Start date & time is required";
+      return;
+    }
+
+    const fromDate = normalizeToMinute(new Date(validFromInput.value));
+    const now = normalizeToMinute(new Date());
+
+    // only past is invalid
+    if (fromDate < now) {
+      fromError.textContent = "Start time must be current or future";
+    } else {
+      fromError.textContent = "";
+    }
+  });
+
+  // Valid To
+  validToInput.addEventListener("change", () => {
+    if (isEmpty(validToInput.value)) {
+      toError.textContent = "Expiry date & time is required";
+      return;
+    }
+
+    if (isEmpty(validFromInput.value)) {
+      toError.textContent = "Select start date first";
+      return;
+    }
+
+    const fromDate = normalizeToMinute(new Date(validFromInput.value));
+    const toDate = normalizeToMinute(new Date(validToInput.value));
+
+    // SAME DATE allowed, but time must be greater
+    if (toDate <= fromDate) {
+      toError.textContent = "Expiry time must be greater than start time";
+    } else {
+      toError.textContent = "";
+    }
+  });
+
+  /* ===============================
+   SUBMIT
+================================ */
+  document.addEventListener("click", (e) => {
+    const btn = e.target.closest(".add-offer-btn");
+    if (!btn) return;
+
+    const categoryId = btn.dataset.id;
+    const categoryName = btn.dataset.name;
+
+    console.log(categoryId, categoryName);
+
+    // store for submit
+    document.getElementById("offerForm").dataset.categoryId = categoryId;
+  });
+
+  // helper: normalize date to minute precision
+  function normalizeToMinute(date) {
+    date.setSeconds(0, 0);
+    return date;
+  }
+
+  offerForm.addEventListener("submit", async (e) => {
+    e.preventDefault();
+
+    let isValid = true;
+
+    const discountType = offerForm.discountType.value;
+    const discountValue = Number(discountInput.value);
+    const validFrom = validFromInput.value;
+    const validTo = validToInput.value;
+
+    const now = normalizeToMinute(new Date());
+
+    // Clear previous errors
+    discountError.textContent = "";
+    fromError.textContent = "";
+    toError.textContent = "";
+
+    // Discount validation
+    if (!discountValue || discountValue <= 0) {
+      discountError.textContent = "Enter a valid positive number";
+      isValid = false;
+    }
+
+    // From validation
+    if (isEmpty(validFrom)) {
+      fromError.textContent = "Start date & time is required";
+      isValid = false;
+    } else {
+      const fromDate = normalizeToMinute(new Date(validFrom));
+
+      //only past is invalid
+      if (fromDate < now) {
+        fromError.textContent = "Start time must be current or future";
+        isValid = false;
+      }
+    }
+
+    // To validation
+    if (isEmpty(validTo)) {
+      toError.textContent = "Expiry date & time is required";
+      isValid = false;
+    } else if (!isEmpty(validFrom)) {
+      const fromDate = normalizeToMinute(new Date(validFrom));
+      const toDate = normalizeToMinute(new Date(validTo));
+
+      // SAME DATE allowed, but time must be greater
+      if (toDate <= fromDate) {
+        toError.textContent = "Expiry time must be greater than start time";
+        isValid = false;
+      }
+    }
+
+    if (!isValid) return;
+    const categoryId = offerForm.dataset.categoryId;
+
+    try {
+      const res = await axios.put(
+        `/admin/categorys-management/add-offer/${categoryId}`,
+        {
+          discountType,
+          discountValue,
+          validFrom,
+          validTo,
+        }
+      );
+
+      if (res.data.success) {
+        const modal = bootstrap.Modal.getInstance(
+          document.getElementById("offerModal")
+        );
+        modal.hide();
+
+        Swal.fire({
+          icon: "success",
+          title: "Offer Added!",
+          text: "The Offer has been added successfully.",
+          timer: 1400,
+          showConfirmButton: false,
+        }).then(() => window.location.reload());
+      } else {
+        Swal.fire({
+          icon: "warning",
+          title: "Failed",
+          text: res.data.alert || "Failed to add category.",
+        });
+      }
+    } catch (error) {
+      console.error("Error from offer adding to category", error);
+      Swal.fire({
+        icon: "error",
+        title: "Error",
+        text: error.response?.data?.alert || "INTERNAL SERVER ERROR",
+      });
+    }
+  });
+
+  document.addEventListener("click", (e) => {
+    const btn = e.target.closest(".remove-offer-btn");
+    if (!btn) return;
+
+    const categoryId = btn.dataset.id;
+    const categoryName = btn.dataset.name;
+
+    console.log("Delete offer for:", categoryId, categoryName);
+
+    // store ID for confirmation button
+    document.getElementById("confirmRemoveOffer").dataset.categoryId =
+      categoryId;
+  });
+
+  confirmRemoveOffer.addEventListener("click", async () => {
+    try {
+      const dltCategoryId =
+        document.getElementById("confirmRemoveOffer").dataset.categoryId;
+
+      const res = await axios.patch(
+        `/admin/categorys-management/remove-offer/${dltCategoryId}`
+      );
+
+      if (res.data.success) {
+        bootstrap.Modal.getInstance(
+          document.getElementById("removeOfferModal")
+        ).hide();
+
+        Swal.fire({
+          icon: "success",
+          title: "Offer Removed!",
+          text: "The Offer has been removed successfully.",
+          timer: 1400,
+          showConfirmButton: false,
+        }).then(() => window.location.reload());
+      }
+    } catch (error) {
+      console.log("Error from remove offer from category", error);
+      Swal.fire({
+        icon: "error",
+        title: "Error",
+        text: error.response?.data?.alert || "INTERNAL SERVER ERROR.",
+      });
+    }
+  });
 
   // FIRST LOAD
   loadCategories(1);

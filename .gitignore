@@ -8,9 +8,7 @@ node_modules/
 sessions/
 
 # Generated invoices
-src/public/invoices/
+/src/public/invoices/
 
-
-test.js
-test.html
-test1.html
+# ignore test folder
+test/

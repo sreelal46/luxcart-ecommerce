@@ -128,13 +128,11 @@ document.addEventListener("DOMContentLoaded", () => {
     showCarsBtn.classList.remove("active");
   });
 });
-
 // ---------- STATE ----------
 const state = {
   page: 1,
   search: "",
 };
-
 // ---------- DEBOUNCE ----------
 function debounce(fn, delay = 400) {
   let timer;
@@ -152,6 +150,7 @@ async function loadProducts(page = 1, search = state.search) {
   if (!res.data.success) return;
 
   const { fullProducts, totalPages } = res.data;
+  console.log(fullProducts);
   state.page = page;
   state.search = search;
 
@@ -176,8 +175,84 @@ function renderProducts(data) {
 
   data.forEach((item, index) => {
     const isCar = !!item.engine;
-    const price = isCar ? item.variantIds?.[0]?.price : item.price;
-    const stock = isCar ? item.variantIds?.[0]?.stock : item.stock;
+    const variant = isCar ? item.variantIds?.[0] : null;
+    const price = isCar ? variant?.price : item.price;
+
+    const offer = isCar ? variant?.productOffer : item.productOffer;
+
+    /* ===== OFFER BADGE ===== */
+    let offerBadge = `
+      <span class="badge rounded-pill bg-danger">NO OFFER</span>
+    `;
+
+    if (offer?.isActive) {
+      if (offer.discountType === "Percentage") {
+        offerBadge = `
+          <span class="badge rounded-pill bg-success">
+            ${offer.discountValue}% OFF
+          </span>
+        `;
+      } else {
+        offerBadge = `
+          <span class="badge rounded-pill bg-success">
+            ₹ ${offer.discountValue.toLocaleString("en-IN")} OFF
+          </span>
+        `;
+      }
+    } else if (offer.isConfigured) {
+      offerBadge = `<span class="badge rounded-pill bg-success">
+            CONFIGUERD
+          </span>`;
+    }
+
+    /* ===== OFFER ACTION BUTTON ===== */
+    let offerActionBtn = `
+      <div data-bs-toggle="tooltip" title="Add offer">
+        <button
+          class="btn btn-sm btn-outline-warning add-offer-btn"
+          data-bs-toggle="modal"
+          data-bs-target="#offerModal"
+          data-id="${item._id}"
+          data-producttype="${isCar ? "car" : "accessory"}"
+          data-name="${item.name}">
+          <i class="bi bi-percent"></i>
+        </button>
+      </div>
+    `;
+
+    if (offer?.isConfigured) {
+      offerActionBtn = `
+        <div data-bs-toggle="tooltip" title="View configured offer">
+          <button
+            class="btn btn-sm btn-outline-info view-offer-btn"
+            data-bs-toggle="modal"
+            data-bs-target="#offerViewModal"
+            data-discount-type="${offer.discountType}"
+            data-discount-value="${offer.discountValue}"
+            data-valid-from="${offer.validFrom}"
+            data-valid-to="${offer.validTo}"
+            data-producttype="${isCar ? "car" : "accessory"}"
+            data-productid="${item._id}">
+            <i class="bi bi-eye"></i>
+          </button>
+        </div>
+      `;
+    }
+
+    if (offer?.isActive) {
+      offerActionBtn = `
+        <div data-bs-toggle="tooltip" title="Remove offer">
+          <button
+            class="btn btn-sm btn-outline-danger remove-offer-btn"
+            data-bs-toggle="modal"
+            data-bs-target="#removeOfferModal"
+            data-producttype="${isCar ? "car" : "accessory"}"
+            data-productid="${item._id}">
+            <i class="bi bi-trash"></i>
+          </button>
+        </div>
+      `;
+    }
 
     const viewLink = isCar
       ? `/admin/products-management/view-car-product/${item._id}`
@@ -201,80 +276,56 @@ function renderProducts(data) {
         <td class="text-muted">${item.brand_id?.name || "-"}</td>
 
         <td class="text-end fw-semibold">
-          ${price != null ? `₹ ${price}` : "-"}
+          ${price != null ? `₹ ${price.toLocaleString("en-IN")}` : "-"}
         </td>
 
         <td class="text-center">
-          <span class="badge bg-light text-dark border">
-            ${stock != null ? stock : "-"}
-          </span>
+          ${offerBadge}
         </td>
 
-        <td>
-          <span class="badge rounded-pill bg-success">
-            10% OFF
-          </span>
-        </td>
-
-        <td>
+        <td class="text-center">
           ${
             item.isListed
-              ? `<span class="badge bg-success-subtle text-success fw-semibold">Listed</span>`
-              : `<span class="badge bg-danger-subtle text-danger fw-semibold">Unlisted</span>`
+              ? `<span class="badge bg-success-subtle text-success">Listed</span>`
+              : `<span class="badge bg-danger-subtle text-danger">Unlisted</span>`
           }
         </td>
 
         <td class="text-center">
-  <div class="d-flex justify-content-center align-items-center gap-2">
+          <div class="d-flex justify-content-center gap-2">
+            ${offerActionBtn}
 
-    <!-- Add Offer -->
-    <div
-      data-bs-toggle="tooltip"
-      data-bs-placement="top"
-      title="Add offer">
-      <button
-        class="btn btn-sm btn-outline-warning add-offer-btn"
-        data-productid="{{this._id}}"
-        data-bs-toggle="modal"
-        data-bs-target="#offerModal">
-        <i class="bi bi-percent"></i>
-      </button>
-    </div>
+            <div data-bs-toggle="tooltip" title="View product">
+              <a href="${viewLink}" class="btn btn-sm btn-outline-primary">
+                <i class="bi bi-eye"></i>
+              </a>
+            </div>
 
-    <!-- Edit -->
-    <div
-      data-bs-toggle="tooltip"
-      data-bs-placement="top"
-      title="Edit product">
-      <a
-        href="/admin/products-management/edit-product/{{this._id}}"
-        class="btn btn-sm btn-outline-success">
-        <i class="bi bi-pencil"></i>
-      </a>
-    </div>
+            <div data-bs-toggle="tooltip" title="Edit product">
+              <a href="${editLink}" class="btn btn-sm btn-outline-success">
+                <i class="bi bi-pencil"></i>
+              </a>
+            </div>
 
-    <!-- List / Unlist -->
-    <div
-      class="form-check form-switch m-0"
-      data-bs-toggle="tooltip"
-      data-bs-placement="top"
-      title="{{#if this.isListed}}Unlist product{{else}}List product{{/if}}">
-      <input
-        class="form-check-input"
-        type="checkbox"
-        data-id="{{this._id}}"
-        {{#if this.isListed}}checked{{/if}}
-        data-bs-toggle="modal"
-        data-bs-target="#confirmListModal">
-    </div>
-
-  </div>
-</td>
-
+            <div
+              class="form-check form-switch"
+              data-bs-toggle="tooltip"
+              title="${item.isListed ? "Unlist product" : "List product"}">
+              <input
+                class="form-check-input"
+                type="checkbox"
+                data-id="${item._id}"
+                ${item.isListed ? "checked" : ""}
+                data-bs-toggle="modal"
+                data-bs-target="#confirmListModal">
+            </div>
+          </div>
+        </td>
       </tr>
       `
     );
   });
+
   initTooltips();
 }
 
@@ -322,5 +373,294 @@ function renderPagination(totalPages, current) {
   `;
 }
 
-// ---------- INITIAL LOAD ----------
-loadProducts();
+/* ===============================
+   ELEMENTS
+================================ */
+const offerForm = document.getElementById("offerForm");
+const discountInput = offerForm.discountValue;
+const validFromInput = offerForm.validFrom;
+const validToInput = offerForm.validTo;
+
+const discountError = document.getElementById("dicountError");
+const fromError = document.getElementById("ValidateFromtError");
+const toError = document.getElementById("ValidateTotError");
+
+const confirmRemoveOffer = document.getElementById("confirmRemoveOffer");
+
+/* ================================
+   VIEW OFFER MODAL
+================================ */
+document.addEventListener("click", function (e) {
+  const viewBtn = e.target.closest(".view-offer-btn");
+  if (!viewBtn) return;
+
+  const {
+    discountType,
+    discountValue,
+    validFrom,
+    validTo,
+    productid,
+    producttype,
+    name,
+  } = viewBtn.dataset;
+
+  // Fill View Offer Modal
+  document.getElementById("viewDiscountType").textContent = discountType || "—";
+
+  document.getElementById("viewDiscountValue").textContent =
+    discountType === "Percentage"
+      ? `${discountValue}%`
+      : `₹ ${Number(discountValue).toLocaleString("en-IN")}`;
+
+  document.getElementById("viewValidFrom").textContent = new Date(
+    validFrom
+  ).toLocaleString();
+
+  document.getElementById("viewValidTo").textContent = new Date(
+    validTo
+  ).toLocaleString();
+
+  // Store ALL data on Delete button inside View modal
+  const deleteBtn = document.getElementById("deleteOfferFromView");
+
+  deleteBtn.dataset.discountType = discountType;
+  deleteBtn.dataset.discountValue = discountValue;
+  deleteBtn.dataset.validFrom = validFrom;
+  deleteBtn.dataset.validTo = validTo;
+  deleteBtn.dataset.productid = productid; // IMPORTANT: lowercase
+  deleteBtn.dataset.producttype = producttype;
+  deleteBtn.dataset.name = name;
+});
+
+/* ================================
+   REMOVE OFFER MODAL (BOTH FLOWS)
+================================ */
+function fillRemoveOfferModal(btn) {
+  const { discountType, discountValue, validFrom, validTo, productid, name } =
+    btn.dataset;
+
+  document.getElementById("removeOfferProductName").textContent =
+    name || "this product";
+
+  document.getElementById("removeDiscountType").textContent =
+    discountType || "—";
+
+  document.getElementById("removeDiscountValue").textContent =
+    discountType === "Percentage"
+      ? `${discountValue}%`
+      : `₹ ${Number(discountValue).toLocaleString("en-IN")}`;
+
+  document.getElementById("removeValidFrom").textContent = new Date(
+    validFrom
+  ).toLocaleString();
+
+  document.getElementById("removeValidTo").textContent = new Date(
+    validTo
+  ).toLocaleString();
+
+  document.getElementById("removeOfferProductId").value = productid;
+  document.getElementById("removeOfferProductId").value = name;
+}
+
+document.addEventListener("click", function (e) {
+  const removeBtn = e.target.closest(".remove-offer-btn, #deleteOfferFromView");
+  if (!removeBtn) return;
+
+  fillRemoveOfferModal(removeBtn);
+});
+
+/* ---------------- HELPERS ---------------- */
+const isEmpty = (v) => !v || v.trim() === "";
+
+function normalizeToMinute(date) {
+  date.setSeconds(0, 0);
+  return date;
+}
+
+/* ---------------- OPEN ADD MODAL ---------------- */
+document.addEventListener("click", (e) => {
+  const btn = e.target.closest(".add-offer-btn");
+  if (!btn) return;
+
+  offerForm.dataset.productId = btn.dataset.id;
+  offerForm.dataset.productType = btn.dataset.producttype;
+  offerForm.reset();
+
+  discountError.textContent = "";
+  fromError.textContent = "";
+  toError.textContent = "";
+});
+
+/* ---------------- LIVE VALIDATION ---------------- */
+
+// Discount
+function validateDiscount() {
+  const v = Number(discountInput.value);
+  discountError.textContent =
+    !v || v <= 0 ? "Enter a valid positive number" : "";
+  return v > 0;
+}
+
+// From DateTime
+function validateFromDateTime() {
+  if (isEmpty(validFromInput.value)) {
+    fromError.textContent = "Start date & time is required";
+    return false;
+  }
+
+  const from = normalizeToMinute(new Date(validFromInput.value));
+  const now = normalizeToMinute(new Date());
+
+  if (from < now) {
+    fromError.textContent = "Start time must be current or future";
+    return false;
+  }
+
+  fromError.textContent = "";
+  return true;
+}
+
+// To DateTime
+function validateToDateTime() {
+  if (isEmpty(validToInput.value)) {
+    toError.textContent = "Expiry date & time is required";
+    return false;
+  }
+
+  if (!validateFromDateTime()) {
+    toError.textContent = "Select valid start date & time first";
+    return false;
+  }
+
+  const from = normalizeToMinute(new Date(validFromInput.value));
+  const to = normalizeToMinute(new Date(validToInput.value));
+
+  if (to <= from) {
+    toError.textContent = "Expiry time must be greater than start time";
+    return false;
+  }
+
+  toError.textContent = "";
+  return true;
+}
+
+// Attach LIVE listeners
+discountInput.addEventListener("input", validateDiscount);
+
+validFromInput.addEventListener("input", validateFromDateTime);
+validFromInput.addEventListener("change", validateFromDateTime);
+
+validToInput.addEventListener("input", validateToDateTime);
+validToInput.addEventListener("change", validateToDateTime);
+
+/* ---------------- SUBMIT OFFER ---------------- */
+offerForm.addEventListener("submit", async (e) => {
+  e.preventDefault();
+
+  if (!validateDiscount() || !validateFromDateTime() || !validateToDateTime()) {
+    return;
+  }
+  try {
+    const res = await axios.put(
+      `/admin/products-management/add-offer/${offerForm.dataset.productId}`,
+      {
+        discountType: offerForm.discountType.value,
+        discountValue: Number(discountInput.value),
+        validFrom: validFromInput.value,
+        validTo: validToInput.value,
+        productType: offerForm.dataset.productType,
+      }
+    );
+
+    if (res.data.success) {
+      bootstrap.Modal.getInstance(document.getElementById("offerModal")).hide();
+
+      Swal.fire({
+        icon: "success",
+        title: "Offer Added",
+        timer: 1400,
+        showConfirmButton: false,
+      }).then(() => location.reload());
+    } else {
+      Swal.fire({
+        icon: "error",
+        title: "Error",
+        text: data?.alert || "Somthing went wrong",
+      });
+    }
+  } catch (err) {
+    Swal.fire({
+      icon: "error",
+      title: "Error",
+      text: err.response?.data?.alert || "INTERNAL SERVER ERROR",
+    });
+  }
+});
+
+/* ---------------- REMOVE OFFER ---------------- */
+document.addEventListener("click", (e) => {
+  const btn = e.target.closest(".remove-offer-btn");
+  if (!btn) return;
+
+  const confirmBtn = document.getElementById("confirmRemoveOffer");
+
+  // reset previous state
+  confirmBtn.dataset.productId = "";
+  confirmBtn.dataset.productType = "";
+
+  confirmBtn.dataset.productId = btn.dataset.id;
+  confirmBtn.dataset.productType = btn.dataset.producttype;
+});
+
+/* ---------------- REMOVE FROM VIEW OFFER ---------------- */
+document.getElementById("deleteOfferFromView").addEventListener("click", () => {
+  const confirmBtn = document.getElementById("confirmRemoveOffer");
+
+  // 🔥 reset previous state
+  confirmBtn.dataset.productId = "";
+  confirmBtn.dataset.productType = "";
+
+  confirmBtn.dataset.productId = document.getElementById(
+    "deleteOfferFromView"
+  ).dataset.productId;
+  confirmBtn.dataset.productType = document.getElementById(
+    "deleteOfferFromView"
+  ).dataset.productType;
+});
+
+document
+  .getElementById("confirmRemoveOffer")
+  .addEventListener("click", async function () {
+    try {
+      const productId = this.dataset.productId;
+      const productType = this.dataset.productType;
+
+      if (!productId) {
+        Swal.fire("Error", "Invalid product reference", "error");
+        return;
+      }
+
+      const res = await axios.patch(
+        `/admin/products-management/remove-offer/${productId}`,
+        { productType }
+      );
+
+      if (res.data.success) {
+        bootstrap.Modal.getInstance(
+          document.getElementById("removeOfferModal")
+        ).hide();
+
+        Swal.fire({
+          icon: "success",
+          title: "Offer Removed",
+          timer: 1200,
+          showConfirmButton: false,
+        }).then(() => location.reload());
+      } else {
+        Swal.fire("Error", res.data.alert || "Failed", "error");
+      }
+    } catch (err) {
+      console.error(err);
+      Swal.fire("Error", "Server error", "error");
+    }
+  });

@@ -105,12 +105,284 @@
 
 /* Delete Button */
 .delete-btn {
-  /* background: #ffe9e9; */
   color: #d52222;
   padding: 6px 12px;
   border-radius: 8px;
   border: none;
   cursor: pointer;
+}
+
+.price-box {
+  margin-top: 8px;
+}
+
+.offer-price {
+  font-size: 18px;
+  font-weight: 700;
+  color: #1c1c1c;
+  margin-right: 8px;
+}
+
+.original-price {
+  font-size: 14px;
+  text-decoration: line-through;
+  color: #888;
+  margin-right: 6px;
+}
+
+.discount {
+  font-size: 14px;
+  font-weight: 600;
+  color: #28a745;
+}
+
+/* EMPTY CART STYLES */
+.empty-cart-wrapper {
+  padding: 60px 20px;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+}
+
+.empty-cart-box {
+  max-width: 450px;
+  width: 100%;
+  background: #fff;
+  padding: 40px 25px;
+  border-radius: 16px;
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.06);
+}
+
+.empty-cart-img {
+  max-width: 260px;
+  width: 80%;
+  margin-bottom: 25px;
+}
+
+.empty-cart-title {
+  font-size: 24px;
+  font-weight: 700;
+  margin-bottom: 10px;
+}
+
+.empty-cart-text {
+  font-size: 15px;
+  color: #666;
+  margin-bottom: 20px;
+}
+
+.continue-btn {
+  padding: 12px 25px;
+  border-radius: 10px;
+  font-size: 16px;
+}
+
+/* ===============================
+   COUPON MODAL STYLES
+=============================== */
+.coupon-modal {
+  display: none;
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background: rgba(0, 0, 0, 0.5);
+  z-index: 9999;
+  align-items: center;
+  justify-content: center;
+}
+
+.coupon-modal.show {
+  display: flex;
+}
+
+.coupon-modal-content {
+  background: #fff;
+  border-radius: 16px;
+  max-width: 500px;
+  width: 90%;
+  max-height: 90vh;
+  overflow-y: auto;
+  box-shadow: 0 10px 40px rgba(0, 0, 0, 0.3);
+}
+
+.coupon-modal-header {
+  padding: 20px 25px;
+  border-bottom: 1px solid #eee;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.coupon-modal-header h5 {
+  margin: 0;
+  font-weight: 700;
+  font-size: 20px;
+}
+
+.close-modal {
+  background: none;
+  border: none;
+  font-size: 24px;
+  cursor: pointer;
+  color: #666;
+  padding: 0;
+  width: 30px;
+  height: 30px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.close-modal:hover {
+  color: #000;
+}
+
+.coupon-modal-body {
+  padding: 25px;
+}
+
+.accessory-note {
+  background: #fff3e0;
+  border-left: 4px solid #f36923;
+  padding: 12px 15px;
+  border-radius: 8px;
+  margin-bottom: 20px;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.accessory-note i {
+  color: #f36923;
+  font-size: 20px;
+}
+
+.accessory-note p {
+  margin: 0;
+  font-size: 14px;
+  color: #666;
+}
+
+.coupon-item {
+  border: 2px solid #eee;
+  border-radius: 12px;
+  padding: 15px;
+  margin-bottom: 15px;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  transition: all 0.3s ease;
+}
+
+.coupon-item:hover {
+  border-color: #f36923;
+  transform: translateY(-2px);
+  box-shadow: 0 4px 12px rgba(243, 105, 35, 0.1);
+}
+
+.coupon-left {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.coupon-icon {
+  color: #f36923;
+  font-size: 24px;
+}
+
+.coupon-details h6 {
+  margin: 0;
+  font-weight: 700;
+  font-size: 16px;
+  color: #1c1c1c;
+}
+
+.coupon-details p {
+  margin: 4px 0 0 0;
+  font-size: 14px;
+  color: #666;
+}
+
+.apply-btn {
+  background: #f36923;
+  color: #fff;
+  border: none;
+  padding: 8px 20px;
+  border-radius: 8px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.3s ease;
+}
+
+.apply-btn:hover {
+  background: #d95a1d;
+}
+
+/* ===============================
+   Slide-in Toast MSG
+=============================== */
+
+.mobile-alert {
+  position: fixed;
+  bottom: 75px;
+  left: 0;
+  right: 0;
+  margin: 0 auto;
+  width: fit-content;
+  max-width: 90%;
+  background: #111;
+  color: #fff;
+  padding: 12px 20px;
+  border-radius: 14px;
+  font-size: 14px;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+
+  opacity: 0;
+  pointer-events: none;
+  transform: translateY(120%);
+  transition: all 0.35s ease;
+
+  box-shadow: 0 6px 22px rgba(0, 0, 0, 0.25);
+  z-index: 9999;
+
+  white-space: normal;
+  word-break: break-word;
+}
+
+.mobile-alert.show {
+  opacity: 1;
+  transform: translateY(0);
+}
+
+/* Colors */
+.message-green {
+  color: #00ff7f;
+}
+.message-red {
+  color: #ff4d4d;
+}
+.message-yellow {
+  color: #ffcc00;
+}
+
+.success-icon,
+.error-icon {
+  font-size: 16px;
+  margin-right: 6px;
+}
+.success-icon {
+  color: #00ff7f;
+}
+.error-icon {
+  color: #dc3545;
+}
+.yellow-icon {
+  color: #ffcc00;
 }
 
 /* =======================
@@ -179,74 +451,56 @@
   .btn-black {
     display: none !important;
   }
+
+  /* Desktop Toast Position */
+  .mobile-alert {
+    top: 75px;
+    bottom: auto;
+    transform: translateY(-120%);
+  }
+
+  .mobile-alert.show {
+    transform: translateY(0);
+  }
+
+  /* Coupon Modal Mobile */
+  .coupon-modal-content {
+    width: 95%;
+    border-radius: 12px;
+  }
+
+  .coupon-modal-header {
+    padding: 15px 20px;
+  }
+
+  .coupon-modal-body {
+    padding: 20px;
+  }
+
+  .coupon-item {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 12px;
+  }
+
+  .apply-btn {
+    width: 100%;
+  }
 }
 
-.price-box {
-  margin-top: 8px;
+@media (min-width: 768px) {
+  .mobile-alert {
+    top: 75px;
+    bottom: auto;
+    transform: translateY(-120%);
+  }
+
+  .mobile-alert.show {
+    transform: translateY(0);
+  }
 }
 
-.offer-price {
-  font-size: 18px;
-  font-weight: 700;
-  color: #1c1c1c;
-  margin-right: 8px;
-}
-
-.original-price {
-  font-size: 14px;
-  text-decoration: line-through;
-  color: #888;
-  margin-right: 6px;
-}
-
-.discount {
-  font-size: 14px;
-  font-weight: 600;
-  color: #28a745;
-}
-
-/* EMPTY CART STYLES */
-.empty-cart-wrapper {
-  padding: 60px 20px;
-  display: flex;
-  justify-content: center;
-  align-items: center;
-}
-
-.empty-cart-box {
-  max-width: 450px;
-  width: 100%;
-  background: #fff;
-  padding: 40px 25px;
-  border-radius: 16px;
-  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.06);
-}
-
-.empty-cart-img {
-  max-width: 260px;
-  width: 80%;
-  margin-bottom: 25px;
-}
-
-.empty-cart-title {
-  font-size: 24px;
-  font-weight: 700;
-  margin-bottom: 10px;
-}
-
-.empty-cart-text {
-  font-size: 15px;
-  color: #666;
-  margin-bottom: 20px;
-}
-
-.continue-btn {
-  padding: 12px 25px;
-  border-radius: 10px;
-  font-size: 16px;
-}
-
-/* RESPONSIVE */
+/* RESPONSIVE - Empty Cart */
 @media (max-width: 768px) {
   .empty-cart-wrapper {
     padding: 40px 15px;
@@ -288,80 +542,12 @@
     font-size: 13px;
   }
 }
-
-/* ===============================
-   Slide-in Toast MSG
-=============================== */
-
-.mobile-alert {
-  position: fixed;
-  bottom: 75px;
-  left: 0;
-  right: 0;
-  margin: 0 auto;
-  width: fit-content;
-  max-width: 90%;
-  background: #111;
-  color: #fff;
-  padding: 12px 20px;
-  border-radius: 14px;
-  font-size: 14px;
+.accessory-note {
   display: flex;
-  align-items: center;
-  gap: 10px;
-
-  opacity: 0;
-  pointer-events: none;
-  transform: translateY(120%);
-  transition: all 0.35s ease;
-
-  box-shadow: 0 6px 22px rgba(0, 0, 0, 0.25);
-  z-index: 9999;
-
-  white-space: normal;
-  word-break: break-word;
+  gap: 12px;
+  align-items: flex-start;
 }
 
-.mobile-alert.show {
-  opacity: 1;
-  transform: translateY(0);
-}
-
-/* Desktop */
-@media (min-width: 768px) {
-  .mobile-alert {
-    top: 75px;
-    bottom: auto;
-    transform: translateY(-120%);
-  }
-
-  .mobile-alert.show {
-    transform: translateY(0);
-  }
-}
-
-/* Colors */
-.message-green {
-  color: #00ff7f;
-}
-.message-red {
-  color: #ff4d4d;
-}
-.message-yellow {
-  color: #ffcc00;
-}
-
-.success-icon,
-.error-icon {
-  font-size: 16px;
-  margin-right: 6px;
-}
-.success-icon {
-  color: #00ff7f;
-}
-.error-icon {
-  color: #dc3545;
-}
-.yellow-icon {
-  color: #ffcc00;
+.accessory-note > div {
+  display: block;
 }

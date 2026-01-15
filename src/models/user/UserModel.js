@@ -4,17 +4,18 @@ const userSchema = new mongoose.Schema(
   {
     name: {
       type: String,
-      required: [true, "Please enter your name"],
+      required: true,
       trim: true,
     },
 
     email: {
       type: String,
-      required: [true, "Please enter your email"],
+      required: true,
       unique: true,
       lowercase: true,
       trim: true,
     },
+
     phoneNumber: {
       type: Number,
     },
@@ -34,37 +35,51 @@ const userSchema = new mongoose.Schema(
       type: String,
     },
 
-    profileImage_url: {
-      type: String,
-      default: defaultImage,
-    },
-    totalSpended: {
-      type: Number,
-    },
-
     authProvider: {
       type: String,
       enum: ["local", "google"],
       default: "local",
     },
 
-    // Optional fields for your project
+    profileImage_url: {
+      type: String,
+      default: defaultImage,
+    },
+
+    /* ---------------- REFERRAL ---------------- */
+
+    referralCode: {
+      type: String,
+      unique: true,
+      sparse: true,
+    },
+
+    referredBy: {
+      type: mongoose.Schema.Types.ObjectId,
+      ref: "User",
+      default: null,
+    },
+
+    /* ---------------- WALLET ---------------- */
+
+    walletBalance: {
+      type: Number,
+      default: 0,
+    },
+
+    totalSpended: {
+      type: Number,
+      default: 0,
+    },
+
+    /* ---------------- STATUS FLAGS ---------------- */
+
     isDeleted: { type: Boolean, default: false },
     isBlocked: { type: Boolean, default: false },
     isActive: { type: Boolean, default: true },
     isVerified: { type: Boolean, default: false },
-    isReferred: { type: Boolean, default: false },
-    referralCode: {
-      type: String,
-      unique: true,
-      sparse: true, // Allows multiple docs without this field
-    },
-    referredUsers: [{ type: mongoose.Schema.Types.ObjectId, ref: "User" }],
-    createdAt: { type: Date, default: Date.now },
   },
-  {
-    timestamps: true,
-  }
+  { timestamps: true }
 );
 
 const User = mongoose.model("User", userSchema);
