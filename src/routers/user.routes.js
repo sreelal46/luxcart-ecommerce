@@ -214,11 +214,8 @@ route.patch("/cart/remove-coupon", checkSession, removeCoupon);
 // checkout management
 route.get("/cart/checkout-step-1/:cartId", checkSession, loadCheckoutStep1);
 route.get("/cart/checkout-step-2/:addressId", checkSession, loadCheckoutStep2);
-route.get(
-  "/cart/checkout-step-3/:paymentMethod",
-  checkSession,
-  loadCheckoutStep3
-);
+const { payment } = require("../controllers/user/checkout.countroller");
+route.post("/cart/create-payment/:paymentMethod", checkSession, payment);
 route.post("/cart/checkout/create-order/:cartId", checkSession, createOrder);
 route.get("/cart/checkout-step-4/:orderId", checkSession, loadCheckoutStep4);
 
