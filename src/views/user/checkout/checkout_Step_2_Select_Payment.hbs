@@ -29,20 +29,25 @@
       <div>
         <h2>Payment Method</h2>
         <div class="card">
-
-          <div onclick="step3(this)" data-payment="UPI" class="payment-option">
-            🔶 <div><strong>UPI</strong><br><small>Pay instantly</small></div>
+          <div id="stripe-box" style="display:none;">
+            <h5 class="mt-3">Secure Payment</h5>
+            <div id="payment-element"></div>
+          </div>
+          <div onclick="step3(this)" data-payment="STRIP" data-totalamount="{{cart.totalAmount}}" class="payment-option"
+            data-cartid="{{cart._id}}">
+            🔶 <div><strong>STRIP</strong><br><small>Pay instantly</small></div>
           </div>
 
-          <div onclick="step3(this)" data-payment="CARD" class="payment-option">
+          <!-- <div onclick="step3(this)" data-payment="CARD" class="payment-option">
             💳 <div><strong>Card</strong></div>
           </div>
 
           <div onclick="step3(this)" data-payment="NETBANKING" class="payment-option">
             🏦 <div><strong>Net Banking</strong></div>
-          </div>
+          </div> -->
 
-          <div onclick="step3(this)" data-payment="COD" class="payment-option">
+          <div onclick="step3(this)" data-payment="COD" data-totalamount="{{cart.totalAdvanceAmount}}"
+            class="payment-option" data-cartid="{{cart._id}}">
             🚚 <div><strong>Cash on Delivery</strong></div>
           </div>
 
@@ -102,10 +107,62 @@
     </div>
   </div>
 </div>
+<script src="https://js.stripe.com/v3/"></script>
 <script>
-  function step3(div) {
+  async function step3(div) {
     const paymentMethod = div.getAttribute("data-payment");
+    const totalAmount = div.getAttribute("data-totalamount");
+    const cartId = div.getAttribute("data-cartid");
 
-    window.location.href = `/cart/checkout-step-3/${paymentMethod}`;
+    // window.location.href = `/cart/checkout-step-3/${paymentMethod}`;
+    const stripe = Stripe("pk_test_51SprHJDaZqWZuwPQahtwI62z1s3n0NZ1RChPHKFRpiPwSZuuAmJmdSMqNL6oXTIPtJ7Ijc55sT5vc4MBCo0DRaV200Hmz5YVeg");
+
+    try {
+      // 1️⃣ Create PaymentIntent using Axios
+      const res = await axios.post(`/cart/create-payment/${paymentMethod}`, {
+        amount: totalAmount   // ₹10 crore
+      });
+
+
+      if (res.data.success) {
+        const clientSecret = res.data.clientSecret;
+
+        // 2️⃣ Create Stripe Elements
+        const elements = stripe.elements({ clientSecret });
+        const paymentElement = elements.create("payment");
+
+        // Clear old element if exists
+        const container = document.getElementById("payment-element");
+        const stripeBox = document.getElementById("stripe-box");
+
+        stripeBox.style.display = "block"; // show stripe UI
+        container.innerHTML = "";
+        paymentElement.mount(container);
+        //         valid card id 
+        // 1515 4545 2252 5224
+
+        // 3️⃣ Confirm payment
+        const { error } = await stripe.confirmPayment({
+          elements,
+          confirmParams: {
+            return_url: `http://localhost:8000/cart/checkout/create-order/${cartId}`
+          }
+        });
+
+        if (error) {
+          alert(error.message);
+        }
+      }
+      else {
+        window.location.href = res.data.redirect
+      }
+
+
+    } catch (err) {
+      alert("Payment error: " + err.message);
+    }
+
+
+
   }
 </script>

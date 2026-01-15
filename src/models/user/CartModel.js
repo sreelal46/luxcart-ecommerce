@@ -36,7 +36,6 @@ const cartItemSchema = new Schema(
     },
 
     price: { type: Number, required: true },
-    accessoryTax: { type: Number, required: true },
     offerPrice: { type: Number, default: null },
     lineTotal: { type: Number, default: 0 },
     advanceAmount: { type: Number, default: 0 },
