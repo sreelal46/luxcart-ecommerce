@@ -8,53 +8,134 @@ const taxRate = parseInt(process.env.ACCESSORY_TAX_RATE);
 
 const createOrder = async (req, res, next) => {
   try {
-    const advancePercentage =
-      Number(process.env.ADVANCE_PAYMENT_PERCENTAGE) || 10;
+    /* ===============================
+       BASIC SETUP
+    =============================== */
     const userId = req.session.user._id;
     const paymentMethod = req.session.paymentMethod;
     const addressId = req.session.addressId;
+
     const cart = await Cart.findOne({ userId }).populate(
       "items.carId items.accessoryId items.variantId"
     );
-    if (!cart || !cart.items.length) {
+
+    if (!cart || cart.items.length === 0) {
       return res.redirect("/cart");
     }
-    await cart.save();
-    // STOCK CHECKING BEFORE UPDATING
+
+    /* ===============================
+       STRIPE PAYMENT VERIFICATION (for STRIP method)
+    =============================== */
+    let paymentIntentId = null;
+    let paymentStatus = null;
+
+    if (paymentMethod === "STRIP") {
+      // Get payment_intent from query params (Stripe redirect) or body
+      paymentIntentId = req.query.payment_intent || req.body.payment_intent;
+
+      if (!paymentIntentId) {
+        if (req.xhr || req.headers.accept?.indexOf("json") > -1) {
+          return res.status(400).json({
+            success: false,
+            message: "Payment intent not found",
+          });
+        }
+        return res.redirect(`/cart/checkout?error=payment_not_found`);
+      }
+
+      // Verify payment with Stripe
+      const stripe = require("stripe")(process.env.STRIPE_SECRET_KEY);
+
+      try {
+        const paymentIntent = await stripe.paymentIntents.retrieve(
+          paymentIntentId
+        );
+        paymentStatus = paymentIntent.status;
+
+        // Check if payment was successful
+        if (paymentIntent.status !== "succeeded") {
+          console.log("Payment not succeeded:", paymentIntent.status);
+
+          if (req.xhr || req.headers.accept?.indexOf("json") > -1) {
+            return res.status(400).json({
+              success: false,
+              message: `Payment ${paymentIntent.status}. Please try again.`,
+            });
+          }
+          return res.redirect(
+            `/cart/checkout?error=payment_${paymentIntent.status}`
+          );
+        }
+
+        // Verify amount matches (Stripe uses smallest currency unit - paisa for INR)
+        const expectedAmount = Math.round(cart.totalAfterAll * 100); // Convert to paisa
+        if (paymentIntent.amount !== expectedAmount) {
+          console.log("Amount mismatch:", {
+            expected: expectedAmount,
+            received: paymentIntent.amount,
+            cartTotal: cart.totalAfterAll,
+          });
+
+          // Handle form POST vs AJAX differently
+          if (req.xhr || req.headers.accept?.indexOf("json") > -1) {
+            return res.status(400).json({
+              success: false,
+              message: "Payment amount mismatch",
+            });
+          }
+          // For form submission, redirect with error
+          return res.redirect(`/cart/checkout?error=amount_mismatch`);
+        }
+      } catch (stripeError) {
+        console.error("Stripe verification error:", stripeError);
+
+        if (req.xhr || req.headers.accept?.indexOf("json") > -1) {
+          return res.status(400).json({
+            success: false,
+            message: "Payment verification failed",
+          });
+        }
+        return res.redirect(`/cart/checkout?error=verification_failed`);
+      }
+    }
+
+    /* ===============================
+       STOCK VALIDATION
+    =============================== */
     for (const item of cart.items) {
-      // Check Accessory Stock
       if (item.accessoryId) {
         const accessory = await Accessory.findById(item.accessoryId);
-
         if (!accessory) throw new Error("Accessory not found");
 
         if (accessory.stock < item.quantity) {
-          return res.status(BAD_REQUEST).json({
+          return res.status(400).json({
             success: false,
-            message: `Not enough stock for Accessory`,
+            message: "Not enough stock for accessory",
           });
         }
       }
 
-      // Check Variant Stock
       if (item.variantId) {
         const variant = await CarVariant.findById(item.variantId);
-
         if (!variant) throw new Error("Variant not found");
 
         if (variant.stock < item.quantity) {
-          return res.status(BAD_REQUEST).json({
+          return res.status(400).json({
             success: false,
-            message: `Not enough stock for Car`,
+            message: "Not enough stock for car",
           });
         }
       }
     }
 
+    /* ===============================
+       ADDRESS SNAPSHOT
+    =============================== */
     const selectedAddress = await Address.findById(addressId);
     if (!selectedAddress) {
       return res.redirect("/checkout/address");
     }
+
     const address = {
       name: selectedAddress.fullName,
       phone: selectedAddress.phone,
@@ -68,12 +149,17 @@ const createOrder = async (req, res, next) => {
       pincode: selectedAddress.pinCode,
     };
 
+    /* ===============================
+       ORDER ITEMS SNAPSHOT
+    =============================== */
     const orderItems = cart.items.map((item) => {
       const baseAmount = item.offerPrice
         ? item.offerPrice * item.quantity
         : item.price * item.quantity;
-      const taxAmount = baseAmount * (taxRate / 100);
-      const itemFinalAmount = baseAmount + taxAmount - item.advanceAmount;
+
+      const taxAmount = item.accessoryId ? baseAmount * (taxRate / 100) : 0;
+
+      const finalAmount = baseAmount + taxAmount - (item.advanceAmount || 0);
 
       return {
         carId: item.carId || null,
@@ -81,69 +167,118 @@ const createOrder = async (req, res, next) => {
         accessoryId: item.accessoryId || null,
         productName: item.carId
           ? item.carId.name
-          : item.accessoryId?.name || null,
+          : item.accessoryId?.name || "Accessory",
         quantity: item.quantity,
         price: item.price,
         offerPrice: item.offerPrice || null,
         accessoryTax: item.accessoryId ? taxAmount : null,
-        totalItemAmount: item.accessoryId ? itemFinalAmount : item.price,
-        advanceAmount: item.advanceAmount,
+        advanceAmount: item.advanceAmount || null,
+        totalItemAmount: item.accessoryId ? finalAmount : item.price,
       };
     });
 
-    let advanceAmount = 0;
-    let remainingAmount = 0;
+    /* ===============================
+       PAYMENT CALCULATION
+    =============================== */
+    let advanceAmount;
+    let remainingAmount;
 
-    const orderTotal = cart.totalAfterAll;
     if (paymentMethod === "COD") {
       advanceAmount = orderItems.reduce(
-        (sum, item) => sum + item.advanceAmount,
+        (sum, item) => sum + (item.advanceAmount || 0),
         0
       );
-      remainingAmount = orderTotal - advanceAmount;
+      remainingAmount = cart.totalAfterAll - advanceAmount;
+    }
+    if (paymentMethod === "STRIP" && totalAfterAll > 999999) {
+      advanceAmount = 100000;
+      remainingAmount = cart.totalAfterAll - advanceAmount;
     }
 
-    const order = new Order({
+    /* ===============================
+       ORDER DATA (SAFE BUILD)
+    =============================== */
+    const orderData = {
       userId,
       items: orderItems,
       address,
       paymentMethod,
-      advanceAmount: advanceAmount || null,
-      remainingAmount: remainingAmount || null,
       subtotal: cart.totalAmount,
       taxAmount: cart.accessoryTax,
       discount: cart.discountedPrice,
       totalAmount: cart.totalAfterAll,
-      appliedCoupon: cart.appliedCoupon,
-    });
+      paymentStatus: paymentMethod === "STRIP" ? "Paid" : "Pending", // Payment status
+    };
+
+    // Store Stripe payment details
+    if (paymentIntentId) {
+      orderData.stripePaymentIntentId = paymentIntentId;
+      orderData.stripePaymentStatus = paymentStatus;
+    }
+
+    if (advanceAmount !== undefined) {
+      orderData.advanceAmount = advanceAmount;
+      orderData.remainingAmount = remainingAmount;
+    }
+
+    if (cart.appliedCoupon && cart.appliedCoupon.couponId) {
+      orderData.appliedCoupon = {
+        couponId: cart.appliedCoupon.couponId,
+        code: cart.appliedCoupon.code,
+        discountType: cart.appliedCoupon.discountType,
+        discountValue: cart.appliedCoupon.discountValue,
+        couponDiscount: cart.appliedCoupon.couponDiscount,
+      };
+    }
+
+    /* ===============================
+       CREATE ORDER
+    =============================== */
+    const order = new Order(orderData);
     await order.save();
 
-    // Clear cart
+    /* ===============================
+       CLEAR CART
+    =============================== */
     cart.items = [];
     cart.totalAmount = 0;
     cart.accessoryTax = 0;
-    cart.discount = 0;
+    cart.discountedPrice = 0;
     cart.totalAfterAll = 0;
-    cart.appliedCoupon = {};
+    cart.appliedCoupon = undefined;
+
     await cart.save();
 
-    // Reduce stock
+    /* ===============================
+       REDUCE STOCK
+    =============================== */
     for (const item of order.items) {
       if (item.accessoryId) {
         await Accessory.findByIdAndUpdate(item.accessoryId, {
           $inc: { stock: -item.quantity },
         });
       }
+
       if (item.variantId) {
         await CarVariant.findByIdAndUpdate(item.variantId, {
           $inc: { stock: -item.quantity },
         });
       }
     }
-    res.json({
-      success: true,
-      redirect: `/cart/checkout-step-4/${order._id}`,
-    });
+
+    /* ===============================
+       RESPONSE - Handle both JSON and Form submission
+    =============================== */
+    // If it's an AJAX request, send JSON
+    if (req.xhr || req.headers.accept?.indexOf("json") > -1) {
+      return res.json({
+        success: true,
+        redirect: `/cart/checkout-step-4/${order._id}`,
+      });
+    }
+
+    // If it's a form POST submission, redirect directly
+    return res.redirect(`/cart/checkout-step-4/${order._id}`);
   } catch (error) {
     console.error("Error from creating order", error);
     next(error);

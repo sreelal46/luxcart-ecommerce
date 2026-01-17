@@ -1,8 +1,54 @@
 <link rel="stylesheet" href="/css/user/checkout/checkout.css">
+<style>
+  #stripe-submit-btn {
+    width: 100%;
+    padding: 12px;
+    background: #5469d4;
+    color: white;
+    border: none;
+    border-radius: 4px;
+    font-size: 16px;
+    font-weight: 600;
+    cursor: pointer;
+    margin-top: 20px;
+  }
+
+  #stripe-submit-btn:hover {
+    background: #4059c7;
+  }
+
+  #stripe-submit-btn:disabled {
+    background: #ccc;
+    cursor: not-allowed;
+  }
+
+  .payment-option {
+    cursor: pointer;
+    padding: 15px;
+    border: 2px solid #e0e0e0;
+    border-radius: 8px;
+    margin-bottom: 10px;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    transition: all 0.3s;
+  }
+
+  .payment-option:hover {
+    border-color: #5469d4;
+    background: #f8f9ff;
+  }
+</style>
 
 <div class="wrap-container">
   <div class="container">
     <h1>Checkout</h1>
+
+    <!-- Error Message Display -->
+    <div id="error-banner"
+      style="display:none; background:#fee; border:1px solid #fcc; padding:15px; margin-bottom:20px; border-radius:8px; color:#c00;">
+      <strong>⚠️ Error:</strong> <span id="error-message"></span>
+    </div>
 
     <div class="stepper-wrapper">
       <div class="stepper">
@@ -32,19 +78,13 @@
           <div id="stripe-box" style="display:none;">
             <h5 class="mt-3">Secure Payment</h5>
             <div id="payment-element"></div>
+            <button id="stripe-submit-btn" type="button">Pay Now</button>
           </div>
-          <div onclick="step3(this)" data-payment="STRIP" data-totalamount="{{cart.totalAmount}}" class="payment-option"
-            data-cartid="{{cart._id}}">
+
+          <div onclick="step3(this)" data-payment="STRIP" data-totalamount="{{cart.totalAfterAll}}"
+            class="payment-option" data-cartid="{{cart._id}}">
             🔶 <div><strong>STRIP</strong><br><small>Pay instantly</small></div>
           </div>
-
-          <!-- <div onclick="step3(this)" data-payment="CARD" class="payment-option">
-            💳 <div><strong>Card</strong></div>
-          </div>
-
-          <div onclick="step3(this)" data-payment="NETBANKING" class="payment-option">
-            🏦 <div><strong>Net Banking</strong></div>
-          </div> -->
 
           <div onclick="step3(this)" data-payment="COD" data-totalamount="{{cart.totalAdvanceAmount}}"
             class="payment-option" data-cartid="{{cart._id}}">
@@ -58,13 +98,8 @@
         <div class="card summary-card">
           <h3>Order Summary</h3>
 
-          <!-- <div style="display:flex; align-items:center; margin-top:10px;">
-            <div><strong>Seat Cover</strong><br><small>Qty: 1</small></div>
-          </div> -->
-
           <div class="summary-row"><span>Price ({{cart.items.length}} items)</span><span>{{formatPrice
               cart.totalAmount}}</span></div>
-          <!-- <div class="summary-row"><span>Discount</span><span>₹28,000</span></div> -->
           <div class="summary-row"><span>Shipping</span><span>Free</span></div>
           {{#if cart.accessoryTax}}
           <div class="summary-row"><span>Tax<span class="fw-semibold">(GST {{taxRate}}% Only for
@@ -90,7 +125,6 @@
           <div class="summary-row" style="font-weight:700"><span>Total</span><span>₹ {{formatPrice
               cart.totalAfterAll}}</span></div>
           {{#if cart.discountedPrice}}
-          <!-- Savings Banner -->
           <div class="alert alert-success d-flex justify-content-between align-items-center py-2 px-3 mb-3"
             role="alert">
             <span class="fw-semibold text-success" style="font-size: 13px;">
@@ -101,68 +135,151 @@
             </span>
           </div>
           {{/if}}
-          <button class="btn" id="continueBtn" onclick=`location.href="/" `>Continue</button>
+          <button class="btn" id="continueBtn" onclick="location.href='/'">Continue</button>
         </div>
       </div>
     </div>
   </div>
 </div>
+
 <script src="https://js.stripe.com/v3/"></script>
 <script>
+  const stripe = Stripe("pk_test_51SprHJDaZqWZuwPQahtwI62z1s3n0NZ1RChPHKFRpiPwSZuuAmJmdSMqNL6oXTIPtJ7Ijc55sT5vc4MBCo0DRaV200Hmz5YVeg");
+  let elements;
+  let clientSecret;
+  let currentCartId;
+
+  // Show error messages from URL params
+  window.addEventListener('DOMContentLoaded', () => {
+    const urlParams = new URLSearchParams(window.location.search);
+    const error = urlParams.get('error');
+
+    if (error) {
+      const errorMessages = {
+        'amount_mismatch': 'Payment amount does not match order total. Please try again.',
+        'payment_not_found': 'Payment information not found. Please try again.',
+        'payment_failed': 'Payment failed. Please try again.',
+        'payment_canceled': 'Payment was canceled. Please try again.',
+        'verification_failed': 'Payment verification failed. Please contact support.'
+      };
+
+      showError(errorMessages[error] || 'An error occurred. Please try again.');
+    }
+  });
+
+  function showError(message) {
+    const banner = document.getElementById('error-banner');
+    const messageEl = document.getElementById('error-message');
+    messageEl.textContent = message;
+    banner.style.display = 'block';
+
+    // Scroll to top to show error
+    window.scrollTo({ top: 0, behavior: 'smooth' });
+  }
+
   async function step3(div) {
     const paymentMethod = div.getAttribute("data-payment");
     const totalAmount = div.getAttribute("data-totalamount");
     const cartId = div.getAttribute("data-cartid");
-
-    // window.location.href = `/cart/checkout-step-3/${paymentMethod}`;
-    const stripe = Stripe("pk_test_51SprHJDaZqWZuwPQahtwI62z1s3n0NZ1RChPHKFRpiPwSZuuAmJmdSMqNL6oXTIPtJ7Ijc55sT5vc4MBCo0DRaV200Hmz5YVeg");
+    currentCartId = cartId;
 
     try {
-      // 1️⃣ Create PaymentIntent using Axios
+      // Create PaymentIntent
       const res = await axios.post(`/cart/create-payment/${paymentMethod}`, {
-        amount: totalAmount   // ₹10 crore
+        amount: totalAmount
       });
 
-
       if (res.data.success) {
-        const clientSecret = res.data.clientSecret;
+        // Stripe Payment Flow
+        clientSecret = res.data.clientSecret;
 
-        // 2️⃣ Create Stripe Elements
-        const elements = stripe.elements({ clientSecret });
+        // Create Stripe Elements
+        elements = stripe.elements({ clientSecret });
         const paymentElement = elements.create("payment");
 
-        // Clear old element if exists
+        // Show Stripe UI
         const container = document.getElementById("payment-element");
         const stripeBox = document.getElementById("stripe-box");
 
-        stripeBox.style.display = "block"; // show stripe UI
+        stripeBox.style.display = "block";
         container.innerHTML = "";
         paymentElement.mount(container);
-        //         valid card id 
-        // 1515 4545 2252 5224
 
-        // 3️⃣ Confirm payment
-        const { error } = await stripe.confirmPayment({
-          elements,
-          confirmParams: {
-            return_url: `http://localhost:8000/cart/checkout/create-order/${cartId}`
-          }
-        });
+        // Attach submit handler
+        const submitBtn = document.getElementById("stripe-submit-btn");
+        submitBtn.onclick = () => handleStripePayment(cartId);
 
-        if (error) {
-          alert(error.message);
-        }
+      } else if (res.data.redirect) {
+        // COD - POST request with only cartId
+        createPostForm(`/cart/checkout/create-order/${cartId}`);
       }
-      else {
-        window.location.href = res.data.redirect
-      }
-
 
     } catch (err) {
       alert("Payment error: " + err.message);
     }
+  }
 
+  async function handleStripePayment(cartId) {
+    const submitBtn = document.getElementById("stripe-submit-btn");
+    submitBtn.disabled = true;
+    submitBtn.textContent = "Processing...";
 
+    try {
+      // Confirm payment WITHOUT redirect
+      const { error, paymentIntent } = await stripe.confirmPayment({
+        elements,
+        redirect: 'if_required',
+        confirmParams: {
+          return_url: `${window.location.origin}/cart/checkout/create-order/${cartId}`
+        }
+      });
 
+      if (error) {
+        alert(error.message);
+        submitBtn.disabled = false;
+        submitBtn.textContent = "Pay Now";
+        return;
+      }
+
+      if (paymentIntent && paymentIntent.status === 'succeeded') {
+        // Send AJAX POST request with payment intent
+        const response = await axios.post(`/cart/checkout/create-order/${cartId}`, {
+          payment_intent: paymentIntent.id
+        });
+
+        if (response.data.success) {
+          // Redirect to success page
+          window.location.href = response.data.redirect;
+        } else {
+          alert(response.data.message || 'Order creation failed');
+          submitBtn.disabled = false;
+          submitBtn.textContent = "Pay Now";
+        }
+      }
+    } catch (err) {
+      console.error('Payment error:', err);
+      alert(err.response?.data?.message || 'Payment processing failed. Please try again.');
+      submitBtn.disabled = false;
+      submitBtn.textContent = "Pay Now";
+    }
+  }
+
+  // Helper function for COD (uses form POST)
+  function createPostForm(url) {
+    const form = document.createElement('form');
+    form.method = 'POST';
+    form.action = url;
+    document.body.appendChild(form);
+    form.submit();
+  }
+
+  // Helper function to create POST form with only cartId
+  function createPostForm(url) {
+    const form = document.createElement('form');
+    form.method = 'POST';
+    form.action = url;
+
+    document.body.appendChild(form);
+    form.submit();
   }
 </script>

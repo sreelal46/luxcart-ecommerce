@@ -130,24 +130,23 @@ const orderSchema = new Schema(
     /* PAYMENT (ORDER LEVEL ONLY) */
     paymentMethod: {
       type: String,
-      enum: ["COD", "NETBANKING", "CARD", "UPI"],
+      enum: ["COD", "STRIP", "CARD", "NETBANKING"],
       required: true,
     },
 
     paymentStatus: {
       type: String,
-      enum: [
-        "pending", // COD / not yet paid
-        "advanced",
-        "paid", // fully paid
-        "failed",
-        "partially_refunded", // some items refunded
-        "refunded", // all items refunded
-      ],
-      default: "pending",
+      enum: ["Pending", "Paid", "Failed", "Refunded"],
+      default: "Pending",
     },
 
-    paymentId: {
+    // Stripe payment details
+    stripePaymentIntentId: {
+      type: String,
+      default: null,
+    },
+
+    stripePaymentStatus: {
       type: String,
       default: null,
     },
