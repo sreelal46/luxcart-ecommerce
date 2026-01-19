@@ -1,4 +1,5 @@
 const Cart = require("../../models/user/CartModel");
+const { FORBIDDEN } = require("../../constant/statusCode");
 const stripe = require("stripe")(process.env.STRIPE_SECRET_KEY);
 
 const payment = async (req, res, next) => {
@@ -30,4 +31,9 @@ const payment = async (req, res, next) => {
   }
 };
 
-module.exports = { payment };
+const fullPayment = async (req, res, next) => {
+  try {
+  } catch (error) {}
+};
+
+module.exports = { payment, fullPayment };

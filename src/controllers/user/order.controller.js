@@ -220,10 +220,8 @@ const createOrder = async (req, res, next) => {
       orderData.stripePaymentStatus = paymentStatus;
     }
 
-    if (advanceAmount !== undefined) {
-      orderData.advanceAmount = advanceAmount;
-      orderData.remainingAmount = remainingAmount;
-    }
+    orderData.advanceAmount = advanceAmount;
+    orderData.remainingAmount = remainingAmount;
 
     if (cart.appliedCoupon && cart.appliedCoupon.couponId) {
       orderData.appliedCoupon = {
