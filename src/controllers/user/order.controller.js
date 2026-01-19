@@ -12,11 +12,11 @@ const createOrder = async (req, res, next) => {
        BASIC SETUP
     =============================== */
     const userId = req.session.user._id;
-    const paymentMethod = req.session.paymentMethod;
+    const paymentMethod = req.session.paymentMethod || req.body.paymentMethod;
     const addressId = req.session.addressId;
 
     const cart = await Cart.findOne({ userId }).populate(
-      "items.carId items.accessoryId items.variantId"
+      "items.carId items.accessoryId items.variantId",
     );
 
     if (!cart || cart.items.length === 0) {
@@ -24,12 +24,12 @@ const createOrder = async (req, res, next) => {
     }
 
     /* ===============================
-       STRIPE PAYMENT VERIFICATION (for STRIP method)
+       STRIPE PAYMENT VERIFICATION 
     =============================== */
     let paymentIntentId = null;
     let paymentStatus = null;
 
-    if (paymentMethod === "STRIP") {
+    if (paymentMethod === "STRIPE") {
       // Get payment_intent from query params (Stripe redirect) or body
       paymentIntentId = req.query.payment_intent || req.body.payment_intent;
 
@@ -47,9 +47,8 @@ const createOrder = async (req, res, next) => {
       const stripe = require("stripe")(process.env.STRIPE_SECRET_KEY);
 
       try {
-        const paymentIntent = await stripe.paymentIntents.retrieve(
-          paymentIntentId
-        );
+        const paymentIntent =
+          await stripe.paymentIntents.retrieve(paymentIntentId);
         paymentStatus = paymentIntent.status;
 
         // Check if payment was successful
@@ -63,12 +62,17 @@ const createOrder = async (req, res, next) => {
             });
           }
           return res.redirect(
-            `/cart/checkout?error=payment_${paymentIntent.status}`
+            `/cart/checkout?error=payment_${paymentIntent.status}`,
           );
         }
 
         // Verify amount matches (Stripe uses smallest currency unit - paisa for INR)
-        const expectedAmount = Math.round(cart.totalAfterAll * 100); // Convert to paisa
+        let expectedAmount;
+        if (paymentMethod === "STRIPE" && cart.totalAdvanceAmount) {
+          expectedAmount = Math.round(cart.totalAdvanceAmount * 100); // Convert to paisa
+        } else if (paymentMethod === "STRIPE") {
+          expectedAmount = Math.round(cart.totalAfterAll * 100); // Convert to paisa
+        }
         if (paymentIntent.amount !== expectedAmount) {
           console.log("Amount mismatch:", {
             expected: expectedAmount,
@@ -159,7 +163,7 @@ const createOrder = async (req, res, next) => {
 
       const taxAmount = item.accessoryId ? baseAmount * (taxRate / 100) : 0;
 
-      const finalAmount = baseAmount + taxAmount - (item.advanceAmount || 0);
+      const finalAmount = baseAmount + taxAmount;
 
       return {
         carId: item.carId || null,
@@ -172,7 +176,7 @@ const createOrder = async (req, res, next) => {
         price: item.price,
         offerPrice: item.offerPrice || null,
         accessoryTax: item.accessoryId ? taxAmount : null,
-        advanceAmount: item.advanceAmount || null,
+        // advanceAmount: item.advanceAmount || null,
         totalItemAmount: item.accessoryId ? finalAmount : item.price,
       };
     });
@@ -183,15 +187,15 @@ const createOrder = async (req, res, next) => {
     let advanceAmount;
     let remainingAmount;
 
-    if (paymentMethod === "COD") {
-      advanceAmount = orderItems.reduce(
-        (sum, item) => sum + (item.advanceAmount || 0),
-        0
-      );
-      remainingAmount = cart.totalAfterAll - advanceAmount;
-    }
-    if (paymentMethod === "STRIP" && totalAfterAll > 999999) {
-      advanceAmount = 100000;
+    // if (paymentMethod === "COD") {
+    //   advanceAmount = orderItems.reduce(
+    //     (sum, item) => sum + (item.advanceAmount || 0),
+    //     0,
+    //   );
+    //   remainingAmount = cart.totalAfterAll - advanceAmount;
+    // }
+    if (paymentMethod === "STRIPE") {
+      advanceAmount = cart.totalAdvanceAmount;
       remainingAmount = cart.totalAfterAll - advanceAmount;
     }
 
@@ -207,7 +211,7 @@ const createOrder = async (req, res, next) => {
       taxAmount: cart.accessoryTax,
       discount: cart.discountedPrice,
       totalAmount: cart.totalAfterAll,
-      paymentStatus: paymentMethod === "STRIP" ? "Paid" : "Pending", // Payment status
+      paymentStatus: paymentMethod === "STRIPE" ? "Paid" : "Pending", // Payment status
     };
 
     // Store Stripe payment details
@@ -236,6 +240,12 @@ const createOrder = async (req, res, next) => {
     =============================== */
     const order = new Order(orderData);
     await order.save();
+
+    /* ===============================
+       CLEAR SESSIONS
+    =============================== */
+    req.session.paymentMethod = null;
+    req.session.addressId = null;
 
     /* ===============================
        CLEAR CART

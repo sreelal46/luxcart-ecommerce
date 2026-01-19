@@ -84,7 +84,6 @@ const loadwalletPage = async (req, res, next) => {
   try {
     const userId = req.session.user._id;
     const wallet = await Wallet.findOne({ userId });
-    console.log(wallet);
     res
       .status(OK)
       .render("user/account/wallet", { layout: "userAccountLayout", wallet });

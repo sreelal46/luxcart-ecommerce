@@ -490,13 +490,29 @@
         <div class="item-price-box">
 
           <div class="price-row">
-            <span>Price</span>
+            <span>Unit Price</span>
             <span>₹ {{formatPrice this.price}}</span>
           </div>
+          {{#if this.offerPrice}}
+          <div class="price-row offer">
+            <span>Unit Offer Price</span>
+            <span>₹ {{formatPrice this.offerPrice}}</span>
+          </div>
+          {{/if}}
 
+          {{#if this.advanceAmount}}
+          <div class="price-row advance">
+            <span>Advance Paid</span>
+            <span>₹ {{formatPrice this.advanceAmount}}</span>
+          </div>
+          {{/if}}
           <div class="price-row">
             <span>Tax</span>
             <span>₹ {{formatPrice this.accessoryTax}}</span>
+          </div>
+          <div class="price-row">
+            <span>Total Per item</span>
+            <span>₹ {{formatPrice this.totalItemAmount}}</span>
           </div>
 
           {{#if this.offerPrice}}
@@ -515,10 +531,12 @@
 
           {{#if this.cancel.approvedAt}}
           <div class="price-row refund">
-            <span>Refunded (Cancelled)</span>
+            <span>Cancelled</span>
             <span>- ₹ {{formatPrice this.cancel.refundAmount}}</span>
           </div>
           {{/if}}
+
+
 
           {{#if this.return.approvedAt}}
           <div class="price-row refund">
@@ -645,13 +663,13 @@
         {{/if}}
 
         <!-- FINAL ITEM TOTAL -->
-        <div class="user-item-price">
+        <!-- <div class="user-item-price">
           {{#if this.offerPrice}}
           ₹ {{formatPrice this.offerPrice}}
           {{else}}
           ₹ {{formatPrice this.price}}
           {{/if}}
-        </div>
+        </div> -->
 
       </div>
 
@@ -870,6 +888,9 @@
 
     return valid;
   }
+
+
+
 
   /* -----------------------------
      DOM READY

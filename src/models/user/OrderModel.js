@@ -80,7 +80,7 @@ const orderItemSchema = new Schema(
       refundAmount: { type: Number, default: null },
     },
   },
-  { timestamps: true }
+  { timestamps: true },
 );
 
 /* =========================
@@ -99,7 +99,7 @@ const addressSchema = new Schema(
     state: String,
     pincode: String,
   },
-  { _id: false }
+  { _id: false },
 );
 
 /* =========================
@@ -130,7 +130,7 @@ const orderSchema = new Schema(
     /* PAYMENT (ORDER LEVEL ONLY) */
     paymentMethod: {
       type: String,
-      enum: ["COD", "STRIP", "CARD", "NETBANKING"],
+      enum: ["COD", "STRIPE", "CARD", "NETBANKING"],
       required: true,
     },
 
@@ -173,7 +173,7 @@ const orderSchema = new Schema(
     /* INTERNAL NOTES */
     notes: { type: String, default: "" },
   },
-  { timestamps: true }
+  { timestamps: true },
 );
 
 /* =========================
@@ -185,7 +185,7 @@ orderSchema.pre("save", async function (next) {
   const counter = await Counter.findOneAndUpdate(
     { name: "order" },
     { $inc: { value: 1 } },
-    { new: true, upsert: true }
+    { new: true, upsert: true },
   );
 
   this.orderId = "LC-" + counter.value.toString().padStart(6, "0");

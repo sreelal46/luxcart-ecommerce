@@ -151,7 +151,7 @@ const updateSingleItemStatus = async (req, res, next) => {
       { $set: update },
       {
         arrayFilters: [{ "item._id": itemId }],
-      }
+      },
     );
 
     if (result.matchedCount === 0) {
@@ -244,7 +244,7 @@ const cancelApprove = async (req, res, next) => {
         paymentMethod: 1,
         orderId: 1,
         userId: 1,
-      }
+      },
     );
 
     if (!order) {
@@ -268,17 +268,22 @@ const cancelApprove = async (req, res, next) => {
     /* =============================
        CALCULATIONS
     ============================= */
-    const itemAdvanceAmount = item.advanceAmount || 0;
+    // const itemAdvanceAmount = item.advanceAmount || 0;
     const itemTaxAmount = item.accessoryTax || 0;
-    const itemPrice = item.price || 0;
+    const itemPrice = item.offerPrice || item.price || 0;
     const paymentMethod = order.paymentMethod === "COD";
+    // order.paymentMethod === "STRIPE" && !!order.advanceAmount;
+    const isAdvancePayed = !!order.advanceAmount;
+    console.log("================================");
+    console.log("isAdvancePayed", isAdvancePayed);
+    console.log("================================");
     const itemTotalAmount = item.totalItemAmount || 0;
 
     const newSubTotal = order.subtotal - itemPrice;
     const newTaxAmount = order.taxAmount - itemTaxAmount;
     const newTotalAmount = newSubTotal + newTaxAmount;
-    const newAdvanceAmount = order.advanceAmount - itemAdvanceAmount;
-    const newRemainingAmount = newTotalAmount - newAdvanceAmount;
+    // const newAdvanceAmount = order.advanceAmount - itemAdvanceAmount;
+    const newRemainingAmount = newTotalAmount;
     /* =============================
        ATOMIC UPDATE
     ============================= */
@@ -295,22 +300,16 @@ const cancelApprove = async (req, res, next) => {
       {
         $set: {
           "items.$.cancel.approvedAt": new Date(),
-          "items.$.cancel.refundAmount": paymentMethod
-            ? itemAdvanceAmount
-            : itemTotalAmount,
+          "items.$.cancel.refundAmount":
+            !paymentMethod && !isAdvancePayed ? itemTotalAmount : null,
           "items.$.fulfillmentStatus.status": "cancelled",
-          advanceAmount: newAdvanceAmount > 0 ? newAdvanceAmount : 0,
+          // advanceAmount: newAdvanceAmount > 0 ? newAdvanceAmount : 0,
           remainingAmount: newRemainingAmount > 0 ? newRemainingAmount : 0,
           totalAmount: newTotalAmount > 0 ? newTotalAmount : 0,
           subtotal: newSubTotal > 0 ? newSubTotal : 0,
           taxAmount: newTaxAmount > 0 ? newTaxAmount : 0,
         },
-        $inc: {
-          totalRefundAmount: paymentMethod
-            ? itemAdvanceAmount
-            : itemTotalAmount,
-        },
-      }
+      },
     );
 
     if (updateResult.modifiedCount === 0) {
@@ -328,23 +327,24 @@ const cancelApprove = async (req, res, next) => {
     if (variantId) {
       await carVariant.findByIdAndUpdate(
         { _id: variantId },
-        { $inc: { stock: quantity } }
+        { $inc: { stock: quantity } },
       );
     }
     if (accessoryId) {
       await Accessory.findByIdAndUpdate(
         { _id: accessoryId },
-        { $inc: { stock: quantity } }
+        { $inc: { stock: quantity } },
       );
     }
-
-    await updateWallet({
-      userId: order.userId,
-      amount: paymentMethod ? itemAdvanceAmount : itemTotalAmount,
-      type: "cancel",
-      flow: "credit",
-      message: `Order refund (${order.orderId})`,
-    });
+    if (!paymentMethod && !isAdvancePayed) {
+      await updateWallet({
+        userId: order.userId,
+        amount: itemTotalAmount,
+        type: "cancel",
+        flow: "credit",
+        message: `Order refund (${order.orderId})`,
+      });
+    }
 
     /* =============================
                 SUCCESS
@@ -373,7 +373,7 @@ const cancelReject = async (req, res, next) => {
         $set: {
           "items.$.cancel.rejectedAt": new Date(),
         },
-      }
+      },
     );
 
     if (result.modifiedCount === 0) {
@@ -420,7 +420,7 @@ const returnApprove = async (req, res, next) => {
         taxAmount: 1,
         orderId: 1,
         userId: 1,
-      }
+      },
     );
 
     if (!order) {
@@ -480,7 +480,7 @@ const returnApprove = async (req, res, next) => {
           taxAmount: newTaxAmount > 0 ? newTaxAmount : 0,
         },
         $inc: { totalRefundAmount: itemTotalAmount },
-      }
+      },
     );
 
     if (updateResult.modifiedCount === 0) {
@@ -498,13 +498,13 @@ const returnApprove = async (req, res, next) => {
     if (variantId) {
       await carVariant.findByIdAndUpdate(
         { _id: variantId },
-        { $inc: { stock: quantity } }
+        { $inc: { stock: quantity } },
       );
     }
     if (accessoryId) {
       await Accessory.findByIdAndUpdate(
         { _id: accessoryId },
-        { $inc: { stock: quantity } }
+        { $inc: { stock: quantity } },
       );
     }
     await updateWallet({
@@ -543,7 +543,7 @@ const returnReject = async (req, res, next) => {
           "items.$.return.rejectedAt": new Date(),
           "items.$.fulfillmentStatus.status": "returned",
         },
-      }
+      },
     );
 
     if (result.modifiedCount === 0) {

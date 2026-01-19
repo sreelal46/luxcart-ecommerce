@@ -196,7 +196,7 @@ function generateInvoice(order, outputPath, options = {}) {
     .text(
       `Date: ${new Date(order.createdAt).toLocaleDateString("en-IN")}`,
       invoiceBoxX + 10,
-      currentY + 38
+      currentY + 38,
     );
 
   currentY += 65;
@@ -309,7 +309,7 @@ function generateInvoice(order, outputPath, options = {}) {
       colors,
       marginLeft,
       pageWidth,
-      false
+      false,
     );
     hasRenderedAnySection = true;
   }
@@ -339,7 +339,7 @@ function generateInvoice(order, outputPath, options = {}) {
       marginLeft,
       pageWidth,
       true,
-      "CANCELLED"
+      "CANCELLED",
     );
     hasRenderedAnySection = true;
   }
@@ -369,7 +369,7 @@ function generateInvoice(order, outputPath, options = {}) {
       marginLeft,
       pageWidth,
       true,
-      "RETURNED"
+      "RETURNED",
     );
     hasRenderedAnySection = true;
   }
@@ -384,14 +384,12 @@ function generateInvoice(order, outputPath, options = {}) {
   // Calculate: Total - Advance - Refunds = Amount to Pay
   const calculatedAmountToPay = Math.max(
     0,
-    totalAmount - advancePaid - refundedCancelled - refundedReturned
+    totalAmount - advancePaid - refundedCancelled - refundedReturned,
   );
   const finalAmountToPay =
     remainingAmount !== undefined && remainingAmount !== null
       ? Math.max(0, remainingAmount)
       : calculatedAmountToPay;
-  // const finalAmountToPay =
-  //   totalAmount - advancePaid - refundedCancelled - refundedReturned;
 
   // ========== ENHANCED PAYMENT SUMMARY ==========
   currentY += 10;
@@ -455,7 +453,7 @@ function generateInvoice(order, outputPath, options = {}) {
       value: `- ${formatCurrency(
         order.couponDetails && order.couponDetails.code
           ? order?.discount - order?.couponDetails?.couponDiscount
-          : order?.discount
+          : order?.discount,
       )}`,
       color: colors.success,
       fontSize: 9,
@@ -624,7 +622,7 @@ function generateInvoice(order, outputPath, options = {}) {
 
   // Amount to Pay - Highlighted (FIXED CALCULATION)
   const amountStr = formatCurrency(
-    remainingAmount ? remainingAmount : finalAmountToPay
+    remainingAmount ? remainingAmount : finalAmountToPay,
   );
   const amountFontSize = amountStr.length > 15 ? 11 : 13;
 
@@ -657,7 +655,7 @@ function generateInvoice(order, outputPath, options = {}) {
       {
         width: 110,
         align: "right",
-      }
+      },
     );
 
   currentY = currentY + summaryHeight + 12;
@@ -707,14 +705,14 @@ function generateInvoice(order, outputPath, options = {}) {
     .fillColor(colors.primary)
     .text(
       numberToWords(
-        Math.floor(remainingAmount ? remainingAmount : finalAmountToPay)
+        Math.floor(remainingAmount ? remainingAmount : finalAmountToPay),
       ),
       marginLeft,
       currentY + 11,
       {
         width: pageWidth * 0.7,
         lineGap: 2,
-      }
+      },
     );
 
   currentY = doc.y + 18;
@@ -772,7 +770,7 @@ function generateInvoice(order, outputPath, options = {}) {
       "This is a system generated invoice and does not require signature.",
       marginLeft,
       currentY + 22,
-      { width: pageWidth, align: "center" }
+      { width: pageWidth, align: "center" },
     );
 
   if (order.paymentStatus) {
@@ -806,7 +804,7 @@ function generateInvoice(order, outputPath, options = {}) {
   });
 }
 
-// ========== HELPER: RENDER ITEMS TABLE (FIXED) ==========
+// ========== HELPER: RENDER ITEMS TABLE (WITHOUT ADVANCE COLUMN) ==========
 function renderItemsTable(
   doc,
   items,
@@ -815,25 +813,23 @@ function renderItemsTable(
   marginLeft,
   pageWidth,
   isAdjustment = false,
-  adjustmentType = ""
+  adjustmentType = "",
 ) {
   let currentY = startY;
   const marginRight = marginLeft + pageWidth;
 
   const tableTop = currentY;
   const descX = marginLeft;
-  const qtyX = 175;
-  const priceX = 215;
-  const taxX = 305;
-  const advanceX = 395;
-  const totalX = 485;
+  const qtyX = 200;
+  const priceX = 260;
+  const taxX = 370;
+  const totalX = 480;
 
   const descWidth = qtyX - descX - 8;
-  const qtyWidth = 30;
-  const priceWidth = 85;
-  const taxWidth = 85;
-  const advanceWidth = 85;
-  const totalWidth = 75;
+  const qtyWidth = 40;
+  const priceWidth = 100;
+  const taxWidth = 100;
+  const totalWidth = 80;
 
   // Table header
   let headerBg = colors.headerBg;
@@ -855,10 +851,6 @@ function renderItemsTable(
       align: "right",
     })
     .text("TAX", taxX - 5, tableTop + 7, { width: taxWidth, align: "right" })
-    .text("ADVANCE", advanceX - 5, tableTop + 7, {
-      width: advanceWidth,
-      align: "right",
-    })
     .text("TOTAL", totalX - 5, tableTop + 7, {
       width: totalWidth,
       align: "right",
@@ -877,7 +869,6 @@ function renderItemsTable(
     const total = item.total || 0;
     const status = (item.status || "").toUpperCase().trim();
     const refundAmount = item.refundAmount || 0;
-    const advanceAmount = item.advanceAmount || 0;
 
     // Determine which price to display
     let displayPrice = price;
@@ -927,10 +918,6 @@ function renderItemsTable(
         })
         .text("TAX", taxX - 5, currentY + 7, {
           width: taxWidth,
-          align: "right",
-        })
-        .text("ADVANCE", advanceX - 5, currentY + 7, {
-          width: advanceWidth,
           align: "right",
         })
         .text("TOTAL", totalX - 5, currentY + 7, {
@@ -1016,15 +1003,6 @@ function renderItemsTable(
       .fillColor(colors.secondary)
       .text(formatCurrency(taxAmount), taxX - 5, currentY, {
         width: taxWidth,
-        align: "right",
-      });
-
-    // Advance Amount
-    doc
-      .fontSize(8)
-      .fillColor(colors.secondary)
-      .text(formatCurrency(advanceAmount), advanceX - 5, currentY, {
-        width: advanceWidth,
         align: "right",
       });
 

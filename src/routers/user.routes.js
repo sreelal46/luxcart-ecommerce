@@ -116,7 +116,7 @@ route.get("/cars-collection", checkSession, loadCarCollection);
 route.get(
   "/cars-collection/view-car-product/:carId",
   checkSession,
-  loadSingleCarProduct
+  loadSingleCarProduct,
 );
 
 //view all accessories
@@ -124,7 +124,7 @@ route.get("/all-accessories", checkSession, loadAllAccessories);
 route.get(
   "/all-accessories/view-accessory-product/:id",
   checkSession,
-  loadSingleAccessories
+  loadSingleAccessories,
 );
 
 //view account profile details
@@ -133,31 +133,31 @@ route.get("/account/profile", checkSession, loadProfilePage);
 route.get(
   "/account/profile/edit-profile/:userId",
   checkSession,
-  loadEditProfilePage
+  loadEditProfilePage,
 );
 route.post("/check-email", editEmail);
 route.post(
   "/account/profile/edit-profile/:userId",
   checkSession,
   upload.any(),
-  editProfile
+  editProfile,
 );
 //order details
 route.get("/account/orders", checkSession, loadOrderPage);
 route.get(
   "/account/orders/order-details/:orderId",
   checkSession,
-  loadOrderDetailPage
+  loadOrderDetailPage,
 );
 route.post(
   "/account/orders/order-details/cancel-request/:orderId/:itemId",
   checkSession,
-  cancelOrder
+  cancelOrder,
 );
 route.post(
   "/account/orders/order-details/return-request/:orderId/:itemId",
   checkSession,
-  returnOrder
+  returnOrder,
 );
 //wishlist
 route.get("/account/wishlist", checkSession, loadWishlistPage);
@@ -165,7 +165,7 @@ route.post("/account/wishlist/add/:productId", checkSession, addToWishlist);
 route.delete(
   "/account/wishlist/delete/:itemId",
   checkSession,
-  deleteFromWishlist
+  deleteFromWishlist,
 );
 
 //view account address details
@@ -175,22 +175,22 @@ route.post("/account/addresses/add-address/:userId", checkSession, addAddress);
 route.get(
   "/account/addresses/edit-address/:addressId",
   checkSession,
-  loadEditAddressPage
+  loadEditAddressPage,
 );
 route.put(
   "/account/addresses/edit-address/:addressId",
   checkSession,
-  editAddress
+  editAddress,
 );
 route.patch(
   "/account/addresses/set-default-address/:addressId",
   checkSession,
-  setDeafaultAddress
+  setDeafaultAddress,
 );
 route.delete(
   "/account/addresses/delete-address/:addressId",
   checkSession,
-  deleteAddress
+  deleteAddress,
 );
 route.get("/account/change-password", checkSession, loadChangePassword);
 route.post("/account/change-password/:userId", checkSession, changePassword);
@@ -223,7 +223,7 @@ route.get("/cart/checkout-step-4/:orderId", checkSession, loadCheckoutStep4);
 route.get(
   "/cart/checkout-success/download-invoice/:orderId",
   checkSession,
-  downloadInvoice
+  downloadInvoice,
 );
 
 module.exports = route;

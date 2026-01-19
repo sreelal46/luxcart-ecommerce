@@ -1,9 +1,13 @@
 const Handlebars = require("handlebars");
+const maximumAmount = parseInt(process.env.MAXIMUM_PAYMENT_AMOUNT) || 0;
 let row = 0;
 module.exports = {
   // Existing equality helper
   eq: (a, b) => {
     return a?.toString() === b?.toString();
+  },
+  amountCheck: (amount) => {
+    return maximumAmount > amount;
   },
   gt: function (a, b) {
     return a > b;

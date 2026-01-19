@@ -58,7 +58,7 @@ const editProfile = async (req, res, next) => {
         dob,
         profileImage_url: image_Url,
       },
-      { upsert: true }
+      { upsert: true },
     );
 
     res.status(OK).json({ success: true, redirect: "/account/profile" });
@@ -155,7 +155,7 @@ const editAddress = async (req, res, next) => {
         district,
         state,
         pinCode: zip,
-      }
+      },
     );
 
     res.status(OK).json({ success: true, redirect: "/account/addresses" });
@@ -330,7 +330,7 @@ const deleteFromCart = async (req, res, next) => {
 
     // Remove the item
     cart.items = cart.items.filter((item) =>
-      item._id.toString() === itemId ? false : true
+      item._id.toString() === itemId ? false : true,
     );
     if (cart.items.length === 0) {
       cart.appliedCoupon = null;
@@ -405,7 +405,7 @@ const downloadInvoice = async (req, res, next) => {
 
     const order = await Order.findById(orderId)
       .populate("items.carId items.variantId items.accessoryId")
-      .populate("appliedCoupon.couponId"); // Populate coupon details
+      .populate("appliedCoupon.couponId");
 
     if (!order) {
       return res.status(NOT_FOUND).json({ message: "Order not found" });
@@ -451,7 +451,8 @@ const downloadInvoice = async (req, res, next) => {
         advanceAmount: item.advanceAmount || 0,
         status,
         refundAmount,
-        total: isCancelled || isReturned ? 0 : item.totalItemAmount,
+        // FIXED: Always pass the actual total amount, not 0
+        total: item.totalItemAmount,
       };
     });
 
@@ -459,13 +460,13 @@ const downloadInvoice = async (req, res, next) => {
     const refundedAmount = order.items.reduce(
       (sum, item) =>
         sum + (item.cancel?.approvedAt ? item.cancel.refundAmount || 0 : 0),
-      0
+      0,
     );
 
     const returnRefundAmount = order.items.reduce(
       (sum, item) =>
         sum + (item.return?.approvedAt ? item.return.refundAmount || 0 : 0),
-      0
+      0,
     );
 
     // Calculate totals
@@ -476,7 +477,7 @@ const downloadInvoice = async (req, res, next) => {
 
     const remainingAmount = Math.max(
       0,
-      order.totalAmount - totalRefunds - advanceAmount - discount
+      order.totalAmount - totalRefunds - advanceAmount - discount,
     );
 
     // Prepare coupon details if applied
