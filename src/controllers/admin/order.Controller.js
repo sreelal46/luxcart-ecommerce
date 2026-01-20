@@ -3,6 +3,7 @@ const {
   BAD_REQUEST,
   NOT_FOUND,
   CONFLICT,
+  INTERNAL_SERVER_ERROR,
 } = require("../../constant/statusCode");
 const carVariant = require("../../models/admin/carVariantModel");
 const Accessory = require("../../models/admin/productAccessoryModal");
@@ -242,8 +243,14 @@ const cancelApprove = async (req, res, next) => {
         subtotal: 1,
         taxAmount: 1,
         paymentMethod: 1,
+        paymentStatus: 1,
+        paidAmount: 1,
         orderId: 1,
         userId: 1,
+        totalRefundAmount: 1,
+        paymentTransactions: 1,
+        stripePaymentIntentId: 1,
+        stripePaymentStatus: 1,
       },
     );
 
@@ -265,28 +272,138 @@ const cancelApprove = async (req, res, next) => {
       });
     }
 
+    // Check if item is already cancelled
+    if (item.fulfillmentStatus.status === "cancelled") {
+      return res.status(BAD_REQUEST).json({
+        success: false,
+        alert: "Item already cancelled",
+      });
+    }
+
     /* =============================
        CALCULATIONS
     ============================= */
-    // const itemAdvanceAmount = item.advanceAmount || 0;
     const itemTaxAmount = item.accessoryTax || 0;
     const itemPrice = item.offerPrice || item.price || 0;
-    const paymentMethod = order.paymentMethod === "COD";
-    // order.paymentMethod === "STRIPE" && !!order.advanceAmount;
-    const isAdvancePayed = !!order.advanceAmount;
-    console.log("================================");
-    console.log("isAdvancePayed", isAdvancePayed);
-    console.log("================================");
     const itemTotalAmount = item.totalItemAmount || 0;
 
-    const newSubTotal = order.subtotal - itemPrice;
-    const newTaxAmount = order.taxAmount - itemTaxAmount;
+    const newSubTotal = Math.max(0, order.subtotal - itemPrice);
+    const newTaxAmount = Math.max(0, order.taxAmount - itemTaxAmount);
     const newTotalAmount = newSubTotal + newTaxAmount;
-    // const newAdvanceAmount = order.advanceAmount - itemAdvanceAmount;
-    const newRemainingAmount = newTotalAmount;
+
     /* =============================
-       ATOMIC UPDATE
+       REFUND CALCULATION LOGIC
+       
+       SCENARIO 1: paymentStatus = "Partially Paid"
+       - User paid only advance (₹1000)
+       - NO REFUND - Advance is non-refundable
+       - Recalculate remainingAmount = newTotalAmount - paidAmount
+       
+       SCENARIO 2: paymentStatus = "Paid"
+       - User paid full amount
+       - REFUND = itemTotalAmount
+       - Refund to wallet (if paid via STRIPE)
     ============================= */
+    let refundAmount = 0;
+    let newRemainingAmount = 0;
+    let newPaidAmount = order.paidAmount || 0;
+    let newPaymentStatus = order.paymentStatus;
+
+    // Determine if we should refund based on payment method
+    // COD originally means no online payment was made initially
+    // But if stripePaymentIntentId exists, payment was made via Stripe later
+    const canRefund =
+      order.stripePaymentIntentId || order.paymentMethod === "STRIPE";
+
+    if (order.paymentStatus === "Paid") {
+      // User has paid FULL amount
+      if (canRefund) {
+        // Payment was made online - Issue refund
+        refundAmount = itemTotalAmount;
+        newPaidAmount = (order.paidAmount || 0) - refundAmount;
+      } else {
+        // COD and not paid yet - No refund needed
+        refundAmount = 0;
+      }
+
+      // Remaining amount after refund
+      newRemainingAmount = Math.max(0, newTotalAmount - newPaidAmount);
+
+      // After refund, check new payment status
+      if (newTotalAmount <= 0) {
+        newPaymentStatus = canRefund ? "Refunded" : "Cancelled";
+      } else {
+        if (newPaidAmount >= newTotalAmount) {
+          newPaymentStatus = "Paid";
+          newRemainingAmount = 0;
+        } else if (newPaidAmount > 0) {
+          newPaymentStatus = "Partially Paid";
+        } else {
+          newPaymentStatus = "Pending";
+        }
+      }
+    } else if (order.paymentStatus === "Partially Paid") {
+      // User paid only advance - NO REFUND (advance is non-refundable)
+      refundAmount = 0;
+
+      // CRITICAL FIX: Recalculate remaining amount based on new total
+      // remainingAmount = newTotalAmount - paidAmount
+      newRemainingAmount = Math.max(0, newTotalAmount - newPaidAmount);
+
+      // Payment status logic
+      if (newTotalAmount <= 0) {
+        newPaymentStatus = "Paid"; // All items cancelled, advance covers it
+        newRemainingAmount = 0;
+      } else if (newPaidAmount >= newTotalAmount) {
+        newPaymentStatus = "Paid";
+        newRemainingAmount = 0;
+      } else if (newPaidAmount > 0) {
+        newPaymentStatus = "Partially Paid";
+      } else {
+        newPaymentStatus = "Pending";
+      }
+    } else {
+      // Other statuses (Pending, Failed, etc.) - NO REFUND
+      refundAmount = 0;
+      // Recalculate remaining based on new total
+      newRemainingAmount = Math.max(0, newTotalAmount - newPaidAmount);
+      newPaymentStatus = order.paymentStatus;
+    }
+
+    /* =============================
+       ATOMIC UPDATE - ORDER
+    ============================= */
+    const updateFields = {
+      $set: {
+        "items.$.cancel.approvedAt": new Date(),
+        "items.$.cancel.refundAmount": refundAmount,
+        "items.$.fulfillmentStatus.status": "cancelled",
+        remainingAmount: newRemainingAmount,
+        totalAmount: newTotalAmount,
+        subtotal: newSubTotal,
+        taxAmount: newTaxAmount,
+        paymentStatus: newPaymentStatus,
+      },
+    };
+
+    // CRITICAL FIX: Add refund transaction and update totals if applicable
+    if (refundAmount > 0 && canRefund) {
+      updateFields.$push = {
+        paymentTransactions: {
+          paymentIntentId: `refund-${orderId}-${itemId}-${Date.now()}`,
+          amount: refundAmount,
+          status: "refunded",
+          paymentMethod: "STRIPE", // Since we're refunding to Stripe/wallet
+          type: "refund",
+          paidAt: new Date(),
+        },
+      };
+      updateFields.$inc = {
+        totalRefundAmount: refundAmount, // Track total refunds
+        paidAmount: -refundAmount, // Reduce paid amount by refund
+      };
+    }
+
     const updateResult = await Order.updateOne(
       {
         _id: orderObjectId,
@@ -297,65 +414,128 @@ const cancelApprove = async (req, res, next) => {
           },
         },
       },
-      {
-        $set: {
-          "items.$.cancel.approvedAt": new Date(),
-          "items.$.cancel.refundAmount":
-            !paymentMethod && !isAdvancePayed ? itemTotalAmount : null,
-          "items.$.fulfillmentStatus.status": "cancelled",
-          // advanceAmount: newAdvanceAmount > 0 ? newAdvanceAmount : 0,
-          remainingAmount: newRemainingAmount > 0 ? newRemainingAmount : 0,
-          totalAmount: newTotalAmount > 0 ? newTotalAmount : 0,
-          subtotal: newSubTotal > 0 ? newSubTotal : 0,
-          taxAmount: newTaxAmount > 0 ? newTaxAmount : 0,
-        },
-      },
+      updateFields,
     );
 
     if (updateResult.modifiedCount === 0) {
       return res.status(BAD_REQUEST).json({
         success: false,
-        alert: "Cancel already approved",
-      });
-    }
-    /* =============================
-       stock updating
-    ============================= */
-    const variantId = item.variantId;
-    const accessoryId = item.accessoryId;
-    const quantity = item.quantity;
-    if (variantId) {
-      await carVariant.findByIdAndUpdate(
-        { _id: variantId },
-        { $inc: { stock: quantity } },
-      );
-    }
-    if (accessoryId) {
-      await Accessory.findByIdAndUpdate(
-        { _id: accessoryId },
-        { $inc: { stock: quantity } },
-      );
-    }
-    if (!paymentMethod && !isAdvancePayed) {
-      await updateWallet({
-        userId: order.userId,
-        amount: itemTotalAmount,
-        type: "cancel",
-        flow: "credit",
-        message: `Order refund (${order.orderId})`,
+        alert: "Cancel already approved or item not found",
       });
     }
 
     /* =============================
-                SUCCESS
-       ============================= */
+       STOCK UPDATING
+    ============================= */
+    const variantId = item.variantId;
+    const accessoryId = item.accessoryId;
+    const quantity = item.quantity;
+
+    if (variantId) {
+      await carVariant.findByIdAndUpdate(variantId, {
+        $inc: { stock: quantity },
+      });
+    }
+
+    if (accessoryId) {
+      await Accessory.findByIdAndUpdate(accessoryId, {
+        $inc: { stock: quantity },
+      });
+    }
+
+    /* =============================
+       WALLET REFUND
+       - Only if payment was made via Stripe (online)
+       - Only for non-COD or COD-turned-Stripe payments
+    ============================= */
+    if (refundAmount > 0 && canRefund) {
+      await updateWallet({
+        userId: order.userId,
+        amount: refundAmount,
+        type: "refund",
+        flow: "credit",
+        message: `Cancellation refund for order ${order.orderId}`,
+      });
+    }
+
+    /* =============================
+       CHECK IF ALL ITEMS CANCELLED
+    ============================= */
+    // Fetch updated order to check if all items are cancelled
+    const updatedOrder = await Order.findById(orderObjectId);
+    const allItemsCancelled = updatedOrder.items.every(
+      (item) => item.fulfillmentStatus.status === "cancelled",
+    );
+
+    // If all items are cancelled, update order-level status
+    if (allItemsCancelled) {
+      let finalPaymentStatus = "Cancelled";
+      let finalRemainingAmount = 0;
+
+      if (order.paymentStatus === "Paid") {
+        // If was fully paid and refund was issued
+        finalPaymentStatus = canRefund ? "Refunded" : "Cancelled";
+      } else if (order.paymentStatus === "Partially Paid") {
+        // If was partially paid (only advance), advance is not refunded
+        finalPaymentStatus = "Cancelled";
+        finalRemainingAmount = 0; // All items cancelled, nothing remaining
+      }
+
+      await Order.updateOne(
+        { _id: orderObjectId },
+        {
+          $set: {
+            paymentStatus: finalPaymentStatus,
+            remainingAmount: finalRemainingAmount,
+            totalAmount: 0,
+            subtotal: 0,
+            taxAmount: 0,
+          },
+        },
+      );
+    }
+
+    /* =============================
+       SUCCESS RESPONSE
+    ============================= */
+    let refundNote = "";
+    if (order.paymentStatus === "Paid") {
+      if (canRefund && refundAmount > 0) {
+        refundNote = `Full refund of ₹${refundAmount.toFixed(2)} issued to wallet`;
+      } else {
+        refundNote = "Order cancelled - COD order, no refund needed";
+      }
+    } else if (order.paymentStatus === "Partially Paid") {
+      refundNote = `No refund - Only advance was paid (₹${order.advanceAmount}) which is non-refundable. Remaining amount adjusted to ₹${newRemainingAmount.toFixed(2)}`;
+    } else {
+      refundNote = "No refund - Payment not completed";
+    }
+
     res.json({
       success: true,
       message: "Cancel approved successfully",
+      data: {
+        refundAmount: refundAmount,
+        refundMethod: refundAmount > 0 && canRefund ? "wallet" : "none",
+        refundNote: refundNote,
+        originalPaymentStatus: order.paymentStatus,
+        newPaymentStatus: newPaymentStatus,
+        newTotalAmount: newTotalAmount,
+        newRemainingAmount: newRemainingAmount,
+        allItemsCancelled: allItemsCancelled,
+      },
     });
   } catch (err) {
     console.error("Cancel approve error:", err);
-    next(err);
+
+    // Send error response
+    if (!res.headersSent) {
+      return res.status(INTERNAL_SERVER_ERROR).json({
+        success: false,
+        alert: "Failed to process cancellation. Please try again.",
+        error: err.message,
+      });
+    }
   }
 };
 

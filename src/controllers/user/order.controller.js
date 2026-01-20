@@ -28,6 +28,7 @@ const createOrder = async (req, res, next) => {
     =============================== */
     let paymentIntentId = null;
     let paymentStatus = null;
+    let verifiedPaymentAmount = 0;
 
     if (paymentMethod === "STRIPE") {
       // Get payment_intent from query params (Stripe redirect) or body
@@ -66,28 +67,31 @@ const createOrder = async (req, res, next) => {
           );
         }
 
-        // Verify amount matches (Stripe uses smallest currency unit - paisa for INR)
+        // Get the actual paid amount from Stripe (convert from paise to rupees)
+        verifiedPaymentAmount = paymentIntent.amount / 100;
+
+        // Verify amount matches expected amount
         let expectedAmount;
-        if (paymentMethod === "STRIPE" && cart.totalAdvanceAmount) {
-          expectedAmount = Math.round(cart.totalAdvanceAmount * 100); // Convert to paisa
-        } else if (paymentMethod === "STRIPE") {
-          expectedAmount = Math.round(cart.totalAfterAll * 100); // Convert to paisa
+        if (cart.totalAdvanceAmount && cart.totalAdvanceAmount > 0) {
+          expectedAmount = cart.totalAdvanceAmount; // Advance payment
+        } else {
+          expectedAmount = cart.totalAfterAll; // Full payment
         }
-        if (paymentIntent.amount !== expectedAmount) {
+
+        // Allow small floating point differences (0.01 rupee)
+        if (Math.abs(verifiedPaymentAmount - expectedAmount) > 0.01) {
           console.log("Amount mismatch:", {
             expected: expectedAmount,
-            received: paymentIntent.amount,
+            received: verifiedPaymentAmount,
             cartTotal: cart.totalAfterAll,
           });
 
-          // Handle form POST vs AJAX differently
           if (req.xhr || req.headers.accept?.indexOf("json") > -1) {
             return res.status(400).json({
               success: false,
               message: "Payment amount mismatch",
             });
           }
-          // For form submission, redirect with error
           return res.redirect(`/cart/checkout?error=amount_mismatch`);
         }
       } catch (stripeError) {
@@ -162,7 +166,6 @@ const createOrder = async (req, res, next) => {
         : item.price * item.quantity;
 
       const taxAmount = item.accessoryId ? baseAmount * (taxRate / 100) : 0;
-
       const finalAmount = baseAmount + taxAmount;
 
       return {
@@ -176,7 +179,6 @@ const createOrder = async (req, res, next) => {
         price: item.price,
         offerPrice: item.offerPrice || null,
         accessoryTax: item.accessoryId ? taxAmount : null,
-        // advanceAmount: item.advanceAmount || null,
         totalItemAmount: item.accessoryId ? finalAmount : item.price,
       };
     });
@@ -184,19 +186,37 @@ const createOrder = async (req, res, next) => {
     /* ===============================
        PAYMENT CALCULATION
     =============================== */
-    let advanceAmount;
-    let remainingAmount;
+    // advanceAmount = what customer is expected to pay initially (if partial payment)
+    // paidAmount = actual amount paid right now
+    // remainingAmount = what's left to pay (calculated automatically by schema)
 
-    // if (paymentMethod === "COD") {
-    //   advanceAmount = orderItems.reduce(
-    //     (sum, item) => sum + (item.advanceAmount || 0),
-    //     0,
-    //   );
-    //   remainingAmount = cart.totalAfterAll - advanceAmount;
-    // }
+    let advanceAmount = 0;
+    let paidAmount = 0;
+    let paymentType = "full";
+
     if (paymentMethod === "STRIPE") {
-      advanceAmount = cart.totalAdvanceAmount;
-      remainingAmount = cart.totalAfterAll - advanceAmount;
+      // Customer paid via Stripe during checkout
+      paidAmount = verifiedPaymentAmount; // Use the verified amount from Stripe
+
+      if (cart.totalAdvanceAmount && cart.totalAdvanceAmount > 0) {
+        // This was an advance payment
+        advanceAmount = cart.totalAdvanceAmount;
+        paymentType = "advance";
+      } else {
+        // This was a full payment
+        advanceAmount = 0;
+        paymentType = "full";
+      }
+    } else if (paymentMethod === "COD") {
+      // COD - no payment made yet
+      paidAmount = 0;
+
+      // Check if there's an advance amount setup for COD
+      if (cart.totalAdvanceAmount && cart.totalAdvanceAmount > 0) {
+        advanceAmount = cart.totalAdvanceAmount;
+      } else {
+        advanceAmount = 0;
+      }
     }
 
     /* ===============================
@@ -211,18 +231,27 @@ const createOrder = async (req, res, next) => {
       taxAmount: cart.accessoryTax,
       discount: cart.discountedPrice,
       totalAmount: cart.totalAfterAll,
-      paymentStatus: paymentMethod === "STRIPE" ? "Paid" : "Pending", // Payment status
+
+      // Payment tracking
+      advanceAmount: advanceAmount,
+      paidAmount: paidAmount, // Actual amount paid now
+      // remainingAmount will be auto-calculated by schema pre-save hook
+
+      paymentStatus:
+        paidAmount >= cart.totalAfterAll
+          ? "Paid"
+          : paidAmount > 0
+            ? "Partially Paid"
+            : "Pending",
     };
 
-    // Store Stripe payment details
+    // Store Stripe payment details (for backward compatibility)
     if (paymentIntentId) {
       orderData.stripePaymentIntentId = paymentIntentId;
       orderData.stripePaymentStatus = paymentStatus;
     }
 
-    orderData.advanceAmount = advanceAmount;
-    orderData.remainingAmount = remainingAmount;
-
+    // Add coupon if applied
     if (cart.appliedCoupon && cart.appliedCoupon.couponId) {
       orderData.appliedCoupon = {
         couponId: cart.appliedCoupon.couponId,
@@ -237,6 +266,19 @@ const createOrder = async (req, res, next) => {
        CREATE ORDER
     =============================== */
     const order = new Order(orderData);
+
+    // Add initial payment transaction if payment was made
+    if (paymentMethod === "STRIPE" && paymentIntentId && paidAmount > 0) {
+      order.paymentTransactions.push({
+        paymentIntentId: paymentIntentId,
+        amount: paidAmount,
+        status: "succeeded",
+        paymentMethod: "STRIPE",
+        type: paymentType,
+        paidAt: new Date(),
+      });
+    }
+
     await order.save();
 
     /* ===============================
@@ -253,6 +295,7 @@ const createOrder = async (req, res, next) => {
     cart.accessoryTax = 0;
     cart.discountedPrice = 0;
     cart.totalAfterAll = 0;
+    cart.totalAdvanceAmount = 0; // Clear advance amount too
     cart.appliedCoupon = undefined;
 
     await cart.save();
@@ -281,6 +324,20 @@ const createOrder = async (req, res, next) => {
     if (req.xhr || req.headers.accept?.indexOf("json") > -1) {
       return res.json({
         success: true,
+        message:
+          paidAmount >= cart.totalAfterAll
+            ? "Order placed and paid successfully!"
+            : paidAmount > 0
+              ? `Order placed! Paid: ₹${paidAmount.toFixed(2)}, Remaining: ₹${(cart.totalAfterAll - paidAmount).toFixed(2)}`
+              : "Order placed successfully!",
+        order: {
+          orderId: order.orderId,
+          _id: order._id,
+          totalAmount: order.totalAmount,
+          paidAmount: order.paidAmount,
+          remainingAmount: order.remainingAmount,
+          paymentStatus: order.paymentStatus,
+        },
         redirect: `/cart/checkout-step-4/${order._id}`,
       });
     }
@@ -292,5 +349,4 @@ const createOrder = async (req, res, next) => {
     next(error);
   }
 };
-
 module.exports = { createOrder };

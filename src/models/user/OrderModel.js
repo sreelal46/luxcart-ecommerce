@@ -20,12 +20,6 @@ const orderItemSchema = new Schema(
     },
     productName: { type: String, required: true },
 
-    /* SNAPSHOT (NEVER CHANGE AFTER ORDER) */
-    // name: { type: String, required: true },
-    // variantName: { type: String, default: null },
-    // image: { type: String, required: true },
-    // sku: { type: String, default: null },
-
     /* PRICING */
     price: { type: Number, required: true },
     offerPrice: { type: Number, default: null },
@@ -103,6 +97,41 @@ const addressSchema = new Schema(
 );
 
 /* =========================
+   PAYMENT TRANSACTION SCHEMA
+   ========================= */
+const paymentTransactionSchema = new Schema(
+  {
+    paymentIntentId: {
+      type: String,
+      required: true,
+    },
+    amount: {
+      type: Number,
+      required: true,
+    },
+    status: {
+      type: String,
+      enum: ["pending", "succeeded", "failed", "refunded"],
+      default: "pending",
+    },
+    paymentMethod: {
+      type: String,
+      enum: ["COD", "STRIPE", "CARD", "NETBANKING"],
+    },
+    type: {
+      type: String,
+      enum: ["advance", "full", "remaining"],
+      required: true,
+    },
+    paidAt: {
+      type: Date,
+      default: Date.now,
+    },
+  },
+  { timestamps: true },
+);
+
+/* =========================
    ORDER (ORDER LEVEL)
    ========================= */
 const orderSchema = new Schema(
@@ -130,17 +159,17 @@ const orderSchema = new Schema(
     /* PAYMENT (ORDER LEVEL ONLY) */
     paymentMethod: {
       type: String,
-      enum: ["COD", "STRIPE", "CARD", "NETBANKING"],
+      enum: ["COD", "STRIPE", "CARD", "NETBANKING", "WALLET"],
       required: true,
     },
 
     paymentStatus: {
       type: String,
-      enum: ["Pending", "Paid", "Failed", "Refunded"],
+      enum: ["Pending", "Paid", "Partially Paid", "Failed", "Refunded"],
       default: "Pending",
     },
 
-    // Stripe payment details
+    // Stripe payment details (keep for backward compatibility)
     stripePaymentIntentId: {
       type: String,
       default: null,
@@ -150,6 +179,9 @@ const orderSchema = new Schema(
       type: String,
       default: null,
     },
+
+    /* PAYMENT TRANSACTIONS - NEW */
+    paymentTransactions: [paymentTransactionSchema],
 
     /* AMOUNTS */
     subtotal: { type: Number, required: true },
@@ -165,8 +197,21 @@ const orderSchema = new Schema(
     shippingCharges: { type: Number, default: 0 },
     totalAmount: { type: Number, required: true },
 
-    advanceAmount: { type: Number, default: null },
-    remainingAmount: { type: Number, default: null },
+    /* PAYMENT TRACKING - UPDATED */
+    // Expected advance payment (what customer should pay initially)
+    advanceAmount: { type: Number, default: 0 },
+
+    // Actual amount paid so far (sum of all successful payments)
+    paidAmount: { type: Number, default: 0 },
+
+    // Amount still owed (calculated: totalAmount - paidAmount)
+    remainingAmount: {
+      type: Number,
+      default: function () {
+        return this.totalAmount - (this.paidAmount || 0);
+      },
+    },
+
     totalRefundAmount: { type: Number, default: 0 },
     trackingId: { type: String, default: null },
 
@@ -180,16 +225,60 @@ const orderSchema = new Schema(
    AUTO ORDER ID GENERATION
    ========================= */
 orderSchema.pre("save", async function (next) {
-  if (this.orderId) return next();
+  if (this.isNew && !this.orderId) {
+    const counter = await Counter.findOneAndUpdate(
+      { name: "order" },
+      { $inc: { value: 1 } },
+      { new: true, upsert: true },
+    );
 
-  const counter = await Counter.findOneAndUpdate(
-    { name: "order" },
-    { $inc: { value: 1 } },
-    { new: true, upsert: true },
-  );
+    this.orderId = "LC-" + counter.value.toString().padStart(6, "0");
+  }
 
-  this.orderId = "LC-" + counter.value.toString().padStart(6, "0");
+  // Calculate remaining amount before saving
+  if (this.isModified("paidAmount") || this.isModified("totalAmount")) {
+    this.remainingAmount = this.totalAmount - (this.paidAmount || 0);
+
+    // Update payment status based on amounts
+    if (this.paidAmount <= 0) {
+      this.paymentStatus = "Pending";
+    } else if (this.paidAmount >= this.totalAmount) {
+      this.paymentStatus = "Paid";
+      this.remainingAmount = 0; // Ensure no negative remaining
+    } else {
+      this.paymentStatus = "Partially Paid";
+    }
+  }
+
   next();
 });
+
+/* =========================
+   VIRTUAL - IS FULLY PAID
+   ========================= */
+orderSchema.virtual("isFullyPaid").get(function () {
+  return this.paidAmount >= this.totalAmount;
+});
+
+/* =========================
+   METHOD - ADD PAYMENT
+   ========================= */
+orderSchema.methods.addPayment = function (paymentData) {
+  // Add transaction to history
+  this.paymentTransactions.push(paymentData);
+
+  // Update paid amount if payment succeeded
+  if (paymentData.status === "succeeded") {
+    this.paidAmount = (this.paidAmount || 0) + paymentData.amount;
+
+    // Update Stripe payment intent ID (for latest payment)
+    if (paymentData.paymentMethod === "STRIPE") {
+      this.stripePaymentIntentId = paymentData.paymentIntentId;
+      this.stripePaymentStatus = "succeeded";
+    }
+  }
+
+  return this;
+};
 
 module.exports = mongoose.model("Order", orderSchema);
