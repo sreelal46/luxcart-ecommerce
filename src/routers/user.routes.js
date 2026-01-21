@@ -37,7 +37,6 @@ const {
   loadWishlistPage,
   loadOrderDetailPage,
   loadReferralsPage,
-  loadwalletPage,
 } = require("../controllers/user/pageLoadThree.controller");
 
 const {
@@ -53,7 +52,6 @@ const {
   changeQuantity,
   downloadInvoice,
 } = require("../controllers/user/account.controller");
-const { createOrder } = require("../controllers/user/order.controller");
 
 const {
   cancelOrder,
@@ -116,7 +114,7 @@ route.get("/cars-collection", checkSession, loadCarCollection);
 route.get(
   "/cars-collection/view-car-product/:carId",
   checkSession,
-  loadSingleCarProduct
+  loadSingleCarProduct,
 );
 
 //view all accessories
@@ -124,7 +122,7 @@ route.get("/all-accessories", checkSession, loadAllAccessories);
 route.get(
   "/all-accessories/view-accessory-product/:id",
   checkSession,
-  loadSingleAccessories
+  loadSingleAccessories,
 );
 
 //view account profile details
@@ -133,31 +131,31 @@ route.get("/account/profile", checkSession, loadProfilePage);
 route.get(
   "/account/profile/edit-profile/:userId",
   checkSession,
-  loadEditProfilePage
+  loadEditProfilePage,
 );
 route.post("/check-email", editEmail);
 route.post(
   "/account/profile/edit-profile/:userId",
   checkSession,
   upload.any(),
-  editProfile
+  editProfile,
 );
 //order details
 route.get("/account/orders", checkSession, loadOrderPage);
 route.get(
   "/account/orders/order-details/:orderId",
   checkSession,
-  loadOrderDetailPage
+  loadOrderDetailPage,
 );
 route.post(
   "/account/orders/order-details/cancel-request/:orderId/:itemId",
   checkSession,
-  cancelOrder
+  cancelOrder,
 );
 route.post(
   "/account/orders/order-details/return-request/:orderId/:itemId",
   checkSession,
-  returnOrder
+  returnOrder,
 );
 //wishlist
 route.get("/account/wishlist", checkSession, loadWishlistPage);
@@ -165,7 +163,7 @@ route.post("/account/wishlist/add/:productId", checkSession, addToWishlist);
 route.delete(
   "/account/wishlist/delete/:itemId",
   checkSession,
-  deleteFromWishlist
+  deleteFromWishlist,
 );
 
 //view account address details
@@ -175,29 +173,40 @@ route.post("/account/addresses/add-address/:userId", checkSession, addAddress);
 route.get(
   "/account/addresses/edit-address/:addressId",
   checkSession,
-  loadEditAddressPage
+  loadEditAddressPage,
 );
 route.put(
   "/account/addresses/edit-address/:addressId",
   checkSession,
-  editAddress
+  editAddress,
 );
 route.patch(
   "/account/addresses/set-default-address/:addressId",
   checkSession,
-  setDeafaultAddress
+  setDeafaultAddress,
 );
 route.delete(
   "/account/addresses/delete-address/:addressId",
   checkSession,
-  deleteAddress
+  deleteAddress,
 );
 route.get("/account/change-password", checkSession, loadChangePassword);
 route.post("/account/change-password/:userId", checkSession, changePassword);
 
 //referrals
 route.get("/account/referrals", checkSession, loadReferralsPage);
+//wallet
+const {
+  loadwalletPage,
+  addMoneyToWallet,
+  verifyWalletPayment,
+} = require("../controllers/user/wallet.controller");
+// Load wallet page
 route.get("/account/wallet", checkSession, loadwalletPage);
+// Create payment intent for adding money
+route.post("/account/wallet/add-money", checkSession, addMoneyToWallet);
+// Verify payment and update balance
+route.post("/account/wallet/verify-payment", checkSession, verifyWalletPayment);
 
 //cart management
 const {
@@ -212,18 +221,37 @@ route.patch("/cart/add-coupon/:couponId", checkSession, applyCoupon);
 route.patch("/cart/remove-coupon", checkSession, removeCoupon);
 
 // checkout management
+const {
+  checkWalletBalance,
+  createOrder,
+} = require("../controllers/user/order.controller");
 route.get("/cart/checkout-step-1/:cartId", checkSession, loadCheckoutStep1);
 route.get("/cart/checkout-step-2/:addressId", checkSession, loadCheckoutStep2);
-const { payment } = require("../controllers/user/checkout.countroller");
+const {
+  payment,
+  fullPayment,
+} = require("../controllers/user/payment.countroller");
+route.get(
+  "/cart/checkout/wallet-balence/:cartTotal/:walletPaymentMethod",
+  checkSession,
+  checkWalletBalance,
+);
 route.post("/cart/create-payment/:paymentMethod", checkSession, payment);
 route.post("/cart/checkout/create-order/:cartId", checkSession, createOrder);
 route.get("/cart/checkout-step-4/:orderId", checkSession, loadCheckoutStep4);
+//full payment
+route.patch("/order/full-payment/:paymentMethod", checkSession, payment);
+route.patch(
+  "/order/full-payment/change-status/:orderId",
+  checkSession,
+  fullPayment,
+);
 
 //download invoice
 route.get(
   "/cart/checkout-success/download-invoice/:orderId",
   checkSession,
-  downloadInvoice
+  downloadInvoice,
 );
 
 module.exports = route;

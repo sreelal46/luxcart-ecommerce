@@ -196,7 +196,7 @@ function generateInvoice(order, outputPath, options = {}) {
     .text(
       `Date: ${new Date(order.createdAt).toLocaleDateString("en-IN")}`,
       invoiceBoxX + 10,
-      currentY + 38
+      currentY + 38,
     );
 
   currentY += 65;
@@ -309,7 +309,7 @@ function generateInvoice(order, outputPath, options = {}) {
       colors,
       marginLeft,
       pageWidth,
-      false
+      false,
     );
     hasRenderedAnySection = true;
   }
@@ -339,7 +339,7 @@ function generateInvoice(order, outputPath, options = {}) {
       marginLeft,
       pageWidth,
       true,
-      "CANCELLED"
+      "CANCELLED",
     );
     hasRenderedAnySection = true;
   }
@@ -369,7 +369,7 @@ function generateInvoice(order, outputPath, options = {}) {
       marginLeft,
       pageWidth,
       true,
-      "RETURNED"
+      "RETURNED",
     );
     hasRenderedAnySection = true;
   }
@@ -384,14 +384,12 @@ function generateInvoice(order, outputPath, options = {}) {
   // Calculate: Total - Advance - Refunds = Amount to Pay
   const calculatedAmountToPay = Math.max(
     0,
-    totalAmount - advancePaid - refundedCancelled - refundedReturned
+    totalAmount - advancePaid - refundedCancelled - refundedReturned,
   );
-  const finalAmountToPay =
-    remainingAmount !== undefined && remainingAmount !== null
-      ? Math.max(0, remainingAmount)
-      : calculatedAmountToPay;
   // const finalAmountToPay =
-  //   totalAmount - advancePaid - refundedCancelled - refundedReturned;
+  //   remainingAmount !== undefined && remainingAmount !== null
+  //     ? Math.max(0, remainingAmount)
+  //     : calculatedAmountToPay;
 
   // ========== ENHANCED PAYMENT SUMMARY ==========
   currentY += 10;
@@ -405,6 +403,13 @@ function generateInvoice(order, outputPath, options = {}) {
   const summaryWidth = 230;
 
   const summaryLines = [];
+
+  // SECTION 1: ORDER CALCULATION
+  summaryLines.push({
+    label: "ORDER CALCULATION",
+    isSectionHeader: true,
+    color: colors.accent,
+  });
 
   // 1. Subtotal
   summaryLines.push({
@@ -442,73 +447,126 @@ function generateInvoice(order, outputPath, options = {}) {
       color: colors.success,
       fontSize: 9,
       isCoupon: true,
-      couponType: order.couponDetails.discountType,
-      couponValue: order.couponDetails.discountValue,
     };
     summaryLines.push(couponLine);
   }
 
   // 5. Additional Discount (if any)
-  if (order.discount && Number(order.discount) > 0) {
+  const additionalDiscount =
+    order.discount - (order.couponDetails?.couponDiscount || 0);
+  if (additionalDiscount > 0) {
     summaryLines.push({
       label: "Additional Discount",
-      value: `- ${formatCurrency(
-        order.couponDetails && order.couponDetails.code
-          ? order?.discount - order?.couponDetails?.couponDiscount
-          : order?.discount
-      )}`,
+      value: `- ${formatCurrency(additionalDiscount)}`,
       color: colors.success,
       fontSize: 9,
     });
   }
 
-  // Divider before total
+  // Divider
   summaryLines.push({ isDivider: true });
 
-  // 6. Total Amount
+  // 6. Total Order Amount
   summaryLines.push({
-    label: "Total Amount",
-    value: formatCurrency(totalAmount),
+    label: "Total Order Amount",
+    value: formatCurrency(order.totalAmount || 0),
     color: colors.primary,
     fontSize: 10,
     isBold: true,
   });
 
-  // Divider before deductions
+  // SECTION 2: PAYMENT TRACKING
   summaryLines.push({ isDivider: true });
 
-  // 7. Advance Payment (if any)
-  if (advancePaid > 0) {
+  summaryLines.push({
+    label: "PAYMENT TRACKING",
+    isSectionHeader: true,
+    color: colors.accent,
+  });
+
+  // Show payment transactions if any
+  if (order.paymentTransactions && order.paymentTransactions.length > 0) {
+    order.paymentTransactions.forEach((txn, index) => {
+      if (txn.status === "succeeded") {
+        const paymentLabel =
+          txn.type === "advance"
+            ? `Advance Payment ${index + 1}`
+            : txn.type === "remaining"
+              ? `Remaining Payment ${index + 1}`
+              : `Payment ${index + 1}`;
+
+        const paymentDate = new Date(txn.paidAt).toLocaleDateString("en-IN", {
+          day: "2-digit",
+          month: "short",
+          year: "numeric",
+        });
+
+        summaryLines.push({
+          label: `${paymentLabel} (${paymentDate})`,
+          value: `- ${formatCurrency(txn.amount)}`,
+          color: colors.success,
+          fontSize: 8,
+          subLabel: true,
+        });
+      }
+    });
+  } else {
+    // No transactions - show paid amount if any
+    if (order.paidAmount > 0) {
+      summaryLines.push({
+        label: "Amount Paid",
+        value: `- ${formatCurrency(order.paidAmount)}`,
+        color: colors.success,
+        fontSize: 9,
+      });
+    }
+  }
+
+  // Show expected advance if it was set (for reference)
+  if (order.advanceAmount > 0 && order.paidAmount === 0) {
     summaryLines.push({
-      label: "Advance Paid",
-      value: `- ${formatCurrency(advancePaid)}`,
-      color: colors.accent,
-      fontSize: 9,
+      label: "Expected Advance Payment",
+      value: formatCurrency(order.advanceAmount),
+      color: colors.secondary,
+      fontSize: 8,
+      isExpected: true,
     });
   }
 
-  // 8. Cancelled Items Refund (if any)
-  if (refundedCancelled > 0) {
+  // SECTION 3: REFUNDS (if any)
+  const totalRefunds =
+    (order.refundedAmount || 0) + (order.returnRefundAmount || 0);
+  if (totalRefunds > 0) {
+    summaryLines.push({ isDivider: true });
+
     summaryLines.push({
-      label: "Refunded (Cancelled)",
-      value: `- ${formatCurrency(refundedCancelled)}`,
+      label: "REFUNDS",
+      isSectionHeader: true,
       color: colors.danger,
-      fontSize: 9,
     });
-  }
 
-  // 9. Returned Items Refund (if any)
-  if (refundedReturned > 0) {
-    summaryLines.push({
-      label: "Refunded (Returned)",
-      value: `- ${formatCurrency(refundedReturned)}`,
-      color: colors.warning,
-      fontSize: 9,
-    });
+    if (order.refundedAmount > 0) {
+      summaryLines.push({
+        label: "Refunded (Cancelled Items)",
+        value: `+ ${formatCurrency(order.refundedAmount)}`,
+        color: colors.danger,
+        fontSize: 9,
+      });
+    }
+
+    if (order.returnRefundAmount > 0) {
+      summaryLines.push({
+        label: "Refunded (Returned Items)",
+        value: `+ ${formatCurrency(order.returnRefundAmount)}`,
+        color: colors.warning,
+        fontSize: 9,
+      });
+    }
   }
 
   // Calculate dynamic height
   const headerHeight = 20;
+  const sectionHeaderHeight = 14;
   const labelFontSize = 9;
   const paddingTop = 12;
   const paddingBottom = 12;
@@ -520,20 +578,22 @@ function generateInvoice(order, outputPath, options = {}) {
   summaryLines.forEach((ln) => {
     if (ln.isDivider) {
       measuredLinesHeight += dividerHeight;
+    } else if (ln.isSectionHeader) {
+      measuredLinesHeight += sectionHeaderHeight;
     } else {
       const h = doc.heightOfString(ln.label, { width: summaryWidth - 24 });
       measuredLinesHeight += h + gapBetweenLines;
     }
   });
 
-  const finalAmountHeight = 18;
+  const finalAmountHeight = 24;
   const computedHeight =
     paddingTop +
     headerHeight +
     measuredLinesHeight +
     finalAmountHeight +
     paddingBottom;
-  const summaryHeight = Math.max(130, computedHeight);
+  const summaryHeight = Math.max(180, computedHeight);
 
   // Shadow effect
   doc.save();
@@ -573,14 +633,27 @@ function generateInvoice(order, outputPath, options = {}) {
       return;
     }
 
+    if (ln.isSectionHeader) {
+      try {
+        doc.font("DejaVuBold");
+      } catch (e) {}
+      doc
+        .fontSize(8)
+        .fillColor(ln.color || colors.accent)
+        .text(ln.label, labelX, summaryY);
+      summaryY += sectionHeaderHeight;
+      try {
+        doc.font("DejaVu");
+      } catch (e) {}
+      return;
+    }
+
     const lineFontSize = ln.fontSize || 9;
     const lineFont = ln.isBold ? "DejaVuBold" : "DejaVu";
 
     try {
       doc.font(lineFont);
-    } catch (e) {
-      // Fallback
-    }
+    } catch (e) {}
 
     // Special styling for coupon
     if (ln.isCoupon) {
@@ -592,24 +665,38 @@ function generateInvoice(order, outputPath, options = {}) {
       doc.restore();
     }
 
+    // Indent sub-labels (payment transactions)
+    const labelIndent = ln.subLabel ? 8 : 0;
+
     // Label
     doc
       .fontSize(lineFontSize)
       .fillColor(ln.color || colors.secondary)
-      .text(ln.label, labelX, summaryY, { width: summaryWidth - 80 });
+      .text(ln.label, labelX + labelIndent, summaryY, {
+        width: summaryWidth - 100,
+      });
 
-    // Value
-    const valueStr = ln.value;
-    const valueFontSize =
-      valueStr.length > 15 ? Math.max(7, lineFontSize - 2) : lineFontSize;
+    // Value (if exists)
+    if (ln.value) {
+      const valueStr = ln.value;
+      const valueFontSize =
+        valueStr.length > 15 ? Math.max(7, lineFontSize - 2) : lineFontSize;
 
-    doc
-      .fontSize(valueFontSize)
-      .fillColor(ln.color || colors.secondary)
-      .text(ln.value, valueX - 110, summaryY, { width: 110, align: "right" });
+      // Special styling for expected amounts
+      if (ln.isExpected) {
+        doc.fontSize(valueFontSize).fillColor(colors.secondary);
+      } else {
+        doc.fontSize(valueFontSize).fillColor(ln.color || colors.secondary);
+      }
+
+      doc.text(ln.value, valueX - 110, summaryY, {
+        width: 110,
+        align: "right",
+      });
+    }
 
     summaryY +=
-      doc.heightOfString(ln.label, { width: summaryWidth - 24 }) +
+      doc.heightOfString(ln.label, { width: summaryWidth - 100 }) +
       gapBetweenLines;
   });
 
@@ -618,51 +705,61 @@ function generateInvoice(order, outputPath, options = {}) {
     .moveTo(labelX, summaryY + 2)
     .lineTo(valueX, summaryY + 2)
     .strokeColor(colors.border)
-    .lineWidth(1)
+    .lineWidth(1.5)
     .stroke();
-  summaryY += 10;
+  summaryY += 12;
 
-  // Amount to Pay - Highlighted (FIXED CALCULATION)
-  const amountStr = formatCurrency(
-    remainingAmount ? remainingAmount : finalAmountToPay
-  );
+  // ========== FINAL AMOUNT TO PAY ==========
+  // Calculate: Total - PaidAmount + Refunds = Amount to Pay
+  const finalAmountToPay = Math.max(0, order.remainingAmount || 0);
+  const amountStr = formatCurrency(finalAmountToPay);
   const amountFontSize = amountStr.length > 15 ? 11 : 13;
 
   try {
     doc.font("DejaVuBold");
-  } catch (e) {
-    // Fallback
+  } catch (e) {}
+
+  // Label with payment status indicator
+  let amountLabel = "Amount to Pay";
+  let amountColor = colors.accent;
+
+  if (order.paymentStatus === "Paid") {
+    amountLabel = "Fully Paid ✓";
+    amountColor = colors.success;
+  } else if (order.paymentStatus === "Partially Paid") {
+    amountLabel = "Remaining Amount";
+    amountColor = colors.warning;
+  } else {
+    amountLabel = "Amount to Pay";
+    amountColor = colors.accent;
   }
 
   doc
-    .fontSize(11)
+    .fontSize(10)
     .fillColor(colors.primary)
-    .text("Amount to Pay", labelX, summaryY);
+    .text(amountLabel, labelX, summaryY);
 
   // Highlight box for final amount
   doc.save();
+  const highlightColor =
+    order.paymentStatus === "Paid" ? colors.success : colors.accent;
   doc
-    .roundedRect(valueX - 115, summaryY - 3, 115, 18, 3)
-    .fillOpacity(0.1)
-    .fill(colors.accent);
+    .roundedRect(valueX - 115, summaryY - 3, 115, 20, 3)
+    .fillOpacity(0.15)
+    .fill(highlightColor);
   doc.restore();
 
   doc
     .fontSize(amountFontSize)
-    .fillColor(colors.accent)
-    .text(
-      formatCurrency(remainingAmount ? remainingAmount : finalAmountToPay),
-      valueX - 110,
-      summaryY,
-      {
-        width: 110,
-        align: "right",
-      }
-    );
+    .fillColor(amountColor)
+    .text(amountStr, valueX - 110, summaryY, {
+      width: 110,
+      align: "right",
+    });
 
   currentY = currentY + summaryHeight + 12;
 
-  // ========== PAYMENT METHOD & STATUS INFO ==========
+  // ========== PAYMENT METHOD & TRANSACTION DETAILS ==========
   if (order.paymentMethod || order.paymentId || order.trackingId) {
     doc
       .fontSize(9)
@@ -675,6 +772,19 @@ function generateInvoice(order, outputPath, options = {}) {
         .fontSize(8)
         .fillColor(colors.primary)
         .text(`Method: ${order.paymentMethod}`, marginLeft + 10, currentY);
+      currentY += 11;
+    }
+
+    // Show payment status with color
+    if (order.paymentStatus) {
+      let statusColor = colors.warning;
+      if (order.paymentStatus === "Paid") statusColor = colors.success;
+      else if (order.paymentStatus === "Failed") statusColor = colors.danger;
+
+      doc
+        .fontSize(8)
+        .fillColor(statusColor)
+        .text(`Status: ${order.paymentStatus}`, marginLeft + 10, currentY);
       currentY += 11;
     }
 
@@ -706,15 +816,13 @@ function generateInvoice(order, outputPath, options = {}) {
     .fontSize(9)
     .fillColor(colors.primary)
     .text(
-      numberToWords(
-        Math.floor(remainingAmount ? remainingAmount : finalAmountToPay)
-      ),
+      numberToWords(Math.floor(finalAmountToPay)),
       marginLeft,
       currentY + 11,
       {
         width: pageWidth * 0.7,
         lineGap: 2,
-      }
+      },
     );
 
   currentY = doc.y + 18;
@@ -772,7 +880,7 @@ function generateInvoice(order, outputPath, options = {}) {
       "This is a system generated invoice and does not require signature.",
       marginLeft,
       currentY + 22,
-      { width: pageWidth, align: "center" }
+      { width: pageWidth, align: "center" },
     );
 
   if (order.paymentStatus) {
@@ -806,7 +914,7 @@ function generateInvoice(order, outputPath, options = {}) {
   });
 }
 
-// ========== HELPER: RENDER ITEMS TABLE (FIXED) ==========
+// ========== HELPER: RENDER ITEMS TABLE (WITHOUT ADVANCE COLUMN) ==========
 function renderItemsTable(
   doc,
   items,
@@ -815,25 +923,23 @@ function renderItemsTable(
   marginLeft,
   pageWidth,
   isAdjustment = false,
-  adjustmentType = ""
+  adjustmentType = "",
 ) {
   let currentY = startY;
   const marginRight = marginLeft + pageWidth;
 
   const tableTop = currentY;
   const descX = marginLeft;
-  const qtyX = 175;
-  const priceX = 215;
-  const taxX = 305;
-  const advanceX = 395;
-  const totalX = 485;
+  const qtyX = 200;
+  const priceX = 260;
+  const taxX = 370;
+  const totalX = 480;
 
   const descWidth = qtyX - descX - 8;
-  const qtyWidth = 30;
-  const priceWidth = 85;
-  const taxWidth = 85;
-  const advanceWidth = 85;
-  const totalWidth = 75;
+  const qtyWidth = 40;
+  const priceWidth = 100;
+  const taxWidth = 100;
+  const totalWidth = 80;
 
   // Table header
   let headerBg = colors.headerBg;
@@ -855,10 +961,6 @@ function renderItemsTable(
       align: "right",
     })
     .text("TAX", taxX - 5, tableTop + 7, { width: taxWidth, align: "right" })
-    .text("ADVANCE", advanceX - 5, tableTop + 7, {
-      width: advanceWidth,
-      align: "right",
-    })
     .text("TOTAL", totalX - 5, tableTop + 7, {
       width: totalWidth,
       align: "right",
@@ -877,7 +979,6 @@ function renderItemsTable(
     const total = item.total || 0;
     const status = (item.status || "").toUpperCase().trim();
     const refundAmount = item.refundAmount || 0;
-    const advanceAmount = item.advanceAmount || 0;
 
     // Determine which price to display
     let displayPrice = price;
@@ -927,10 +1028,6 @@ function renderItemsTable(
         })
         .text("TAX", taxX - 5, currentY + 7, {
           width: taxWidth,
-          align: "right",
-        })
-        .text("ADVANCE", advanceX - 5, currentY + 7, {
-          width: advanceWidth,
           align: "right",
         })
         .text("TOTAL", totalX - 5, currentY + 7, {
@@ -1016,15 +1113,6 @@ function renderItemsTable(
       .fillColor(colors.secondary)
       .text(formatCurrency(taxAmount), taxX - 5, currentY, {
         width: taxWidth,
-        align: "right",
-      });
-
-    // Advance Amount
-    doc
-      .fontSize(8)
-      .fillColor(colors.secondary)
-      .text(formatCurrency(advanceAmount), advanceX - 5, currentY, {
-        width: advanceWidth,
         align: "right",
       });
 

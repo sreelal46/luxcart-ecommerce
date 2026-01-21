@@ -7,7 +7,6 @@ const Accessory = require("../admin/productAccessoryModal");
 const Coupon = require("../admin/couponModel");
 
 const taxRate = parseInt(process.env.ACCESSORY_TAX_RATE) || 0;
-const advancePercent = parseInt(process.env.ADVANCE_PAYMENT_PERCENTAGE) || 0;
 
 /* ================= MONEY ROUNDING ================= */
 const roundMoney = (value) => Math.round(value * 100) / 100;
@@ -38,7 +37,6 @@ const cartItemSchema = new Schema(
     price: { type: Number, required: true },
     offerPrice: { type: Number, default: null },
     lineTotal: { type: Number, default: 0 },
-    advanceAmount: { type: Number, default: 0 },
 
     appliedOffer: {
       source: { type: String, default: null },
@@ -47,7 +45,7 @@ const cartItemSchema = new Schema(
       isActive: { type: Boolean, default: false },
     },
   },
-  { timestamps: true }
+  { timestamps: true },
 );
 
 /* ================= CART ================= */
@@ -93,7 +91,7 @@ const cartSchema = new Schema(
     // Total advance payment amount required
     totalAdvanceAmount: { type: Number, default: 0 },
   },
-  { timestamps: true }
+  { timestamps: true },
 );
 
 /* ================= APPLY COUPON METHOD ================= */
@@ -124,7 +122,7 @@ cartSchema.methods.applyCoupon = async function (couponId) {
 
     // Check per-user usage limit
     const userUsageCount = cleanUsedBy.filter(
-      (id) => id.toString() === this.userId.toString()
+      (id) => id.toString() === this.userId.toString(),
     ).length;
 
     if (userUsageCount >= coupon.usagePerUser)
@@ -153,7 +151,7 @@ cartSchema.methods.applyCoupon = async function (couponId) {
     } else {
       // Percentage discount: calculate from totalOfferAmount
       couponDiscount = roundMoney(
-        (this.totalOfferAmount * coupon.discountValue) / 100
+        (this.totalOfferAmount * coupon.discountValue) / 100,
       );
     }
 
@@ -247,7 +245,6 @@ cartSchema.pre("save", async function (next) {
     let accessoryTotal = 0; // Total accessory price at base prices
     let carTotalWithDiscount = 0; // Total car price after offers
     let accessoryTotalWithDiscount = 0; // Total accessory price after offers
-    let totalAdvanceAmount = 0; // Total advance payment required
 
     /* ========== LOOP THROUGH EACH CART ITEM ========== */
     for (const item of this.items) {
@@ -329,15 +326,7 @@ cartSchema.pre("save", async function (next) {
           item.lineTotal = roundMoney(item.price * item.quantity);
         }
 
-        // Calculate advance amount based on final price (offer or base)
-        const baseAdvancePrice = item.offerPrice ?? item.price;
-        item.accessoryTax = roundMoney(baseAdvancePrice * (taxRate / 100));
-        item.advanceAmount = roundMoney(
-          baseAdvancePrice * item.quantity * (advancePercent / 100)
-        );
-
         // Add to running totals
-        totalAdvanceAmount += item.advanceAmount;
         accessoryTotal += item.price * item.quantity;
         accessoryTotalWithDiscount += item.lineTotal;
       }
@@ -420,14 +409,7 @@ cartSchema.pre("save", async function (next) {
           item.lineTotal = roundMoney(item.price * item.quantity);
         }
 
-        // Calculate advance amount based on final price (offer or base)
-        const baseAdvancePrice = item.offerPrice ?? item.price;
-        item.advanceAmount = roundMoney(
-          baseAdvancePrice * item.quantity * (advancePercent / 100)
-        );
-
         // Add to running totals
-        totalAdvanceAmount += item.advanceAmount;
         carTotal += item.price * item.quantity;
         carTotalWithDiscount += item.lineTotal;
       }
@@ -444,7 +426,7 @@ cartSchema.pre("save", async function (next) {
 
     // Calculate total after product/category offers (stored for internal use)
     const totalAfterOffers = roundMoney(
-      carTotalWithDiscount + accessoryTotalWithDiscount
+      carTotalWithDiscount + accessoryTotalWithDiscount,
     );
 
     // Store this in totalOfferAmount field
@@ -452,7 +434,7 @@ cartSchema.pre("save", async function (next) {
 
     // Calculate tax on accessories (after offers applied)
     this.accessoryTax = roundMoney(
-      accessoryTotalWithDiscount * (taxRate / 100)
+      accessoryTotalWithDiscount * (taxRate / 100),
     );
 
     /* ========== VALIDATE APPLIED COUPON ========== */
@@ -478,14 +460,14 @@ cartSchema.pre("save", async function (next) {
             } else {
               // Percentage discount
               recalculatedDiscount = roundMoney(
-                (totalAfterOffers * coupon.discountValue) / 100
+                (totalAfterOffers * coupon.discountValue) / 100,
               );
             }
 
             // Ensure discount doesn't exceed total after offers
             recalculatedDiscount = Math.min(
               recalculatedDiscount,
-              totalAfterOffers
+              totalAfterOffers,
             );
 
             // Update coupon discount with recalculated value
@@ -518,7 +500,7 @@ cartSchema.pre("save", async function (next) {
 
       // With coupon: totalAfterOffers - couponDiscount + tax
       const totalAfterCoupon = roundMoney(
-        totalAfterOffers - this.appliedCoupon.couponDiscount
+        totalAfterOffers - this.appliedCoupon.couponDiscount,
       );
       this.totalAfterAll = roundMoney(totalAfterCoupon + this.accessoryTax);
     } else {
@@ -529,8 +511,12 @@ cartSchema.pre("save", async function (next) {
     // Store total discount (offers + coupon)
     this.discountedPrice = roundMoney(totalDiscount);
 
-    // Store total advance amount
-    this.totalAdvanceAmount = roundMoney(totalAdvanceAmount);
+    // Set total advance amount based on totalAfterAll
+    if (this.totalAfterAll > 999999) {
+      this.totalAdvanceAmount = 1000;
+    } else {
+      this.totalAdvanceAmount = 0;
+    }
 
     next();
   } catch (err) {

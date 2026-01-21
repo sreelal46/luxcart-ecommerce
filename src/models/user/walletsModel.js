@@ -25,7 +25,14 @@ const walletSchema = new mongoose.Schema(
         },
         type: {
           type: String,
-          enum: ["cancel", "return", "referral", "purchase", "add_to_wallet"],
+          enum: [
+            "cancel",
+            "return",
+            "referral",
+            "purchase",
+            "add_to_wallet",
+            "refund",
+          ],
           required: true,
         },
         flow: {
@@ -44,7 +51,7 @@ const walletSchema = new mongoose.Schema(
       },
     ],
   },
-  { timestamps: true }
+  { timestamps: true },
 );
 
 const Wallet = mongoose.model("Wallet", walletSchema);

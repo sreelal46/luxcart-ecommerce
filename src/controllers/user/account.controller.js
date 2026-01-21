@@ -58,7 +58,7 @@ const editProfile = async (req, res, next) => {
         dob,
         profileImage_url: image_Url,
       },
-      { upsert: true }
+      { upsert: true },
     );
 
     res.status(OK).json({ success: true, redirect: "/account/profile" });
@@ -155,7 +155,7 @@ const editAddress = async (req, res, next) => {
         district,
         state,
         pinCode: zip,
-      }
+      },
     );
 
     res.status(OK).json({ success: true, redirect: "/account/addresses" });
@@ -330,7 +330,7 @@ const deleteFromCart = async (req, res, next) => {
 
     // Remove the item
     cart.items = cart.items.filter((item) =>
-      item._id.toString() === itemId ? false : true
+      item._id.toString() === itemId ? false : true,
     );
     if (cart.items.length === 0) {
       cart.appliedCoupon = null;
@@ -405,10 +405,10 @@ const downloadInvoice = async (req, res, next) => {
 
     const order = await Order.findById(orderId)
       .populate("items.carId items.variantId items.accessoryId")
-      .populate("appliedCoupon.couponId"); // Populate coupon details
+      .populate("appliedCoupon.couponId");
 
     if (!order) {
-      return res.status(NOT_FOUND).json({ message: "Order not found" });
+      return res.status(404).json({ message: "Order not found" });
     }
 
     const fullAddress =
@@ -448,10 +448,9 @@ const downloadInvoice = async (req, res, next) => {
         price: item.price,
         offerPrice: item.offerPrice,
         tax: item.accessoryTax || 0,
-        advanceAmount: item.advanceAmount || 0,
         status,
         refundAmount,
-        total: isCancelled || isReturned ? 0 : item.totalItemAmount,
+        total: item.totalItemAmount,
       };
     });
 
@@ -459,25 +458,22 @@ const downloadInvoice = async (req, res, next) => {
     const refundedAmount = order.items.reduce(
       (sum, item) =>
         sum + (item.cancel?.approvedAt ? item.cancel.refundAmount || 0 : 0),
-      0
+      0,
     );
 
     const returnRefundAmount = order.items.reduce(
       (sum, item) =>
         sum + (item.return?.approvedAt ? item.return.refundAmount || 0 : 0),
-      0
-    );
-
-    // Calculate totals
-    const totalRefunds = refundedAmount + returnRefundAmount;
-    const advanceAmount = order.advanceAmount || 0;
-    const discount = order.discount || 0;
-    const shippingCharges = order.shippingCharges || 0;
-
-    const remainingAmount = Math.max(
       0,
-      order.totalAmount - totalRefunds - advanceAmount - discount
     );
+
+    const totalRefunds = refundedAmount + returnRefundAmount;
+
+    // Payment tracking from new schema
+    const totalAmount = order.totalAmount || 0;
+    const paidAmount = order.paidAmount || 0;
+    const remainingAmount = order.remainingAmount || 0;
+    const advanceAmount = order.advanceAmount || 0; // Expected advance (for reference)
 
     // Prepare coupon details if applied
     let couponDetails = null;
@@ -489,6 +485,9 @@ const downloadInvoice = async (req, res, next) => {
         couponDiscount: order.appliedCoupon.couponDiscount || 0,
       };
     }
+
+    // Payment transactions for detailed breakdown
+    const paymentTransactions = order.paymentTransactions || [];
 
     const invoiceData = {
       orderId: order.orderId,
@@ -502,26 +501,30 @@ const downloadInvoice = async (req, res, next) => {
       subtotal: order.subtotal,
       taxAmount: order.taxAmount,
       taxPercent: order.taxPercent,
-      shippingCharges: shippingCharges,
+      shippingCharges: order.shippingCharges || 0,
 
       // Coupon information
       couponDetails: couponDetails,
+      discount: order.discount || 0,
 
-      // Discounts and adjustments
-      discount: discount,
-      advanceAmount: advanceAmount,
+      // Total amount
+      totalAmount: totalAmount,
+
+      // Payment tracking (NEW)
+      advanceAmount: advanceAmount, // Expected advance (for reference)
+      paidAmount: paidAmount, // Actual amount paid
+      remainingAmount: remainingAmount, // Amount still owed
+      paymentTransactions: paymentTransactions, // Transaction history
+
+      // Refunds
       refundedAmount: refundedAmount,
       returnRefundAmount: returnRefundAmount,
-      totalRefundAmount: order.totalRefundAmount || totalRefunds,
-
-      // Final amounts
-      totalAmount: order.totalAmount,
-      remainingAmount: remainingAmount,
+      totalRefundAmount: totalRefunds,
 
       // Payment info
       paymentStatus: order.paymentStatus,
       paymentMethod: order.paymentMethod,
-      paymentId: order.paymentId,
+      paymentId: order.stripePaymentIntentId || order.paymentId,
       trackingId: order.trackingId,
 
       address: order.address,
@@ -556,7 +559,6 @@ const downloadInvoice = async (req, res, next) => {
     };
 
     await generateInvoice(invoiceData, filePath, options);
-    console.log(invoiceData);
 
     setTimeout(() => {
       return res.download(filePath, `invoice_${order.orderId}.pdf`, (err) => {

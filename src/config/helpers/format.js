@@ -14,7 +14,7 @@ module.exports = {
       .split(/\n+/)
       .map(
         (p) =>
-          `<p style="margin-bottom:12px; color:#555; line-height:1.7;">${p.trim()}</p>`
+          `<p style="margin-bottom:12px; color:#555; line-height:1.7;">${p.trim()}</p>`,
       )
       .join("");
     return new Handlebars.SafeString(formatted);
@@ -28,5 +28,9 @@ module.exports = {
         year: "numeric",
       })
       .replace(",", "");
+  },
+  replaceUnderscore: function (text) {
+    if (!text) return "";
+    return text.replace(/_/g, " ");
   },
 };

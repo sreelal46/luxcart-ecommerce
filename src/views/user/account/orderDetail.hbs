@@ -373,6 +373,256 @@
   .price-row.refund span:last-child {
     color: #dc3545;
   }
+
+  #stripe-submit-btn {
+    width: 100%;
+    padding: 12px;
+    background: #5469d4;
+    color: white;
+    border: none;
+    border-radius: 4px;
+    font-size: 16px;
+    font-weight: 600;
+    cursor: pointer;
+    margin-top: 20px;
+  }
+
+  #stripe-submit-btn:hover {
+    background: #4059c7;
+  }
+
+  #stripe-submit-btn:disabled {
+    background: #ccc;
+    cursor: not-allowed;
+  }
+
+  .payment-option {
+    margin-top: 20px;
+    margin-bottom: 20px;
+    cursor: pointer;
+    padding: 15px;
+    border: 2px solid #e0e0e0;
+    border-radius: 8px;
+    margin-bottom: 10px;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    transition: all 0.3s;
+  }
+
+  .payment-option:hover {
+    border-color: #5469d4;
+    background: #f8f9ff;
+  }
+
+  /* Modal Overlay */
+  .modal-overlay {
+    display: none;
+    position: fixed;
+    z-index: 9999;
+    left: 0;
+    top: 0;
+    width: 100%;
+    height: 100%;
+    background-color: rgba(0, 0, 0, 0.6);
+    animation: fadeIn 0.3s;
+  }
+
+  .modal-overlay.show {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+  }
+
+  /* Modal Container */
+  .modal-container {
+    background: white;
+    border-radius: 16px;
+    padding: 40px 30px;
+    text-align: center;
+    box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
+    max-width: 420px;
+    width: 90%;
+    animation: slideDown 0.4s ease-out;
+  }
+
+  /* Modal Icons */
+  .modal-icon-wrapper {
+    width: 80px;
+    height: 80px;
+    margin: 0 auto 25px;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    animation: scaleIn 0.5s ease-out;
+  }
+
+  .modal-icon-wrapper.success {
+    background: linear-gradient(135deg, #28a745 0%, #20c997 100%);
+    box-shadow: 0 10px 30px rgba(40, 167, 69, 0.3);
+  }
+
+  .modal-icon-wrapper.error {
+    background: linear-gradient(135deg, #dc3545 0%, #c82333 100%);
+    box-shadow: 0 10px 30px rgba(220, 53, 69, 0.3);
+  }
+
+  .modal-icon {
+    font-size: 48px;
+    color: white;
+    font-weight: bold;
+  }
+
+  .modal-title {
+    font-size: 26px;
+    font-weight: 700;
+    margin-bottom: 15px;
+    color: #333;
+  }
+
+  .modal-title.success {
+    color: #28a745;
+  }
+
+  .modal-title.error {
+    color: #dc3545;
+  }
+
+  .modal-message {
+    color: #666;
+    margin-bottom: 30px;
+    font-size: 16px;
+    line-height: 1.5;
+  }
+
+  .modal-btn {
+    padding: 12px 40px;
+    border: none;
+    border-radius: 8px;
+    font-size: 16px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.3s;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+  }
+
+  .modal-btn.success {
+    background: linear-gradient(135deg, #28a745 0%, #20c997 100%);
+    color: white;
+    box-shadow: 0 4px 15px rgba(40, 167, 69, 0.3);
+  }
+
+  .modal-btn.success:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 6px 20px rgba(40, 167, 69, 0.4);
+  }
+
+  .modal-btn.error {
+    background: linear-gradient(135deg, #dc3545 0%, #c82333 100%);
+    color: white;
+    box-shadow: 0 4px 15px rgba(220, 53, 69, 0.3);
+  }
+
+  .modal-btn.error:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 6px 20px rgba(220, 53, 69, 0.4);
+  }
+
+  @keyframes fadeIn {
+    from {
+      opacity: 0;
+    }
+
+    to {
+      opacity: 1;
+    }
+  }
+
+  @keyframes slideDown {
+    from {
+      transform: translateY(-100px);
+      opacity: 0;
+    }
+
+    to {
+      transform: translateY(0);
+      opacity: 1;
+    }
+  }
+
+  @keyframes scaleIn {
+    from {
+      transform: scale(0);
+      opacity: 0;
+    }
+
+    to {
+      transform: scale(1);
+      opacity: 1;
+    }
+  }
+
+  .payment-card {
+    margin-top: 20px;
+    border: none;
+    border-radius: 12px;
+    overflow: hidden;
+  }
+
+  .payment-card .card-header {
+    border-bottom: 2px solid #f0f0f0;
+    padding: 1.25rem;
+  }
+
+  .btn-pay {
+    padding: 14px 24px;
+    font-size: 17px;
+    font-weight: 600;
+    border-radius: 8px;
+    transition: all 0.3s ease;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+  }
+
+  .btn-pay:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+  }
+
+  .btn-pay:active {
+    transform: translateY(0);
+  }
+
+  .payment-history {
+    max-height: 400px;
+    overflow-y: auto;
+  }
+
+  .transaction-item {
+    transition: all 0.2s ease;
+  }
+
+  .transaction-item:hover {
+    background-color: #f8f9fa !important;
+    border-color: #dee2e6 !important;
+    transform: translateX(5px);
+  }
+
+  .payment-method-info {
+    border: 1px solid #e9ecef;
+  }
+
+  .progress {
+    background-color: #e9ecef;
+    border-radius: 10px;
+    overflow: hidden;
+  }
+
+  .progress-bar {
+    font-size: 12px;
+    font-weight: 600;
+  }
 </style>
 
 <div class="wrap-orderdetail">
@@ -454,16 +704,196 @@
     {{order.address.city}}, {{order.address.district}},
     {{order.address.state}} – {{order.address.pincode}}
   </div>
+  <div id="stripe-box" style="display:none;">
+    <h5 class="mt-3">Secure Payment</h5>
+
+    <!-- Amount Display -->
+    <div style="background:#f8f9ff; border:2px solid #5469d4; border-radius:8px; padding:15px; margin-bottom:20px;">
+      <div style="display:flex; justify-content:space-between; align-items:center;">
+        <span style="font-size:16px; color:#666;">Amount to Pay:</span>
+        <span style="font-size:24px; font-weight:700; color:#5469d4;" id="stripe-amount">₹0</span>
+      </div>
+    </div>
+
+    <div id="payment-element"></div>
+    <button id="stripe-submit-btn" type="button">
+      <span id="btn-text">Pay Now</span>
+      <span id="btn-amount" style="margin-left:10px; font-weight:700;"></span>
+    </button>
+  </div>
+
+  {{!-- Complete Payment Section --}}
+  <div class="card payment-card shadow-sm">
+    <div class="card-header bg-white" style="cursor: pointer;" data-bs-toggle="collapse"
+      data-bs-target="#paymentInfoCollapse" aria-expanded="false" aria-controls="paymentInfoCollapse">
+      <h5 class="mb-0">
+        <i class="bi bi-credit-card-2-back me-2"></i>
+        Payment Information
+        <i class="bi bi-chevron-down float-end"></i>
+      </h5>
+    </div>
+
+    <div class="collapse" id="paymentInfoCollapse">
+      <div class="card-body">
+        {{!-- Payment Summary --}}
+        <div class="payment-summary">
+          <div class="row mb-2">
+            <div class="col-7 text-muted">Total Amount:</div>
+            <div class="col-5 text-end fw-bold">{{formatCurrency order.totalAmount}}</div>
+          </div>
+
+          {{#if (gt order.paidAmount 0)}}
+          <div class="row mb-2">
+            <div class="col-7 text-muted">
+              <i class="bi bi-check-circle-fill text-success me-1"></i>
+              Amount Paid:
+            </div>
+            <div class="col-5 text-end text-success fw-bold">
+              {{formatCurrency order.paidAmount}}
+            </div>
+          </div>
+          {{/if}}
+
+          {{#if (gt order.remainingAmount 0)}}
+          <div class="row mb-2">
+            <div class="col-7 text-muted">
+              <i class="bi bi-exclamation-circle-fill text-danger me-1"></i>
+              Remaining:
+            </div>
+            <div class="col-5 text-end text-danger fw-bold">
+              {{formatCurrency order.remainingAmount}}
+            </div>
+          </div>
+          {{/if}}
+
+          {{!-- Payment Progress Bar --}}
+          {{#if (isPartiallyPaid order)}}
+          <div class="progress mt-3" style="height: 20px;">
+            <div class="progress-bar bg-success" role="progressbar"
+              aria-valuenow="{{paymentPercentage order.paidAmount order.totalAmount}}" aria-valuemin="0"
+              aria-valuemax="100">
+              {{paymentPercentage order.paidAmount order.totalAmount}}% Paid
+            </div>
+          </div>
+          {{/if}}
+        </div>
+
+        <hr class="my-3">
+
+        {{!-- Payment Status Badge --}}
+        <div class="mb-3">
+          <span class="badge {{paymentStatusBadge order.paymentStatus}} p-2 fs-6">
+            <i class="{{paymentStatusIcon order.paymentStatus}} me-1"></i>
+            {{order.paymentStatus}}
+          </span>
+        </div>
+        {{#if (amountCheck order.remainingAmount)}}
+        {{!-- Payment Button --}}
+        {{#unless (isFullyPaid order)}}
+        {{#if (gt order.remainingAmount 0)}}
+        <button class="btn btn-primary btn-lg w-100 btn-pay mb-3" onclick="payment(this)"
+          data-payment="{{order.paymentMethod}}" data-totalamount="{{order.remainingAmount}}"
+          data-orderid="{{order._id}}" data-customername="{{order.address.name}}">
+          <i class="{{paymentMethodIcon order.paymentMethod}} me-2"></i>
+          {{#if (gt order.paidAmount 0)}}
+          Pay Remaining {{formatCurrency order.remainingAmount}}
+          {{else}}
+          Pay Now {{formatCurrency order.totalAmount}}
+          {{/if}}
+        </button>
+        {{/if}}
+        {{else}}
+        {{#if (eq order.paymentStatus "Cancelled")}}
+        {{else}}
+        {{!-- Fully Paid Message --}}
+        <div class="alert alert-success mb-3">
+          <i class="bi bi-check-circle-fill me-2"></i>
+          <strong>Payment Completed!</strong> This order has been fully paid.
+        </div>\
+        {{/if}}
+        {{/unless}}
+        {{else}}
+        <div class="alert alert-warnig mb-3">
+          <i class="bi bi-check-circle-fill me-2"></i>
+          <strong>Remaining balance can be paid after delivery</strong>
+        </div>
+        {{/if}}
+
+        {{!-- Payment Method Info --}}
+        <div class="payment-method-info p-3 bg-light rounded">
+          <div class="row">
+            <div class="col-6">
+              <small class="text-muted d-block">Payment Method</small>
+              <span class="fw-bold">
+                <i class="{{paymentMethodIcon order.paymentMethod}} me-1"></i>
+                {{order.paymentMethod}}
+              </span>
+            </div>
+            <div class="col-6 text-end">
+              <small class="text-muted d-block">Order Date</small>
+              <span class="fw-bold">{{formatDateShort order.createdAt}}</span>
+            </div>
+          </div>
+        </div>
+
+        {{!-- Payment Transaction History --}}
+        {{#if order.paymentTransactions}}
+        {{#if (gt (length order.paymentTransactions) 0)}}
+        <div class="mt-4">
+          <h6 class="mb-3">
+            <i class="bi bi-clock-history me-2"></i>
+            Payment History
+          </h6>
+          <div class="payment-history">
+            {{#each order.paymentTransactions}}
+            {{#if (eq this.status "succeeded")}}
+            <div
+              class="transaction-item d-flex justify-content-between align-items-start p-3 mb-2 bg-light rounded border">
+              <div class="flex-grow-1">
+                <div class="d-flex align-items-center mb-1">
+                  {{#if (eq this.type "advance")}}
+                  <span class="badge bg-info me-2">
+                    <i class="bi bi-cash-coin"></i> Advance
+                  </span>
+                  {{else if (eq this.type "remaining")}}
+                  <span class="badge bg-warning text-dark me-2">
+                    <i class="bi bi-wallet2"></i> Remaining
+                  </span>
+                  {{else}}
+                  <span class="badge bg-success me-2">
+                    <i class="bi bi-credit-card"></i> Full
+                  </span>
+                  {{/if}}
+                  <small class="text-muted">{{formatDate this.paidAt}}</small>
+                </div>
+                {{#if this.paymentIntentId}}
+                <small class="text-muted d-block">
+                  <i class="bi bi-receipt me-1"></i>
+                  ID: {{this.paymentIntentId}}
+                </small>
+                {{/if}}
+              </div>
+              <div class="text-end">
+                <strong class="text-success fs-5">{{formatCurrency this.amount}}</strong>
+              </div>
+            </div>
+            {{/if}}
+            {{/each}}
+          </div>
+        </div>
+        {{/if}}
+        {{/if}}
+      </div>
+    </div>
+  </div>
+
 
   <!-- ITEMS -->
   <div style="display: flex;justify-content: space-between;">
     <h5 class="section-title">Order Items</h5>
-    <button id="downloadInvoice" class="btn-pay" data-orderid="{{order._id}}" data-orderedid="{{order.orderId}}"
-      data-customername="{{order.address.name}}">
-      <i class="bi bi-credit-card"></i>
-      Pay
-    </button>
   </div>
+
+
   <div class="item-box">
     {{#each order.items}}
     <div class="user-item-row">
@@ -490,13 +920,29 @@
         <div class="item-price-box">
 
           <div class="price-row">
-            <span>Price</span>
+            <span>Unit Price</span>
             <span>₹ {{formatPrice this.price}}</span>
           </div>
+          {{#if this.offerPrice}}
+          <div class="price-row offer">
+            <span>Unit Offer Price</span>
+            <span>₹ {{formatPrice this.offerPrice}}</span>
+          </div>
+          {{/if}}
 
+          {{#if this.advanceAmount}}
+          <div class="price-row advance">
+            <span>Advance Paid</span>
+            <span>₹ {{formatPrice this.advanceAmount}}</span>
+          </div>
+          {{/if}}
           <div class="price-row">
             <span>Tax</span>
             <span>₹ {{formatPrice this.accessoryTax}}</span>
+          </div>
+          <div class="price-row">
+            <span>Total Per item</span>
+            <span>₹ {{formatPrice this.totalItemAmount}}</span>
           </div>
 
           {{#if this.offerPrice}}
@@ -515,10 +961,12 @@
 
           {{#if this.cancel.approvedAt}}
           <div class="price-row refund">
-            <span>Refunded (Cancelled)</span>
+            <span>Cancelled</span>
             <span>- ₹ {{formatPrice this.cancel.refundAmount}}</span>
           </div>
           {{/if}}
+
+
 
           {{#if this.return.approvedAt}}
           <div class="price-row refund">
@@ -645,13 +1093,13 @@
         {{/if}}
 
         <!-- FINAL ITEM TOTAL -->
-        <div class="user-item-price">
+        <!-- <div class="user-item-price">
           {{#if this.offerPrice}}
           ₹ {{formatPrice this.offerPrice}}
           {{else}}
           ₹ {{formatPrice this.price}}
           {{/if}}
-        </div>
+        </div> -->
 
       </div>
 
@@ -761,6 +1209,32 @@
     </div>
   </div>
 </div>
+
+<!-- Success Modal -->
+<div class="modal-overlay" id="paymentSuccessModal">
+  <div class="modal-container">
+    <div class="modal-icon-wrapper success">
+      <div class="modal-icon">✓</div>
+    </div>
+    <h5 class="modal-title success" id="successTitle">Payment Successful!</h5>
+    <p class="modal-message" id="successMessage">Your order has been placed successfully</p>
+    <button class="modal-btn success" onclick="closeSuccessModal()">Continue</button>
+  </div>
+</div>
+
+<!-- Error Modal -->
+<div class="modal-overlay" id="paymentErrorModal">
+  <div class="modal-container">
+    <div class="modal-icon-wrapper error">
+      <div class="modal-icon">✕</div>
+    </div>
+    <h5 class="modal-title error" id="errorTitle">Payment Failed</h5>
+    <p class="modal-message" id="errorMessage">Something went wrong. Please try again.</p>
+    <button class="modal-btn error" onclick="closeErrorModal()">Try Again</button>
+  </div>
+</div>
+
+<script src="https://js.stripe.com/v3/"></script>
 <script>
   "use strict";
 
@@ -869,6 +1343,271 @@
     }
 
     return valid;
+  }
+
+  /* -----------------------------
+     STRIPE INITIALIZATION
+  ----------------------------- */
+  const stripe = Stripe("pk_test_51SprHJDaZqWZuwPQahtwI62z1s3n0NZ1RChPHKFRpiPwSZuuAmJmdSMqNL6oXTIPtJ7Ijc55sT5vc4MBCo0DRaV200Hmz5YVeg");
+  let elements;
+  let clientSecret;
+  let currentOrderId;
+  let successRedirectUrl = null;
+
+  /* -----------------------------
+     CHECK URL PARAMS FOR ERRORS
+  ----------------------------- */
+  window.addEventListener('DOMContentLoaded', () => {
+    const urlParams = new URLSearchParams(window.location.search);
+    const error = urlParams.get('error');
+
+    if (error) {
+      const errorMessages = {
+        'amount_mismatch': 'Payment amount does not match order total',
+        'payment_not_found': 'Payment information not found',
+        'payment_failed': 'Payment transaction failed',
+        'payment_canceled': 'Payment was canceled',
+        'verification_failed': 'Payment verification failed'
+      };
+
+      showErrorModal('Payment Error', errorMessages[error] || 'An error occurred during payment');
+    }
+  });
+
+  /* -----------------------------
+     MODAL FUNCTIONS
+  ----------------------------- */
+  function showSuccessModal(title, message, redirectUrl = null) {
+    const modal = document.getElementById('paymentSuccessModal');
+    const titleEl = document.getElementById('successTitle');
+    const messageEl = document.getElementById('successMessage');
+
+    titleEl.textContent = title;
+    messageEl.textContent = message;
+    successRedirectUrl = redirectUrl;
+
+    modal.classList.add('show');
+  }
+
+  function showErrorModal(title, message) {
+    const modal = document.getElementById('paymentErrorModal');
+    const titleEl = document.getElementById('errorTitle');
+    const messageEl = document.getElementById('errorMessage');
+
+    titleEl.textContent = title;
+    messageEl.textContent = message;
+
+    modal.classList.add('show');
+  }
+
+  function closeSuccessModal() {
+    const modal = document.getElementById('paymentSuccessModal');
+    modal.classList.remove('show');
+
+    if (successRedirectUrl) {
+      window.location.href = successRedirectUrl;
+    } else {
+      window.location.reload();
+    }
+  }
+
+  function closeErrorModal() {
+    const modal = document.getElementById('paymentErrorModal');
+    modal.classList.remove('show');
+  }
+
+  /* -----------------------------
+     STRIPE PAYMENT FUNCTION
+  ----------------------------- */
+  async function payment(div) {
+    try {
+      // Get data from button attributes
+      const paymentMethod = div.getAttribute("data-payment");
+      const totalAmount = div.getAttribute("data-totalamount");
+      const orderId = div.getAttribute("data-orderid");
+
+      console.log('Payment initiated:', { paymentMethod, totalAmount, orderId });
+
+      // Validation
+      if (!paymentMethod) {
+        showErrorModal('Payment Error', 'Payment method not specified');
+        return;
+      }
+
+      if (!totalAmount || parseFloat(totalAmount) <= 0) {
+        showErrorModal('Payment Error', 'Invalid payment amount');
+        return;
+      }
+
+      if (!orderId) {
+        showErrorModal('Payment Error', 'Order ID not found');
+        return;
+      }
+
+      // Disable button during processing
+      div.disabled = true;
+      const originalHTML = div.innerHTML;
+      div.innerHTML = '<i class="bi bi-hourglass-split"></i> Loading...';
+
+      console.log('Sending payment request...');
+      const res = await axios.patch(`/order/full-payment/${paymentMethod}`, {
+        amount: parseFloat(totalAmount),
+        orderId: orderId
+      });
+
+      console.log('Payment response:', res.data);
+
+      if (res.data.success) {
+        clientSecret = res.data.clientSecret;
+        currentOrderId = orderId;
+
+        // Initialize Stripe Elements
+        elements = stripe.elements({ clientSecret });
+        const paymentElement = elements.create("payment");
+
+        const container = document.getElementById("payment-element");
+        const stripeBox = document.getElementById("stripe-box");
+        const amountDisplay = document.getElementById("stripe-amount");
+
+        // Format amount for display
+        const formattedAmount = `₹${parseFloat(totalAmount).toLocaleString('en-IN', {
+          minimumFractionDigits: 2,
+          maximumFractionDigits: 2
+        })}`;
+
+        amountDisplay.textContent = formattedAmount;
+        stripeBox.style.display = "block";
+        container.innerHTML = "";
+
+        // Mount payment element with error handling
+        try {
+          await paymentElement.mount(container);
+          console.log('Payment element mounted successfully');
+        } catch (mountError) {
+          console.error('Payment element mount error:', mountError);
+          showErrorModal('Payment Setup Error', 'Unable to load payment form. Please refresh and try again.');
+          div.disabled = false;
+          div.innerHTML = originalHTML;
+          return;
+        }
+
+        // Update submit button
+        const btnAmount = document.getElementById("btn-amount");
+        btnAmount.textContent = formattedAmount;
+
+        const submitBtn = document.getElementById("stripe-submit-btn");
+        submitBtn.onclick = () => handleStripePayment(orderId);
+
+        // Re-enable the original button
+        div.disabled = false;
+        div.innerHTML = originalHTML;
+
+        // Scroll to payment form
+        stripeBox.scrollIntoView({ behavior: 'smooth', block: 'center' });
+
+      } else {
+        div.disabled = false;
+        div.innerHTML = originalHTML;
+        showErrorModal('Payment Initialization Failed', res.data.message || 'Unable to initialize payment. Please try again.');
+      }
+    } catch (err) {
+      console.error('Payment init error:', err);
+
+      // Re-enable button
+      if (div) {
+        div.disabled = false;
+        div.innerHTML = div.getAttribute('data-original-html') || '<i class="bi bi-credit-card"></i> Pay Now';
+      }
+
+      // Handle different error types
+      let errorMessage = 'Failed to initialize payment. Please try again.';
+
+      if (err.response) {
+        console.error('Response error:', err.response.data);
+        errorMessage = err.response.data?.message || err.response.data?.error || errorMessage;
+      } else if (err.request) {
+        console.error('Request error:', err.request);
+        errorMessage = 'Network error. Please check your connection and try again.';
+      } else {
+        console.error('Error:', err.message);
+        errorMessage = err.message || errorMessage;
+      }
+
+      showErrorModal('Payment Error', errorMessage);
+    }
+  }
+
+  /* -----------------------------
+     HANDLE STRIPE PAYMENT
+  ----------------------------- */
+  async function handleStripePayment(orderId) {
+    const submitBtn = document.getElementById("stripe-submit-btn");
+    const btnText = document.getElementById("btn-text");
+    const btnAmount = document.getElementById("btn-amount");
+
+    submitBtn.disabled = true;
+    btnText.textContent = "Processing...";
+    btnAmount.style.display = "none";
+
+    try {
+      console.log('Confirming payment...');
+      const { error, paymentIntent } = await stripe.confirmPayment({
+        elements,
+        redirect: 'if_required',
+        confirmParams: {
+          return_url: window.location.href
+        }
+      });
+
+      if (error) {
+        console.error('Payment confirmation error:', error);
+        showErrorModal('Payment Failed', error.message);
+        submitBtn.disabled = false;
+        btnText.textContent = "Pay Now";
+        btnAmount.style.display = "inline";
+        return;
+      }
+
+      if (paymentIntent && paymentIntent.status === 'succeeded') {
+        console.log('Payment succeeded:', paymentIntent.id);
+        btnText.textContent = "Completing payment...";
+
+        // Update order status on backend
+        const response = await axios.patch(`/order/full-payment/change-status/${orderId}`, {
+          payment_intent: paymentIntent.id
+        });
+
+        console.log('Status update response:', response.data);
+
+        if (response.data.success) {
+          showSuccessModal(
+            'Payment Successful!',
+            'Your payment has been processed successfully. Redirecting...',
+            response.data.redirect || window.location.href
+          );
+        } else {
+          showErrorModal(
+            'Order Update Failed',
+            response.data.message || 'Payment succeeded but order update failed. Please contact support.'
+          );
+          submitBtn.disabled = false;
+          btnText.textContent = "Pay Now";
+          btnAmount.style.display = "inline";
+        }
+      }
+    } catch (err) {
+      console.error('Payment error:', err);
+
+      let errorMessage = 'An error occurred while processing your payment. Please try again.';
+      if (err.response?.data?.message) {
+        errorMessage = err.response.data.message;
+      }
+
+      showErrorModal('Payment Processing Error', errorMessage);
+      submitBtn.disabled = false;
+      btnText.textContent = "Pay Now";
+      btnAmount.style.display = "inline";
+    }
   }
 
   /* -----------------------------

@@ -95,18 +95,18 @@ route.post(
   "/brands-management/add-brand",
   checkSession,
   upload.single("image"),
-  addBrand
+  addBrand,
 );
 route.put(
   "/brands-management/edit-brand/:id",
   checkSession,
   upload.single("image"),
-  editBrand
+  editBrand,
 );
 route.patch(
   "/brands-management/soft-delete-brand/:id",
   checkSession,
-  softDeleteBrand
+  softDeleteBrand,
 );
 
 // ====================== CATEGORY ======================
@@ -123,19 +123,19 @@ route.post("/categorys-management/add-category", checkSession, addCategory);
 route.put(
   "/categorys-management/edit-category/:id",
   checkSession,
-  editCategory
+  editCategory,
 );
 route.patch(
   "/categorys-management/soft-delete-category/:id",
   checkSession,
-  softDeleteCategory
+  softDeleteCategory,
 );
 
 //offers
 route.put("/categorys-management/add-offer/:categoryId", addOfferToCategory);
 route.patch(
   "/categorys-management/remove-offer/:categoryId",
-  removeOfferToCategory
+  removeOfferToCategory,
 );
 // ====================== TYPE ======================
 const {
@@ -150,7 +150,7 @@ route.put("/types-management/edit-type/:id", checkSession, editType);
 route.patch(
   "/types-management/soft-delete-type/:id",
   checkSession,
-  softDeleteType
+  softDeleteType,
 );
 
 // ====================== PRODUCT ======================
@@ -170,59 +170,59 @@ route.post(
   "/products-management/add-car-product",
   checkSession,
   upload.any(),
-  addCarProduct
+  addCarProduct,
 );
 route.get(
   "/products-management/view-car-product/:id",
   checkSession,
-  loadViewCar
+  loadViewCar,
 );
 route.get(
   "/products-management/edit-car-product/:id",
   checkSession,
-  loadEditCar
+  loadEditCar,
 );
 route.put(
   "/products-management/edit-car-product/:id",
   checkSession,
   upload.any(),
-  editCarProduct
+  editCarProduct,
 );
 
 // accessories
 route.get(
   "/products-management/add-accessories-product",
   checkSession,
-  loadAddAccessories
+  loadAddAccessories,
 );
 route.post(
   "/products-management/add-accessories-product",
   checkSession,
   upload.any(),
-  addAccessoriesProduct
+  addAccessoriesProduct,
 );
 route.get(
   "/products-management/view-accessories-product/:id",
   checkSession,
-  loadViewAccessories
+  loadViewAccessories,
 );
 route.get(
   "/products-management/edit-accessories-product/:id",
   checkSession,
-  loadEditAccessories
+  loadEditAccessories,
 );
 route.put(
   "/products-management/edit-accessories-product/:id",
   checkSession,
   upload.any(),
-  editAccessories
+  editAccessories,
 );
 
 // soft delete
 route.patch(
   "/products-management/soft-delete-product/:id",
   checkSession,
-  softDelete
+  softDelete,
 );
 // ================= PRODUCT OFFER ===================
 const {
@@ -232,23 +232,27 @@ const {
 route.put(
   "/products-management/add-offer/:productId",
   checkSession,
-  addProductOffer
+  addProductOffer,
 );
 route.patch(
   "/products-management/remove-offer/:productId",
   checkSession,
-  removeProductOffer
+  removeProductOffer,
 );
 
 // ====================== ORDER ======================
 const {
-  updateOrderStatus,
-  updateSingleItemStatus,
   returnApprove,
   returnReject,
+} = require("../controllers/admin/order.return.controller");
+const {
+  updateOrderStatus,
+  updateSingleItemStatus,
+} = require("../controllers/admin/order.status.controller");
+const {
   cancelApprove,
   cancelReject,
-} = require("../controllers/admin/order.controller");
+} = require("../controllers/admin/order.cancel.controller");
 
 route.get("/orders-management", checkSession, loadOrderManagement);
 route.get("/orders-management/view-order/:orderId", checkSession, loadOneOrder);
@@ -256,46 +260,46 @@ route.get("/orders-management/view-order/:orderId", checkSession, loadOneOrder);
 route.patch(
   "/orders-management/update-status/:orderId",
   checkSession,
-  updateOrderStatus
+  updateOrderStatus,
 );
 route.patch(
   "/orders-management/update-status/:orderId/:itemId",
   checkSession,
-  updateSingleItemStatus
+  updateSingleItemStatus,
 );
 
 // return
 route.get(
   "/orders-management/return-request-management",
   checkSession,
-  loadReturnReq
+  loadReturnReq,
 );
 route.patch(
   "/orders-management/return-request-management/:orderId/:itemId/approve",
   checkSession,
-  returnApprove
+  returnApprove,
 );
 route.patch(
   "/orders-management/return-request-management/:orderId/:itemId/reject",
   checkSession,
-  returnReject
+  returnReject,
 );
 
 // cancel
 route.get(
   "/orders-management/cancel-request-management",
   checkSession,
-  loadCancelReq
+  loadCancelReq,
 );
 route.patch(
   "/orders-management/cancel-request-management/:orderId/:itemId/approve",
   checkSession,
-  cancelApprove
+  cancelApprove,
 );
 route.patch(
   "/orders-management/cancel-request-management/:orderId/:itemId/reject",
   checkSession,
-  cancelReject
+  cancelReject,
 );
 
 // ====================== STOCK ======================
@@ -308,12 +312,12 @@ route.get("/users-management", checkSession, usersManagement);
 route.get(
   "/users-management/user-details/:userId",
   checkSession,
-  usersManagementDetail
+  usersManagementDetail,
 );
 route.patch(
   "/users-management/block-unblock-user/:id",
   checkSession,
-  blockOrUnblockUser
+  blockOrUnblockUser,
 );
 // ====================== COUPON ====================
 const {
@@ -328,7 +332,7 @@ route.put("/coupons-management/editCoupon/:couponId", checkSession, editCoupon);
 route.patch(
   "/coupons-management/softDeleteCoupon/:couponId",
   checkSession,
-  softDeleteCoupon
+  softDeleteCoupon,
 );
 // ====================== MISC ======================
 route.get("/sales-report", checkSession, async (req, res) => {
