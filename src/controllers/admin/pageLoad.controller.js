@@ -28,11 +28,6 @@ const loadChangePassword = (req, res) => {
   res.status(OK).render("admin/auth/change-password");
 };
 
-//loading dashboard
-const loadDashboard = (req, res) => {
-  res.status(OK).render("admin/dashboard/dashboard");
-};
-
 //loading brands
 const loadBrands = async (req, res, next) => {
   try {
@@ -176,7 +171,7 @@ const loadProduct = async (req, res, next) => {
       .populate("category_id", "name")
       .populate(
         "variantIds",
-        "price stock offerPrices appliedOffer productOffer"
+        "price stock offerPrices appliedOffer productOffer",
       )
       .skip((page - 1) * limit)
       .limit(limit)
@@ -222,7 +217,7 @@ const loadProduct = async (req, res, next) => {
       .populate("product_type_id", "name")
       .populate(
         "variantIds",
-        "price stock offerPrices appliedOffer productOffer"
+        "price stock offerPrices appliedOffer productOffer",
       )
       .lean();
 
@@ -465,7 +460,6 @@ const usersManagementDetail = async (req, res, next) => {
 
 module.exports = {
   adminLoadLoginPage,
-  loadDashboard,
   loadEmailVerify,
   loadOTPVerify,
   loadChangePassword,

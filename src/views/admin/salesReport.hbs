@@ -22,7 +22,7 @@
   <div class="d-flex justify-content-between align-items-center mb-4">
     <h2 class="fw-bold">Sales Report</h2>
     <div>
-      <button class="btn btn-success me-2" id="downloadExcel">Get Excel Sheet</button>
+      <!-- <button class="btn btn-success me-2" id="downloadExcel">Get Excel Sheet</button> -->
       <button class="btn btn-danger" id="downloadPDF">Download PDF</button>
     </div>
   </div>
@@ -294,7 +294,7 @@
 
   let currentPage = 1;
 
-  /* 🔁 FETCH SALES */
+  /*FETCH SALES */
   async function fetchSales(page = 1) {
     currentPage = page;
 
@@ -314,12 +314,12 @@
     renderTotals(res.data.totals);
   }
 
-  /* 🔍 SEARCH */
+  /*SEARCH */
   document.getElementById("searchInput").addEventListener("input", () => {
     fetchSales(1);
   });
 
-  /* 🎯 FILTER */
+  /*FILTER */
   document.getElementById("applyFilter").addEventListener("click", () => {
     fetchSales(1);
     bootstrap.Modal.getInstance(
@@ -327,7 +327,7 @@
     ).hide();
   });
 
-  /* 🧾 TABLE */
+  /*TABLE */
   function renderTable(sales) {
     const tbody = document.getElementById("salesTableBody");
     tbody.innerHTML = "";
@@ -357,14 +357,14 @@
     });
   }
 
-  /* 📊 TOTAL CARDS */
+  /*TOTAL CARDS */
   function renderTotals(totals) {
     document.querySelectorAll('.card-body h4.fw-bold')[0].innerText = `₹${totals.totalRevenue}`;
     document.querySelectorAll('.card-body h4.fw-bold')[1].innerText = totals.totalItemsSold;
     document.querySelectorAll('.card-body h4.fw-bold')[2].innerText = `₹${totals.netSales}`;
   }
 
-  /* 📄 PAGINATION */
+  /*PAGINATION */
   function renderPagination({ totalPages, currentPage }) {
     const container = document.getElementById("pagination");
     if (!container) return;
