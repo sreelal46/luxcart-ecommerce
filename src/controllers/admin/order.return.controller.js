@@ -94,17 +94,8 @@ const returnApprove = async (req, res, next) => {
     const newSubTotal = Math.max(0, order.subtotal - itemPrice);
     const newTaxAmount = Math.max(0, order.taxAmount - itemTaxAmount);
 
-    console.log("=== RETURN CALCULATION DEBUG ===");
-    console.log("Item:", item.productName);
-    console.log("Current Total:", order.totalAmount);
-    console.log("Current Paid:", order.paidAmount || 0);
-    console.log("Current Remaining:", order.remainingAmount);
-    console.log("Item Total:", itemTotalAmount);
-    console.log("New Total After Return:", newTotalAmount);
-
     /* =============================
-       REFUND CALCULATION LOGIC
-       Returns ALWAYS get full refund if payment was made
+       REFUND CALCULATION
     ============================= */
     const currentPaidAmount = order.paidAmount || 0;
     let refundAmount = 0;
@@ -121,15 +112,10 @@ const returnApprove = async (req, res, next) => {
       // Customer paid for this item - Issue refund
       refundAmount = Math.min(itemTotalAmount, currentPaidAmount);
       newPaidAmount = currentPaidAmount - refundAmount;
-
-      console.log("RETURN - Refunding:", refundAmount);
-      console.log("New Paid Amount:", newPaidAmount);
     } else if (currentPaidAmount > 0 && !canRefund) {
       // COD order that was marked as paid - still refund to wallet
       refundAmount = itemTotalAmount;
       newPaidAmount = currentPaidAmount - refundAmount;
-
-      console.log("COD RETURN - Refunding to wallet:", refundAmount);
     }
 
     // Calculate new remaining amount
@@ -151,16 +137,8 @@ const returnApprove = async (req, res, next) => {
       newPaymentStatus = "Pending";
     }
 
-    console.log("=== FINAL RETURN CALCULATION ===");
-    console.log("Refund Amount:", refundAmount);
-    console.log("New Payment Status:", newPaymentStatus);
-    console.log("New Total Amount:", newTotalAmount);
-    console.log("New Paid Amount:", newPaidAmount);
-    console.log("New Remaining Amount:", newRemainingAmount);
-    console.log("===================================");
-
     /* =============================
-       UPDATE ITEM IN ARRAY - DIRECT MANIPULATION
+       UPDATE ITEM IN ARRAY
     ============================= */
     const itemIndex = order.items.findIndex((i) => i._id.toString() === itemId);
 
@@ -204,7 +182,7 @@ const returnApprove = async (req, res, next) => {
     const quantity = item.quantity;
 
     if (variantId) {
-      await CarVariant.findByIdAndUpdate(variantId, {
+      await carVariant.findByIdAndUpdate(variantId, {
         $inc: { stock: quantity },
       });
     }
@@ -217,7 +195,6 @@ const returnApprove = async (req, res, next) => {
 
     /* =============================
        WALLET REFUND
-       Always refund returns if payment was made
     ============================= */
     if (refundAmount > 0) {
       console.log(
@@ -265,11 +242,6 @@ const returnApprove = async (req, res, next) => {
           },
         },
       );
-
-      console.log(
-        "All items returned/cancelled - Order status:",
-        finalPaymentStatus,
-      );
     }
 
     /* =============================
@@ -287,22 +259,6 @@ const returnApprove = async (req, res, next) => {
     res.json({
       success: true,
       message: "Return approved successfully",
-      data: {
-        itemName: item.productName,
-        itemAmount: itemTotalAmount,
-        refundAmount: refundAmount,
-        refundMethod: refundAmount > 0 ? "wallet" : "none",
-        refundNote: refundNote,
-        originalPaymentStatus: order.paymentStatus,
-        newPaymentStatus: newPaymentStatus,
-        originalTotalAmount: order.totalAmount,
-        newTotalAmount: newTotalAmount,
-        originalPaidAmount: currentPaidAmount,
-        newPaidAmount: newPaidAmount,
-        newRemainingAmount: newRemainingAmount,
-        totalRefundAmount: order.totalRefundAmount,
-        allItemsProcessed: allItemsReturnedOrCancelled,
-      },
     });
   } catch (err) {
     console.error("Return approve error:", err);

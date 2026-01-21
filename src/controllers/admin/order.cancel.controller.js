@@ -82,13 +82,6 @@ const cancelApprove = async (req, res, next) => {
       order.paymentMethod === "WALLET" ||
       order.stripePaymentIntentId;
 
-    console.log("=== CANCEL CALCULATION ===");
-    console.log("Order Payment Method:", order.paymentMethod);
-    console.log("Current Total:", order.totalAmount);
-    console.log("Current Paid:", currentPaidAmount);
-    console.log("Item Total:", itemTotalAmount);
-    console.log("Can Refund:", canRefund);
-
     /* REFUND LOGIC */
     if (
       order.paymentStatus === "Paid" ||
@@ -97,10 +90,8 @@ const cancelApprove = async (req, res, next) => {
       if (canRefund) {
         refundAmount = itemTotalAmount;
         newPaidAmount = currentPaidAmount - refundAmount;
-        console.log("PAID ORDER - Refunding:", refundAmount);
       } else {
         refundAmount = 0;
-        console.log("COD PAID ORDER - No refund");
       }
 
       newRemainingAmount = Math.max(0, newTotalAmount - newPaidAmount);
@@ -118,8 +109,6 @@ const cancelApprove = async (req, res, next) => {
       }
     } else if (order.paymentStatus === "Partially Paid") {
       refundAmount = 0;
-      console.log("PARTIALLY PAID - No refund (advance non-refundable)");
-
       newRemainingAmount = Math.max(0, newTotalAmount - currentPaidAmount);
 
       if (newTotalAmount <= 0) {
@@ -135,11 +124,7 @@ const cancelApprove = async (req, res, next) => {
       refundAmount = 0;
       newRemainingAmount = Math.max(0, newTotalAmount - currentPaidAmount);
       newPaymentStatus = order.paymentStatus;
-      console.log("PENDING ORDER - No refund");
     }
-
-    console.log("Refund Amount:", refundAmount);
-    console.log("New Payment Status:", newPaymentStatus);
 
     /* =============================
        UPDATE ORDER
@@ -191,10 +176,6 @@ const cancelApprove = async (req, res, next) => {
        WALLET REFUND - USING "cancel" TYPE
     ============================= */
     if (refundAmount > 0 && canRefund) {
-      console.log(
-        `Crediting wallet: ₹${refundAmount} for user ${order.userId}`,
-      );
-
       const wallet = await Wallet.findOne({ userId: order.userId });
 
       if (wallet) {
@@ -235,8 +216,6 @@ const cancelApprove = async (req, res, next) => {
           },
         },
       );
-
-      console.log("All items cancelled - Order status:", finalPaymentStatus);
     }
 
     /* =============================
@@ -256,19 +235,6 @@ const cancelApprove = async (req, res, next) => {
     res.json({
       success: true,
       message: "Cancel approved successfully",
-      data: {
-        itemName: item.productName,
-        itemAmount: itemTotalAmount,
-        refundAmount: refundAmount,
-        refundMethod: refundAmount > 0 && canRefund ? "wallet" : "none",
-        refundNote: refundNote,
-        newPaymentStatus: newPaymentStatus,
-        newTotalAmount: newTotalAmount,
-        newPaidAmount: newPaidAmount,
-        newRemainingAmount: newRemainingAmount,
-        totalRefundAmount: order.totalRefundAmount,
-        allItemsCancelled: allItemsCancelled,
-      },
     });
   } catch (err) {
     console.error("Cancel approve error:", err);

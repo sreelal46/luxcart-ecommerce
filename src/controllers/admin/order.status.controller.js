@@ -80,10 +80,6 @@ const updateOrderStatus = async (req, res, next) => {
         order.paymentMethod === "COD" &&
         (paymentStatus === "Pending" || paymentStatus === "Partially Paid")
       ) {
-        console.log("=== COD DELIVERY PAYMENT ===");
-        console.log("Items Delivered Amount:", totalDeliveredAmount);
-        console.log("Current Paid Amount:", order.paidAmount || 0);
-
         // Add delivered items amount to paid amount
         order.paidAmount = (order.paidAmount || 0) + totalDeliveredAmount;
 
@@ -110,11 +106,6 @@ const updateOrderStatus = async (req, res, next) => {
         } else if (order.paidAmount > 0) {
           order.paymentStatus = "Partially Paid";
         }
-
-        console.log("New Paid Amount:", order.paidAmount);
-        console.log("New Remaining Amount:", order.remainingAmount);
-        console.log("New Payment Status:", order.paymentStatus);
-        console.log("============================");
       }
     }
 
@@ -130,12 +121,6 @@ const updateOrderStatus = async (req, res, next) => {
     res.status(OK).json({
       success: true,
       message: "Order status updated successfully",
-      data: {
-        status: status,
-        paymentStatus: order.paymentStatus,
-        paidAmount: order.paidAmount,
-        remainingAmount: order.remainingAmount,
-      },
     });
   } catch (error) {
     console.error("Error from update order status", error);
@@ -226,11 +211,6 @@ const updateSingleItemStatus = async (req, res, next) => {
         order.paymentMethod === "COD" &&
         (paymentStatus === "Pending" || paymentStatus === "Partially Paid")
       ) {
-        console.log("=== COD ITEM DELIVERY PAYMENT ===");
-        console.log("Item:", item.productName);
-        console.log("Item Amount:", itemAmount);
-        console.log("Current Paid Amount:", order.paidAmount || 0);
-
         // Add item amount to paid amount
         order.paidAmount = (order.paidAmount || 0) + itemAmount;
 
@@ -257,11 +237,6 @@ const updateSingleItemStatus = async (req, res, next) => {
         } else if (order.paidAmount > 0) {
           order.paymentStatus = "Partially Paid";
         }
-
-        console.log("New Paid Amount:", order.paidAmount);
-        console.log("New Remaining Amount:", order.remainingAmount);
-        console.log("New Payment Status:", order.paymentStatus);
-        console.log("=================================");
       }
     }
 
@@ -277,13 +252,6 @@ const updateSingleItemStatus = async (req, res, next) => {
     res.status(OK).json({
       success: true,
       message: "Item status updated successfully",
-      data: {
-        itemId: itemId,
-        status: status,
-        paymentStatus: order.paymentStatus,
-        paidAmount: order.paidAmount,
-        remainingAmount: order.remainingAmount,
-      },
     });
   } catch (error) {
     console.error("Error updating item status", error);
