@@ -25,8 +25,9 @@ const checkWalletBalance = async (req, res, next) => {
       return res
         .status(BAD_REQUEST)
         .json({ success: false, message: "Wallet not found" });
-
-    req.session.paymentMethod = walletPaymentMethod;
+    if (cartTotal < wallet.balance) {
+      req.session.paymentMethod = walletPaymentMethod;
+    }
     res.status(OK).json({ success: true, balance: wallet.balance });
   } catch (error) {
     next(error);

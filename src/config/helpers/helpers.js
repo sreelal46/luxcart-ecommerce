@@ -355,4 +355,9 @@ module.exports = {
     const numB = parseFloat(b) || 1; // Avoid division by zero
     return numA / numB;
   },
+  range: (from, to) => {
+    let result = [];
+    for (let i = from; i <= to; i++) result.push(i);
+    return result;
+  },
 };

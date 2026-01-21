@@ -709,12 +709,14 @@
           response.data.redirect
         );
       } else {
+        closeCodConfirmModal();
         showErrorModal(
           'Order Failed',
           response.data.message || 'Unable to place your order. Please try again.'
         );
       }
     } catch (error) {
+      closeCodConfirmModal();
       console.error('COD error:', error);
 
       let errorMessage = 'Failed to process your order. Please try again.';
