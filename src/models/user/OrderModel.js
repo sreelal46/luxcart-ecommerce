@@ -116,7 +116,7 @@ const paymentTransactionSchema = new Schema(
     },
     paymentMethod: {
       type: String,
-      enum: ["COD", "STRIPE", "CARD", "NETBANKING"],
+      enum: ["COD", "STRIPE", "CARD", "NETBANKING", "WALLET"],
     },
     type: {
       type: String,

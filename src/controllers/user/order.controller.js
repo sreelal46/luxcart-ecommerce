@@ -1,10 +1,37 @@
-const { BAD_REQUEST } = require("../../constant/statusCode");
+const { OK, BAD_REQUEST } = require("../../constant/statusCode");
 const CarVariant = require("../../models/admin/carVariantModel");
 const Accessory = require("../../models/admin/productAccessoryModal");
 const Address = require("../../models/user/addressModel");
 const Cart = require("../../models/user/CartModel");
 const Order = require("../../models/user/OrderModel");
+const Wallet = require("../../models/user/walletsModel");
 const taxRate = parseInt(process.env.ACCESSORY_TAX_RATE);
+
+const checkWalletBalance = async (req, res, next) => {
+  try {
+    const cartTotal = req.params.cartTotal;
+    const walletPaymentMethod = req.params.walletPaymentMethod;
+    const userId = req.session.user._id;
+
+    console.log(req.session.user);
+    if (!userId) {
+      return res
+        .status(BAD_REQUEST)
+        .json({ success: false, message: "User ID not found" });
+    }
+    const wallet = await Wallet.findOne({ userId: userId }).lean();
+
+    if (!wallet)
+      return res
+        .status(BAD_REQUEST)
+        .json({ success: false, message: "Wallet not found" });
+
+    req.session.paymentMethod = walletPaymentMethod;
+    res.status(OK).json({ success: true, balance: wallet.balance });
+  } catch (error) {
+    next(error);
+  }
+};
 
 const createOrder = async (req, res, next) => {
   try {
@@ -108,6 +135,53 @@ const createOrder = async (req, res, next) => {
     }
 
     /* ===============================
+       WALLET PAYMENT VERIFICATION 
+    =============================== */
+    let walletPaymentAmount = 0;
+    let wallet = null;
+
+    if (paymentMethod === "WALLET") {
+      // Find user's wallet
+      wallet = await Wallet.findOne({ userId });
+
+      if (!wallet) {
+        if (req.xhr || req.headers.accept?.indexOf("json") > -1) {
+          return res.status(400).json({
+            success: false,
+            message: "Wallet not found. Please create a wallet first.",
+          });
+        }
+        return res.redirect(`/cart/checkout?error=wallet_not_found`);
+      }
+
+      // Determine the amount to be paid
+      let amountToPay;
+      if (cart.totalAdvanceAmount && cart.totalAdvanceAmount > 0) {
+        amountToPay = cart.totalAdvanceAmount; // Advance payment
+      } else {
+        amountToPay = cart.totalAfterAll; // Full payment
+      }
+
+      // Check if wallet has sufficient balance
+      if (wallet.balance < amountToPay) {
+        if (req.xhr || req.headers.accept?.indexOf("json") > -1) {
+          return res.status(400).json({
+            success: false,
+            message: `Insufficient wallet balance. Available: ₹${wallet.balance.toFixed(2)}, Required: ₹${amountToPay.toFixed(2)}`,
+            walletBalance: wallet.balance,
+            requiredAmount: amountToPay,
+          });
+        }
+        return res.redirect(
+          `/cart/checkout?error=insufficient_wallet_balance&available=${wallet.balance}&required=${amountToPay}`,
+        );
+      }
+
+      // Set the wallet payment amount
+      walletPaymentAmount = amountToPay;
+    }
+
+    /* ===============================
        STOCK VALIDATION
     =============================== */
     for (const item of cart.items) {
@@ -186,24 +260,29 @@ const createOrder = async (req, res, next) => {
     /* ===============================
        PAYMENT CALCULATION
     =============================== */
-    // advanceAmount = what customer is expected to pay initially (if partial payment)
-    // paidAmount = actual amount paid right now
-    // remainingAmount = what's left to pay (calculated automatically by schema)
-
     let advanceAmount = 0;
     let paidAmount = 0;
     let paymentType = "full";
 
     if (paymentMethod === "STRIPE") {
       // Customer paid via Stripe during checkout
-      paidAmount = verifiedPaymentAmount; // Use the verified amount from Stripe
+      paidAmount = verifiedPaymentAmount;
 
       if (cart.totalAdvanceAmount && cart.totalAdvanceAmount > 0) {
-        // This was an advance payment
         advanceAmount = cart.totalAdvanceAmount;
         paymentType = "advance";
       } else {
-        // This was a full payment
+        advanceAmount = 0;
+        paymentType = "full";
+      }
+    } else if (paymentMethod === "WALLET") {
+      // Customer paid via Wallet
+      paidAmount = walletPaymentAmount;
+
+      if (cart.totalAdvanceAmount && cart.totalAdvanceAmount > 0) {
+        advanceAmount = cart.totalAdvanceAmount;
+        paymentType = "advance";
+      } else {
         advanceAmount = 0;
         paymentType = "full";
       }
@@ -211,7 +290,6 @@ const createOrder = async (req, res, next) => {
       // COD - no payment made yet
       paidAmount = 0;
 
-      // Check if there's an advance amount setup for COD
       if (cart.totalAdvanceAmount && cart.totalAdvanceAmount > 0) {
         advanceAmount = cart.totalAdvanceAmount;
       } else {
@@ -234,8 +312,7 @@ const createOrder = async (req, res, next) => {
 
       // Payment tracking
       advanceAmount: advanceAmount,
-      paidAmount: paidAmount, // Actual amount paid now
-      // remainingAmount will be auto-calculated by schema pre-save hook
+      paidAmount: paidAmount,
 
       paymentStatus:
         paidAmount >= cart.totalAfterAll
@@ -267,7 +344,7 @@ const createOrder = async (req, res, next) => {
     =============================== */
     const order = new Order(orderData);
 
-    // Add initial payment transaction if payment was made
+    // Add payment transaction based on payment method
     if (paymentMethod === "STRIPE" && paymentIntentId && paidAmount > 0) {
       order.paymentTransactions.push({
         paymentIntentId: paymentIntentId,
@@ -277,9 +354,46 @@ const createOrder = async (req, res, next) => {
         type: paymentType,
         paidAt: new Date(),
       });
+    } else if (paymentMethod === "WALLET" && paidAmount > 0) {
+      // Generate a unique transaction ID for wallet payments
+      const walletTransactionId = `WLT_${order.orderId || Date.now()}_${Date.now()}`;
+
+      order.paymentTransactions.push({
+        paymentIntentId: walletTransactionId,
+        amount: paidAmount,
+        status: "succeeded",
+        paymentMethod: "WALLET",
+        type: paymentType,
+        paidAt: new Date(),
+      });
     }
 
     await order.save();
+
+    /* ===============================
+       DEDUCT WALLET BALANCE
+    =============================== */
+    if (paymentMethod === "WALLET" && walletPaymentAmount > 0) {
+      // Deduct from wallet balance
+      wallet.balance -= walletPaymentAmount;
+
+      // Create transaction message
+      const transactionMessage =
+        paymentType === "advance"
+          ? `Advance payment for order #${order.orderId} - ₹${walletPaymentAmount.toFixed(2)} deducted`
+          : `Full payment for order #${order.orderId} - ₹${walletPaymentAmount.toFixed(2)} deducted`;
+
+      // Add transaction to history
+      wallet.transactionHistory.push({
+        amount: walletPaymentAmount,
+        type: "purchase",
+        flow: "debit",
+        message: transactionMessage,
+        date: new Date(),
+      });
+
+      await wallet.save();
+    }
 
     /* ===============================
        CLEAR SESSIONS
@@ -295,7 +409,7 @@ const createOrder = async (req, res, next) => {
     cart.accessoryTax = 0;
     cart.discountedPrice = 0;
     cart.totalAfterAll = 0;
-    cart.totalAdvanceAmount = 0; // Clear advance amount too
+    cart.totalAdvanceAmount = 0;
     cart.appliedCoupon = undefined;
 
     await cart.save();
@@ -320,16 +434,27 @@ const createOrder = async (req, res, next) => {
     /* ===============================
        RESPONSE - Handle both JSON and Form submission
     =============================== */
+    // Create success message based on payment method
+    let successMessage;
+    if (paymentMethod === "WALLET") {
+      successMessage =
+        paidAmount >= cart.totalAfterAll
+          ? `Order placed and paid successfully via Wallet! Amount deducted: ₹${paidAmount.toFixed(2)}`
+          : `Order placed! Wallet payment: ₹${paidAmount.toFixed(2)}, Remaining: ₹${(cart.totalAfterAll - paidAmount).toFixed(2)}`;
+    } else {
+      successMessage =
+        paidAmount >= cart.totalAfterAll
+          ? "Order placed and paid successfully!"
+          : paidAmount > 0
+            ? `Order placed! Paid: ₹${paidAmount.toFixed(2)}, Remaining: ₹${(cart.totalAfterAll - paidAmount).toFixed(2)}`
+            : "Order placed successfully!";
+    }
+
     // If it's an AJAX request, send JSON
     if (req.xhr || req.headers.accept?.indexOf("json") > -1) {
       return res.json({
         success: true,
-        message:
-          paidAmount >= cart.totalAfterAll
-            ? "Order placed and paid successfully!"
-            : paidAmount > 0
-              ? `Order placed! Paid: ₹${paidAmount.toFixed(2)}, Remaining: ₹${(cart.totalAfterAll - paidAmount).toFixed(2)}`
-              : "Order placed successfully!",
+        message: successMessage,
         order: {
           orderId: order.orderId,
           _id: order._id,
@@ -338,6 +463,7 @@ const createOrder = async (req, res, next) => {
           remainingAmount: order.remainingAmount,
           paymentStatus: order.paymentStatus,
         },
+        walletBalance: wallet ? wallet.balance : null,
         redirect: `/cart/checkout-step-4/${order._id}`,
       });
     }
@@ -349,4 +475,4 @@ const createOrder = async (req, res, next) => {
     next(error);
   }
 };
-module.exports = { createOrder };
+module.exports = { createOrder, checkWalletBalance };

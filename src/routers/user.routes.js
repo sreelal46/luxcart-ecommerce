@@ -52,7 +52,6 @@ const {
   changeQuantity,
   downloadInvoice,
 } = require("../controllers/user/account.controller");
-const { createOrder } = require("../controllers/user/order.controller");
 
 const {
   cancelOrder,
@@ -222,12 +221,21 @@ route.patch("/cart/add-coupon/:couponId", checkSession, applyCoupon);
 route.patch("/cart/remove-coupon", checkSession, removeCoupon);
 
 // checkout management
+const {
+  checkWalletBalance,
+  createOrder,
+} = require("../controllers/user/order.controller");
 route.get("/cart/checkout-step-1/:cartId", checkSession, loadCheckoutStep1);
 route.get("/cart/checkout-step-2/:addressId", checkSession, loadCheckoutStep2);
 const {
   payment,
   fullPayment,
 } = require("../controllers/user/payment.countroller");
+route.get(
+  "/cart/checkout/wallet-balence/:cartTotal/:walletPaymentMethod",
+  checkSession,
+  checkWalletBalance,
+);
 route.post("/cart/create-payment/:paymentMethod", checkSession, payment);
 route.post("/cart/checkout/create-order/:cartId", checkSession, createOrder);
 route.get("/cart/checkout-step-4/:orderId", checkSession, loadCheckoutStep4);
