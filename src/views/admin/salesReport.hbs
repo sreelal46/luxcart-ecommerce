@@ -27,6 +27,36 @@
     </div>
   </div>
 
+  <div class="row mb-4">
+    <div class="col-md-4">
+      <div class="card shadow-sm border-0">
+        <div class="card-body">
+          <small class="text-muted">Total Revenue</small>
+          <h4 class="fw-bold">₹{{totalRevenue}}</h4>
+        </div>
+      </div>
+    </div>
+
+    <div class="col-md-4">
+      <div class="card shadow-sm border-0">
+        <div class="card-body">
+          <small class="text-muted">Items Sold</small>
+          <h4 class="fw-bold">{{totalItemsSold}}</h4>
+        </div>
+      </div>
+    </div>
+
+    <div class="col-md-4">
+      <div class="card shadow-sm border-0">
+        <div class="card-body">
+          <small class="text-muted">Net Sales</small>
+          <h4 class="fw-bold">₹{{netSales}}</h4>
+        </div>
+      </div>
+    </div>
+  </div>
+
+
   <!-- Search & Filter -->
   <div class="d-flex justify-content-between mb-3">
     <input type="text" id="searchInput" class="form-control w-50" placeholder="Search by buyer, product, or category">
@@ -103,6 +133,17 @@
   </div>
 
 </div>
+{{#if totalPages}}
+<div id="pagination" class="d-flex justify-content-center mt-3">
+  {{#each (range 1 totalPages)}}
+  <button class="btn btn-sm mx-1 {{#ifEquals this ../currentPage}}btn-primary{{else}}btn-outline-primary{{/ifEquals}}"
+    onclick="fetchSales({{this}})">
+    {{this}}
+  </button>
+  {{/each}}
+</div>
+{{/if}}
+
 
 <!-- Filter Modal -->
 <div class="modal fade" id="filterModal" tabindex="-1" aria-labelledby="filterModalLabel" aria-hidden="true">
@@ -151,3 +192,192 @@
     </div>
   </div>
 </div>
+
+<script>
+  let currentFilters = {};
+
+  // Function to get current filter values from the form
+  function getCurrentFilters() {
+    const filters = {
+      search: document.getElementById('searchInput')?.value || '',
+      category: document.querySelector('[name="category"]')?.value || '',
+      dateFrom: document.querySelector('[name="dateFrom"]')?.value || '',
+      dateTo: document.querySelector('[name="dateTo"]')?.value || '',
+      minTotal: document.querySelector('[name="minTotal"]')?.value || '',
+      maxTotal: document.querySelector('[name="maxTotal"]')?.value || ''
+    };
+
+    // Remove empty filters
+    Object.keys(filters).forEach(key => {
+      if (!filters[key]) {
+        delete filters[key];
+      }
+    });
+
+    return filters;
+  }
+
+  // PDF Download
+  document.getElementById("downloadPDF").addEventListener("click", async () => {
+    try {
+      // Get current filter values
+      const filters = getCurrentFilters();
+
+      // Build query string
+      const params = new URLSearchParams(filters).toString();
+
+      console.log('Downloading PDF with filters:', filters);
+      console.log('Query params:', params);
+
+      const response = await axios.get(
+        `/admin/sales-report/pdf${params ? '?' + params : ''}`,
+        { responseType: "blob" }
+      );
+
+      const blob = new Blob([response.data], { type: "application/pdf" });
+      const url = window.URL.createObjectURL(blob);
+
+      const a = document.createElement("a");
+      a.href = url;
+      a.download = `sales-report-${new Date().toISOString().split('T')[0]}.pdf`;
+      document.body.appendChild(a);
+      a.click();
+
+      setTimeout(() => {
+        a.remove();
+        window.URL.revokeObjectURL(url);
+      }, 100);
+
+    } catch (error) {
+      console.error('Error downloading PDF:', error);
+      alert('Failed to download PDF. Please try again.');
+    }
+  });
+
+  // Excel Download
+  document.getElementById("downloadExcel").addEventListener("click", async () => {
+    try {
+      // Get current filter values
+      const filters = getCurrentFilters();
+
+      // Build query string
+      const params = new URLSearchParams(filters).toString();
+
+      console.log('Downloading Excel with filters:', filters);
+
+      const response = await axios.get(
+        `/admin/sales-report/excel${params ? '?' + params : ''}`,
+        { responseType: "blob" }
+      );
+
+      const blob = new Blob([response.data], {
+        type: "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"
+      });
+      const url = window.URL.createObjectURL(blob);
+
+      const a = document.createElement("a");
+      a.href = url;
+      a.download = `sales-report-${new Date().toISOString().split('T')[0]}.xlsx`;
+      document.body.appendChild(a);
+      a.click();
+
+      setTimeout(() => {
+        a.remove();
+        window.URL.revokeObjectURL(url);
+      }, 100);
+
+    } catch (error) {
+      console.error('Error downloading Excel:', error);
+      alert('Failed to download Excel. Please try again.');
+    }
+  });
+
+  let currentPage = 1;
+
+  /* 🔁 FETCH SALES */
+  async function fetchSales(page = 1) {
+    currentPage = page;
+
+    const search = document.getElementById("searchInput").value;
+    const formData = new FormData(document.getElementById("filterForm"));
+    const params = Object.fromEntries(formData.entries());
+
+    params.search = search;
+    params.page = page;
+    params.limit = 10;
+    params.ajax = true;
+
+    const res = await axios.get("/admin/sales-report", { params });
+
+    renderTable(res.data.sales);
+    renderPagination(res.data.pagination);
+    renderTotals(res.data.totals);
+  }
+
+  /* 🔍 SEARCH */
+  document.getElementById("searchInput").addEventListener("input", () => {
+    fetchSales(1);
+  });
+
+  /* 🎯 FILTER */
+  document.getElementById("applyFilter").addEventListener("click", () => {
+    fetchSales(1);
+    bootstrap.Modal.getInstance(
+      document.getElementById("filterModal")
+    ).hide();
+  });
+
+  /* 🧾 TABLE */
+  function renderTable(sales) {
+    const tbody = document.getElementById("salesTableBody");
+    tbody.innerHTML = "";
+
+    if (!sales.length) {
+      tbody.innerHTML = `
+        <tr>
+          <td colspan="8" class="text-center text-muted py-4">
+            No sales data available
+          </td>
+        </tr>`;
+      return;
+    }
+
+    sales.forEach((s, i) => {
+      tbody.innerHTML += `
+        <tr>
+          <td>${(currentPage - 1) * 10 + i + 1}</td>
+          <td class="fw-semibold">${s.buyer}</td>
+          <td>${s.product}</td>
+          <td class="small">${s.product_id}</td>
+          <td class="text-center">${s.quantity}</td>
+          <td class="text-end">₹${s.price}</td>
+          <td>${s.category}</td>
+          <td class="text-end fw-semibold">₹${s.total}</td>
+        </tr>`;
+    });
+  }
+
+  /* 📊 TOTAL CARDS */
+  function renderTotals(totals) {
+    document.querySelectorAll('.card-body h4.fw-bold')[0].innerText = `₹${totals.totalRevenue}`;
+    document.querySelectorAll('.card-body h4.fw-bold')[1].innerText = totals.totalItemsSold;
+    document.querySelectorAll('.card-body h4.fw-bold')[2].innerText = `₹${totals.netSales}`;
+  }
+
+  /* 📄 PAGINATION */
+  function renderPagination({ totalPages, currentPage }) {
+    const container = document.getElementById("pagination");
+    if (!container) return;
+
+    container.innerHTML = "";
+
+    for (let i = 1; i <= totalPages; i++) {
+      container.innerHTML += `
+        <button
+          class="btn btn-sm mx-1 ${i === currentPage ? "btn-primary" : "btn-outline-primary"}"
+          onclick="fetchSales(${i})">
+          ${i}
+        </button>`;
+    }
+  }
+</script>

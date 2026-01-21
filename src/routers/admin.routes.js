@@ -335,29 +335,35 @@ route.patch(
   softDeleteCoupon,
 );
 // ====================== MISC ======================
-route.get("/sales-report", checkSession, async (req, res) => {
-  const sales = [
-    {
-      buyer: "John Doe",
-      product: "Audi Q7",
-      product_id: "LX001",
-      quantity: 1,
-      price: 6500000,
-      category: "Car",
-      total: 6500000,
-    },
-    {
-      buyer: "Sarah Lee",
-      product: "Seat Cover",
-      product_id: "AC045",
-      quantity: 2,
-      price: 1500,
-      category: "Accessories",
-      total: 3000,
-    },
-  ];
-  res.render("admin/salesReport", { sales });
-});
+const {
+  loadSalesReportPage,
+} = require("../controllers/admin/sales.report.controller");
+const { generateSalesReportPDF } = require("../services/salesReportGenerator");
+route.get("/sales-report", checkSession, loadSalesReportPage);
+route.get("/sales-report/pdf", checkSession, generateSalesReportPDF);
+// route.get("/sales-report", checkSession, async (req, res) => {
+//   const sales = [
+//     {
+//       buyer: "John Doe",
+//       product: "Audi Q7",
+//       product_id: "LX001",
+//       quantity: 1,
+//       price: 6500000,
+//       category: "Car",
+//       total: 6500000,
+//     },
+//     {
+//       buyer: "Sarah Lee",
+//       product: "Seat Cover",
+//       product_id: "AC045",
+//       quantity: 2,
+//       price: 1500,
+//       category: "Accessories",
+//       total: 3000,
+//     },
+//   ];
+//   res.render("admin/salesReport", { sales });
+// });
 
 route.get("/wallet", checkSession, (req, res) => {
   res.render("admin/walletView");
