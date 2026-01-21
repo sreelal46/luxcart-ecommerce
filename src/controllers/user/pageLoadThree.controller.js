@@ -2,7 +2,6 @@ const { OK, NOT_FOUND } = require("../../constant/statusCode");
 const Order = require("../../models/user/OrderModel");
 const Referral = require("../../models/user/referral.Model");
 const User = require("../../models/user/UserModel");
-const Wallet = require("../../models/user/walletsModel");
 const Wishlist = require("../../models/user/wishlistModel");
 
 const loadWishlistPage = async (req, res, next) => {
@@ -80,22 +79,8 @@ const loadReferralsPage = async (req, res, next) => {
   }
 };
 
-const loadwalletPage = async (req, res, next) => {
-  try {
-    const userId = req.session.user._id;
-    const wallet = await Wallet.findOne({ userId });
-    res
-      .status(OK)
-      .render("user/account/wallet", { layout: "userAccountLayout", wallet });
-  } catch (error) {
-    console.log("Error from wallet page load", error);
-    next(error);
-  }
-};
-
 module.exports = {
   loadWishlistPage,
   loadOrderDetailPage,
   loadReferralsPage,
-  loadwalletPage,
 };

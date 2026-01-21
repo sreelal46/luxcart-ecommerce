@@ -37,7 +37,6 @@ const {
   loadWishlistPage,
   loadOrderDetailPage,
   loadReferralsPage,
-  loadwalletPage,
 } = require("../controllers/user/pageLoadThree.controller");
 
 const {
@@ -197,7 +196,18 @@ route.post("/account/change-password/:userId", checkSession, changePassword);
 
 //referrals
 route.get("/account/referrals", checkSession, loadReferralsPage);
+//wallet
+const {
+  loadwalletPage,
+  addMoneyToWallet,
+  verifyWalletPayment,
+} = require("../controllers/user/wallet.controller");
+// Load wallet page
 route.get("/account/wallet", checkSession, loadwalletPage);
+// Create payment intent for adding money
+route.post("/account/wallet/add-money", checkSession, addMoneyToWallet);
+// Verify payment and update balance
+route.post("/account/wallet/verify-payment", checkSession, verifyWalletPayment);
 
 //cart management
 const {
@@ -217,7 +227,7 @@ route.get("/cart/checkout-step-2/:addressId", checkSession, loadCheckoutStep2);
 const {
   payment,
   fullPayment,
-} = require("../controllers/user/checkout.countroller");
+} = require("../controllers/user/payment.countroller");
 route.post("/cart/create-payment/:paymentMethod", checkSession, payment);
 route.post("/cart/checkout/create-order/:cartId", checkSession, createOrder);
 route.get("/cart/checkout-step-4/:orderId", checkSession, loadCheckoutStep4);
