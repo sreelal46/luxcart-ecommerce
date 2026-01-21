@@ -2,7 +2,8 @@ const { OK } = require("../../constant/statusCode");
 const Accessory = require("../../models/admin/productAccessoryModal");
 const Car = require("../../models/admin/productCarModal");
 const Order = require("../../models/user/OrderModel");
-const Return = require("../../models/user/ReturnModel");
+const Brand = require("../../models/admin/brandModal");
+const Category = require("../../models/admin/categoryModel");
 
 const loadOrderManagement = async (req, res, next) => {
   try {
@@ -73,52 +74,127 @@ const loadOneOrder = async (req, res, next) => {
 
 const loadStockPage = async (req, res, next) => {
   try {
-    const cars = await Car.find({})
-      .sort({ createdAt: -1 })
-      .populate("brand_id", "name")
-      .populate("category_id", "name")
-      .populate("product_type_id", "name")
-      .populate("variantIds", "color price stock")
-      .lean();
+    const page = parseInt(req.query.page) || 1;
+    const limit = 12;
+    const search = req.query.search?.trim() || "";
+    const productType = req.query.productType;
 
-    const accessories = await Accessory.find({})
-      .sort({ createdAt: -1 })
-      .populate("brand_id", "name")
-      .populate("category_id", "name")
-      .populate("product_type_id", "name")
-      .lean();
+    // Build filter object
+    const filter = {};
+
+    // Search filter
+    if (search && search !== "undefined" && search !== "") {
+      const searchRegex = new RegExp(search, "i");
+      filter.$or = [{ name: searchRegex }];
+    }
+
+    // Brand filter
+    if (req.query.brand && req.query.brand !== "All") {
+      filter.brand_id = req.query.brand;
+    }
+
+    // Category filter
+    if (req.query.category && req.query.category !== "All") {
+      filter.category_id = req.query.category;
+    }
+
+    let cars = [];
+    let accessories = [];
+
+    // Fetch based on product type filter
+    if (!productType || productType === "All" || productType === "car") {
+      cars = await Car.find(filter)
+        .sort({ createdAt: -1 })
+        .populate("brand_id", "name")
+        .populate("category_id", "name")
+        .populate("product_type_id", "name")
+        .populate("variantIds", "color price stock")
+        .lean();
+    }
+
+    if (!productType || productType === "All" || productType === "accessory") {
+      accessories = await Accessory.find(filter)
+        .sort({ createdAt: -1 })
+        .populate("brand_id", "name")
+        .populate("category_id", "name")
+        .populate("product_type_id", "name")
+        .lean();
+    }
 
     let fullProducts = [...cars, ...accessories];
 
-    //stock to each product
-
+    // Add mainStock to each product
     fullProducts = fullProducts.map((item) => {
       let mainStock = 0;
 
       if (item.variantIds && item.variantIds.length > 0) {
         mainStock = item.variantIds[0].stock;
       } else {
-        mainStock = item.stock;
+        mainStock = item.stock || 0;
       }
 
       return { ...item, mainStock };
     });
 
-    //Sort based on stock priority
+    // Stock Status Filter
+    if (req.query.stockStatus && req.query.stockStatus !== "All") {
+      if (req.query.stockStatus === "Out of Stock") {
+        fullProducts = fullProducts.filter((p) => p.mainStock === 0);
+      } else if (req.query.stockStatus === "Low Stock") {
+        fullProducts = fullProducts.filter(
+          (p) => p.mainStock > 0 && p.mainStock < 10,
+        );
+      } else if (req.query.stockStatus === "In Stock") {
+        fullProducts = fullProducts.filter((p) => p.mainStock >= 10);
+      }
+    }
+
+    // Sort based on stock priority (Out of Stock -> Low Stock -> In Stock)
     fullProducts.sort((a, b) => {
       const valA = a.mainStock === 0 ? 0 : a.mainStock < 10 ? 1 : 2;
-
       const valB = b.mainStock === 0 ? 0 : b.mainStock < 10 ? 1 : 2;
-
       return valA - valB;
     });
 
-    res.status(OK).render("admin/stockManagement", { fullProducts });
+    // Apply pagination
+    const total = fullProducts.length;
+    const totalPages = Math.ceil(total / limit);
+
+    const startIndex = (page - 1) * limit;
+    const endIndex = startIndex + limit;
+    const paginatedProducts = fullProducts.slice(startIndex, endIndex);
+
+    // Check if it's an AJAX request
+    if (
+      req.xhr ||
+      req.headers["x-requested-with"] === "XMLHttpRequest" ||
+      (req.headers.accept && req.headers.accept.includes("application/json"))
+    ) {
+      return res.json({
+        success: true,
+        fullProducts: paginatedProducts,
+        totalPages,
+        currentPage: page,
+      });
+    }
+
+    // Initial page load - fetch brands and categories for filters
+    const brands = await Brand.find({ isListed: true }).lean();
+    const categories = await Category.find({ isListed: true }).lean();
+
+    res.status(200).render("admin/stockManagement", {
+      fullProducts: paginatedProducts,
+      brands,
+      categories,
+      totalPages,
+      currentPage: page,
+    });
   } catch (error) {
     console.log("Error from load stock page", error);
     next(error);
   }
 };
+
 const loadReturnReq = async (req, res, next) => {
   try {
     const returnedItems = await Order.aggregate([
