@@ -120,7 +120,7 @@ const paymentTransactionSchema = new Schema(
     },
     type: {
       type: String,
-      enum: ["advance", "full", "remaining"],
+      enum: ["advance", "full", "remaining", "refund"],
       required: true,
     },
     paidAt: {
