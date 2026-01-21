@@ -11,7 +11,7 @@ document.addEventListener("DOMContentLoaded", () => {
 
       // Show the confirmation modal using Bootstrap's API
       const confirmListModal = new bootstrap.Modal(
-        document.getElementById("confirmListModal")
+        document.getElementById("confirmListModal"),
       );
       confirmListModal.show();
     }
@@ -40,7 +40,7 @@ document.addEventListener("DOMContentLoaded", () => {
         // Make PATCH request to update product status
         const res = await axios.patch(
           `/admin/products-management/soft-delete-product/${productId}`,
-          { listed: newStatus }
+          { listed: newStatus },
         );
 
         confirmModal.hide();
@@ -101,38 +101,56 @@ document.addEventListener("DOMContentLoaded", () => {
   const showAccessoriesBtn = document.getElementById("showAccessories");
   const showAllProductBtn = document.getElementById("showAllProduct");
 
-  showCarsBtn.addEventListener("click", () => {
-    carTable.style.display = "block";
-    allProductTable.style.display = "none";
-    accessoryTable.style.display = "none";
-    showCarsBtn.classList.add("active");
-    showAccessoriesBtn.classList.remove("active");
-    showAllProductBtn.classList.remove("active");
-  });
+  if (showCarsBtn) {
+    showCarsBtn.addEventListener("click", () => {
+      carTable.style.display = "block";
+      allProductTable.style.display = "none";
+      accessoryTable.style.display = "none";
+      showCarsBtn.classList.add("active");
+      showAccessoriesBtn.classList.remove("active");
+      showAllProductBtn.classList.remove("active");
+    });
+  }
 
-  showAccessoriesBtn.addEventListener("click", () => {
-    accessoryTable.style.display = "block";
-    allProductTable.style.display = "none";
-    carTable.style.display = "none";
-    showAccessoriesBtn.classList.add("active");
-    showAllProductBtn.classList.remove("active");
-    showCarsBtn.classList.remove("active");
-  });
+  if (showAccessoriesBtn) {
+    showAccessoriesBtn.addEventListener("click", () => {
+      accessoryTable.style.display = "block";
+      allProductTable.style.display = "none";
+      carTable.style.display = "none";
+      showAccessoriesBtn.classList.add("active");
+      showAllProductBtn.classList.remove("active");
+      showCarsBtn.classList.remove("active");
+    });
+  }
 
-  showAllProductBtn.addEventListener("click", () => {
-    allProductTable.style.display = "block";
-    accessoryTable.style.display = "none";
-    carTable.style.display = "none";
-    showAllProductBtn.classList.add("active");
-    showAccessoriesBtn.classList.remove("active");
-    showCarsBtn.classList.remove("active");
-  });
+  if (showAllProductBtn) {
+    showAllProductBtn.addEventListener("click", () => {
+      allProductTable.style.display = "block";
+      accessoryTable.style.display = "none";
+      carTable.style.display = "none";
+      showAllProductBtn.classList.add("active");
+      showAccessoriesBtn.classList.remove("active");
+      showCarsBtn.classList.remove("active");
+    });
+  }
 });
+
 // ---------- STATE ----------
 const state = {
   page: 1,
   search: "",
+  filters: {
+    brand: "",
+    category: "",
+    type: "",
+    productType: "", // car or accessory
+    minPrice: "",
+    maxPrice: "",
+    stockStatus: "",
+    offerOnly: false,
+  },
 };
+
 // ---------- DEBOUNCE ----------
 function debounce(fn, delay = 400) {
   let timer;
@@ -143,35 +161,119 @@ function debounce(fn, delay = 400) {
 }
 
 // ---------- LOAD PRODUCTS ----------
-async function loadProducts(page = 1, search = state.search) {
-  const res = await axios.get(`/admin/products-management`, {
-    params: { page, search },
-  });
-  if (!res.data.success) return;
+async function loadProducts(
+  page = 1,
+  search = state.search,
+  filters = state.filters,
+) {
+  try {
+    const params = {
+      page,
+      search: search || "",
+    };
 
-  const { fullProducts, totalPages } = res.data;
-  console.log(fullProducts);
-  state.page = page;
-  state.search = search;
+    // Add filter parameters if they exist
+    if (filters.brand) params.brand = filters.brand;
+    if (filters.category) params.category = filters.category;
+    if (filters.type) params.type = filters.type;
+    if (filters.productType) params.productType = filters.productType;
+    if (filters.minPrice) params.minPrice = filters.minPrice;
+    if (filters.maxPrice) params.maxPrice = filters.maxPrice;
+    if (filters.stockStatus) params.stockStatus = filters.stockStatus;
+    if (filters.offerOnly) params.offerOnly = filters.offerOnly;
 
-  renderProducts(fullProducts);
-  initTooltips();
-  renderPagination(totalPages, page);
+    const res = await axios.get(`/admin/products-management`, {
+      params,
+      headers: {
+        Accept: "application/json",
+        "X-Requested-With": "XMLHttpRequest",
+      },
+    });
+
+    if (!res.data.success) {
+      console.error("Failed to load products");
+      return;
+    }
+
+    const { fullProducts, totalPages } = res.data;
+    console.log("Loaded products:", fullProducts);
+
+    state.page = page;
+    state.search = search;
+    state.filters = filters;
+
+    renderProducts(fullProducts);
+    renderPagination(totalPages, page);
+  } catch (error) {
+    console.error("Error loading products:", error);
+  }
 }
 
 // ---------- SEARCH ----------
-document.getElementById("searchProduct").addEventListener(
-  "input",
-  debounce((e) => {
-    const value = e.target.value.trim();
-    loadProducts(1, value);
-  }, 500)
-);
+const searchInput = document.getElementById("searchProduct");
+if (searchInput) {
+  searchInput.addEventListener(
+    "input",
+    debounce((e) => {
+      const value = e.target.value.trim();
+      console.log("Searching for:", value);
+      loadProducts(1, value, state.filters);
+    }, 500),
+  );
+}
+
+// ---------- FILTER FORM ----------
+const filterForm = document.getElementById("filterForm");
+if (filterForm) {
+  filterForm.addEventListener("submit", (e) => {
+    e.preventDefault();
+
+    const formData = new FormData(filterForm);
+    const filters = {
+      brand: formData.get("brand") || "",
+      category: formData.get("category") || "",
+      type: formData.get("type") || "",
+      productType: formData.get("productType") || "",
+      minPrice: formData.get("minPrice") || "",
+      maxPrice: formData.get("maxPrice") || "",
+      stockStatus: formData.get("stockStatus") || "",
+      offerOnly: formData.get("offerOnly") === "on",
+    };
+
+    // Close the modal
+    const filterModal = bootstrap.Modal.getInstance(
+      document.getElementById("filterModal"),
+    );
+    if (filterModal) filterModal.hide();
+
+    // Load products with filters
+    loadProducts(1, state.search, filters);
+  });
+}
 
 // ---------- RENDER TABLE ----------
 function renderProducts(data) {
   const tbody = document.querySelector("#allProductTable tbody");
+  if (!tbody) {
+    console.error("Table body not found");
+    return;
+  }
+
   tbody.innerHTML = "";
+
+  if (!data || data.length === 0) {
+    tbody.innerHTML = `
+      <tr>
+        <td colspan="8" class="text-center py-4">
+          <div class="text-muted">
+            <i class="bi bi-inbox fs-1 d-block mb-2"></i>
+            No products found
+          </div>
+        </td>
+      </tr>
+    `;
+    return;
+  }
 
   data.forEach((item, index) => {
     const isCar = !!item.engine;
@@ -199,10 +301,8 @@ function renderProducts(data) {
           </span>
         `;
       }
-    } else if (offer.isConfigured) {
-      offerBadge = `<span class="badge rounded-pill bg-success">
-            CONFIGUERD
-          </span>`;
+    } else if (offer?.isConfigured) {
+      offerBadge = `<span class="badge rounded-pill bg-success">CONFIGURED</span>`;
     }
 
     /* ===== OFFER ACTION BUTTON ===== */
@@ -232,7 +332,8 @@ function renderProducts(data) {
             data-valid-from="${offer.validFrom}"
             data-valid-to="${offer.validTo}"
             data-producttype="${isCar ? "car" : "accessory"}"
-            data-productid="${item._id}">
+            data-productid="${item._id}"
+            data-name="${item.name}">
             <i class="bi bi-eye"></i>
           </button>
         </div>
@@ -247,7 +348,8 @@ function renderProducts(data) {
             data-bs-toggle="modal"
             data-bs-target="#removeOfferModal"
             data-producttype="${isCar ? "car" : "accessory"}"
-            data-productid="${item._id}">
+            data-productid="${item._id}"
+            data-name="${item.name}">
             <i class="bi bi-trash"></i>
           </button>
         </div>
@@ -262,11 +364,13 @@ function renderProducts(data) {
       ? `/admin/products-management/edit-car-product/${item._id}`
       : `/admin/products-management/edit-accessories-product/${item._id}`;
 
+    const serialNumber = (state.page - 1) * 12 + index + 1;
+
     tbody.insertAdjacentHTML(
       "beforeend",
       `
       <tr>
-        <td class="fw-semibold text-muted">${index + 1}</td>
+        <td class="fw-semibold text-muted">${serialNumber}</td>
 
         <td>
           <div class="fw-semibold text-dark">${item.name}</div>
@@ -308,7 +412,7 @@ function renderProducts(data) {
             </div>
 
             <div
-              class="form-check form-switch"
+              class="form-check form-switch m-0"
               data-bs-toggle="tooltip"
               title="${item.isListed ? "Unlist product" : "List product"}">
               <input
@@ -322,7 +426,7 @@ function renderProducts(data) {
           </div>
         </td>
       </tr>
-      `
+      `,
     );
   });
 
@@ -330,7 +434,15 @@ function renderProducts(data) {
 }
 
 function initTooltips() {
-  document.querySelectorAll('[data-bs-toggle="tooltip"]').forEach((el) => {
+  // Dispose existing tooltips first
+  const tooltipTriggerList = document.querySelectorAll(
+    '[data-bs-toggle="tooltip"]',
+  );
+  tooltipTriggerList.forEach((el) => {
+    const existingTooltip = bootstrap.Tooltip.getInstance(el);
+    if (existingTooltip) {
+      existingTooltip.dispose();
+    }
     new bootstrap.Tooltip(el, {
       placement: "top",
       trigger: "hover",
@@ -339,36 +451,90 @@ function initTooltips() {
   });
 }
 
-document.addEventListener("DOMContentLoaded", initTooltips);
+document.addEventListener("DOMContentLoaded", () => {
+  initTooltips();
+
+  // Initialize pagination on page load
+  const currentPage =
+    parseInt(new URLSearchParams(window.location.search).get("page")) || 1;
+  const totalPagesEl = document.getElementById("totalPages");
+  if (totalPagesEl) {
+    const totalPages = parseInt(totalPagesEl.dataset.total) || 1;
+    renderPagination(totalPages, currentPage);
+  }
+});
 
 // ---------- PAGINATION ----------
 function renderPagination(totalPages, current) {
   const container = document.getElementById("pagination");
+  if (!container) {
+    console.error("Pagination container not found");
+    return;
+  }
+
   container.innerHTML = "";
 
+  if (totalPages <= 1) {
+    return; // No pagination needed for single page
+  }
+
+  // Previous button
   container.innerHTML += `
     <li class="page-item ${current === 1 ? "disabled" : ""}">
       <a class="page-link" style="cursor:pointer" onclick="loadProducts(${
         current - 1
-      }, '${state.search}')">Prev</a>
+      }, '${state.search}', state.filters)">Prev</a>
     </li>
   `;
 
-  for (let i = 1; i <= totalPages; i++) {
+  // Page numbers with ellipsis for large page counts
+  const maxVisible = 5;
+  let startPage = Math.max(1, current - Math.floor(maxVisible / 2));
+  let endPage = Math.min(totalPages, startPage + maxVisible - 1);
+
+  if (endPage - startPage < maxVisible - 1) {
+    startPage = Math.max(1, endPage - maxVisible + 1);
+  }
+
+  // First page
+  if (startPage > 1) {
+    container.innerHTML += `
+      <li class="page-item">
+        <a class="page-link" style="cursor:pointer" onclick="loadProducts(1, '${state.search}', state.filters)">1</a>
+      </li>
+    `;
+    if (startPage > 2) {
+      container.innerHTML += `<li class="page-item disabled"><span class="page-link">...</span></li>`;
+    }
+  }
+
+  // Page numbers
+  for (let i = startPage; i <= endPage; i++) {
     container.innerHTML += `
       <li class="page-item ${i === current ? "active" : ""}">
-        <a class="page-link" style="cursor:pointer" onclick="loadProducts(${i}, '${
-      state.search
-    }')">${i}</a>
+        <a class="page-link" style="cursor:pointer" onclick="loadProducts(${i}, '${state.search}', state.filters)">${i}</a>
       </li>
     `;
   }
 
+  // Last page
+  if (endPage < totalPages) {
+    if (endPage < totalPages - 1) {
+      container.innerHTML += `<li class="page-item disabled"><span class="page-link">...</span></li>`;
+    }
+    container.innerHTML += `
+      <li class="page-item">
+        <a class="page-link" style="cursor:pointer" onclick="loadProducts(${totalPages}, '${state.search}', state.filters)">${totalPages}</a>
+      </li>
+    `;
+  }
+
+  // Next button
   container.innerHTML += `
     <li class="page-item ${current === totalPages ? "disabled" : ""}">
       <a class="page-link" style="cursor:pointer" onclick="loadProducts(${
         current + 1
-      }, '${state.search}')">Next</a>
+      }, '${state.search}', state.filters)">Next</a>
     </li>
   `;
 }
@@ -413,11 +579,11 @@ document.addEventListener("click", function (e) {
       : `₹ ${Number(discountValue).toLocaleString("en-IN")}`;
 
   document.getElementById("viewValidFrom").textContent = new Date(
-    validFrom
+    validFrom,
   ).toLocaleString();
 
   document.getElementById("viewValidTo").textContent = new Date(
-    validTo
+    validTo,
   ).toLocaleString();
 
   // Store ALL data on Delete button inside View modal
@@ -451,11 +617,11 @@ function fillRemoveOfferModal(btn) {
       : `₹ ${Number(discountValue).toLocaleString("en-IN")}`;
 
   document.getElementById("removeValidFrom").textContent = new Date(
-    validFrom
+    validFrom,
   ).toLocaleString();
 
   document.getElementById("removeValidTo").textContent = new Date(
-    validTo
+    validTo,
   ).toLocaleString();
 
   document.getElementById("removeOfferProductId").value = productid;
@@ -569,7 +735,7 @@ offerForm.addEventListener("submit", async (e) => {
         validFrom: validFromInput.value,
         validTo: validToInput.value,
         productType: offerForm.dataset.productType,
-      }
+      },
     );
 
     if (res.data.success) {
@@ -585,7 +751,7 @@ offerForm.addEventListener("submit", async (e) => {
       Swal.fire({
         icon: "error",
         title: "Error",
-        text: data?.alert || "Somthing went wrong",
+        text: data?.alert || "Something went wrong",
       });
     }
   } catch (err) {
@@ -616,16 +782,16 @@ document.addEventListener("click", (e) => {
 document.getElementById("deleteOfferFromView").addEventListener("click", () => {
   const confirmBtn = document.getElementById("confirmRemoveOffer");
 
-  // 🔥 reset previous state
+  // reset previous state
   confirmBtn.dataset.productId = "";
   confirmBtn.dataset.productType = "";
 
   confirmBtn.dataset.productId = document.getElementById(
-    "deleteOfferFromView"
-  ).dataset.productId;
+    "deleteOfferFromView",
+  ).dataset.productid;
   confirmBtn.dataset.productType = document.getElementById(
-    "deleteOfferFromView"
-  ).dataset.productType;
+    "deleteOfferFromView",
+  ).dataset.producttype;
 });
 
 document
@@ -642,12 +808,12 @@ document
 
       const res = await axios.patch(
         `/admin/products-management/remove-offer/${productId}`,
-        { productType }
+        { productType },
       );
 
       if (res.data.success) {
         bootstrap.Modal.getInstance(
-          document.getElementById("removeOfferModal")
+          document.getElementById("removeOfferModal"),
         ).hide();
 
         Swal.fire({

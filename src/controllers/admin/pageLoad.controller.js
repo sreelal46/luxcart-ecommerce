@@ -151,90 +151,145 @@ const loadType = async (req, res, next) => {
   }
 };
 
-//Load Product page
 const loadProduct = async (req, res, next) => {
   try {
     const page = parseInt(req.query.page) || 1;
     const limit = 12;
     const search = req.query.search?.trim() || "";
+    const productType = req.query.productType; // "car", "accessory", or undefined/All
 
+    // Build filter object
     const filter = {};
-    if (search && search !== "undefined") {
-      const regex = new RegExp(search.split("").join("[^a-zA-Z0-9]*"), "i");
-      filter.$or = [{ name: regex }];
+
+    // Search filter - improved regex
+    if (search && search !== "undefined" && search !== "") {
+      const searchRegex = new RegExp(search, "i");
+      filter.$or = [{ name: searchRegex }];
     }
 
-    // Car Products
-    const carsFilter = await Car.find(filter)
-      .sort({ createdAt: -1 })
-      .populate("brand_id", "name")
-      .populate("category_id", "name")
-      .populate(
-        "variantIds",
-        "price stock offerPrices appliedOffer productOffer",
-      )
-      .skip((page - 1) * limit)
-      .limit(limit)
-      .lean();
+    // Brand filter
+    if (req.query.brand && req.query.brand !== "All") {
+      filter.brand_id = req.query.brand;
+    }
 
-    // Accessories
-    const accessoriesFilter = await Accessory.find(filter)
-      .sort({ createdAt: -1 })
-      .populate("brand_id", "name")
-      .populate("category_id", "name")
-      .skip((page - 1) * limit)
-      .limit(limit)
-      .lean();
+    // Category filter
+    if (req.query.category && req.query.category !== "All") {
+      filter.category_id = req.query.category;
+    }
 
-    const fullProductsFilter = [...carsFilter, ...accessoriesFilter];
+    // Type filter
+    if (req.query.type && req.query.type !== "All") {
+      filter.product_type_id = req.query.type;
+    }
 
-    const totalCars = await Car.countDocuments(filter);
-    const totalAccessories = await Accessory.countDocuments(filter);
-    const total = totalCars + totalAccessories;
+    // Price range filter
+    const priceFilter = {};
+    if (req.query.minPrice) {
+      priceFilter.$gte = parseFloat(req.query.minPrice);
+    }
+    if (req.query.maxPrice) {
+      priceFilter.$lte = parseFloat(req.query.maxPrice);
+    }
+    if (Object.keys(priceFilter).length > 0) {
+      filter.price = priceFilter;
+    }
+
+    // Stock status filter (only for accessories)
+    if (req.query.stockStatus && req.query.stockStatus !== "All") {
+      if (req.query.stockStatus === "In Stock") {
+        filter.stock = { $gt: 0 };
+      } else if (req.query.stockStatus === "Out of Stock") {
+        filter.stock = { $lte: 0 };
+      }
+    }
+
+    let carsFilter = [];
+    let accessoriesFilter = [];
+    let totalCars = 0;
+    let totalAccessories = 0;
+
+    // Fetch based on product type filter
+    if (!productType || productType === "All" || productType === "car") {
+      totalCars = await Car.countDocuments(filter);
+
+      // Car Products with filter
+      carsFilter = await Car.find(filter)
+        .sort({ createdAt: -1 })
+        .populate("brand_id", "name")
+        .populate("category_id", "name")
+        .populate(
+          "variantIds",
+          "price stock offerPrices appliedOffer productOffer",
+        )
+        .lean();
+    }
+
+    if (!productType || productType === "All" || productType === "accessory") {
+      totalAccessories = await Accessory.countDocuments(filter);
+
+      // Accessories with filter
+      accessoriesFilter = await Accessory.find(filter)
+        .sort({ createdAt: -1 })
+        .populate("brand_id", "name")
+        .populate("category_id", "name")
+        .lean();
+    }
+
+    // Combine and sort by createdAt
+    let fullProductsFilter = [...carsFilter, ...accessoriesFilter];
+    fullProductsFilter.sort(
+      (a, b) => new Date(b.createdAt) - new Date(a.createdAt),
+    );
+
+    // Offer-only filter (applied after fetching due to nested structure)
+    if (req.query.offerOnly === "true") {
+      fullProductsFilter = fullProductsFilter.filter((product) => {
+        if (product.engine) {
+          // For cars, check variant offer
+          return product.variantIds?.[0]?.productOffer?.isActive;
+        } else {
+          // For accessories, check product offer
+          return product.productOffer?.isActive;
+        }
+      });
+    }
+
+    // IMPORTANT: Apply pagination AFTER combining and filtering
+    const total = fullProductsFilter.length;
     const totalPages = Math.ceil(total / limit);
 
+    // Slice the array for current page
+    const startIndex = (page - 1) * limit;
+    const endIndex = startIndex + limit;
+    const paginatedProducts = fullProductsFilter.slice(startIndex, endIndex);
+
+    // Check if it's an AJAX request
     if (
       req.xhr ||
+      req.headers["x-requested-with"] === "XMLHttpRequest" ||
       (req.headers.accept && req.headers.accept.includes("application/json"))
     ) {
       return res.json({
         success: true,
-        fullProducts: fullProductsFilter, // frontend expects this name
+        fullProducts: paginatedProducts,
         totalPages,
         currentPage: page,
       });
     }
 
+    // Initial page load - fetch brands, categories, types
     const brands = await Brand.find({ isListed: true }).lean();
     const categories = await Category.find({ isListed: true }).lean();
-    const types = await Type.find({ isListed: true });
+    const types = await Type.find({ isListed: true }).lean();
 
-    // Initial full data for first page load
-    const cars = await Car.find({})
-      .sort({ createdAt: -1 })
-      .populate("brand_id", "name")
-      .populate("category_id", "name")
-      .populate("product_type_id", "name")
-      .populate(
-        "variantIds",
-        "price stock offerPrices appliedOffer productOffer",
-      )
-      .lean();
-
-    const accessories = await Accessory.find({})
-      .sort({ createdAt: -1 })
-      .populate("brand_id", "name")
-      .populate("category_id", "name")
-      .populate("product_type_id", "name")
-      .lean();
-
-    const fullProducts = [...cars, ...accessories];
-
+    // Use the paginated data for initial render
     res.render("admin/products/productManagement", {
       brands,
       categories,
       types,
-      fullProducts,
+      fullProducts: paginatedProducts,
+      totalPages,
+      currentPage: page,
     });
   } catch (error) {
     console.log(error);
