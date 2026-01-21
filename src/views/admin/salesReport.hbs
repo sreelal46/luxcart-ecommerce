@@ -16,13 +16,57 @@
   .admin-table td small {
     font-size: 12px;
   }
+
+  /* Pagination Styles */
+  .pagination-container {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    gap: 8px;
+    margin-top: 2rem;
+    margin-bottom: 2rem;
+  }
+
+  .pagination-container .page-btn {
+    min-width: 40px;
+    height: 40px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border: 1px solid #dee2e6;
+    background: white;
+    color: #495057;
+    font-weight: 500;
+    cursor: pointer;
+    transition: all 0.2s ease;
+    border-radius: 4px;
+    padding: 0 12px;
+  }
+
+  .pagination-container .page-btn:hover:not(:disabled) {
+    background: #f8f9fa;
+    border-color: #0d6efd;
+    color: #0d6efd;
+  }
+
+  .pagination-container .page-btn.active {
+    background: #0d6efd;
+    color: white;
+    border-color: #0d6efd;
+  }
+
+  .pagination-container .page-btn:disabled {
+    opacity: 0.5;
+    cursor: not-allowed;
+  }
 </style>
+
 <div class="container py-4">
   <!-- Header -->
   <div class="d-flex justify-content-between align-items-center mb-4">
     <h2 class="fw-bold">Sales Report</h2>
     <div>
-      <button class="btn btn-success me-2" id="downloadExcel">Get Excel Sheet</button>
+      <!-- <button class="btn btn-success me-2" id="downloadExcel">Get Excel Sheet</button> -->
       <button class="btn btn-danger" id="downloadPDF">Download PDF</button>
     </div>
   </div>
@@ -32,7 +76,7 @@
       <div class="card shadow-sm border-0">
         <div class="card-body">
           <small class="text-muted">Total Revenue</small>
-          <h4 class="fw-bold">₹{{totalRevenue}}</h4>
+          <h4 class="fw-bold" id="totalRevenue">₹{{formatPrice totalRevenue}}</h4>
         </div>
       </div>
     </div>
@@ -41,7 +85,7 @@
       <div class="card shadow-sm border-0">
         <div class="card-body">
           <small class="text-muted">Items Sold</small>
-          <h4 class="fw-bold">{{totalItemsSold}}</h4>
+          <h4 class="fw-bold" id="totalItemsSold">{{totalItemsSold}}</h4>
         </div>
       </div>
     </div>
@@ -50,12 +94,11 @@
       <div class="card shadow-sm border-0">
         <div class="card-body">
           <small class="text-muted">Net Sales</small>
-          <h4 class="fw-bold">₹{{netSales}}</h4>
+          <h4 class="fw-bold" id="netSales">₹{{formatPrice netSales}}</h4>
         </div>
       </div>
     </div>
   </div>
-
 
   <!-- Search & Filter -->
   <div class="d-flex justify-content-between mb-3">
@@ -66,9 +109,8 @@
   </div>
 
   <!-- Sales Table -->
-  <div class="card shadow-sm mb-5 border-0">
+  <div class="card shadow-sm mb-3 border-0">
     <div class="card-body table-responsive p-0">
-
       <table class="table table-hover align-middle mb-0 admin-table">
         <thead class="table-light">
           <tr>
@@ -89,31 +131,24 @@
             <td class="fw-semibold text-muted">
               {{inc @index}}
             </td>
-
             <td class="fw-semibold text-dark">
               {{this.buyer}}
             </td>
-
             <td class="text-muted">
               {{this.product}}
             </td>
-
             <td class="text-muted small">
               {{this.product_id}}
             </td>
-
             <td class="text-center fw-semibold">
               {{this.quantity}}
             </td>
-
             <td class="text-end fw-semibold">
               ₹{{this.price}}
             </td>
-
             <td class="text-muted">
               {{this.category}}
             </td>
-
             <td class="text-end fw-semibold">
               ₹{{this.total}}
             </td>
@@ -126,24 +161,24 @@
           </tr>
           {{/each}}
         </tbody>
-
       </table>
-
     </div>
   </div>
 
-</div>
-{{#if totalPages}}
-<div id="pagination" class="d-flex justify-content-center mt-3">
-  {{#each (range 1 totalPages)}}
-  <button class="btn btn-sm mx-1 {{#ifEquals this ../currentPage}}btn-primary{{else}}btn-outline-primary{{/ifEquals}}"
-    onclick="fetchSales({{this}})">
-    {{this}}
-  </button>
-  {{/each}}
-</div>
-{{/if}}
+  <!-- Pagination -->
+  <div id="pagination" class="pagination-container"></div>
 
+  <!-- Hidden data for initial pagination -->
+  <script id="initialData" type="application/json">
+    {
+      "totalPages": {{totalPages}},
+      "currentPage": {{currentPage}},
+      "totalRevenue": {{totalRevenue}},
+      "totalItemsSold": {{totalItemsSold}},
+      "netSales": {{netSales}}
+    }
+  </script>
+</div>
 
 <!-- Filter Modal -->
 <div class="modal fade" id="filterModal" tabindex="-1" aria-labelledby="filterModalLabel" aria-hidden="true">
@@ -194,7 +229,8 @@
 </div>
 
 <script>
-  let currentFilters = {};
+  let currentPage = 1;
+  let totalPagesGlobal = 1;
 
   // Function to get current filter values from the form
   function getCurrentFilters() {
@@ -220,14 +256,10 @@
   // PDF Download
   document.getElementById("downloadPDF").addEventListener("click", async () => {
     try {
-      // Get current filter values
       const filters = getCurrentFilters();
-
-      // Build query string
       const params = new URLSearchParams(filters).toString();
 
       console.log('Downloading PDF with filters:', filters);
-      console.log('Query params:', params);
 
       const response = await axios.get(
         `/admin/sales-report/pdf${params ? '?' + params : ''}`,
@@ -254,47 +286,42 @@
     }
   });
 
-  // Excel Download
-  document.getElementById("downloadExcel").addEventListener("click", async () => {
-    try {
-      // Get current filter values
-      const filters = getCurrentFilters();
+  // Excel Download (if uncommented)
+  if (document.getElementById("downloadExcel")) {
+    document.getElementById("downloadExcel").addEventListener("click", async () => {
+      try {
+        const filters = getCurrentFilters();
+        const params = new URLSearchParams(filters).toString();
 
-      // Build query string
-      const params = new URLSearchParams(filters).toString();
+        const response = await axios.get(
+          `/admin/sales-report/excel${params ? '?' + params : ''}`,
+          { responseType: "blob" }
+        );
 
-      console.log('Downloading Excel with filters:', filters);
+        const blob = new Blob([response.data], {
+          type: "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"
+        });
+        const url = window.URL.createObjectURL(blob);
 
-      const response = await axios.get(
-        `/admin/sales-report/excel${params ? '?' + params : ''}`,
-        { responseType: "blob" }
-      );
+        const a = document.createElement("a");
+        a.href = url;
+        a.download = `sales-report-${new Date().toISOString().split('T')[0]}.xlsx`;
+        document.body.appendChild(a);
+        a.click();
 
-      const blob = new Blob([response.data], {
-        type: "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"
-      });
-      const url = window.URL.createObjectURL(blob);
+        setTimeout(() => {
+          a.remove();
+          window.URL.revokeObjectURL(url);
+        }, 100);
 
-      const a = document.createElement("a");
-      a.href = url;
-      a.download = `sales-report-${new Date().toISOString().split('T')[0]}.xlsx`;
-      document.body.appendChild(a);
-      a.click();
+      } catch (error) {
+        console.error('Error downloading Excel:', error);
+        alert('Failed to download Excel. Please try again.');
+      }
+    });
+  }
 
-      setTimeout(() => {
-        a.remove();
-        window.URL.revokeObjectURL(url);
-      }, 100);
-
-    } catch (error) {
-      console.error('Error downloading Excel:', error);
-      alert('Failed to download Excel. Please try again.');
-    }
-  });
-
-  let currentPage = 1;
-
-  /* 🔁 FETCH SALES */
+  /* FETCH SALES */
   async function fetchSales(page = 1) {
     currentPage = page;
 
@@ -307,32 +334,42 @@
     params.limit = 10;
     params.ajax = true;
 
-    const res = await axios.get("/admin/sales-report", { params });
+    try {
+      const res = await axios.get("/admin/sales-report", { params });
 
-    renderTable(res.data.sales);
-    renderPagination(res.data.pagination);
-    renderTotals(res.data.totals);
+      renderTable(res.data.sales);
+      renderPagination(res.data.pagination);
+      renderTotals(res.data.totals);
+    } catch (error) {
+      console.error('Error fetching sales:', error);
+    }
   }
 
-  /* 🔍 SEARCH */
+  /* SEARCH */
+  let searchTimeout;
   document.getElementById("searchInput").addEventListener("input", () => {
-    fetchSales(1);
+    clearTimeout(searchTimeout);
+    searchTimeout = setTimeout(() => {
+      fetchSales(1);
+    }, 300);
   });
 
-  /* 🎯 FILTER */
+  /* FILTER */
   document.getElementById("applyFilter").addEventListener("click", () => {
     fetchSales(1);
-    bootstrap.Modal.getInstance(
-      document.getElementById("filterModal")
-    ).hide();
+    const modalElement = document.getElementById("filterModal");
+    const modal = bootstrap.Modal.getInstance(modalElement);
+    if (modal) {
+      modal.hide();
+    }
   });
 
-  /* 🧾 TABLE */
+  /* TABLE */
   function renderTable(sales) {
     const tbody = document.getElementById("salesTableBody");
     tbody.innerHTML = "";
 
-    if (!sales.length) {
+    if (!sales || !sales.length) {
       tbody.innerHTML = `
         <tr>
           <td colspan="8" class="text-center text-muted py-4">
@@ -343,41 +380,139 @@
     }
 
     sales.forEach((s, i) => {
+      const serialNumber = (currentPage - 1) * 10 + i + 1;
       tbody.innerHTML += `
         <tr>
-          <td>${(currentPage - 1) * 10 + i + 1}</td>
-          <td class="fw-semibold">${s.buyer}</td>
-          <td>${s.product}</td>
-          <td class="small">${s.product_id}</td>
-          <td class="text-center">${s.quantity}</td>
-          <td class="text-end">₹${s.price}</td>
-          <td>${s.category}</td>
+          <td class="fw-semibold text-muted">${serialNumber}</td>
+          <td class="fw-semibold text-dark">${s.buyer}</td>
+          <td class="text-muted">${s.product}</td>
+          <td class="text-muted small">${s.product_id}</td>
+          <td class="text-center fw-semibold">${s.quantity}</td>
+          <td class="text-end fw-semibold">₹${s.price}</td>
+          <td class="text-muted">${s.category}</td>
           <td class="text-end fw-semibold">₹${s.total}</td>
         </tr>`;
     });
   }
 
-  /* 📊 TOTAL CARDS */
+  /* TOTAL CARDS */
   function renderTotals(totals) {
-    document.querySelectorAll('.card-body h4.fw-bold')[0].innerText = `₹${totals.totalRevenue}`;
-    document.querySelectorAll('.card-body h4.fw-bold')[1].innerText = totals.totalItemsSold;
-    document.querySelectorAll('.card-body h4.fw-bold')[2].innerText = `₹${totals.netSales}`;
+    document.getElementById('totalRevenue').innerText = `₹${totals.totalRevenue.toLocaleString('en-IN')}`;
+    document.getElementById('totalItemsSold').innerText = totals.totalItemsSold.toLocaleString('en-IN');
+    document.getElementById('netSales').innerText = `₹${totals.netSales.toLocaleString('en-IN')}`;
   }
 
-  /* 📄 PAGINATION */
-  function renderPagination({ totalPages, currentPage }) {
+  /* PAGINATION */
+  function renderPagination({ totalPages, currentPage: current }) {
+    totalPagesGlobal = totalPages;
+    currentPage = current;
+
     const container = document.getElementById("pagination");
     if (!container) return;
 
     container.innerHTML = "";
 
-    for (let i = 1; i <= totalPages; i++) {
-      container.innerHTML += `
-        <button
-          class="btn btn-sm mx-1 ${i === currentPage ? "btn-primary" : "btn-outline-primary"}"
-          onclick="fetchSales(${i})">
-          ${i}
-        </button>`;
+    // Don't show pagination if only 1 page or no pages
+    if (totalPages <= 1) {
+      return;
     }
+
+    // Previous button
+    const prevBtn = document.createElement('button');
+    prevBtn.className = 'page-btn';
+    prevBtn.textContent = 'Prev';
+    prevBtn.disabled = current === 1;
+    prevBtn.onclick = () => {
+      if (current > 1) fetchSales(current - 1);
+    };
+    container.appendChild(prevBtn);
+
+    // Page number buttons
+    const maxVisiblePages = 5;
+    let startPage = Math.max(1, current - Math.floor(maxVisiblePages / 2));
+    let endPage = Math.min(totalPages, startPage + maxVisiblePages - 1);
+
+    // Adjust start if we're near the end
+    if (endPage - startPage < maxVisiblePages - 1) {
+      startPage = Math.max(1, endPage - maxVisiblePages + 1);
+    }
+
+    // First page + ellipsis
+    if (startPage > 1) {
+      const firstBtn = document.createElement('button');
+      firstBtn.className = 'page-btn';
+      firstBtn.textContent = '1';
+      firstBtn.onclick = () => fetchSales(1);
+      container.appendChild(firstBtn);
+
+      if (startPage > 2) {
+        const ellipsis = document.createElement('span');
+        ellipsis.textContent = '...';
+        ellipsis.style.padding = '0 8px';
+        container.appendChild(ellipsis);
+      }
+    }
+
+    // Page numbers
+    for (let i = startPage; i <= endPage; i++) {
+      const pageBtn = document.createElement('button');
+      pageBtn.className = `page-btn ${i === current ? 'active' : ''}`;
+      pageBtn.textContent = i;
+      pageBtn.onclick = () => fetchSales(i);
+      container.appendChild(pageBtn);
+    }
+
+    // Ellipsis + last page
+    if (endPage < totalPages) {
+      if (endPage < totalPages - 1) {
+        const ellipsis = document.createElement('span');
+        ellipsis.textContent = '...';
+        ellipsis.style.padding = '0 8px';
+        container.appendChild(ellipsis);
+      }
+
+      const lastBtn = document.createElement('button');
+      lastBtn.className = 'page-btn';
+      lastBtn.textContent = totalPages;
+      lastBtn.onclick = () => fetchSales(totalPages);
+      container.appendChild(lastBtn);
+    }
+
+    // Next button
+    const nextBtn = document.createElement('button');
+    nextBtn.className = 'page-btn';
+    nextBtn.textContent = 'Next';
+    nextBtn.disabled = current === totalPages;
+    nextBtn.onclick = () => {
+      if (current < totalPages) fetchSales(current + 1);
+    };
+    container.appendChild(nextBtn);
   }
+
+  // Initialize pagination on page load
+  document.addEventListener('DOMContentLoaded', function () {
+    try {
+      // Get initial values from embedded JSON
+      const initialDataScript = document.getElementById('initialData');
+      if (initialDataScript) {
+        const initialData = JSON.parse(initialDataScript.textContent);
+
+        // Set global variables
+        currentPage = initialData.currentPage || 1;
+        totalPagesGlobal = initialData.totalPages || 1;
+
+        // Render initial pagination if there are multiple pages
+        if (initialData.totalPages > 1) {
+          renderPagination({
+            totalPages: initialData.totalPages,
+            currentPage: initialData.currentPage
+          });
+        }
+
+        console.log('Pagination initialized:', initialData);
+      }
+    } catch (error) {
+      console.error('Error initializing pagination:', error);
+    }
+  });
 </script>

@@ -47,13 +47,23 @@
 </style>
 
 <!-- STOCK MANAGEMENT PAGE -->
-<div class="container py-4">
-
+<div class="container-fluid px-4 py-4">
+  <!-- Header -->
   <div class="d-flex justify-content-between align-items-center mb-4">
-    <h3 class="fw-bold">Stock Management</h3>
-    <a href="/admin/products/add" class="btn btn-primary">
-      <i class="bi bi-plus-circle me-2"></i>Add New Product
-    </a>
+    <h4 class="fw-bold mb-0">Stock Management</h4>
+
+    <div class="d-flex align-items-center gap-3">
+      <!-- Search -->
+      <div class="input-group" style="width: 260px;">
+        <span class="input-group-text bg-white"><i class="bi bi-search"></i></span>
+        <input type="text" id="searchStock" class="form-control" placeholder="Search products...">
+      </div>
+
+      <!-- Filter Button -->
+      <button class="btn btn-outline-secondary" data-bs-toggle="modal" data-bs-target="#stockFilterModal">
+        <i class="bi bi-funnel-fill me-1"></i> Filter
+      </button>
+    </div>
   </div>
 
   <!-- Table -->
@@ -72,7 +82,7 @@
           </tr>
         </thead>
 
-        <tbody>
+        <tbody id="stockTableBody">
           {{#each fullProducts}}
           <tr>
             <td class="fw-semibold text-muted">{{inc @index}}</td>
@@ -137,18 +147,77 @@
     </div>
   </div>
 
-
+  <!-- Pagination -->
+  <nav>
+    <ul class="pagination justify-content-center" id="stockPagination"></ul>
+  </nav>
 </div>
-<script>
-  function initTooltips() {
-    document.querySelectorAll('[data-bs-toggle="tooltip"]').forEach(el => {
-      new bootstrap.Tooltip(el, {
-        placement: 'top',
-        delay: { show: 100, hide: 80 }
-      });
-    });
-  }
 
-  document.addEventListener("DOMContentLoaded", initTooltips);
+<!-- Filter Modal -->
+<div class="modal fade" id="stockFilterModal" tabindex="-1">
+  <div class="modal-dialog">
+    <div class="modal-content">
+      <form id="stockFilterForm">
+        <div class="modal-header">
+          <h5 class="modal-title fw-bold">Filter Stock</h5>
+          <button class="btn-close" data-bs-dismiss="modal"></button>
+        </div>
+        <div class="modal-body">
 
-</script>
+          <!-- Product Type Filter -->
+          <div class="mb-3">
+            <label class="form-label">Product Type</label>
+            <select class="form-select" name="productType">
+              <option value="All">All</option>
+              <option value="car">Car</option>
+              <option value="accessory">Accessory</option>
+            </select>
+          </div>
+
+          <!-- Brand Filter -->
+          <div class="mb-3">
+            <label class="form-label">Brand</label>
+            <select class="form-select" name="brand">
+              <option value="All">All</option>
+              {{#each brands}}
+              <option value="{{this._id}}">{{this.name}}</option>
+              {{/each}}
+            </select>
+          </div>
+
+          <!-- Category Filter -->
+          <div class="mb-3">
+            <label class="form-label">Category</label>
+            <select class="form-select" name="category">
+              <option value="All">All</option>
+              {{#each categories}}
+              <option value="{{this._id}}">{{this.name}}</option>
+              {{/each}}
+            </select>
+          </div>
+
+          <!-- Stock Status Filter -->
+          <div class="mb-3">
+            <label class="form-label">Stock Status</label>
+            <select class="form-select" name="stockStatus">
+              <option value="All">All</option>
+              <option value="Out of Stock">Out of Stock</option>
+              <option value="Low Stock">Low Stock (< 10)</option>
+              <option value="In Stock">In Stock</option>
+            </select>
+          </div>
+
+        </div>
+        <div class="modal-footer">
+          <button type="button" class="btn btn-secondary" id="resetFilters">Reset</button>
+          <button type="submit" class="btn btn-primary">Apply Filters</button>
+        </div>
+      </form>
+    </div>
+  </div>
+</div>
+
+<!-- Hidden element to pass totalPages to JS -->
+<div id="totalStockPages" data-total="{{totalPages}}" style="display:none;"></div>
+
+<script src="/js/admin/stockManagement.js"></script>

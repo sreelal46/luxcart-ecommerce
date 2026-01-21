@@ -1,160 +1,141 @@
 <style>
+  .stat-card {
+    transition: all 0.25s ease;
+  }
+
+  .stat-card:hover {
+    transform: translateY(-4px);
+    box-shadow: 0 10px 25px rgba(0, 0, 0, 0.08);
+  }
+
+  .icon-circle {
+    width: 52px;
+    height: 52px;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    margin: auto;
+  }
+
   .admin-table tbody tr {
-    height: 84px;
+    height: 78px;
   }
 
   .admin-table th,
   .admin-table td {
-    padding: 16px 18px;
+    padding: 14px 16px;
     vertical-align: middle;
-  }
-
-  .admin-table .badge {
-    padding: 6px 12px;
-    font-size: 12px;
-    font-weight: 600;
   }
 </style>
 
-<!-- Dashboard Header -->
-<div class="d-flex justify-content-between align-items-center pt-4 pb-2">
+<!-- HEADER -->
+<div class="d-flex justify-content-between align-items-center pt-4 pb-3">
   <div>
-    <h2 class="fw-bold text-dark">Dashboard</h2>
+    <h2 class="fw-bold">Dashboard</h2>
     <span class="text-muted">Welcome back, {{username}} 👋</span>
   </div>
-  <div>
-    <a href="/admin/logout" class="btn btn-outline-danger px-4">
-      <i class="bi bi-box-arrow-right me-2"></i> Logout
-    </a>
-  </div>
+  <a href="/admin/logout" class="btn btn-outline-danger">
+    <i class="bi bi-box-arrow-right"></i> Logout
+  </a>
 </div>
 
-<!-- Stat Cards -->
-<div class="row g-4 mb-4 mt-2">
+<!-- STATS -->
+<div class="row g-4 mb-4">
   <div class="col-md-3">
-    <div class="card stat-card shadow-sm border-0">
+    <div class="card stat-card border-0 shadow-sm">
       <div class="card-body text-center">
-        <div class="icon-circle bg-primary mb-3">
-          <i class="bi bi-currency-dollar text-white fs-4"></i>
+        <div class="icon-circle bg-primary mb-2">
+          <i class="bi bi-currency-rupee text-white fs-4"></i>
         </div>
-        <h6 class="text-secondary">Today's Sales</h6>
-        <h3 class="fw-bold text-dark">{{todaysSales}}</h3>
-        <span class="text-success small">+{{salesGrowth}}%</span>
+        <h6 class="text-muted">Today's Sales</h6>
+        <h4 class="fw-bold">₹ {{formatPrice todaysSales}}</h4>
+        <small class="text-success">+{{salesGrowth}}%</small>
       </div>
     </div>
   </div>
 
   <div class="col-md-3">
-    <div class="card stat-card shadow-sm border-0">
+    <div class="card stat-card border-0 shadow-sm">
       <div class="card-body text-center">
-        <div class="icon-circle bg-info mb-3">
-          <i class="bi bi-graph-up text-white fs-4"></i>
+        <div class="icon-circle bg-info mb-2">
+          <i class="bi bi-bar-chart text-white fs-4"></i>
         </div>
-        <h6 class="text-secondary">Monthly Revenue</h6>
-        <h3 class="fw-bold text-dark">{{monthlyRevenue}}</h3>
-        <span class="text-success small">+{{revenueGrowth}}%</span>
+        <h6 class="text-muted">Monthly Revenue</h6>
+        <h4 class="fw-bold">₹ {{formatPrice monthlyRevenue}}</h4>
+        <small class="text-success">+{{revenueGrowth}}%</small>
       </div>
     </div>
   </div>
 
   <div class="col-md-3">
-    <div class="card stat-card shadow-sm border-0">
+    <div class="card stat-card border-0 shadow-sm">
       <div class="card-body text-center">
-        <div class="icon-circle bg-warning mb-3">
+        <div class="icon-circle bg-warning mb-2">
           <i class="bi bi-bag-check text-white fs-4"></i>
         </div>
-        <h6 class="text-secondary">Total Orders</h6>
-        <h3 class="fw-bold text-dark">{{totalOrders}}</h3>
-        <span class="text-success small">+{{ordersGrowth}}%</span>
+        <h6 class="text-muted">Total Orders</h6>
+        <h4 class="fw-bold">{{totalOrders}}</h4>
+        <small class="text-success">+{{ordersGrowth}}%</small>
       </div>
     </div>
   </div>
 
   <div class="col-md-3">
-    <div class="card stat-card shadow-sm border-0">
+    <div class="card stat-card border-0 shadow-sm">
       <div class="card-body text-center">
-        <div class="icon-circle bg-success mb-3">
-          <i class="bi bi-people-fill text-white fs-4"></i>
+        <div class="icon-circle bg-success mb-2">
+          <i class="bi bi-people text-white fs-4"></i>
         </div>
-        <h6 class="text-secondary">Total Users</h6>
-        <h3 class="fw-bold text-dark">{{totalUsers}}</h3>
-        <span class="text-success small">+{{usersGrowth}}%</span>
+        <h6 class="text-muted">Total Users</h6>
+        <h4 class="fw-bold">{{totalUsers}}</h4>
+        <small class="text-success">+{{usersGrowth}}%</small>
       </div>
     </div>
   </div>
 </div>
 
-<!-- Recent Orders Table -->
-<div class="card shadow-sm border-0 mb-5">
+<!-- RECENT ORDERS -->
+<div class="card border-0 shadow-sm">
   <div class="card-body">
-    <div class="d-flex justify-content-between align-items-center mb-3">
-      <h5 class="fw-bold text-dark mb-0">Recent Orders</h5>
-      <a href="#" class="text-decoration-none small text-primary fw-semibold">View All</a>
+    <div class="d-flex justify-content-between mb-3">
+      <h5 class="fw-bold">Recent Orders</h5>
+      <a href="/admin/sales-report" class="small fw-semibold">View All</a>
     </div>
-    <div class="card shadow-sm mb-5 border-0">
-      <div class="card-body table-responsive p-0">
 
-        <table class="table table-hover align-middle mb-0 admin-table">
-          <thead class="table-light">
-            <tr>
-              <th>Order ID</th>
-              <th>Customer</th>
-              <th>Product</th>
-              <th>Date</th>
-              <th class="text-end">Amount (₹)</th>
-              <th>Status</th>
-            </tr>
-          </thead>
-
-          <tbody>
-            {{#each orders}}
-            <tr>
-              <td class="fw-semibold text-muted">
-                #{{orderId}}
-              </td>
-
-              <td class="fw-semibold text-dark">
-                {{customer}}
-              </td>
-
-              <td class="text-muted">
-                {{product}}
-              </td>
-
-              <td class="text-muted text-nowrap">
-                {{date}}
-              </td>
-
-              <td class="fw-semibold text-end">
-                ₹{{amount}}
-              </td>
-
-              <td>
-                {{#if (eq status "Completed")}}
-                <span class="badge bg-success-subtle text-success fw-semibold">
-                  Completed
-                </span>
-                {{else if (eq status "Processing")}}
-                <span class="badge bg-primary-subtle text-primary fw-semibold">
-                  Processing
-                </span>
-                {{else if (eq status "Pending")}}
-                <span class="badge bg-warning-subtle text-warning fw-semibold">
-                  Pending
-                </span>
-                {{else}}
-                <span class="badge bg-secondary-subtle text-secondary fw-semibold">
-                  {{status}}
-                </span>
-                {{/if}}
-              </td>
-            </tr>
-            {{/each}}
-          </tbody>
-
-        </table>
-
-      </div>
+    <div class="table-responsive">
+      <table class="table table-hover admin-table">
+        <thead class="table-light">
+          <tr>
+            <th>Order ID</th>
+            <th>Customer</th>
+            <th>Product</th>
+            <th>Date</th>
+            <th class="text-end">Amount</th>
+            <th>Status</th>
+          </tr>
+        </thead>
+        <tbody>
+          {{#each orders}}
+          <tr>
+            <td class="fw-semibold text-muted">#{{orderId}}</td>
+            <td class="fw-semibold">{{customer}}</td>
+            <td class="text-muted">{{product}}</td>
+            <td class="text-muted">{{date}}</td>
+            <td class="fw-semibold text-end">₹ {{formatPrice amount}}</td>
+            <td>
+              {{#if (eq status "Paid")}}
+              <span class="badge bg-success-subtle text-success">Paid</span>
+              {{else if (eq status "Partially Paid")}}
+              <span class="badge bg-warning-subtle text-warning">Partial</span>
+              {{else}}
+              <span class="badge bg-secondary-subtle text-secondary">Pending</span>
+              {{/if}}
+            </td>
+          </tr>
+          {{/each}}
+        </tbody>
+      </table>
     </div>
   </div>
 </div>

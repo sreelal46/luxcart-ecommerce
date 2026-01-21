@@ -54,17 +54,6 @@ const editCarProduct = async (req, res) => {
         .status(NOT_FOUND)
         .json({ success: false, message: "Car not found" });
 
-    //finding duplicate
-    // const name = existingCar.name;
-    // const duplicate = await Car.findOne({
-    //   name: { $regex: new RegExp(`^${name}$`, "i") },
-    // });
-
-    // if (duplicate)
-    //   return res
-    //     .status(CONFLICT)
-    //     .json({ success: false, message: "Brand name already exists." });
-
     // Update basic car info
     existingCar.brand_id = req.body.brand;
     existingCar.category_id = req.body.category;
@@ -109,7 +98,7 @@ const editCarProduct = async (req, res) => {
 
       // Remove deleted images from variant's image_url
       variant.image_url = variant.image_url.filter(
-        (imgUrl) => !removedImages.includes(imgUrl)
+        (imgUrl) => !removedImages.includes(imgUrl),
       );
 
       // Append newly uploaded images
@@ -156,12 +145,12 @@ const softDelete = async (req, res, next) => {
       if (carProduct.isListed) {
         await Car.updateOne(
           { _id: carProductId },
-          { $set: { isListed: false } }
+          { $set: { isListed: false } },
         );
       } else {
         await Car.updateOne(
           { _id: carProductId },
-          { $set: { isListed: true } }
+          { $set: { isListed: true } },
         );
       }
     }
@@ -172,12 +161,12 @@ const softDelete = async (req, res, next) => {
       if (accessoryProduct.isListed) {
         await Accessory.updateOne(
           { _id: accessoryProductId },
-          { $set: { isListed: false } }
+          { $set: { isListed: false } },
         );
       } else {
         await Accessory.updateOne(
           { _id: accessoryProductId },
-          { $set: { isListed: true } }
+          { $set: { isListed: true } },
         );
       }
     }
@@ -188,26 +177,6 @@ const softDelete = async (req, res, next) => {
     next(error);
   }
 };
-// const softDeleteCar = async (req, res, next) => {
-//   try {
-//     console.log("......................", req.params.id);
-//     const id = req.params.id;
-//     const carProduct = await Car.findById(id);
-//     const carProductId = carProduct._id;
-//     console.log(carProduct);
-
-//     if (carProduct.isListed) {
-//       await Car.updateOne({ _id: carProductId }, { $set: { isListed: false } });
-//     } else {
-//       await Car.updateOne({ _id: carProductId }, { $set: { isListed: true } });
-//     }
-//     res.status(OK).json({ success: true });
-//   } catch (error) {
-//     console.log(error);
-//     next(error);
-//   }
-// };
-
 const addAccessoriesProduct = async (req, res, next) => {
   try {
     //finding duplicate
@@ -311,7 +280,7 @@ const editAccessories = async (req, res, next) => {
     await Accessory.findByIdAndUpdate(
       accessoryId,
       { $set: updateData },
-      { new: true }
+      { new: true },
     );
 
     res.status(200).json({
