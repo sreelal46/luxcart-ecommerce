@@ -8,9 +8,97 @@ const Coupon = require("../../models/admin/couponModel");
 
 const loadCouponPage = async (req, res, next) => {
   try {
-    const coupons = await Coupon.find().sort({ createdAt: -1 }).lean();
+    let {
+      search = "",
+      page = 1,
+      limit = 10,
+      ajax,
+      discountType,
+      status,
+      validFromDate,
+      validToDate,
+      minDiscount,
+      maxDiscount,
+      minOrderAmount,
+    } = req.query;
 
-    res.status(OK).render("admin/couponsManagement", { coupons });
+    // Convert to numbers
+    const pageNum = Number(page);
+    const limitNum = Number(limit);
+    const skip = (pageNum - 1) * limitNum;
+
+    // Build query
+    let query = {};
+
+    // Search functionality
+    if (search) {
+      query.code = { $regex: search, $options: "i" };
+    }
+
+    // Filter by discount type
+    if (discountType) {
+      query.discountType = discountType;
+    }
+
+    // Filter by status (listed/unlisted)
+    if (status) {
+      query.isListed = status === "listed";
+    }
+
+    // Filter by valid date range
+    if (validFromDate) {
+      query.validFrom = { $gte: new Date(validFromDate) };
+    }
+
+    if (validToDate) {
+      query.validTo = { $lte: new Date(validToDate) };
+    }
+
+    // Filter by discount value range
+    if (minDiscount || maxDiscount) {
+      query.discountValue = {};
+      if (minDiscount) {
+        query.discountValue.$gte = Number(minDiscount);
+      }
+      if (maxDiscount) {
+        query.discountValue.$lte = Number(maxDiscount);
+      }
+    }
+
+    // Filter by minimum order amount
+    if (minOrderAmount) {
+      query.minOrderAmount = { $gte: Number(minOrderAmount) };
+    }
+
+    // Get total count for pagination
+    const totalCount = await Coupon.countDocuments(query);
+    const totalPages = Math.ceil(totalCount / limitNum);
+
+    // Fetch coupons with pagination
+    const coupons = await Coupon.find(query)
+      .sort({ createdAt: -1 })
+      .skip(skip)
+      .limit(limitNum)
+      .lean();
+
+    // AJAX response (for search/pagination/filters)
+    if (ajax) {
+      return res.status(200).json({
+        coupons,
+        pagination: {
+          totalPages,
+          currentPage: pageNum,
+          totalCount,
+        },
+      });
+    }
+
+    // Initial page load
+    res.status(200).render("admin/couponsManagement", {
+      coupons,
+      currentPage: pageNum,
+      totalPages,
+    });
   } catch (error) {
     console.log("Error from showing coupon page", error);
     next(error);
@@ -167,7 +255,7 @@ const editCoupon = async (req, res, next) => {
         validFrom,
         validTo,
       },
-      { new: true }
+      { new: true },
     );
 
     res.status(OK).json({

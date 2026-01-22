@@ -27,21 +27,71 @@
   .tooltip.bs-tooltip-top .tooltip-arrow::before {
     border-top-color: #000;
   }
+
+  /* Pagination Styles */
+  .pagination-container {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    gap: 8px;
+    margin-top: 2rem;
+    margin-bottom: 2rem;
+  }
+
+  .pagination-container .page-btn {
+    min-width: 40px;
+    height: 40px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border: 1px solid #dee2e6;
+    background: white;
+    color: #495057;
+    font-weight: 500;
+    cursor: pointer;
+    transition: all 0.2s ease;
+    border-radius: 4px;
+    padding: 0 12px;
+  }
+
+  .pagination-container .page-btn:hover:not(:disabled) {
+    background: #f8f9fa;
+    border-color: #0d6efd;
+    color: #0d6efd;
+  }
+
+  .pagination-container .page-btn.active {
+    background: #0d6efd;
+    color: white;
+    border-color: #0d6efd;
+  }
+
+  .pagination-container .page-btn:disabled {
+    opacity: 0.5;
+    cursor: not-allowed;
+  }
 </style>
 
 <div class="container py-5">
   <!-- Header -->
   <div class="d-flex justify-content-between align-items-center mb-4">
     <h2 class="fw-bold">Coupons Management</h2>
-    <button class="btn btn-primary btn-md  shadow-sm" data-bs-toggle="modal" data-bs-target="#addCouponModal">
+    <button class="btn btn-primary btn-md shadow-sm" data-bs-toggle="modal" data-bs-target="#addCouponModal">
       <i class="bi bi-plus-circle me-2"></i> Add Coupon
     </button>
   </div>
 
-  <!-- Coupons Table Card -->
-  <div class="card shadow-sm mb-5 border-0">
-    <div class="card-body table-responsive p-0">
+  <!-- Search & Filter -->
+  <div class="d-flex justify-content-between mb-3">
+    <input type="text" id="searchInput" class="form-control w-50" placeholder="Search by coupon code...">
+    <button class="btn btn-primary ms-2" data-bs-toggle="modal" data-bs-target="#filterModal">
+      <i class="bi bi-funnel"></i> Filter
+    </button>
+  </div>
 
+  <!-- Coupons Table Card -->
+  <div class="card shadow-sm mb-3 border-0">
+    <div class="card-body table-responsive p-0">
       <table class="table table-hover align-middle mb-0 admin-table">
         <thead class="table-light">
           <tr>
@@ -101,7 +151,6 @@
 
             <td class="text-center">
               <div class="d-flex justify-content-center gap-2">
-
                 <!-- EDIT -->
                 <button class="btn btn-sm btn-outline-success edit-coupon-btn" data-bs-toggle="modal"
                   data-bs-target="#editCouponModal" data-id="{{this._id}}" data-code="{{this.code}}"
@@ -112,27 +161,37 @@
                   <i class="bi bi-pencil"></i>
                 </button>
 
-
                 <!-- List / Unlist -->
                 <div class="form-check form-switch m-0 update-coupon-btn"
                   title="{{#if this.isListed}}Unlist{{else}}List{{/if}} Coupon">
                   <input class="form-check-input" type="checkbox" data-id="{{this._id}}" data-code="{{this.code}}" {{#if
                     this.isListed}}checked{{/if}} />
                 </div>
-
-
-
               </div>
+            </td>
+          </tr>
+          {{else}}
+          <tr>
+            <td colspan="8" class="text-center text-muted py-4">
+              No coupons available
             </td>
           </tr>
           {{/each}}
         </tbody>
       </table>
-
-
     </div>
   </div>
 
+  <!-- Pagination -->
+  <div id="pagination" class="pagination-container"></div>
+
+  <!-- Hidden data for initial pagination -->
+  <script id="initialData" type="application/json">
+    {
+      "totalPages": {{totalPages}},
+      "currentPage": {{currentPage}}
+    }
+  </script>
 </div>
 
 <!-- Add Coupon Modal -->
@@ -147,7 +206,6 @@
       <div class="modal-body">
         <form id="addCouponForm">
           <div class="row g-3">
-
             <!-- Coupon Code -->
             <div class="col-md-6">
               <label class="form-label fw-semibold">Coupon Code</label>
@@ -208,12 +266,11 @@
               <label class="form-label fw-semibold">Valid To</label>
               <input type="date" class="form-control form-control-lg" name="validTo">
             </div>
-
           </div>
 
           <div class="text-end mt-4">
             <button type="button" class="btn btn-secondary btn-lg me-2" data-bs-dismiss="modal">Close</button>
-            <button type="submit" class="btn btn-primary btn-lg ">Add Coupon</button>
+            <button type="submit" class="btn btn-primary btn-lg">Add Coupon</button>
           </div>
         </form>
       </div>
@@ -225,7 +282,6 @@
 <div class="modal fade" id="editCouponModal" tabindex="-1" aria-labelledby="editCouponModalLabel" aria-hidden="true">
   <div class="modal-dialog modal-dialog-centered modal-lg">
     <div class="modal-content rounded-4 shadow-lg">
-
       <div class="modal-header bg-warning text-dark">
         <h5 class="modal-title fw-bold" id="editCouponModalLabel">
           <i class="bi bi-pencil-square me-2"></i> Edit Coupon
@@ -236,22 +292,11 @@
       <div class="modal-body">
         <form id="editCouponForm">
           <div class="row g-3">
-
             <!-- Coupon Code -->
             <div class="col-md-6">
               <label class="form-label fw-semibold">Coupon Code</label>
               <input type="text" class="form-control form-control-lg text-uppercase" name="code">
             </div>
-
-            <!-- Discount Type -->
-            <!-- <div class="col-md-6">
-              <label class="form-label fw-semibold">Discount Type</label>
-              <select class="form-select form-select-lg" name="discountType" id="editDiscountType">
-                <option value="percentage">Percentage</option>
-                <option value="fixed">Fixed</option>
-              </select>
-            </div> -->
-
             <!-- Discount Value -->
             <div class="col-md-6">
               <label class="form-label fw-semibold">Discount Value</label>
@@ -287,24 +332,18 @@
               <label class="form-label fw-semibold">Valid To</label>
               <input type="date" class="form-control form-control-lg" name="validTo">
             </div>
-
           </div>
 
           <div class="text-end mt-4">
             <button type="button" class="btn btn-secondary btn-lg me-2" data-bs-dismiss="modal">Close</button>
             <button type="submit" class="btn btn-warning btn-lg">Update Coupon</button>
           </div>
-
         </form>
       </div>
-
     </div>
   </div>
 </div>
 
-
-
-<!-- Delete Confirmation Modal -->
 <!-- Confirm List / Unlist Modal -->
 <div class="modal fade" id="confirmListModal" tabindex="-1" aria-hidden="true">
   <div class="modal-dialog modal-dialog-centered">
@@ -333,4 +372,305 @@
   </div>
 </div>
 
+<!-- Filter Modal -->
+<div class="modal fade" id="filterModal" tabindex="-1" aria-labelledby="filterModalLabel" aria-hidden="true">
+  <div class="modal-dialog modal-dialog-centered">
+    <div class="modal-content rounded-3">
+      <div class="modal-header">
+        <h5 class="modal-title fw-bold" id="filterModalLabel">Filter Coupons</h5>
+        <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+      </div>
+      <div class="modal-body">
+        <form id="filterForm">
+          <div class="mb-3">
+            <label class="form-label fw-semibold">Discount Type</label>
+            <select class="form-select" name="discountType">
+              <option value="">All</option>
+              <option value="percentage">Percentage</option>
+              <option value="flat">Flat</option>
+            </select>
+          </div>
+
+          <div class="mb-3">
+            <label class="form-label fw-semibold">Status</label>
+            <select class="form-select" name="status">
+              <option value="">All</option>
+              <option value="listed">Listed</option>
+              <option value="unlisted">Unlisted</option>
+            </select>
+          </div>
+
+          <div class="mb-3">
+            <label class="form-label fw-semibold">Valid From Date</label>
+            <input type="date" class="form-control" name="validFromDate">
+          </div>
+
+          <div class="mb-3">
+            <label class="form-label fw-semibold">Valid To Date</label>
+            <input type="date" class="form-control" name="validToDate">
+          </div>
+
+          <div class="mb-3">
+            <label class="form-label fw-semibold">Min Discount Value</label>
+            <input type="number" class="form-control" name="minDiscount" placeholder="e.g. 10">
+          </div>
+
+          <div class="mb-3">
+            <label class="form-label fw-semibold">Max Discount Value</label>
+            <input type="number" class="form-control" name="maxDiscount" placeholder="e.g. 1000">
+          </div>
+
+          <div class="mb-3">
+            <label class="form-label fw-semibold">Min Order Amount (₹)</label>
+            <input type="number" class="form-control" name="minOrderAmount" placeholder="e.g. 500">
+          </div>
+        </form>
+      </div>
+      <div class="modal-footer">
+        <button class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+        <button class="btn btn-outline-danger" id="clearFilter">Clear Filters</button>
+        <button class="btn btn-primary" id="applyFilter">Apply Filter</button>
+      </div>
+    </div>
+  </div>
+</div>
+
 <script src="/js/admin/couponsManagement.js"></script>
+<script>
+  let currentPage = 1;
+  let totalPagesGlobal = 1;
+
+  /* FETCH COUPONS */
+  async function fetchCoupons(page = 1) {
+    currentPage = page;
+
+    const search = document.getElementById("searchInput").value;
+    const formData = new FormData(document.getElementById("filterForm"));
+    const filters = Object.fromEntries(formData.entries());
+
+    const params = {
+      search: search,
+      page: page,
+      limit: 10,
+      ajax: true,
+      ...filters
+    };
+
+    // Remove empty filters
+    Object.keys(params).forEach(key => {
+      if (!params[key]) delete params[key];
+    });
+
+    try {
+      const res = await axios.get("/admin/coupons-management", { params });
+      renderTable(res.data.coupons);
+      renderPagination(res.data.pagination);
+    } catch (error) {
+      console.error('Error fetching coupons:', error);
+    }
+  }
+
+  /* SEARCH */
+  let searchTimeout;
+  document.getElementById("searchInput").addEventListener("input", () => {
+    clearTimeout(searchTimeout);
+    searchTimeout = setTimeout(() => {
+      fetchCoupons(1);
+    }, 300);
+  });
+
+  /* FILTER */
+  document.getElementById("applyFilter").addEventListener("click", () => {
+    fetchCoupons(1);
+    const modalElement = document.getElementById("filterModal");
+    const modal = bootstrap.Modal.getInstance(modalElement);
+    if (modal) {
+      modal.hide();
+    }
+  });
+
+  /* CLEAR FILTER */
+  document.getElementById("clearFilter").addEventListener("click", () => {
+    document.getElementById("filterForm").reset();
+    fetchCoupons(1);
+    const modalElement = document.getElementById("filterModal");
+    const modal = bootstrap.Modal.getInstance(modalElement);
+    if (modal) {
+      modal.hide();
+    }
+  });
+
+  /* TABLE */
+  function renderTable(coupons) {
+    const tbody = document.getElementById("couponsTableBody");
+    tbody.innerHTML = "";
+
+    if (!coupons || !coupons.length) {
+      tbody.innerHTML = `
+        <tr>
+          <td colspan="8" class="text-center text-muted py-4">
+            No coupons available
+          </td>
+        </tr>`;
+      return;
+    }
+
+    coupons.forEach((c, i) => {
+      const serialNumber = (currentPage - 1) * 10 + i + 1;
+
+      const discountBadge = c.discountType === 'percentage'
+        ? `<span class="badge bg-success-subtle text-success">${c.discountValue}%</span>`
+        : `<span class="badge bg-info-subtle text-info">₹${c.discountValue}</span>`;
+
+      const statusBadge = c.isListed
+        ? `<span class="badge bg-success-subtle text-success">List</span>`
+        : `<span class="badge bg-danger-subtle text-danger">Unlist</span>`;
+
+      const formatDate = (dateStr) => {
+        if (!dateStr) return 'N/A';
+        const d = new Date(dateStr);
+        return d.toLocaleDateString('en-GB');
+      };
+
+      tbody.innerHTML += `
+        <tr>
+          <td class="fw-semibold text-muted">${serialNumber}</td>
+          <td class="fw-semibold text-dark">${c.code}</td>
+          <td>${discountBadge}</td>
+          <td class="text-muted">₹${c.minOrderAmount}</td>
+          <td class="text-muted text-nowrap">${formatDate(c.validFrom)} – ${formatDate(c.validTo)}</td>
+          <td><span class="badge bg-secondary-subtle text-secondary">${c.usedBy?.length || 0}</span></td>
+          <td>${statusBadge}</td>
+          <td class="text-center">
+            <div class="d-flex justify-content-center gap-2">
+              <button class="btn btn-sm btn-outline-success edit-coupon-btn" 
+                data-bs-toggle="modal" data-bs-target="#editCouponModal" 
+                data-id="${c._id}" data-code="${c.code}"
+                data-discounttype="${c.discountType}" data-discountvalue="${c.discountValue}"
+                data-minorder="${c.minOrderAmount}" data-validfrom="${c.validFrom}"
+                data-validto="${c.validTo}" data-usageperuser="${c.usagePerUser}"
+                data-usagelimit="${c.usageLimit}">
+                <i class="bi bi-pencil"></i>
+              </button>
+              <div class="form-check form-switch m-0 update-coupon-btn"
+                title="${c.isListed ? 'Unlist' : 'List'} Coupon">
+                <input class="form-check-input" type="checkbox" 
+                  data-id="${c._id}" data-code="${c.code}" 
+                  ${c.isListed ? 'checked' : ''} />
+              </div>
+            </div>
+          </td>
+        </tr>`;
+    });
+  }
+
+  /* PAGINATION */
+  function renderPagination({ totalPages, currentPage: current }) {
+    totalPagesGlobal = totalPages;
+    currentPage = current;
+
+    const container = document.getElementById("pagination");
+    if (!container) return;
+
+    container.innerHTML = "";
+
+    if (totalPages <= 1) return;
+
+    // Previous button
+    const prevBtn = document.createElement('button');
+    prevBtn.className = 'page-btn';
+    prevBtn.textContent = 'Prev';
+    prevBtn.disabled = current === 1;
+    prevBtn.onclick = () => {
+      if (current > 1) fetchCoupons(current - 1);
+    };
+    container.appendChild(prevBtn);
+
+    // Page number buttons
+    const maxVisiblePages = 5;
+    let startPage = Math.max(1, current - Math.floor(maxVisiblePages / 2));
+    let endPage = Math.min(totalPages, startPage + maxVisiblePages - 1);
+
+    if (endPage - startPage < maxVisiblePages - 1) {
+      startPage = Math.max(1, endPage - maxVisiblePages + 1);
+    }
+
+    // First page + ellipsis
+    if (startPage > 1) {
+      const firstBtn = document.createElement('button');
+      firstBtn.className = 'page-btn';
+      firstBtn.textContent = '1';
+      firstBtn.onclick = () => fetchCoupons(1);
+      container.appendChild(firstBtn);
+
+      if (startPage > 2) {
+        const ellipsis = document.createElement('span');
+        ellipsis.textContent = '...';
+        ellipsis.style.padding = '0 8px';
+        container.appendChild(ellipsis);
+      }
+    }
+
+    // Page numbers
+    for (let i = startPage; i <= endPage; i++) {
+      const pageBtn = document.createElement('button');
+      pageBtn.className = `page-btn ${i === current ? 'active' : ''}`;
+      pageBtn.textContent = i;
+      pageBtn.onclick = () => fetchCoupons(i);
+      container.appendChild(pageBtn);
+    }
+
+    // Ellipsis + last page
+    if (endPage < totalPages) {
+      if (endPage < totalPages - 1) {
+        const ellipsis = document.createElement('span');
+        ellipsis.textContent = '...';
+        ellipsis.style.padding = '0 8px';
+        container.appendChild(ellipsis);
+      }
+
+      const lastBtn = document.createElement('button');
+      lastBtn.className = 'page-btn';
+      lastBtn.textContent = totalPages;
+      lastBtn.onclick = () => fetchCoupons(totalPages);
+      container.appendChild(lastBtn);
+    }
+
+    // Next button
+    const nextBtn = document.createElement('button');
+    nextBtn.className = 'page-btn';
+    nextBtn.textContent = 'Next';
+    nextBtn.disabled = current === totalPages;
+    nextBtn.onclick = () => {
+      if (current < totalPages) fetchCoupons(current + 1);
+    };
+    container.appendChild(nextBtn);
+  }
+
+  // Initialize pagination on page load
+  document.addEventListener('DOMContentLoaded', function () {
+    try {
+      const initialDataScript = document.getElementById('initialData');
+      if (initialDataScript) {
+        const initialData = JSON.parse(initialDataScript.textContent);
+
+        currentPage = initialData.currentPage || 1;
+        totalPagesGlobal = initialData.totalPages || 1;
+
+        if (initialData.totalPages > 1) {
+          renderPagination({
+            totalPages: initialData.totalPages,
+            currentPage: initialData.currentPage
+          });
+        }
+
+        console.log('Pagination initialized:', initialData);
+      }
+    } catch (error) {
+      console.error('Error initializing pagination:', error);
+    }
+  });
+</script>
+
+
+<!-- <script src="/js/admin/couponsManagement.js"></script> -->
