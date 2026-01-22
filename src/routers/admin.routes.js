@@ -346,9 +346,39 @@ route.get("/sales-report/pdf", checkSession, generateSalesReportPDF);
 route.get("/wallet", checkSession, (req, res) => {
   res.render("admin/walletView");
 });
+const {
+  loadSettingPage,
+  updateGeneralSettings,
+  uploadProfileImage,
+  uploadWebsiteLogo,
+  addBanner,
+  editBanner,
+  deleteBanner,
+} = require("../controllers/admin/settings.controller");
+route.get("/settings", checkSession, loadSettingPage);
+route.post("/settings/general", updateGeneralSettings);
 
-route.get("/settings", checkSession, (req, res) => {
-  res.render("admin/settings");
-});
+// Upload profile image (Cloudinary will handle the upload)
+route.post(
+  "/settings/profile-image",
+  upload.single("profileImage"),
+  uploadProfileImage,
+);
+
+// Upload website logo (Cloudinary will handle the upload)
+route.post(
+  "/settings/website-logo",
+  upload.single("websiteLogo"),
+  uploadWebsiteLogo,
+);
+
+// Banner management (Cloudinary will handle the upload)
+route.post("/settings/banner/add", upload.single("bannerFile"), addBanner);
+route.put(
+  "/settings/banner/edit/:bannerId",
+  upload.single("bannerFile"),
+  editBanner,
+);
+route.delete("/settings/banner/delete/:bannerId", deleteBanner);
 
 module.exports = route;

@@ -360,4 +360,7 @@ module.exports = {
     for (let i = from; i <= to; i++) result.push(i);
     return result;
   },
+  hasItems: function (array) {
+    return array && array.length > 0;
+  },
 };

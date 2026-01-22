@@ -8,6 +8,9 @@
             <li class="list-group-item active fw-semibold" id="general-tab" style="cursor:pointer">
               <i class="bi bi-gear-fill me-2"></i> General
             </li>
+            <li class="list-group-item fw-semibold" id="branding-tab" style="cursor:pointer">
+              <i class="bi bi-palette me-2"></i> Branding
+            </li>
             <li class="list-group-item fw-semibold" id="banner-tab" style="cursor:pointer">
               <i class="bi bi-image me-2"></i> Banner
             </li>
@@ -24,33 +27,98 @@
           <h4 class="fw-bold mb-4 text-dark">
             <i class="bi bi-gear-wide-connected me-2 text-primary"></i> Site Information
           </h4>
-          <form>
+          <form id="generalSettingsForm">
             <div class="mb-3">
               <label class="form-label fw-semibold">Website Name</label>
-              <input type="text" class="form-control rounded-3" value="LuxCart">
+              <input type="text" name="websiteName" class="form-control rounded-3" value="{{admin.name}}" required>
             </div>
             <div class="mb-3">
               <label class="form-label fw-semibold">Email</label>
-              <input type="email" class="form-control rounded-3" value="admin@luxcart.com">
-            </div>
-            <div class="mb-3">
-              <label class="form-label fw-semibold">Address</label>
-              <textarea class="form-control rounded-3" rows="2">123, MG Road, Kochi, Kerala - 682001</textarea>
+              <input type="email" name="email" class="form-control rounded-3" value="{{admin.email}}" required>
             </div>
             <div class="mb-3">
               <label class="form-label fw-semibold">Phone Number</label>
-              <input type="text" class="form-control rounded-3" value="+91 9876543210">
+              <input type="text" name="phone" class="form-control rounded-3" value="{{admin.phone}}">
             </div>
             <div class="mb-3">
               <label class="form-label fw-semibold">Support Email</label>
-              <input type="email" class="form-control rounded-3" value="support@luxcart.com">
+              <input type="email" name="supportEmail" class="form-control rounded-3" value="{{admin.supportEmail}}">
+            </div>
+            <h5 class="fw-bold mt-4 mb-3">Address</h5>
+            <div class="mb-3">
+              <label class="form-label fw-semibold">Street</label>
+              <input type="text" name="street" class="form-control rounded-3" value="{{admin.address.street}}">
+            </div>
+            <div class="row">
+              <div class="col-md-6 mb-3">
+                <label class="form-label fw-semibold">City</label>
+                <input type="text" name="city" class="form-control rounded-3" value="{{admin.address.city}}">
+              </div>
+              <div class="col-md-6 mb-3">
+                <label class="form-label fw-semibold">State</label>
+                <input type="text" name="state" class="form-control rounded-3" value="{{admin.address.state}}">
+              </div>
+            </div>
+            <div class="row">
+              <div class="col-md-6 mb-3">
+                <label class="form-label fw-semibold">Postal Code</label>
+                <input type="text" name="postalCode" class="form-control rounded-3"
+                  value="{{admin.address.postalCode}}">
+              </div>
+              <div class="col-md-6 mb-3">
+                <label class="form-label fw-semibold">Country</label>
+                <input type="text" name="country" class="form-control rounded-3" value="{{admin.address.country}}">
+              </div>
             </div>
             <div class="d-flex justify-content-end">
               <button type="submit" class="btn btn-primary rounded-pill px-4">
-                <i class="bi bi-save me-2"></i>Save Changes
+                <i class="bi bi-save me-2"></i> Save Changes
               </button>
             </div>
           </form>
+        </div>
+      </div>
+
+      <!-- Branding Section -->
+      <div id="branding-section" class="d-none">
+        <div class="card shadow-sm border-0 rounded-4 mb-4">
+          <div class="card-body p-4">
+            <h4 class="fw-bold mb-4 text-dark">
+              <i class="bi bi-person-circle me-2 text-primary"></i> Profile Image
+            </h4>
+            <div class="text-center mb-3">
+              {{#if admin.profileImage}}
+              <img src="{{admin.profileImage}}" alt="Profile" class="profile-preview img-thumbnail"
+                id="currentProfileImage">
+              {{else}}
+              <img src="/images/default-profile.png" alt="Profile" class="profile-preview img-thumbnail"
+                id="currentProfileImage">
+              {{/if}}
+            </div>
+            <input type="file" id="profileImageInput" accept="image/*" class="form-control rounded-3 mb-3">
+            <button type="button" class="btn btn-primary rounded-pill px-4 w-100" id="uploadProfileBtn">
+              <i class="bi bi-upload me-2"></i> Upload Profile Image
+            </button>
+          </div>
+        </div>
+
+        <div class="card shadow-sm border-0 rounded-4">
+          <div class="card-body p-4">
+            <h4 class="fw-bold mb-4 text-dark">
+              <i class="bi bi-image me-2 text-primary"></i> Website Logo
+            </h4>
+            <div class="text-center mb-3">
+              {{#if admin.websiteLogo}}
+              <img src="{{admin.websiteLogo}}" alt="Logo" class="logo-preview img-thumbnail" id="currentLogoImage">
+              {{else}}
+              <img src="/images/default-logo.png" alt="Logo" class="logo-preview img-thumbnail" id="currentLogoImage">
+              {{/if}}
+            </div>
+            <input type="file" id="logoImageInput" accept="image/*" class="form-control rounded-3 mb-3">
+            <button type="button" class="btn btn-primary rounded-pill px-4 w-100" id="uploadLogoBtn">
+              <i class="bi bi-upload me-2"></i> Upload Website Logo
+            </button>
+          </div>
         </div>
       </div>
 
@@ -65,30 +133,31 @@
           </button>
         </div>
 
-        <div class="row g-3">
-          <!-- Banner Card Example -->
-          <div class="col-md-6 col-lg-4 d-flex">
+        <div class="row g-3" id="bannerContainer">
+          {{#if admin.bannerMedia}}
+          {{#each admin.bannerMedia}}
+          <div class="col-md-6 col-lg-4 d-flex banner-card" data-banner-id="{{this._id}}">
             <div class="card shadow-sm border-0 rounded-4 overflow-hidden d-flex flex-column w-100">
-              <!-- Media -->
-              <img src="https://via.placeholder.com/400x180" class="card-img-top" alt="Banner">
-              <!-- Card Body -->
+              {{#if (eq this.type 'image')}}
+              <img src="{{this.url}}" class="card-img-top" alt="Banner">
+              {{else}}
+              <video src="{{this.url}}" class="card-img-top" controls></video>
+              {{/if}}
               <div class="card-body d-flex flex-column flex-grow-1">
-                <h5 class="card-title">Diwali Offer 2025</h5>
-                <p class="card-text mb-1"><strong>Type:</strong> Image</p>
-                <p class="card-text mb-1"><strong>Valid:</strong> 10 Oct - 30 Oct 2025</p>
-                <p class="card-text mb-2"><strong>Expires In:</strong> 11 days</p>
+                <h5 class="card-title">{{this.caption}}</h5>
+                <p class="card-text mb-1"><strong>Type:</strong> {{this.type}}</p>
                 <div class="mt-auto d-flex justify-content-between">
-                  <button class="btn btn-outline-info btn-sm rounded-pill" data-bs-toggle="modal"
-                    data-bs-target="#viewBannerModal1">
+                  <button class="btn btn-outline-info btn-sm rounded-pill view-banner-btn" data-url="{{this.url}}"
+                    data-type="{{this.type}}">
                     <i class="bi bi-eye me-1"></i>View
                   </button>
                   <div>
-                    <button class="btn btn-outline-primary btn-sm rounded-pill me-1" data-bs-toggle="modal"
-                      data-bs-target="#editBannerModal1">
+                    <button class="btn btn-outline-primary btn-sm rounded-pill me-1 edit-banner-btn"
+                      data-banner-id="{{this._id}}" data-caption="{{this.caption}}" data-type="{{this.type}}">
                       <i class="bi bi-pencil-square me-1"></i>Edit
                     </button>
-                    <button class="btn btn-outline-danger btn-sm rounded-pill" data-bs-toggle="modal"
-                      data-bs-target="#deleteBannerModal1">
+                    <button class="btn btn-outline-danger btn-sm rounded-pill delete-banner-btn"
+                      data-banner-id="{{this._id}}">
                       <i class="bi bi-trash3 me-1"></i>Delete
                     </button>
                   </div>
@@ -96,10 +165,36 @@
               </div>
             </div>
           </div>
-
-          <!-- Repeat cards as needed for other banners -->
-
+          {{/each}}
+          {{else}}
+          <div class="col-12 text-center py-5">
+            <p class="text-muted">No banners added yet. Click "Add Banner" to get started.</p>
+          </div>
+          {{/if}}
         </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- Image Cropper Modal -->
+<div class="modal fade" id="cropperModal" tabindex="-1" aria-hidden="true">
+  <div class="modal-dialog modal-dialog-centered modal-lg">
+    <div class="modal-content border-0 rounded-4 shadow-lg">
+      <div class="modal-header bg-primary text-white rounded-top-4">
+        <h5 class="modal-title"><i class="bi bi-crop me-2"></i>Crop Image</h5>
+        <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+      </div>
+      <div class="modal-body">
+        <div class="text-center">
+          <img id="cropperImage" style="max-width: 100%;">
+        </div>
+      </div>
+      <div class="modal-footer border-0">
+        <button type="button" class="btn btn-secondary rounded-pill" data-bs-dismiss="modal">Cancel</button>
+        <button type="button" class="btn btn-primary rounded-pill" id="cropImageBtn">
+          <i class="bi bi-check-lg me-1"></i>Crop & Upload
+        </button>
       </div>
     </div>
   </div>
@@ -114,37 +209,30 @@
         <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
       </div>
       <div class="modal-body">
-        <form>
+        <form id="addBannerForm">
           <div class="row g-3">
             <div class="col-md-6">
               <label class="form-label fw-semibold">Banner Title</label>
-              <input type="text" class="form-control rounded-3" placeholder="Enter banner title">
+              <input type="text" name="title" class="form-control rounded-3" placeholder="Enter banner title" required>
             </div>
             <div class="col-md-6">
               <label class="form-label fw-semibold">Type</label>
-              <select class="form-select rounded-3">
-                <option selected>Image</option>
-                <option>Video</option>
+              <select name="type" class="form-select rounded-3" id="bannerTypeSelect" required>
+                <option value="image">Image</option>
+                <option value="video">Video</option>
               </select>
-            </div>
-            <div class="col-md-6">
-              <label class="form-label fw-semibold">Valid From</label>
-              <input type="date" class="form-control rounded-3">
-            </div>
-            <div class="col-md-6">
-              <label class="form-label fw-semibold">Valid To</label>
-              <input type="date" class="form-control rounded-3">
             </div>
             <div class="col-12">
               <label class="form-label fw-semibold">Upload File</label>
-              <input type="file" class="form-control rounded-3">
+              <input type="file" name="bannerFile" id="bannerFileInput" class="form-control rounded-3" required>
             </div>
           </div>
           <div class="d-flex justify-content-end mt-4">
             <button type="button" class="btn btn-secondary rounded-pill px-4 me-2"
               data-bs-dismiss="modal">Cancel</button>
-            <button type="submit" class="btn btn-primary rounded-pill px-4"><i class="bi bi-save2 me-1"></i>Save
-              Banner</button>
+            <button type="submit" class="btn btn-primary rounded-pill px-4">
+              <i class="bi bi-save2 me-1"></i>Save Banner
+            </button>
           </div>
         </form>
       </div>
@@ -153,19 +241,14 @@
 </div>
 
 <!-- View Banner Modal -->
-<div class="modal fade" id="viewBannerModal1" tabindex="-1" aria-hidden="true">
+<div class="modal fade" id="viewBannerModal" tabindex="-1" aria-hidden="true">
   <div class="modal-dialog modal-dialog-centered modal-lg">
     <div class="modal-content border-0 rounded-4 shadow-lg">
       <div class="modal-header bg-info text-white rounded-top-4">
         <h5 class="modal-title"><i class="bi bi-eye me-2"></i>View Banner</h5>
         <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
       </div>
-      <div class="modal-body text-center">
-        <img src="https://via.placeholder.com/600x300" class="img-fluid rounded mb-3" alt="Banner">
-        <h5>Diwali Offer 2025</h5>
-        <p><strong>Type:</strong> Image</p>
-        <p><strong>Valid:</strong> 10 Oct - 30 Oct 2025</p>
-        <p><strong>Expires In:</strong> 11 days</p>
+      <div class="modal-body text-center" id="viewBannerContent">
       </div>
       <div class="modal-footer border-0">
         <button type="button" class="btn btn-secondary rounded-pill" data-bs-dismiss="modal">Close</button>
@@ -175,7 +258,7 @@
 </div>
 
 <!-- Edit Banner Modal -->
-<div class="modal fade" id="editBannerModal1" tabindex="-1" aria-hidden="true">
+<div class="modal fade" id="editBannerModal" tabindex="-1" aria-hidden="true">
   <div class="modal-dialog modal-dialog-centered modal-lg">
     <div class="modal-content border-0 rounded-4 shadow-lg">
       <div class="modal-header bg-primary text-white rounded-top-4">
@@ -183,37 +266,31 @@
         <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
       </div>
       <div class="modal-body">
-        <form>
+        <form id="editBannerForm">
+          <input type="hidden" name="bannerId" id="editBannerId">
           <div class="row g-3">
             <div class="col-md-6">
               <label class="form-label fw-semibold">Banner Title</label>
-              <input type="text" class="form-control rounded-3" value="Diwali Offer 2025">
+              <input type="text" name="title" id="editBannerTitle" class="form-control rounded-3" required>
             </div>
             <div class="col-md-6">
               <label class="form-label fw-semibold">Type</label>
-              <select class="form-select rounded-3">
-                <option selected>Image</option>
-                <option>Video</option>
+              <select name="type" id="editBannerType" class="form-select rounded-3" required>
+                <option value="image">Image</option>
+                <option value="video">Video</option>
               </select>
             </div>
-            <div class="col-md-6">
-              <label class="form-label fw-semibold">Valid From</label>
-              <input type="date" class="form-control rounded-3" value="2025-10-10">
-            </div>
-            <div class="col-md-6">
-              <label class="form-label fw-semibold">Valid To</label>
-              <input type="date" class="form-control rounded-3" value="2025-10-30">
-            </div>
             <div class="col-12">
-              <label class="form-label fw-semibold">Upload File</label>
-              <input type="file" class="form-control rounded-3">
+              <label class="form-label fw-semibold">Upload New File (Optional)</label>
+              <input type="file" name="bannerFile" id="editBannerFileInput" class="form-control rounded-3">
             </div>
           </div>
           <div class="d-flex justify-content-end mt-4">
             <button type="button" class="btn btn-secondary rounded-pill px-4 me-2"
               data-bs-dismiss="modal">Cancel</button>
-            <button type="submit" class="btn btn-primary rounded-pill px-4"><i class="bi bi-save2 me-1"></i>Save
-              Changes</button>
+            <button type="submit" class="btn btn-primary rounded-pill px-4">
+              <i class="bi bi-save2 me-1"></i>Save Changes
+            </button>
           </div>
         </form>
       </div>
@@ -221,8 +298,8 @@
   </div>
 </div>
 
-<!-- Delete Banner Modal -->
-<div class="modal fade" id="deleteBannerModal1" tabindex="-1" aria-hidden="true">
+<!-- Delete Confirmation Modal -->
+<div class="modal fade" id="deleteBannerModal" tabindex="-1" aria-hidden="true">
   <div class="modal-dialog modal-dialog-centered">
     <div class="modal-content border-0 shadow-lg rounded-4">
       <div class="modal-header bg-danger text-white">
@@ -234,12 +311,13 @@
       </div>
       <div class="modal-footer border-0">
         <button type="button" class="btn btn-secondary rounded-pill" data-bs-dismiss="modal">Cancel</button>
-        <button type="button" class="btn btn-danger rounded-pill">Yes, Delete</button>
+        <button type="button" class="btn btn-danger rounded-pill" id="confirmDeleteBtn">Yes, Delete</button>
       </div>
     </div>
   </div>
 </div>
 
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/cropperjs/1.6.1/cropper.min.css">
 <style>
   body {
     background-color: #f8f9fa;
@@ -267,38 +345,18 @@
     height: 180px;
   }
 
-  .card {
-    display: flex;
-    flex-direction: column;
+  .cropper-container {
+    max-height: 400px;
   }
 
-  .card-body {
-    display: flex;
-    flex-direction: column;
-    flex-grow: 1;
-  }
-
-  .mt-auto {
-    margin-top: auto;
-  }
-
-  .btn-sm {
-    min-width: 60px;
+  .profile-preview,
+  .logo-preview {
+    max-width: 200px;
+    max-height: 200px;
+    object-fit: cover;
+    border-radius: 8px;
   }
 </style>
 
-<script>
-  document.getElementById("general-tab").addEventListener("click", function () {
-    document.getElementById("general-section").classList.remove("d-none");
-    document.getElementById("banner-section").classList.add("d-none");
-    this.classList.add("active");
-    document.getElementById("banner-tab").classList.remove("active");
-  });
-
-  document.getElementById("banner-tab").addEventListener("click", function () {
-    document.getElementById("general-section").classList.add("d-none");
-    document.getElementById("banner-section").classList.remove("d-none");
-    this.classList.add("active");
-    document.getElementById("general-tab").classList.remove("active");
-  });
-</script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/cropperjs/1.6.1/cropper.min.js"></script>
+<script src="/js/admin/settings.js"></script>

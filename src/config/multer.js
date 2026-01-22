@@ -25,6 +25,7 @@ const storage = new CloudinaryStorage({
         "mp4",
         "mov",
         "avi",
+        "webm",
       ],
     };
   },

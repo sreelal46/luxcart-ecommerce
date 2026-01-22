@@ -17,6 +17,7 @@ const Car = require("../../models/admin/productCarModal");
 const Accessory = require("../../models/admin/productAccessoryModal");
 const Cart = require("../../models/user/CartModel");
 const carVariantModel = require("../../models/admin/carVariantModel");
+const Admin = require("../../models/admin/adminModel");
 
 //loading login page
 const loadLandingPage = async (req, res, next) => {
@@ -190,7 +191,7 @@ const loadSingleCarProduct = async (req, res, next) => {
       .populate("product_type_id", "name")
       .populate(
         "variantIds",
-        "image_url stock color price offerPrices appliedOffer"
+        "image_url stock color price offerPrices appliedOffer",
       )
       .lean();
     // Active variant
@@ -363,11 +364,11 @@ const loadSingleAccessories = async (req, res, next) => {
 
     if (cart && cart.items.length > 0) {
       const accessoryItems = cart.items.filter(
-        (item) => item.accessoryId != null
+        (item) => item.accessoryId != null,
       );
 
       const inCartAccessoryIds = accessoryItems.map((item) =>
-        String(item.accessoryId)
+        String(item.accessoryId),
       );
 
       inCart = inCartAccessoryIds.includes(String(productId));
