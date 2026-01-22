@@ -5,6 +5,7 @@ const Type = require("../../models/admin/typeModal");
 const Car = require("../../models/admin/productCarModal");
 const Accessory = require("../../models/admin/productAccessoryModal");
 const User = require("../../models/user/UserModel");
+const Wallet = require("../../models/user/walletsModel");
 const mongoose = require("mongoose");
 
 //loading admin loaging page
@@ -439,80 +440,6 @@ const loadEditAccessories = async (req, res, next) => {
   }
 };
 
-//User Management
-const usersManagement = async (req, res, next) => {
-  try {
-    const users = await User.aggregate([
-      {
-        $lookup: {
-          from: "orders", // collection name (plural, lowercase)
-          localField: "_id",
-          foreignField: "userId",
-          as: "orders",
-        },
-      },
-      {
-        $addFields: {
-          orderCount: { $size: "$orders" },
-        },
-      },
-      {
-        $project: {
-          orders: 0, // remove heavy data
-        },
-      },
-      {
-        $sort: { createdAt: -1 },
-      },
-    ]);
-
-    res.status(OK).render("admin/users/usersManagement", { users });
-  } catch (error) {
-    console.log(error);
-    next(error);
-  }
-};
-
-const usersManagementDetail = async (req, res, next) => {
-  try {
-    const userId = new mongoose.Types.ObjectId(req.params.userId);
-
-    const user = await User.aggregate([
-      {
-        $match: { _id: userId },
-      },
-      {
-        $lookup: {
-          from: "orders",
-          localField: "_id",
-          foreignField: "userId",
-          as: "orders",
-        },
-      },
-      {
-        $addFields: {
-          orderCount: { $size: "$orders" },
-        },
-      },
-      {
-        $project: {
-          orders: 0, // remove heavy data
-        },
-      },
-    ]);
-
-    if (!user.length) {
-      return res.status(NOT_FOUND).render("errors/404");
-    }
-    console.log("user details", user[0]);
-    // aggregation returns array → take first item
-    res.status(OK).render("admin/users/userDetails", { user: user[0] });
-  } catch (error) {
-    console.log(error);
-    next(error);
-  }
-};
-
 module.exports = {
   adminLoadLoginPage,
   loadEmailVerify,
@@ -528,6 +455,4 @@ module.exports = {
   loadAddAccessories,
   loadViewAccessories,
   loadEditAccessories,
-  usersManagement,
-  usersManagementDetail,
 };

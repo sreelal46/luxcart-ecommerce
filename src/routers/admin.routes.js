@@ -31,8 +31,6 @@ const {
   loadAddAccessories,
   loadViewAccessories,
   loadEditAccessories,
-  usersManagement,
-  usersManagementDetail,
 } = require("../controllers/admin/pageLoad.controller");
 
 const {
@@ -306,7 +304,11 @@ route.patch(
 route.get("/stock-management", checkSession, loadStockPage);
 
 // ====================== USERS ======================
-const { blockOrUnblockUser } = require("../controllers/admin/user.controller");
+const {
+  blockOrUnblockUser,
+  usersManagement,
+  usersManagementDetail,
+} = require("../controllers/admin/user.controller");
 
 route.get("/users-management", checkSession, usersManagement);
 route.get(

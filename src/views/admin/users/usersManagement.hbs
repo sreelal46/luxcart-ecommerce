@@ -1,59 +1,58 @@
-<style>
-  .admin-table tbody tr {
-    height: 84px;
-  }
-
-  .admin-table th,
-  .admin-table td {
-    padding: 16px 18px;
-    vertical-align: middle;
-  }
-
-  .admin-table .badge {
-    padding: 6px 12px;
-    font-size: 12px;
-    font-weight: 600;
-  }
-
-  .tooltip-inner {
-    background-color: #000;
-    color: #fff;
-    padding: 6px 12px;
-    border-radius: 8px;
-    font-weight: 500;
-    box-shadow: 0 6px 16px rgba(0, 0, 0, 0.25);
-  }
-
-  .tooltip.bs-tooltip-top .tooltip-arrow::before {
-    border-top-color: #000;
-  }
-</style>
-
+<link rel="stylesheet" href="/css/admin/usersManagement.css">
 <div class="container py-5">
   <!-- Header -->
   <div class="d-flex justify-content-between align-items-center mb-4">
     <h2 class="fw-bold text-primary">Users Management</h2>
   </div>
 
+  <!-- Stats Cards -->
+  <div class="row mb-4" id="statsCards">
+    <div class="col-md-4">
+      <div class="card shadow-sm border-0 stats-card total">
+        <div class="card-body">
+          <small class="text-muted">Total Users</small>
+          <h4 class="fw-bold mb-0" id="totalUsers">{{totalUsers}}</h4>
+        </div>
+      </div>
+    </div>
+    <div class="col-md-4">
+      <div class="card shadow-sm border-0 stats-card active">
+        <div class="card-body">
+          <small class="text-muted">Active Users</small>
+          <h4 class="fw-bold mb-0 text-success" id="activeUsers">{{activeUsers}}</h4>
+        </div>
+      </div>
+    </div>
+    <div class="col-md-4">
+      <div class="card shadow-sm border-0 stats-card blocked">
+        <div class="card-body">
+          <small class="text-muted">Blocked Users</small>
+          <h4 class="fw-bold mb-0 text-danger" id="blockedUsers">{{blockedUsers}}</h4>
+        </div>
+      </div>
+    </div>
+  </div>
+
   <!-- Search & Filter -->
   <div class="d-flex justify-content-between mb-3">
     <input type="text" id="searchUserInput" class="form-control w-50" placeholder="Search by name or email">
-    <!-- <button class="btn btn-primary ms-2" data-bs-toggle="modal" data-bs-target="#filterUserModal">
+    <button class="btn btn-primary ms-2" data-bs-toggle="modal" data-bs-target="#filterUserModal">
       <i class="bi bi-funnel"></i> Filter
-    </button> -->
+    </button>
   </div>
 
   <!-- Users Table Card -->
-  <div class="card shadow-sm mb-5 border-0">
+  <div class="card shadow-sm mb-3 border-0">
     <div class="card-body table-responsive p-0">
-
       <table class="table table-hover align-middle mb-0 admin-table">
         <thead class="table-light">
           <tr>
             <th>#</th>
             <th>User</th>
+            <th>Phone</th>
             <th>Status</th>
             <th>Total Orders</th>
+            <th>Wallet Balance</th>
             <th class="text-center">Actions</th>
           </tr>
         </thead>
@@ -61,53 +60,35 @@
         <tbody id="usersTableBody">
           {{#each users}}
           <tr>
-            <!-- # -->
-            <td class="fw-semibold text-muted">
-              {{inc @index}}
-            </td>
-
-            <!-- User -->
+            <td class="fw-semibold text-muted">{{inc @index}}</td>
             <td>
-              <div class="d-flex align-items-center gap-2">
-                <img src="{{this.profileImage_url}}" class="rounded-circle" alt="profile"
-                  style="width:36px;height:36px;object-fit:cover;">
+              <div class="d-flex align-items-center gap-3">
+                <img src="{{this.profileImage_url}}" class="rounded-circle user-avatar" alt="profile">
                 <div>
                   <div class="fw-semibold text-dark">{{this.name}}</div>
                   <div class="small text-muted">{{this.email}}</div>
                 </div>
               </div>
             </td>
-
-            <!-- Status -->
+            <td class="text-muted">{{this.phoneNumber}}</td>
             <td>
               {{#if this.isBlocked}}
-              <span class="badge bg-danger-subtle text-danger fw-semibold">
-                Blocked
-              </span>
+              <span class="badge bg-danger-subtle text-danger fw-semibold">Blocked</span>
               {{else}}
-              <span class="badge bg-success-subtle text-success fw-semibold">
-                Active
-              </span>
+              <span class="badge bg-success-subtle text-success fw-semibold">Active</span>
               {{/if}}
             </td>
-
-            <!-- Orders -->
-            <td class="text-muted">
-              {{this.orderCount}}
+            <td>
+              <span class="badge bg-primary-subtle text-primary">{{this.orderCount}}</span>
             </td>
-
-            <!-- Actions -->
+            <td class="fw-semibold text-success">₹{{this.walletBalance}}</td>
             <td class="text-center">
               <div class="d-flex justify-content-center align-items-center gap-2">
-
-                <!-- View -->
                 <div data-bs-toggle="tooltip" title="View user">
                   <a href="/admin/users-management/user-details/{{this._id}}" class="btn btn-sm btn-outline-primary">
                     <i class="bi bi-eye"></i>
                   </a>
                 </div>
-
-                <!-- Block / Unblock -->
                 <div data-bs-toggle="tooltip" title="{{#if this.isBlocked}}Unblock user{{else}}Block user{{/if}}">
                   <button class="btn btn-sm {{#if this.isBlocked}}btn-outline-success{{else}}btn-outline-warning{{/if}}"
                     data-bs-toggle="modal" data-bs-target="#blockUserModal" data-id="{{this._id}}"
@@ -115,77 +96,115 @@
                     <i class="bi {{#if this.isBlocked}}bi-unlock{{else}}bi-lock{{/if}}"></i>
                   </button>
                 </div>
-
               </div>
             </td>
-
           </tr>
           {{else}}
           <tr>
-            <td colspan="5" class="text-center text-muted py-4">
-              No users found
-            </td>
+            <td colspan="7" class="text-center text-muted py-4">No users found</td>
           </tr>
           {{/each}}
         </tbody>
       </table>
-
     </div>
   </div>
 
-  <nav class="mt-4">
-    <ul class="pagination justify-content-center" id="usersPagination"></ul>
-  </nav>
+  <!-- Pagination -->
+  <div id="pagination" class="pagination-container"></div>
 
+  <!-- Hidden data for initial pagination -->
+  <script id="initialData" type="application/json">
+    {
+      "totalPages": {{totalPages}},
+      "currentPage": {{currentPage}},
+      "stats": {
+        "totalUsers": {{totalUsers}},
+        "activeUsers": {{activeUsers}},
+        "blockedUsers": {{blockedUsers}}
+      }
+    }
+  </script>
+</div>
 
-  <!-- Filter Modal -->
-  <div class="modal fade" id="filterUserModal" tabindex="-1" aria-labelledby="filterUserModalLabel" aria-hidden="true">
-    <div class="modal-dialog modal-dialog-centered">
-      <div class="modal-content rounded-4 shadow-lg">
-        <div class="modal-header bg-primary text-white">
-          <h5 class="modal-title fw-bold" id="filterUserModalLabel"><i class="bi bi-funnel me-2"></i> Filter Users</h5>
-          <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
-        </div>
-        <div class="modal-body">
-          <form id="filterUserForm">
-            <div class="mb-3">
-              <label class="form-label fw-semibold">Status</label>
-              <select class="form-select" name="status">
-                <option value="">All</option>
-                <option value="Active">Active</option>
-                <option value="Blocked">Blocked</option>
-              </select>
-            </div>
-            <div class="text-end mt-3">
-              <button type="button" class="btn btn-secondary me-2" data-bs-dismiss="modal">Close</button>
-              <button type="submit" class="btn btn-primary">Apply Filter</button>
-            </div>
-          </form>
-        </div>
+<!-- Filter Modal -->
+<div class="modal fade" id="filterUserModal" tabindex="-1" aria-labelledby="filterUserModalLabel" aria-hidden="true">
+  <div class="modal-dialog modal-dialog-centered">
+    <div class="modal-content rounded-3">
+      <div class="modal-header">
+        <h5 class="modal-title fw-bold" id="filterUserModalLabel">
+          <i class="bi bi-funnel me-2"></i> Filter Users
+        </h5>
+        <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+      </div>
+      <div class="modal-body">
+        <form id="filterUserForm">
+          <div class="mb-3">
+            <label class="form-label fw-semibold">Status</label>
+            <select class="form-select" name="status">
+              <option value="">All</option>
+              <option value="active">Active</option>
+              <option value="blocked">Blocked</option>
+            </select>
+          </div>
+
+          <div class="mb-3">
+            <label class="form-label fw-semibold">Auth Provider</label>
+            <select class="form-select" name="authProvider">
+              <option value="">All</option>
+              <option value="local">Email/Password</option>
+              <option value="google">Google</option>
+            </select>
+          </div>
+
+          <div class="mb-3">
+            <label class="form-label fw-semibold">Verified Status</label>
+            <select class="form-select" name="verified">
+              <option value="">All</option>
+              <option value="true">Verified</option>
+              <option value="false">Not Verified</option>
+            </select>
+          </div>
+
+          <div class="mb-3">
+            <label class="form-label fw-semibold">Min Order Count</label>
+            <input type="number" class="form-control" name="minOrders" placeholder="e.g. 5">
+          </div>
+
+          <div class="mb-3">
+            <label class="form-label fw-semibold">Min Wallet Balance (₹)</label>
+            <input type="number" class="form-control" name="minWallet" placeholder="e.g. 1000">
+          </div>
+        </form>
+      </div>
+      <div class="modal-footer">
+        <button class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+        <button class="btn btn-outline-danger" id="clearFilter">Clear Filters</button>
+        <button class="btn btn-primary" id="applyFilter">Apply Filter</button>
       </div>
     </div>
   </div>
+</div>
 
-  <!-- Block/Unblock Confirmation Modal -->
-  <div class="modal fade" id="blockUserModal" tabindex="-1">
-    <div class="modal-dialog">
-      <div class="modal-content">
-        <div class="modal-header border-0">
-          <h5 class="modal-title"><span id="blockActionText">block</span> user</h5>
-          <button class="btn-close" data-bs-dismiss="modal"></button>
-        </div>
-        <div class="modal-body">
-          Are you sure you want to <strong id="blockActionText2">block</strong>
-          <span class="fw-semibold" id="blockUserName"></span>?
-        </div>
-        <div class="modal-footer border-0">
-          <button class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
-          <button class="btn btn-danger" id="confirmBlockUser">Yes, Confirm</button>
-        </div>
+<!-- Block/Unblock Confirmation Modal -->
+<div class="modal fade" id="blockUserModal" tabindex="-1">
+  <div class="modal-dialog modal-dialog-centered">
+    <div class="modal-content rounded-3">
+      <div class="modal-header border-0">
+        <h5 class="modal-title text-capitalize">
+          <span id="blockActionText">block</span> user
+        </h5>
+        <button class="btn-close" data-bs-dismiss="modal"></button>
+      </div>
+      <div class="modal-body">
+        Are you sure you want to <strong id="blockActionText2">block</strong>
+        <span class="fw-semibold" id="blockUserName"></span>?
+      </div>
+      <div class="modal-footer border-0">
+        <button class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+        <button class="btn btn-danger" id="confirmBlockUser">Yes, Confirm</button>
       </div>
     </div>
   </div>
+</div>
 
-  <!-- Scripts -->
-
-  <script src="/js/admin/users/usersManagement.js"></script>
+<script src="/js/admin/users/usersManagement.js"></script>
