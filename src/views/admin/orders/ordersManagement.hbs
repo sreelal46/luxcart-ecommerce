@@ -1,104 +1,4 @@
-<style>
-  .admin-orders-table {
-    background: #fff;
-    border-radius: 12px;
-    overflow: hidden;
-  }
-
-  /* Product column handling */
-  .admin-orders-table .product-col {
-    max-width: 360px;
-    white-space: nowrap;
-    overflow: hidden;
-    text-overflow: ellipsis;
-  }
-
-  /* Status badges */
-  .status-badge {
-    padding: 6px 12px;
-    font-size: 0.75rem;
-    text-transform: capitalize;
-  }
-
-  .status-badge.placed {
-    background-color: #198754;
-  }
-
-  .status-badge.cancelled {
-    background-color: #dc3545;
-  }
-
-  .status-badge.shipped {
-    background-color: #0d6efd;
-  }
-
-  .status-badge.delivered {
-    background-color: #20c997;
-  }
-
-  /* Table spacing */
-  .admin-orders-table th,
-  .admin-orders-table td {
-    vertical-align: middle;
-  }
-
-  /* Hover effect */
-  .admin-orders-table tbody tr:hover {
-    background-color: #f8f9fa;
-  }
-
-  .btn-cancel {
-    background-color: #fff;
-    border: 2px solid #dc3545;
-    color: #dc3545;
-  }
-
-  .btn-cancel:hover {
-    background-color: #dc3545;
-    color: #fff;
-  }
-
-  .btn-return {
-    background-color: #fff;
-    border: 2px solid #0d6efd;
-    color: #0d6efd;
-  }
-
-  .btn-return:hover {
-    background-color: #0d6efd;
-    color: #fff;
-  }
-
-  .admin-table tbody tr {
-    height: 84px;
-  }
-
-  .admin-table th,
-  .admin-table td {
-    padding: 16px 18px;
-    vertical-align: middle;
-  }
-
-  .admin-table .badge {
-    padding: 6px 12px;
-    font-size: 12px;
-    font-weight: 600;
-  }
-
-  .tooltip-inner {
-    background-color: #000;
-    color: #fff;
-    padding: 6px 12px;
-    border-radius: 8px;
-    font-weight: 500;
-    box-shadow: 0 6px 16px rgba(0, 0, 0, 0.25);
-  }
-
-  .tooltip.bs-tooltip-top .tooltip-arrow::before {
-    border-top-color: #000;
-  }
-</style>
-
+<link rel="stylesheet" href="/css/admin/orders/ordersManagement.css">
 <div class="container py-5">
   <!-- Header -->
   <div class="d-flex justify-content-between align-items-center mb-4">
@@ -115,10 +15,6 @@
           <i class="bi bi-arrow-repeat me-2"></i> Return Requests
         </button>
       </a>
-
-      <!-- <button class="btn btn-success btn-md shadow-sm">
-        <i class="bi bi-download me-2"></i> Export Orders
-      </button> -->
     </div>
   </div>
 
@@ -132,9 +28,8 @@
   </div>
 
   <!-- Orders Table Card -->
-  <div class="card shadow-sm mb-5 border-0">
+  <div class="card shadow-sm mb-3 border-0">
     <div class="card-body table-responsive p-0">
-
       <table class="table table-hover align-middle mb-0 admin-table">
         <thead class="table-light">
           <tr>
@@ -150,42 +45,18 @@
         <tbody id="ordersTableBody">
           {{#each orders}}
           <tr>
-            <!-- Row Number -->
-            <td class="fw-semibold text-muted">
-              {{inc @index}}
-            </td>
-
-            <!-- Order ID -->
-            <td class="fw-semibold text-muted small">
-              {{this.orderId}}
-            </td>
-
-            <!-- Customer -->
-            <td class="fw-semibold text-dark">
-              {{this.address.name}}
-            </td>
-
-            <!-- Items -->
-            <td class="text-muted">
-              {{this.items.length}}
-            </td>
-
-            <!-- Date -->
-            <td class="text-nowrap text-muted">
-              {{formattedDate this.createdAt}}
-            </td>
-
-            <!-- Actions -->
+            <td class="fw-semibold text-muted">{{inc @index}}</td>
+            <td class="fw-semibold text-muted small">{{this.orderId}}</td>
+            <td class="fw-semibold text-dark">{{this.address.name}}</td>
+            <td class="text-muted">{{this.items.length}}</td>
+            <td class="text-nowrap text-muted">{{formattedDate this.createdAt}}</td>
             <td class="text-center">
               <div class="d-flex justify-content-center align-items-center gap-2">
-
-                <!-- View Order -->
                 <div data-bs-toggle="tooltip" title="View order">
                   <a href="/admin/orders-management/view-order/{{this._id}}" class="btn btn-sm btn-outline-primary">
                     <i class="bi bi-eye"></i> View
                   </a>
                 </div>
-
               </div>
             </td>
           </tr>
@@ -197,163 +68,99 @@
           </tr>
           {{/each}}
         </tbody>
-
       </table>
-
     </div>
   </div>
 
+  <!-- Pagination -->
+  <div id="pagination" class="pagination-container"></div>
+
+  <!-- Hidden data for initial pagination -->
+  <script id="initialData" type="application/json">
+    {
+      "totalPages": {{totalPages}},
+      "currentPage": {{currentPage}}
+    }
+  </script>
 </div>
 
 <!-- Filter Modal -->
 <div class="modal fade" id="filterOrderModal" tabindex="-1" aria-labelledby="filterOrderModalLabel" aria-hidden="true">
   <div class="modal-dialog modal-dialog-centered">
-    <div class="modal-content rounded-4 shadow-lg">
-      <div class="modal-header bg-primary text-white">
-        <h5 class="modal-title fw-bold" id="filterOrderModalLabel"><i class="bi bi-funnel me-2"></i> Filter Orders</h5>
-        <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+    <div class="modal-content rounded-3">
+      <div class="modal-header">
+        <h5 class="modal-title fw-bold" id="filterOrderModalLabel">
+          <i class="bi bi-funnel me-2"></i> Filter Orders
+        </h5>
+        <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
       </div>
       <div class="modal-body">
         <form id="filterOrderForm">
           <div class="mb-3">
-            <label class="form-label fw-semibold">Status</label>
-            <select class="form-select" name="status">
+            <label class="form-label fw-semibold">Payment Method</label>
+            <select class="form-select" name="paymentMethod">
               <option value="">All</option>
-              <option value="Shipped">Shipped</option>
-              <option value="Processing">Processing</option>
-              <option value="Pending">Pending</option>
+              <option value="COD">Cash on Delivery</option>
+              <option value="STRIPE">Stripe</option>
+              <option value="CARD">Card</option>
+              <option value="NETBANKING">Net Banking</option>
+              <option value="WALLET">Wallet</option>
             </select>
           </div>
+
+          <div class="mb-3">
+            <label class="form-label fw-semibold">Payment Status</label>
+            <select class="form-select" name="paymentStatus">
+              <option value="">All</option>
+              <option value="Pending">Pending</option>
+              <option value="Paid">Paid</option>
+              <option value="Partially Paid">Partially Paid</option>
+              <option value="Failed">Failed</option>
+              <option value="Refunded">Refunded</option>
+            </select>
+          </div>
+
+          <div class="mb-3">
+            <label class="form-label fw-semibold">Item Status</label>
+            <select class="form-select" name="itemStatus">
+              <option value="">All</option>
+              <option value="placed">Placed</option>
+              <option value="confirmed">Confirmed</option>
+              <option value="shipped">Shipped</option>
+              <option value="out_for_delivery">Out for Delivery</option>
+              <option value="delivered">Delivered</option>
+              <option value="cancelled">Cancelled</option>
+              <option value="returned">Returned</option>
+            </select>
+          </div>
+
           <div class="mb-3">
             <label class="form-label fw-semibold">Date From</label>
             <input type="date" class="form-control" name="dateFrom">
           </div>
+
           <div class="mb-3">
             <label class="form-label fw-semibold">Date To</label>
             <input type="date" class="form-control" name="dateTo">
           </div>
-          <div class="text-end mt-3">
-            <button type="button" class="btn btn-secondary me-2" data-bs-dismiss="modal">Close</button>
-            <button type="submit" class="btn btn-primary">Apply Filter</button>
+
+          <div class="mb-3">
+            <label class="form-label fw-semibold">Min Amount (₹)</label>
+            <input type="number" class="form-control" name="minAmount" placeholder="e.g. 1000">
+          </div>
+
+          <div class="mb-3">
+            <label class="form-label fw-semibold">Max Amount (₹)</label>
+            <input type="number" class="form-control" name="maxAmount" placeholder="e.g. 100000">
           </div>
         </form>
+      </div>
+      <div class="modal-footer">
+        <button class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+        <button class="btn btn-outline-danger" id="clearFilter">Clear Filters</button>
+        <button class="btn btn-primary" id="applyFilter">Apply Filter</button>
       </div>
     </div>
   </div>
 </div>
-<script src="https://cdn.jsdelivr.net/npm/axios/dist/axios.min.js"></script>
-
-<script>
-  const tableBody = document.getElementById("ordersTableBody");
-  const searchInput = document.getElementById("searchOrderInput");
-  function initTooltips() {
-    document.querySelectorAll('[data-bs-toggle="tooltip"]').forEach(el => {
-      new bootstrap.Tooltip(el, {
-        placement: "top",
-        delay: { show: 100, hide: 80 }
-      });
-    });
-  }
-
-  document.addEventListener("DOMContentLoaded", initTooltips);
-
-  // Render orders dynamically
-  function renderOrders(orders = []) {
-    tableBody.innerHTML = "";
-
-    if (!Array.isArray(orders) || orders.length === 0) {
-      tableBody.innerHTML = `
-      <tr>
-        <td colspan="6" class="text-center text-muted py-4">
-          No orders found
-        </td>
-      </tr>
-    `;
-      return;
-    }
-
-    orders.forEach((order, index) => {
-      tableBody.insertAdjacentHTML(
-        "beforeend",
-        `
-      <tr>
-        <!-- # -->
-        <td class="fw-semibold text-muted">
-          ${index + 1}
-        </td>
-
-        <!-- Order ID -->
-        <td class="fw-semibold text-muted small">
-          ${order.orderId}
-        </td>
-
-        <!-- Customer -->
-        <td class="fw-semibold text-dark">
-          ${order.address?.name || "-"}
-        </td>
-
-        <!-- Items -->
-        <td class="text-muted">
-          ${order.items?.length ?? "-"}
-        </td>
-
-        <!-- Date -->
-        <td class="text-nowrap text-muted">
-          ${new Date(order.createdAt).toLocaleDateString()}
-        </td>
-
-        <!-- Actions -->
-        <td class="text-center">
-          <div class="d-flex justify-content-center align-items-center gap-2">
-
-            <!-- View Order -->
-            <div data-bs-toggle="tooltip" title="View order">
-              <a
-                href="/admin/orders-management/view-order/${order._id}"
-                class="btn btn-sm btn-outline-primary">
-                <i class="bi bi-eye"></i> View
-              </a>
-            </div>
-
-          </div>
-        </td>
-      </tr>
-      `
-      );
-    });
-    initTooltips()
-  }
-
-  // Live Search
-  searchInput.addEventListener("keyup", async () => {
-    let search = searchInput.value.trim();
-
-    const response = await axios.get("/admin/orders-management", {
-      params: { search, ajax: 1 }
-    });
-
-    renderOrders(response.data.orders);
-    initTooltips()
-  });
-
-  // Apply Filter
-  document.getElementById("filterOrderForm").addEventListener("submit", async (e) => {
-    e.preventDefault();
-
-    const form = new FormData(e.target);
-
-    const status = form.get("status");
-    const dateFrom = form.get("dateFrom");
-    const dateTo = form.get("dateTo");
-
-    const response = await axios.get("/admin/orders-management", {
-      params: { status, dateFrom, dateTo, ajax: 1 }
-    });
-
-    renderOrders(response.data.orders);
-
-    // close modal
-    const modal = bootstrap.Modal.getInstance(document.getElementById("filterOrderModal"));
-    modal.hide();
-  });
-</script>
+<script src="/js/admin/orders/ordersManagement.js"></script>
