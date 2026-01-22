@@ -20,12 +20,21 @@ const adminSchema = new mongoose.Schema(
       required: [true, "Please enter a password"],
       minlength: 8,
     },
+    phone: {
+      type: String,
+      trim: true,
+    },
+    supportEmail: {
+      type: String,
+      trim: true,
+      lowercase: true,
+    },
     profileImage: {
-      type: String, // URL or file path to profile image
+      type: String,
       default: null,
     },
     websiteLogo: {
-      type: String, // URL or file path to website logo
+      type: String,
       default: null,
     },
     bannerMedia: [
@@ -42,6 +51,10 @@ const adminSchema = new mongoose.Schema(
         caption: {
           type: String,
           default: "",
+        },
+        isDefault: {
+          type: Boolean,
+          default: false,
         },
         uploadedAt: {
           type: Date,

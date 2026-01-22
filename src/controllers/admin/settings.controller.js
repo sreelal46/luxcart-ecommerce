@@ -191,7 +191,7 @@ const uploadWebsiteLogo = async (req, res, next) => {
 const addBanner = async (req, res, next) => {
   try {
     const adminId = req.session.admin._id;
-    const { title, type } = req.body;
+    const { title, type, isDefault } = req.body;
 
     if (!req.file) {
       return res.status(BAD_REQUEST).json({
@@ -204,10 +204,19 @@ const addBanner = async (req, res, next) => {
     const fileUrl = req.file.path; // Cloudinary URL
 
     const admin = await Admin.findById(adminId);
+
+    // If setting as default, remove default flag from all other banners
+    if (isDefault === "true" || isDefault === true) {
+      admin.bannerMedia.forEach((banner) => {
+        banner.isDefault = false;
+      });
+    }
+
     admin.bannerMedia.push({
       type: type,
       url: fileUrl,
       caption: title,
+      isDefault: isDefault === "true" || isDefault === true,
     });
     await admin.save();
 
@@ -229,7 +238,7 @@ const editBanner = async (req, res, next) => {
   try {
     const adminId = req.session.admin._id;
     const { bannerId } = req.params;
-    const { title, type } = req.body;
+    const { title, type, isDefault } = req.body;
 
     const admin = await Admin.findById(adminId);
     const banner = admin.bannerMedia.id(bannerId);
@@ -243,6 +252,18 @@ const editBanner = async (req, res, next) => {
 
     // Update title
     banner.caption = title;
+
+    // If setting as default, remove default flag from all other banners
+    if (isDefault === "true" || isDefault === true) {
+      admin.bannerMedia.forEach((b) => {
+        if (b._id.toString() !== bannerId) {
+          b.isDefault = false;
+        }
+      });
+      banner.isDefault = true;
+    } else if (isDefault === "false" || isDefault === false) {
+      banner.isDefault = false;
+    }
 
     // If new file uploaded
     if (req.file) {
@@ -306,6 +327,43 @@ const deleteBanner = async (req, res, next) => {
   }
 };
 
+// Set Default Banner
+const setDefaultBanner = async (req, res, next) => {
+  try {
+    const adminId = req.session.admin._id;
+    const { bannerId } = req.params;
+
+    const admin = await Admin.findById(adminId);
+    const banner = admin.bannerMedia.id(bannerId);
+
+    if (!banner) {
+      return res.status(BAD_REQUEST).json({
+        success: false,
+        message: "Banner not found",
+      });
+    }
+
+    // Remove default flag from all banners
+    admin.bannerMedia.forEach((b) => {
+      b.isDefault = false;
+    });
+
+    // Set this banner as default
+    banner.isDefault = true;
+    await admin.save();
+
+    res.status(OK).json({
+      success: true,
+      message: "Default banner updated successfully",
+    });
+  } catch (error) {
+    res.status(INTERNAL_SERVER_ERROR).json({
+      success: false,
+      message: error.message,
+    });
+  }
+};
+
 module.exports = {
   loadSettingPage,
   updateGeneralSettings,
@@ -314,4 +372,5 @@ module.exports = {
   addBanner,
   editBanner,
   deleteBanner,
+  setDefaultBanner,
 };

@@ -354,8 +354,11 @@ const {
   addBanner,
   editBanner,
   deleteBanner,
+  setDefaultBanner,
 } = require("../controllers/admin/settings.controller");
 route.get("/settings", checkSession, loadSettingPage);
+
+// Update general settings
 route.post("/settings/general", updateGeneralSettings);
 
 // Upload profile image (Cloudinary will handle the upload)
@@ -380,5 +383,6 @@ route.put(
   editBanner,
 );
 route.delete("/settings/banner/delete/:bannerId", deleteBanner);
+route.put("/settings/banner/set-default/:bannerId", setDefaultBanner);
 
 module.exports = route;

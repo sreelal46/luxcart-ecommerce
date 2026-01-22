@@ -64,21 +64,29 @@ function initializeCropper(imageSrc, aspectRatio) {
   const cropperImage = document.getElementById("cropperImage");
   cropperImage.src = imageSrc;
 
+  // Destroy existing cropper
   if (cropper) {
     cropper.destroy();
   }
 
-  cropper = new Cropper(cropperImage, {
-    aspectRatio: aspectRatio,
-    viewMode: 1,
-    autoCropArea: 1,
-    responsive: true,
-    background: false,
-    zoomable: true,
-    scalable: true,
-    cropBoxResizable: true,
-    dragMode: "move",
-  });
+  // Wait for image to load before initializing cropper
+  cropperImage.onload = function () {
+    cropper = new Cropper(cropperImage, {
+      aspectRatio: aspectRatio,
+      viewMode: 2,
+      autoCropArea: 0.8,
+      responsive: true,
+      restore: false,
+      guides: true,
+      center: true,
+      highlight: false,
+      cropBoxMovable: true,
+      cropBoxResizable: true,
+      toggleDragModeOnDblclick: false,
+      minContainerWidth: 300,
+      minContainerHeight: 400,
+    });
+  };
 }
 
 // Profile Image Upload
@@ -133,106 +141,141 @@ document.getElementById("uploadLogoBtn").addEventListener("click", () => {
 document.getElementById("cropImageBtn").addEventListener("click", async () => {
   if (!cropper || !currentFile) return;
 
-  const canvas = cropper.getCroppedCanvas({
-    maxWidth: currentUploadType === "profile" ? 400 : 800,
-    maxHeight: currentUploadType === "profile" ? 400 : 300,
-    imageSmoothingEnabled: true,
-    imageSmoothingQuality: "high",
-  });
+  // Disable button and show loading
+  const cropBtn = document.getElementById("cropImageBtn");
+  const originalText = cropBtn.innerHTML;
+  cropBtn.disabled = true;
+  cropBtn.innerHTML =
+    '<span class="spinner-border spinner-border-sm me-2"></span>Processing...';
 
-  canvas.toBlob(
-    async (blob) => {
-      const formData = new FormData();
+  try {
+    const canvas = cropper.getCroppedCanvas({
+      maxWidth: currentUploadType === "profile" ? 400 : 800,
+      maxHeight: currentUploadType === "profile" ? 400 : 300,
+      imageSmoothingEnabled: true,
+      imageSmoothingQuality: "high",
+    });
 
-      if (currentUploadType === "profile") {
-        formData.append("profileImage", blob, currentFile.name);
+    canvas.toBlob(
+      async (blob) => {
+        const formData = new FormData();
 
-        try {
-          showLoader(true);
-          const response = await fetch("/admin/settings/profile-image", {
-            method: "POST",
-            body: formData,
-          });
+        if (currentUploadType === "profile") {
+          formData.append("profileImage", blob, currentFile.name);
 
-          const result = await response.json();
-          if (result.success) {
-            document.getElementById("currentProfileImage").src =
-              result.imageUrl;
-            showToast("Profile image updated successfully!", "success");
-            bootstrap.Modal.getInstance(
-              document.getElementById("cropperModal"),
-            ).hide();
-          } else {
-            showToast("Error: " + result.message, "error");
+          try {
+            const response = await fetch("/admin/settings/profile-image", {
+              method: "POST",
+              body: formData,
+            });
+
+            const result = await response.json();
+            if (result.success) {
+              document.getElementById("currentProfileImage").src =
+                result.imageUrl + "?t=" + Date.now();
+              showToast("Profile image updated successfully!", "success");
+              closeCropperAndReset();
+            } else {
+              showToast("Error: " + result.message, "error");
+            }
+          } catch (error) {
+            console.error("Error:", error);
+            showToast("Failed to upload profile image", "error");
           }
-        } catch (error) {
-          console.error("Error:", error);
-          showToast("Failed to upload profile image", "error");
-        } finally {
-          showLoader(false);
-        }
-      } else if (currentUploadType === "logo") {
-        formData.append("websiteLogo", blob, currentFile.name);
+        } else if (currentUploadType === "logo") {
+          formData.append("websiteLogo", blob, currentFile.name);
 
-        try {
-          showLoader(true);
-          const response = await fetch("/admin/settings/website-logo", {
-            method: "POST",
-            body: formData,
-          });
+          try {
+            const response = await fetch("/admin/settings/website-logo", {
+              method: "POST",
+              body: formData,
+            });
 
-          const result = await response.json();
-          if (result.success) {
-            document.getElementById("currentLogoImage").src = result.logoUrl;
-            showToast("Website logo updated successfully!", "success");
-            bootstrap.Modal.getInstance(
-              document.getElementById("cropperModal"),
-            ).hide();
-          } else {
-            showToast("Error: " + result.message, "error");
+            const result = await response.json();
+            if (result.success) {
+              document.getElementById("currentLogoImage").src =
+                result.logoUrl + "?t=" + Date.now();
+              showToast("Website logo updated successfully!", "success");
+              closeCropperAndReset();
+            } else {
+              showToast("Error: " + result.message, "error");
+            }
+          } catch (error) {
+            console.error("Error:", error);
+            showToast("Failed to upload logo", "error");
           }
-        } catch (error) {
-          console.error("Error:", error);
-          showToast("Failed to upload logo", "error");
-        } finally {
-          showLoader(false);
+        } else if (currentUploadType === "banner") {
+          // For banner upload
+          formData.append("bannerFile", blob, currentFile.name);
+          formData.append(
+            "title",
+            document.querySelector('#addBannerForm input[name="title"]').value,
+          );
+          formData.append("type", "image");
+          formData.append(
+            "isDefault",
+            document.getElementById("isDefaultBanner").checked,
+          );
+
+          await uploadBanner(formData);
+          closeCropperAndReset();
+        } else if (currentUploadType === "editBanner") {
+          // For banner edit
+          const bannerId = document.getElementById("editBannerId").value;
+          formData.append("bannerFile", blob, currentFile.name);
+          formData.append(
+            "title",
+            document.getElementById("editBannerTitle").value,
+          );
+          formData.append("type", "image");
+          formData.append(
+            "isDefault",
+            document.getElementById("editIsDefaultBanner").checked,
+          );
+
+          await updateBanner(bannerId, formData);
+          closeCropperAndReset();
         }
-      } else if (currentUploadType === "banner") {
-        // For banner upload
-        formData.append("bannerFile", blob, currentFile.name);
-        formData.append(
-          "title",
-          document.querySelector('input[name="title"]').value,
-        );
-        formData.append("type", "image");
+      },
+      "image/jpeg",
+      0.95,
+    );
+  } catch (error) {
+    console.error("Crop error:", error);
+    showToast("Failed to crop image", "error");
+  } finally {
+    // Reset button
+    cropBtn.disabled = false;
+    cropBtn.innerHTML = originalText;
+  }
+});
 
-        await uploadBanner(formData);
-        bootstrap.Modal.getInstance(
-          document.getElementById("cropperModal"),
-        ).hide();
-      } else if (currentUploadType === "editBanner") {
-        // For banner edit
-        const bannerId = document.getElementById("editBannerId").value;
-        formData.append("bannerFile", blob, currentFile.name);
-        formData.append(
-          "title",
-          document.getElementById("editBannerTitle").value,
-        );
-        formData.append("type", "image");
-
-        await updateBanner(bannerId, formData);
-        bootstrap.Modal.getInstance(
-          document.getElementById("cropperModal"),
-        ).hide();
-      }
-
-      // Reset
-      currentFile = null;
-      currentUploadType = null;
-    },
-    "image/jpeg",
-    0.95,
+// Helper function to close cropper modal and reset
+function closeCropperAndReset() {
+  const cropperModal = bootstrap.Modal.getInstance(
+    document.getElementById("cropperModal"),
   );
+  if (cropperModal) {
+    cropperModal.hide();
+  }
+
+  // Destroy cropper
+  if (cropper) {
+    cropper.destroy();
+    cropper = null;
+  }
+
+  // Reset variables
+  currentFile = null;
+  currentUploadType = null;
+
+  // Clear the image
+  document.getElementById("cropperImage").src = "";
+}
+
+// Close button handler
+document.getElementById("closeCropperModal")?.addEventListener("click", () => {
+  closeCropperAndReset();
 });
 
 // Banner Management
@@ -335,10 +378,12 @@ document.addEventListener("click", function (e) {
     const bannerId = btn.getAttribute("data-banner-id");
     const caption = btn.getAttribute("data-caption");
     const type = btn.getAttribute("data-type");
+    const isDefault = btn.getAttribute("data-is-default") === "true";
 
     document.getElementById("editBannerId").value = bannerId;
     document.getElementById("editBannerTitle").value = caption;
     document.getElementById("editBannerType").value = type;
+    document.getElementById("editIsDefaultBanner").checked = isDefault;
 
     new bootstrap.Modal(document.getElementById("editBannerModal")).show();
   }
@@ -448,6 +493,40 @@ document
       showLoader(false);
     }
   });
+
+// Set Default Banner
+document.addEventListener("click", function (e) {
+  if (e.target.closest(".set-default-btn")) {
+    const btn = e.target.closest(".set-default-btn");
+    const bannerId = btn.getAttribute("data-banner-id");
+    setDefaultBanner(bannerId);
+  }
+});
+
+async function setDefaultBanner(bannerId) {
+  try {
+    showLoader(true);
+    const response = await fetch(
+      `/admin/settings/banner/set-default/${bannerId}`,
+      {
+        method: "PUT",
+      },
+    );
+
+    const result = await response.json();
+    if (result.success) {
+      showToast("Default banner updated successfully!", "success");
+      setTimeout(() => location.reload(), 1500);
+    } else {
+      showToast("Error: " + result.message, "error");
+    }
+  } catch (error) {
+    console.error("Error:", error);
+    showToast("Failed to set default banner", "error");
+  } finally {
+    showLoader(false);
+  }
+}
 
 // Helper Functions
 function showToast(message, type = "info") {
