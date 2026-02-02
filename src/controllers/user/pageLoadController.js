@@ -29,10 +29,16 @@ const loadLandingPage = async (req, res, next) => {
       return null;
     }
 
-    // Find the banner marked as default
+    // Find the banner and address
     const defaultBanner = admin.bannerMedia.find(
       (banner) => banner.isDefault === true,
     );
+    res.locals.footer = {
+      address: admin.address,
+      email: admin.email,
+      phone: admin.phone,
+    };
+    req.session.save();
     const brands = await Brand.find({ isListed: true }).lean();
     const types = await Type.find({ isListed: true }).lean();
     const accessories = await Accessory.find({ isListed: true })
@@ -40,14 +46,12 @@ const loadLandingPage = async (req, res, next) => {
       .populate("product_type_id")
       .limit(4)
       .lean();
-    res
-      .status(OK)
-      .render("user/landingPage", {
-        brands,
-        types,
-        accessories,
-        defaultBanner: defaultBanner || admin.bannerMedia[0],
-      });
+    res.status(OK).render("user/landingPage", {
+      brands,
+      types,
+      accessories,
+      defaultBanner: defaultBanner || admin.bannerMedia[0],
+    });
   } catch (error) {
     console.error("Error from loading page", error);
     next(error);
@@ -56,15 +60,36 @@ const loadLandingPage = async (req, res, next) => {
 
 const loadHomePage = async (req, res, next) => {
   try {
+    // Find the first admin (assuming single admin system)
+    const admin = await Admin.findOne();
+
+    if (!admin || !admin.bannerMedia || admin.bannerMedia.length === 0) {
+      return null;
+    }
+
+    // Find the banner and address
+    const defaultBanner = admin.bannerMedia.find(
+      (banner) => banner.isDefault === true,
+    );
+    res.locals.footer = {
+      address: admin.address,
+      email: admin.email,
+      phone: admin.phone,
+    };
+    req.session.save();
     const brands = await Brand.find({ isListed: true }).lean();
     const types = await Type.find({ isListed: true }).lean();
     const accessories = await Accessory.find({ isListed: true })
       .sort({ createdAt: -1 })
-      .populate("product_type_id", "name")
+      .populate("product_type_id")
       .limit(4)
       .lean();
-
-    res.status(OK).render("user/landingPage", { brands, types, accessories });
+    res.status(OK).render("user/landingPage", {
+      brands,
+      types,
+      accessories,
+      defaultBanner: defaultBanner || admin.bannerMedia[0],
+    });
   } catch (error) {
     console.error("Error from loading page", error);
     next(error);

@@ -32,7 +32,7 @@ app.use("/invoices", express.static(path.join(__dirname, "public/invoices")));
 // Bootstrap Icons
 app.use(
   "/bootstrap-icons",
-  express.static(path.join(__dirname, "../node_modules/bootstrap-icons/font"))
+  express.static(path.join(__dirname, "../node_modules/bootstrap-icons/font")),
 );
 
 // Middleware
@@ -61,6 +61,7 @@ connectDB();
 app.use((req, res, next) => {
   res.locals.admin = req.session.admin || null;
   res.locals.user = req.session.user || null;
+  res.locals.footer = req.session.footer || null;
   next();
 });
 

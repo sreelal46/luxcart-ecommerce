@@ -14,11 +14,11 @@ async function changeVariantReq(button) {
   const priceBox = document.querySelector(".price");
   const originalPrice = document.querySelector(".original-price");
   const carouselInner = document.querySelector(
-    "#carImageCarousel .carousel-inner"
+    "#carImageCarousel .carousel-inner",
   );
 
   const carousel = bootstrap.Carousel.getOrCreateInstance(
-    document.getElementById("carImageCarousel")
+    document.getElementById("carImageCarousel"),
   );
 
   const variantId = button.getAttribute("data-variantid");
@@ -32,7 +32,7 @@ async function changeVariantReq(button) {
 
   try {
     const res = await axios.get(
-      `/cars-collection/view-car-product/${productId}?variantId=${variantId}`
+      `/cars-collection/view-car-product/${productId}?variantId=${variantId}`,
     );
 
     if (!res.data.success) return;
@@ -47,7 +47,7 @@ async function changeVariantReq(button) {
     gsap.fromTo(
       priceBox,
       { scale: 0.9, opacity: 0.7 },
-      { scale: 1, opacity: 1, duration: 0.3 }
+      { scale: 1, opacity: 1, duration: 0.3 },
     );
 
     /* ===== PRICE RENDER (IMPORTANT PART) ===== */
@@ -112,10 +112,11 @@ async function changeVariantReq(button) {
 // -----------------------------------------------------------
 function updateCartButton(inCart, stock) {
   const cartBtnDesk = document.getElementById("addToCartDesk");
-  console.log("Variant stock from updateCartButton", stock);
+  const addToCartMob = document.getElementById("addToCartMob");
+  const buyProductMob = document.getElementById("buyProductMob");
 
   document
-    .querySelectorAll("#stockElement, #oldStock")
+    .querySelectorAll("#stockElement, #oldStock, #mobileStockElement")
     .forEach((el) => el.remove());
 
   if (!cartBtnDesk) return;
@@ -124,8 +125,8 @@ function updateCartButton(inCart, stock) {
 
   // ---------------- IN STOCK ----------------
   if (stock > 0) {
+    // Desktop button
     cartBtnDesk.classList.remove("d-none");
-    console.log("Variant stock from updateCartButton if stock ", stock);
     if (inCart) {
       cartBtnDesk.className = "btn btn-cart";
       cartBtnDesk.innerHTML = `<i class="bi bi-cart"></i> Go to Cart`;
@@ -140,37 +141,69 @@ function updateCartButton(inCart, stock) {
       cartBtnDesk.setAttribute("data-variantId", currentVariant);
     }
 
+    // Mobile button
+    if (addToCartMob) {
+      addToCartMob.classList.remove("d-none");
+      if (inCart) {
+        addToCartMob.className = "btn btn-cart flex-fill";
+        addToCartMob.innerHTML = `<i class="bi bi-cart me-1"></i> Go to Cart`;
+        addToCartMob.setAttribute("href", "/cart");
+        addToCartMob.removeAttribute("data-accessoryId");
+        addToCartMob.removeAttribute("data-variantId");
+      } else {
+        addToCartMob.className = "btn btn-cart flex-fill";
+        addToCartMob.innerHTML = `<i class="bi bi-cart me-1"></i> Add to Cart`;
+        addToCartMob.removeAttribute("href");
+        addToCartMob.setAttribute("data-accessoryId", singleCarId);
+        addToCartMob.setAttribute("data-variantId", currentVariant);
+      }
+    }
+
+    // Show mobile action buttons container
+    if (buyProductMob) {
+      buyProductMob.classList.remove("d-none");
+    }
+
     return;
   }
 
   // ---------------- OUT OF STOCK ----------------
+  // Desktop
   cartBtnDesk.classList.add("d-none");
 
   const container = document.querySelector(".price-box");
-  console.log("Parent container found:", container);
-  console.log(
-    "Variant stock from updateCartButton creating stockElement",
-    stock
-  );
-  if (!container) return;
-  console.log(
-    "Variant stock from updateCartButton creating started stockElement",
-    stock
-  );
-  const stockElement = document.createElement("div");
-  stockElement.id = "stockElement";
-  stockElement.className =
-    "p-3 rounded-3 border border-danger bg-light text-danger mt-2 d-flex align-items-center";
+  if (container) {
+    const stockElement = document.createElement("div");
+    stockElement.id = "stockElement";
+    stockElement.className =
+      "p-3 rounded-3 border border-danger bg-light text-danger mt-2 d-flex align-items-center";
 
-  stockElement.innerHTML = `
-    <i class="bi bi-exclamation-octagon-fill fs-5 me-2"></i>
-    <span class="fw-semibold">Out of Stock</span>
-  `;
-  console.log(
-    "Variant stock from updateCartButton creating finished stockElement",
-    stock
-  );
-  container.appendChild(stockElement);
+    stockElement.innerHTML = `
+      <i class="bi bi-exclamation-octagon-fill fs-5 me-2"></i>
+      <span class="fw-semibold">Out of Stock</span>
+    `;
+    container.appendChild(stockElement);
+  }
+
+  // Mobile
+  if (buyProductMob) {
+    buyProductMob.classList.add("d-none");
+
+    const mobileBar = document.querySelector(".mobile-bottom-bar");
+    if (mobileBar) {
+      const mobileStockElement = document.createElement("div");
+      mobileStockElement.id = "mobileStockElement";
+      mobileStockElement.className =
+        "unavailable-bar d-flex align-items-center justify-content-center";
+
+      mobileStockElement.innerHTML = `
+        <i class="bi bi-exclamation-octagon-fill fs-6 me-2"></i>
+        <span class="fw-semibold small">Out of Stock</span>
+      `;
+
+      mobileBar.appendChild(mobileStockElement);
+    }
+  }
 }
 
 // Zoom feature (Desktop only)
@@ -299,7 +332,7 @@ document.addEventListener("DOMContentLoaded", () => {
         duration: 0.7,
         stagger: 0.1,
         ease: "power2.out",
-      }
+      },
     );
   }
 });
@@ -331,12 +364,24 @@ document.addEventListener("DOMContentLoaded", () => {
   // Read product & variant ID from button
   const productId = addToCartDesk.dataset.carid;
   const variantId = addToCartDesk.dataset.variantid;
-  console.log("after stock chnage and add to cart carid", productId);
-  console.log("after stock chnage and add to cart carid", variantId);
 
   //add to cart axios call function
   function addToCartAxios(element, productType, productId, variantId) {
-    element.addEventListener("click", async () => {
+    if (!element) return; // Safety check
+
+    // Remove any existing click listeners to prevent duplicates
+    const newElement = element.cloneNode(true);
+    element.parentNode.replaceChild(newElement, element);
+
+    newElement.addEventListener("click", async (e) => {
+      // If it's a "Go to Cart" link, let it navigate normally
+      if (newElement.getAttribute("href") === "/cart") {
+        return;
+      }
+
+      // Prevent default for "Add to Cart" action
+      e.preventDefault();
+
       try {
         const res = await axios.post("/cart/add", {
           productType,
@@ -346,11 +391,22 @@ document.addEventListener("DOMContentLoaded", () => {
 
         if (res.data.success) {
           showMobileAlert("Product added to cart!", "success");
-          // Change text
-          element.innerHTML = `<i class="bi bi-cart"></i> Go to Cart`;
-          element.href = "/cart";
+
+          // Update both desktop and mobile buttons to "Go to Cart"
+          const cartBtnDesk = document.getElementById("addToCartDesk");
+          const cartBtnMob = document.getElementById("addToCartMob");
+
+          if (cartBtnDesk) {
+            cartBtnDesk.innerHTML = `<i class="bi bi-cart"></i> Go to Cart`;
+            cartBtnDesk.href = "/cart";
+          }
+
+          if (cartBtnMob) {
+            cartBtnMob.innerHTML = `<i class="bi bi-cart me-1"></i> Go to Cart`;
+            cartBtnMob.href = "/cart";
+          }
         } else {
-          const msg = res.data.alert || "Somthing went worng";
+          const msg = res.data.alert || "Something went wrong";
           showMobileAlert(msg, "error");
         }
       } catch (error) {
@@ -362,46 +418,49 @@ document.addEventListener("DOMContentLoaded", () => {
   }
 
   addToCartAxios(addToCartDesk, "car", productId, variantId);
-  addToCartAxios(addToCartMob, "car", productId, variantId);
+
+  if (addToCartMob) {
+    addToCartAxios(addToCartMob, "car", productId, variantId);
+  }
 
   const btn = document.getElementById("wishlistBtn");
   const heart = document.getElementById("heartIcon");
 
-  btn.addEventListener("click", async () => {
-    const isFilled = heart.classList.contains("bi-heart-fill");
+  if (btn && heart) {
+    btn.addEventListener("click", async () => {
+      const isFilled = heart.classList.contains("bi-heart-fill");
 
-    try {
-      console.log("first variant Id", variantId);
+      try {
+        const res = await axios.post(
+          `/account/wishlist/add/${singleCarId ? singleCarId : productId}`,
+          {
+            variantId: changingVariantId || variantId,
+            productType: "car",
+          },
+        );
 
-      const res = await axios.post(
-        `/account/wishlist/add/${singleCarId ? singleCarId : productId}`,
-        {
-          variantId: changingVariantId || variantId,
-          productType: "car",
-        }
-      );
+        if (res.data.success) {
+          // ---- UI TOGGLE FIXED ----
+          if (isFilled) {
+            // currently filled → set to unfilled
+            heart.classList.remove("bi-heart-fill", "text-danger");
+            heart.classList.add("bi-heart", "text-muted");
+          } else {
+            // currently unfilled → set to filled
+            heart.classList.remove("bi-heart", "text-muted");
+            heart.classList.add("bi-heart-fill", "text-danger");
+          }
 
-      if (res.data.success) {
-        // ---- UI TOGGLE FIXED ----
-        if (isFilled) {
-          // currently filled → set to unfilled
-          heart.classList.remove("bi-heart-fill", "text-danger");
-          heart.classList.add("bi-heart", "text-muted");
+          showMobileAlert("Product added to Wishlist!", "success");
         } else {
-          // currently unfilled → set to filled
-          heart.classList.remove("bi-heart", "text-muted");
-          heart.classList.add("bi-heart-fill", "text-danger");
+          const msg = res.data.alert || "Something went wrong";
+          showMobileAlert(msg, "error");
         }
-
-        showMobileAlert("Product added to Wishlist!", "success");
-      } else {
-        const msg = res.data.alert || "Something went wrong";
+      } catch (err) {
+        console.error("Error from add to wishlist:", err);
+        const msg = err.response?.data.alert || "INTERNAL SERVER ERROR";
         showMobileAlert(msg, "error");
       }
-    } catch (err) {
-      console.error("Error from add to wishlist:", err);
-      const msg = err.response?.data.alert || "INTERNAL SERVER ERROR";
-      showMobileAlert(msg, "error");
-    }
-  });
+    });
+  }
 });
