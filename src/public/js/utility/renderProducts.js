@@ -8,12 +8,23 @@ window.renderProducts = function (products) {
         return firstVariant.image_url[0];
       }
     }
-    return "/images/default-car.jpg"; // fallback image
+    return "/images/default-car.jpg";
+  };
+
+  const getStockBadge = (variantIds) => {
+    if (!variantIds || variantIds.length === 0) return "";
+    const stock = variantIds[0].stock;
+    if (!stock) {
+      return `<span class="badge stock-badge out-of-stock position-absolute top-0 end-0 m-3">Out of Stock</span>`;
+    }
+    if (stock <= 4) {
+      return `<span class="badge stock-badge low-stock position-absolute top-0 end-0 m-3">Only ${stock} Left!</span>`;
+    }
+    return "";
   };
 
   container.innerHTML = "";
 
-  // Handle empty results
   if (!products.length) {
     container.innerHTML = `
       <div class="col-12 text-center py-5 no-products">
@@ -23,7 +34,6 @@ window.renderProducts = function (products) {
       </div>
     `;
 
-    // Animate "No Products Found"
     gsap.from(".no-products", {
       opacity: 0,
       y: 40,
@@ -48,21 +58,15 @@ window.renderProducts = function (products) {
     return;
   }
 
-  // Render product cards
   products.forEach((product) => {
     const card = document.createElement("div");
     card.className = "col-md-6 col-lg-4";
     card.innerHTML = `
       <div class="card car-card">
         <div class="car-image-wrapper position-relative">
-          <img src="${firstImage(product.variantIds)}" alt="${
-      product.name
-    }" class="car-image" />
-          ${
-            product.category
-              ? `<span class="badge category-badge position-absolute top-0 start-0 m-3 text-capitalize">${product.category}</span>`
-              : ""
-          }
+          <img src="${firstImage(product.variantIds)}" alt="${product.name}" class="car-image" />
+          ${product.category ? `<span class="badge category-badge position-absolute top-0 start-0 m-3 text-capitalize">${product.category}</span>` : ""}
+          ${getStockBadge(product.variantIds)}
         </div>
         <div class="card-body p-4">
           <h6 class="brand-name mb-2">${product.brand_id.name}</h6>
@@ -77,16 +81,13 @@ window.renderProducts = function (products) {
           </div>
         </div>
         <div class="card-footer bg-white text-center border-0 p-3">
-          <a href="/cars-collection/view-car-product/${
-            product._id
-          }" class="btn view-details-btn w-100">View Details</a>
+          <a href="/cars-collection/view-car-product/${product._id}" class="btn view-details-btn w-100">View Details</a>
         </div>
       </div>
     `;
     container.appendChild(card);
   });
 
-  // Animate product cards
   gsap.from(".car-card", {
     opacity: 0,
     y: 40,

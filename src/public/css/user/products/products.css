@@ -284,3 +284,36 @@ body {
     display: none;
   }
 }
+/* Stock Badges */
+.stock-badge {
+  font-size: 0.7rem;
+  font-weight: 600;
+  letter-spacing: 0.5px;
+  padding: 5px 10px;
+  border-radius: 20px;
+  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.15);
+}
+
+.out-of-stock {
+  background-color: #dc3545 !important;
+  color: #fff;
+}
+
+.low-stock {
+  background-color: #fd7e14 !important;
+  color: #fff;
+}
+/* Dim the card when out of stock */
+.out-of-stock-card {
+  opacity: 0.6;
+}
+
+.out-of-stock-card .car-image {
+  filter: grayscale(40%);
+}
+
+.out-of-stock-card .view-details-btn.disabled {
+  pointer-events: none;
+  opacity: 0.5;
+  cursor: not-allowed;
+}

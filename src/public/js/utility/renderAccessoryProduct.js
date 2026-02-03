@@ -6,6 +6,17 @@ window.renderAccessories = function (accessories) {
       .replace(/\B(?=(\d{3})+(?!\d))/g, ",")
       .toLocaleString("en-IN");
   };
+
+  const getStockBadge = (stock) => {
+    if (stock === 0 || stock === null || stock === undefined) {
+      return `<span class="badge stock-badge out-of-stock position-absolute top-0 end-0 m-3">Out of Stock</span>`;
+    }
+    if (stock <= 4) {
+      return `<span class="badge stock-badge low-stock position-absolute top-0 end-0 m-3">Only ${stock} Left!</span>`;
+    }
+    return "";
+  };
+
   const container = document.getElementById("car-list");
 
   container.innerHTML = "";
@@ -49,14 +60,9 @@ window.renderAccessories = function (accessories) {
     card.innerHTML = `
       <div class="card car-card h-100 d-flex flex-column">
         <div class="car-image-wrapper position-relative">
-          <img src="${item?.images?.[0] || "/images/default-car.jpg"}" alt="${
-      item.name
-    }" class="car-image"/>
-          ${
-            item?.category_id?.name
-              ? `<span class="badge category-badge position-absolute top-0 start-0 m-3 text-capitalize">${item.category_id.name}</span>`
-              : ""
-          }
+          <img src="${item?.images?.[0] || "/images/default-car.jpg"}" alt="${item.name}" class="car-image"/>
+
+          ${getStockBadge(item.stock)}
         </div>
         <div class="card-body p-4 flex-grow-1">
           <h6 class="brand-name mb-2">${item?.brand_id?.name || ""}</h6>
@@ -67,9 +73,7 @@ window.renderAccessories = function (accessories) {
           </div>
         </div>
         <div class="card-footer bg-white text-center border-0 p-3">
-          <a href="/all-accessories/view-accessory-product/${
-            item._id
-          }" class="btn view-details-btn w-100">View Details</a>
+          <a href="/all-accessories/view-accessory-product/${item._id}" class="btn view-details-btn w-100">View Details</a>
         </div>
       </div>
     `;
