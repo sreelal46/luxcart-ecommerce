@@ -3,10 +3,12 @@
 <section id="addresses" class="main-card mt-4">
   <div class="address-header">
     <h5>My Addresses</h5>
+    {{#if address.length}}
     <a href="/account/addresses/add-address">
       <button class="btn btn-outline btn-sm add-address">Add
         address</button>
     </a>
+    {{/if}}
   </div>
 
   {{#if address.length}}
@@ -51,9 +53,17 @@
   </div>
   {{/each}}
   {{else}}
-  <div class="mt-4 text-center p-4">
-    <h6>No saved addresses.</h6>
-    <p>Add an address to continue.</p>
+  <div class="empty-address" style="grid-column: 1 / -1;">
+    <div class="empty-address__icon">
+      <svg xmlns="http://www.w3.org/2000/svg" width="48" height="48" viewBox="0 0 24 24" fill="none"
+        stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
+        <path d="M20 10c0 6-8 12-8 12s-8-6-8-12a8 8 0 0 1 16 0Z" />
+        <circle cx="12" cy="10" r="3" />
+      </svg>
+    </div>
+    <h6>No saved addresses</h6>
+    <p>You don't have any addresses yet. Add one to make checkout faster.</p>
+    <a href="/account/addresses/add-address" class="btn btn-dark btn-sm">Add Address</a>
   </div>
   {{/if}}
 

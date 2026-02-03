@@ -5,8 +5,11 @@
     <div class="welcome-visual">
       <!-- use uploaded image as avatar -->
       <div class="welcome-avatar">
-        <img src="{{user.profileImage_url}}" alt="avatar">
+        <img src="{{user.profileImage_url}}" alt="{{user.name}}"
+          onerror="this.onerror=null; this.src='{{defaultAvatar}}';">
       </div>
+
+
     </div>
 
     <div class="welcome-content">

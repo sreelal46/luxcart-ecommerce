@@ -110,8 +110,6 @@
         <a href="/cart" class="btn btn-outline-light border border-0 btn-sm mobile-cart">
           <i class="bi bi-cart fs-3"></i>
         </a>
-        {{/if}}
-
         <!-- Hamburger -->
         <button class="custom-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#mainNavbar"
           aria-controls="mainNavbar" aria-expanded="false" aria-label="Toggle navigation">
@@ -119,6 +117,10 @@
           <span></span>
           <span></span>
         </button>
+        {{else}}
+        <a href="/login" class="btn btn-outline-light btn-md border border-0">Login</a>
+        <a href="/signup" class="btn btn-outline-light btn-md border border-0">Sign Up</a>
+        {{/if}}
       </div>
 
       <!-- Collapsible Nav Links -->

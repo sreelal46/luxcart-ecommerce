@@ -15,6 +15,7 @@ const {
   errorHandling500,
   errorHandling404,
 } = require("./middlewares/errors/errorHandling");
+const { locals } = require("./middlewares/ui/locals");
 
 // PORT
 const PORT = parseInt(process.env.PORT) || 8080;
@@ -58,12 +59,7 @@ app.use(passport.session());
 connectDB();
 
 //all views
-app.use((req, res, next) => {
-  res.locals.admin = req.session.admin || null;
-  res.locals.user = req.session.user || null;
-  res.locals.footer = req.session.footer || null;
-  next();
-});
+app.use(locals);
 
 // Routes
 app.use("/auth", googleAuthRoutes);
