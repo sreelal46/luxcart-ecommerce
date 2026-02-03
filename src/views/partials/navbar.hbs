@@ -13,9 +13,9 @@
         {{#if user}}
         <a href="/cart" class="cart-btn position-relative ">
           <i class="bi bi-cart3"></i>
-          {{#if user.cartItemsLength}}
+          {{#if cartItemsLength}}
           <span class="cart-badge">
-            {{user.cartItemsLength}}
+            {{cartItemsLength}}
           </span>
           {{/if}}
         </a>
@@ -93,9 +93,9 @@
         <a href="/cart" class="cart-btn position-relative">
           <i class="bi bi-cart3"></i>
 
-          {{#if user.cartItemsLength}}
+          {{#if cartItemsLength}}
           <span class="cart-badge">
-            {{user.cartItemsLength}}
+            {{cartItemsLength}}
           </span>
           {{/if}}
         </a>

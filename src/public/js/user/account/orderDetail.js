@@ -399,14 +399,23 @@ async function handleStripePayment(orderId) {
 document.addEventListener("DOMContentLoaded", () => {
   /* =============================
        INVOICE DOWNLOAD
-    ============================= */
+   ============================= */
+
   const downloadInvoice = document.getElementById("downloadInvoice");
 
   if (downloadInvoice) {
+    const btnText = downloadInvoice.querySelector(".btn-text");
+    const btnLoader = downloadInvoice.querySelector(".btn-loader");
+
     downloadInvoice.addEventListener("click", async () => {
       const orderId = downloadInvoice.dataset.orderid;
       const orderedId = downloadInvoice.dataset.orderedid;
       const customerName = downloadInvoice.dataset.customername;
+
+      // 🔄 Show loader
+      downloadInvoice.disabled = true;
+      btnText.classList.add("d-none");
+      btnLoader.classList.remove("d-none");
 
       try {
         const res = await axios.get(
@@ -416,6 +425,7 @@ document.addEventListener("DOMContentLoaded", () => {
 
         const blob = new Blob([res.data], { type: "application/pdf" });
         const url = URL.createObjectURL(blob);
+
         const safeName =
           customerName?.replace(/[^a-zA-Z0-9]/g, "_") || "Customer";
 
@@ -431,6 +441,11 @@ document.addEventListener("DOMContentLoaded", () => {
         showMobileAlert("Invoice downloaded", "success");
       } catch (err) {
         showMobileAlert("Invoice download failed", "error");
+      } finally {
+        // ✅ Restore button
+        downloadInvoice.disabled = false;
+        btnLoader.classList.add("d-none");
+        btnText.classList.remove("d-none");
       }
     });
   }

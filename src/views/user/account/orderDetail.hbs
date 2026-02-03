@@ -12,9 +12,15 @@
 
     <button id="downloadInvoice" class="btn-invoice" data-orderid="{{order._id}}" data-orderedid="{{order.orderId}}"
       data-customername="{{order.address.name}}">
-      <i class="bi bi-receipt"></i>
-      Invoice
+      <span class="btn-text">
+        <i class="bi bi-receipt"></i> Invoice
+      </span>
+
+      <span class="btn-loader d-none">
+        <i class="bi bi-arrow-repeat spin"></i> Downloading...
+      </span>
     </button>
+
   </div>
 
   <!-- STICKY SUMMARY -->

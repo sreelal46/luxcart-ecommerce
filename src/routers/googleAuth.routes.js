@@ -40,7 +40,6 @@ router.get("/google/callback", (req, res, next) => {
       );
       return res.redirect(`/login?alert=${message}`);
     }
-    const cart = await Cart.findOne({ userId: user._id });
     // Success create session
     req.session.user = {
       _id: user._id,
@@ -48,7 +47,6 @@ router.get("/google/callback", (req, res, next) => {
       email: user.email,
       profileImage_url: user.profileImage_url,
       authProvider: user.authProvider,
-      cartItemsLength: cart ? cart.items.length : 0,
     };
 
     req.session.save(() => {

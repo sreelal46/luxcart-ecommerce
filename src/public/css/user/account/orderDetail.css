@@ -959,3 +959,24 @@ body {
     font-size: 13px;
   }
 }
+.btn-invoice {
+  position: relative;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.spin {
+  animation: spin 1s linear infinite;
+}
+
+@keyframes spin {
+  100% {
+    transform: rotate(360deg);
+  }
+}
+
+.btn-invoice:disabled {
+  opacity: 0.7;
+  cursor: not-allowed;
+}

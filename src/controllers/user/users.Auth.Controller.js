@@ -138,14 +138,12 @@ const verifyUser = async (req, res, next) => {
       return res
         .status(UNAUTHORIZED)
         .json({ success: false, alert: "Invalid email or password" });
-    const cart = await Cart.findOne({ userId: user._id });
     req.session.user = {
       _id: user._id,
       name: user.name,
       email: user.email,
       profileImage_url: user.profileImage_url,
       authProvider: user.authProvider,
-      cartItemsLength: cart ? cart.items.length : 0,
     };
 
     req.session.save((err) => {

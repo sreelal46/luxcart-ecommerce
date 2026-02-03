@@ -106,26 +106,35 @@ document.getElementById("addressForm").addEventListener("submit", async (e) => {
 
   if (!valid) return;
   const userId = document.getElementById("userId").value;
+  const from = document.getElementById("from").value;
+  const cartId = document.getElementById("cartId").value;
   const data = {};
   fields.forEach((id) => (data[id] = document.getElementById(id).value.trim()));
 
   try {
     const res = await axios.post(
       `/account/addresses/add-address/${userId}`,
-      data
+      data,
+      {
+        params: {
+          from,
+          cartId,
+        },
+      },
     );
+
     if (res.data.success) {
       window.location.href = res.data.redirect;
     } else {
       CustomSwal.error(
         "Save Failed",
-        err.response?.data?.alert || "Server error occurred."
+        err.response?.data?.alert || "Server error occurred.",
       );
     }
   } catch (err) {
     CustomSwal.error(
       "Save Failed",
-      err.response?.data?.alert || "Server error occurred."
+      err.response?.data?.alert || "Server error occurred.",
     );
   }
 });

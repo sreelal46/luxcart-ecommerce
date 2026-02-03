@@ -79,6 +79,14 @@ const loadAddressPage = async (req, res, next) => {
 
 //load add address page
 const loadAddAddressPage = (req, res) => {
+  const { from, cartId } = req.query;
+  if (from === "checkout")
+    return res.status(OK).render("user/account/addAddress", {
+      layout: "checkoutAddressLayout",
+      from,
+      cartId,
+    });
+
   res
     .status(OK)
     .render("user/account/addAddress", { layout: "userAccountLayout" });
@@ -287,6 +295,7 @@ const loadCheckoutStep1 = async (req, res, next) => {
       address,
       cart,
       taxRate,
+      cartId,
     });
   } catch (error) {
     console.log("Error from load checkout page");
