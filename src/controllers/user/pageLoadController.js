@@ -260,14 +260,34 @@ const loadSingleCarProduct = async (req, res, next) => {
       inCart = !!isIn;
     }
 
-    // Related cars
-    const relatedCars = await Car.find({
-      brand_id: singleCar.brand_id._id,
+    // Priority: brand first, then category to fill remaining slots
+    const brandCars = await Car.find({
       _id: { $ne: singleCar._id },
+      brand_id: singleCar.brand_id._id,
     })
       .limit(4)
-      .populate("brand_id product_type_id variantIds")
+      .populate("brand_id", "name")
+      .populate("category_id", "name")
+      .populate("variantIds", "image_url stock color price")
       .lean();
+
+    let relatedCars = brandCars;
+
+    if (brandCars.length < 4) {
+      const brandCarIds = brandCars.map((c) => c._id);
+
+      const categoryCars = await Car.find({
+        _id: { $ne: singleCar._id, $nin: brandCarIds },
+        category_id: singleCar.category_id._id,
+      })
+        .limit(4 - brandCars.length)
+        .populate("brand_id", "name")
+        .populate("category_id", "name")
+        .populate("variantIds", "image_url stock color price")
+        .lean();
+
+      relatedCars = [...brandCars, ...categoryCars];
+    }
 
     // If frontend requested JSON
     if (req.xhr || req.headers.accept.indexOf("application/json") > -1) {
@@ -416,9 +436,40 @@ const loadSingleAccessories = async (req, res, next) => {
 
       inCart = inCartAccessoryIds.includes(String(productId));
     }
+
+    // Related accessories — brand first, category fills remaining
+    const brandAccessories = await Accessory.find({
+      _id: { $ne: accessory._id },
+      brand_id: accessory.brand_id._id,
+    })
+      .limit(4)
+      .populate("brand_id", "name")
+      .populate("category_id", "name")
+      .populate("product_type_id", "name")
+      .lean();
+
+    let relatedAccessories = brandAccessories;
+
+    if (brandAccessories.length < 4) {
+      const brandIds = brandAccessories.map((a) => a._id);
+
+      const categoryAccessories = await Accessory.find({
+        _id: { $ne: accessory._id, $nin: brandIds },
+        category_id: accessory.category_id._id,
+      })
+        .limit(4 - brandAccessories.length)
+        .populate("brand_id", "name")
+        .populate("category_id", "name")
+        .populate("product_type_id", "name")
+        .lean();
+
+      relatedAccessories = [...brandAccessories, ...categoryAccessories];
+    }
+
     res.status(OK).render("user/products/accessory/viewAccessorProduct", {
       accessory,
       inCart,
+      relatedAccessories,
     });
   } catch (error) {
     console.log("Error from loadSingleAccessories", error);

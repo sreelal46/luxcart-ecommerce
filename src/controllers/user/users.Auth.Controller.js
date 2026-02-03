@@ -16,7 +16,6 @@ const emailSending = require("../../services/sendEmail");
 const OTP = require("../../models/common/OTPModal");
 const Referral = require("../../models/user/referral.Model");
 const Wallet = require("../../models/user/walletsModel");
-const Cart = require("../../models/user/CartModel");
 
 //creating new user and verifying existingn that user and sending OTP
 const createUser = async (req, res, next) => {
