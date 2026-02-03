@@ -1,0 +1,163 @@
+/* Dropdown hover */
+.dropdown-menu .dropdown-item:hover {
+  background-color: rgb(160, 160, 160);
+  color: rgb(0, 0, 0);
+}
+
+.dropdown-menu .dropdown-item {
+  transition: background-color 0.2s ease;
+}
+
+/* Custom Toggler */
+.custom-toggler {
+  background: none;
+  border: none;
+  cursor: pointer;
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  width: 28px;
+  height: 20px;
+  padding: 0;
+}
+
+/* Mobile top bar: cart + hamburger pushed to the right */
+.mobile-top-bar {
+  height: 50px;
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  margin-left: auto;
+}
+
+.mobile-top-bar .mobile-cart {
+  color: #fff;
+  padding: 4px 6px;
+}
+
+@media (min-width: 992px) {
+  .mobile-top-bar {
+    display: none;
+  }
+}
+
+.custom-toggler span {
+  display: block;
+  height: 2.5px;
+  width: 100%;
+  background-color: #fff;
+  border-radius: 2px;
+  transition: all 0.3s ease;
+}
+
+/* Toggler → X when open */
+.custom-toggler.is-open span:nth-child(1) {
+  transform: translateY(8.75px) rotate(45deg);
+}
+
+.custom-toggler.is-open span:nth-child(2) {
+  opacity: 0;
+}
+
+.custom-toggler.is-open span:nth-child(3) {
+  transform: translateY(-8.75px) rotate(-45deg);
+}
+
+/* Desktop-only actions */
+.desktop-actions {
+  display: none;
+}
+
+@media (min-width: 992px) {
+  .desktop-actions {
+    display: flex;
+  }
+}
+
+/* Nav-link icons — mobile only */
+.nav-link .nav-icon {
+  display: none;
+}
+
+@media (max-width: 991px) {
+  .nav-link .nav-icon {
+    display: inline-block;
+    width: 18px;
+    text-align: center;
+    margin-right: 10px;
+  }
+
+  .navbar-nav .nav-link {
+    padding: 10px 16px;
+    font-size: 1.1rem;
+  }
+}
+
+.cart-btn {
+  position: relative;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  color: #fff;
+  text-decoration: none;
+}
+
+.cart-btn i {
+  font-size: 1.6rem;
+}
+
+.cart-badge {
+  position: absolute;
+  top: -1px;
+  right: -2px;
+  min-width: 18px;
+  height: 18px;
+  padding: 0 5px;
+
+  background: #ff3d3d;
+  color: #fff;
+
+  font-size: 11px;
+  font-weight: 600;
+
+  border-radius: 999px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+
+  line-height: 1;
+}
+
+.cart-badge {
+  animation: pop 0.2s ease-out;
+}
+
+@keyframes pop {
+  0% {
+    transform: scale(0.8);
+  }
+
+  100% {
+    transform: scale(1);
+  }
+}
+
+.cart-btn {
+  position: relative;
+  border-radius: 6px;
+  padding: 6px 10px;
+  background-color: transparent;
+  color: #ffffff;
+
+  transition:
+    background-color 0.2s ease,
+    color 0.2s ease,
+    transform 0.2s ease,
+    opacity 0.2s ease;
+}
+
+.cart-btn:hover {
+  background-color: #fff;
+  color: #0c1115;
+  /* Bootstrap warning yellow */
+}

@@ -190,22 +190,77 @@
 
     </div>
   </div>
+  <!-- RELATED ACCESSORIES -->
+  {{#if relatedAccessories.length}}
+  <div class="related-accessories-section mt-5 mb-5">
+    <h4 class="fw-bold mb-4">Related Accessories</h4>
+    <div class="row g-4">
+      {{#each relatedAccessories}}
+      <div class="col-md-6 col-lg-3">
+        <div class="card accessory-card ">
 
+          <!-- IMAGE + STOCK BADGE -->
+          <div class="accessory-image-wrapper position-relative">
+            <img src="{{#if images.[0]}}{{images.[0]}}{{else}}/images/default-accessory.jpg{{/if}}" alt="{{name}}"
+              class="accessory-image" />
+            {{#unless stock}}
+            <span class="badge stock-badge out-of-stock position-absolute top-0 end-0 m-3">Out of Stock</span>
+            {{else}}
+            {{#if (lte stock 4)}}
+            <span class="badge stock-badge low-stock position-absolute top-0 end-0 m-3">Only {{stock}} Left!</span>
+            {{/if}}
+            {{/unless}}
+          </div>
+
+          <!-- BODY -->
+          <div class="card-body p-4">
+            <h6 class="accessory-brand-name mb-1">{{brand_id.name}}</h6>
+            <h5 class="accessory-name">{{name}}</h5>
+            <small class="accessory-category-text">{{category_id.name}} • {{product_type_id.name}}</small>
+            <div class="d-flex justify-content-between align-items-center mt-3">
+              <span class="accessory-price-tag">₹{{formatPrice price}}</span>
+              <span class="accessory-type-badge">{{product_type_id.name}}</span>
+            </div>
+          </div>
+
+          <!-- FOOTER BUTTON -->
+          <div class="card-footer bg-white text-center border-0 p-3">
+            <a href="/all-accessories/view-accessory-product/{{_id}}" class="btn accessory-view-btn w-100 ">View
+              Details</a>
+          </div>
+
+        </div>
+      </div>
+      {{/each}}
+    </div>
+  </div>
+  {{/if}}
   <!--MOBILE FIXED BUTTONS (visible only on small screens) -->
-  <div class="mobile-bottom-bar d-lg-none">
+  <div class="mobile-bottom-buttons d-lg-none">
+    {{#if accessory.stock}}
     {{#if accessory.isListed}}
+    {{#if inCart}}
+    <a class="btn btn-cart" href="/cart"><i class="bi bi-cart"></i> Go to Cart</a>
+    {{else}}
     <div class="action-buttons d-flex gap-2" id="buyProductMob" data-accessoryId="{{accessory._id}}">
-      <button class="btn btn-buy flex-fill">
+      <!-- <button class="btn btn-buy flex-fill">
         <i class="bi bi-lightning-charge me-1"></i> Buy Now
-      </button>
+      </button> -->
       <a class="btn btn-cart flex-fill" id="addToCartMob" data-accessoryId="{{accessory._id}}">
         <i class="bi bi-cart me-1"></i> Add to Cart
       </a>
     </div>
+    {{/if}}
     {{else}}
-    <div class="unavailable-bar d-flex align-items-center justify-content-center">
-      <i class="bi bi-exclamation-octagon-fill fs-6 me-2"></i>
-      <span class="fw-semibold small">This model is currently unavailable</span>
+    <div class="p-3 rounded-3 border border-danger bg-light text-danger mt-2 d-flex align-items-center">
+      <i class="bi bi-exclamation-octagon-fill fs-5 me-2"></i>
+      <span class="fw-semibold">This model is currently unavailable</span>
+    </div>
+    {{/if}}
+    {{else}}
+    <div class="p-3 rounded-3 border border-danger bg-light text-danger mt-2 d-flex align-items-center">
+      <i class="bi bi-exclamation-octagon-fill fs-5 me-2"></i>
+      <span class="fw-semibold">Out of Stock</span>
     </div>
     {{/if}}
   </div>

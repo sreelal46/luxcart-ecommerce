@@ -83,7 +83,7 @@
 /* Responsive */
 @media (max-width: 768px) {
   .hero-section {
-    height: 800px !important;
+    height: 840px !important;
   }
   .hero-content {
     position: absolute; /* overlay on top of video */
@@ -126,6 +126,7 @@
   position: relative;
   width: 100%;
   overflow: hidden;
+  white-space: nowrap;
 }
 
 .brand-slide-track {
@@ -133,16 +134,29 @@
   align-items: center;
   gap: 50px;
   width: max-content;
+  will-change: transform;
   animation: scroll 40s linear infinite;
+}
+.brand-slide-track {
+  opacity: 0;
+  animation:
+    scroll 40s linear infinite,
+    fadeIn 0.3s ease forwards;
+}
+
+@keyframes fadeIn {
+  to {
+    opacity: 1;
+  }
 }
 
 .brand-logo {
   width: 180px;
   height: 90px;
   object-fit: contain;
-  filter: grayscale(100%);
+  /* filter: grayscale(100%); */
   flex-shrink: 0;
-  transition: filter 0.3s ease;
+  transition: filter 0s ease;
 }
 
 .brand-logo:hover {
@@ -164,7 +178,9 @@
   border-radius: 20px;
   overflow: hidden;
   position: relative;
-  transition: transform 0.5s ease, box-shadow 0.4s ease;
+  transition:
+    transform 0.5s ease,
+    box-shadow 0.4s ease;
 }
 
 .category-card img {
@@ -219,7 +235,9 @@
 }
 
 #premium-accessories .accessory-card {
-  transition: transform 0.4s ease, box-shadow 0.4s ease;
+  transition:
+    transform 0.4s ease,
+    box-shadow 0.4s ease;
   border-radius: 18px;
   overflow: hidden;
 }

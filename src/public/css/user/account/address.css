@@ -217,3 +217,71 @@ body.modal-open {
 .error-btn:hover {
   background: #c0392b;
 }
+/* ===============================
+   ADDRESS EMPTY STATE
+   ===============================*/
+.btn-dark {
+  background: var(--accent);
+  color: #fff;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.15);
+}
+
+.btn-dark:hover {
+  background: #000;
+  color: #fff;
+  transform: translateY(-1px);
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2);
+}
+.empty-address {
+  text-align: center;
+  padding: 56px 20px;
+}
+
+.empty-address__icon {
+  width: 80px;
+  height: 80px;
+  margin: 0 auto 20px;
+  border-radius: 50%;
+  background: var(--soft); /* #f1f2f3 — already in your vars */
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: var(--muted); /* #9aa0a6 */
+}
+
+.empty-address h6 {
+  font-size: 18px;
+  font-weight: 600;
+  color: var(--accent); /* #111 */
+  margin: 0 0 8px;
+}
+
+.empty-address p {
+  font-size: 14px;
+  color: var(--muted);
+  margin: 0 0 22px;
+  max-width: 280px;
+  margin-left: auto;
+  margin-right: auto;
+  line-height: 1.5;
+}
+
+@media (max-width: 575px) {
+  .empty-address {
+    padding: 40px 16px;
+  }
+
+  .empty-address__icon {
+    width: 68px;
+    height: 68px;
+  }
+
+  .empty-address__icon svg {
+    width: 36px;
+    height: 36px;
+  }
+
+  .empty-address h6 {
+    font-size: 16px;
+  }
+}

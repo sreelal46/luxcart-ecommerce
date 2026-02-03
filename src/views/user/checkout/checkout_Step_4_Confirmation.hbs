@@ -1,46 +1,96 @@
 <style>
-  /* ===== Order Confirmation – Only for this page ===== */
+  /* ===== Order Confirmation – Enhanced UI ===== */
+  @import url('https://fonts.googleapis.com/css2?family=Manrope:wght@400;500;600;700;800&family=DM+Sans:wght@400;500;600;700&display=swap');
+
   .checkout-confirmation {
     margin-top: 50px;
-    background: #ffffff;
+    background: linear-gradient(135deg, #f8f9fc 0%, #fdfbf7 100%);
+    font-family: 'DM Sans', sans-serif;
   }
 
-  /* remove default container white gap at top if any */
   .checkout-confirmation .container,
   .checkout-confirmation {
     min-height: calc(100vh - 80px);
-    /* header height approx */
   }
 
-  /* Main Card */
+  /* Main Card with enhanced shadow */
   .checkout-confirmation .order-card {
     background: #ffffff;
-    border-radius: 16px;
-    padding: 28px 32px 26px;
-    border: 1px solid #e4e4e7;
+    border-radius: 20px;
+    padding: 36px 40px;
+    border: 1px solid rgba(228, 228, 231, 0.5);
+    box-shadow:
+      0 4px 6px rgba(0, 0, 0, 0.02),
+      0 10px 25px rgba(0, 0, 0, 0.04),
+      0 0 0 1px rgba(0, 0, 0, 0.01);
+    transition: box-shadow 0.3s ease;
   }
 
-  /* Success icon */
+  .checkout-confirmation .order-card:hover {
+    box-shadow:
+      0 8px 12px rgba(0, 0, 0, 0.03),
+      0 20px 40px rgba(0, 0, 0, 0.06);
+  }
+
+  /* Success icon with modern gradient */
   .checkout-confirmation .success-icon {
-    width: 52px;
-    height: 52px;
+    width: 72px;
+    height: 72px;
     border-radius: 50%;
     display: flex;
     align-items: center;
     justify-content: center;
-    background: #e6f4ea;
-    color: #1a7a36;
-    font-size: 1.4rem;
+    background: linear-gradient(135deg, #10b981 0%, #059669 100%);
+    color: #ffffff;
+    font-size: 2rem;
+    box-shadow:
+      0 8px 24px rgba(16, 185, 129, 0.3),
+      0 0 0 8px rgba(16, 185, 129, 0.1);
+    animation: successPop 0.6s cubic-bezier(0.34, 1.56, 0.64, 1);
   }
 
-  /* Title + subtitle */
+  @keyframes successPop {
+    0% {
+      transform: scale(0) rotate(-180deg);
+      opacity: 0;
+    }
+
+    100% {
+      transform: scale(1) rotate(0deg);
+      opacity: 1;
+    }
+  }
+
+  /* Typography enhancements */
   .checkout-confirmation h2 {
-    font-size: 1.7rem;
-    letter-spacing: 0.02em;
+    font-family: 'Manrope', sans-serif;
+    font-size: 2rem;
+    font-weight: 800;
+    letter-spacing: -0.02em;
+    background: linear-gradient(135deg, #0f172a 0%, #334155 100%);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
   }
 
   .checkout-confirmation .order-card>.text-center p {
-    font-size: 0.95rem;
+    font-size: 1rem;
+    color: #64748b;
+    font-weight: 500;
+  }
+
+  /* Enhanced warning alert */
+  .checkout-confirmation .alert-warning {
+    background: linear-gradient(135deg, #fef3c7 0%, #fde68a 100%);
+    border: 2px solid #fbbf24;
+    border-radius: 12px;
+    padding: 14px 18px;
+    box-shadow: 0 4px 12px rgba(251, 191, 36, 0.2);
+  }
+
+  .checkout-confirmation .alert-warning strong {
+    color: #92400e;
+    font-weight: 700;
   }
 
   /* Section spacing */
@@ -48,199 +98,355 @@
   .checkout-confirmation .order-items,
   .checkout-confirmation .price-summary,
   .checkout-confirmation .order-address {
-    margin-bottom: 24px;
+    margin-bottom: 28px;
   }
 
   .checkout-confirmation h5 {
-    font-size: 1.1rem;
-    margin-bottom: 14px;
+    font-family: 'Manrope', sans-serif;
+    font-size: 1.2rem;
+    font-weight: 700;
+    color: #0f172a;
+    margin-bottom: 16px;
+    letter-spacing: -0.01em;
   }
 
-  /* Thin separators */
+  /* Modern separators with gradient */
   .checkout-confirmation hr {
-    margin: 20px 0;
-    border-color: #e5e5e5;
+    margin: 24px 0;
+    border: none;
+    height: 1px;
+    background: linear-gradient(90deg, transparent 0%, #e2e8f0 50%, transparent 100%);
   }
 
-  /* Order meta (ID, Date, etc.) */
+  /* Order meta info cards */
   .checkout-confirmation .order-info-row {
     display: flex;
     justify-content: space-between;
-    font-size: 0.9rem;
-    margin-bottom: 6px;
+    font-size: 0.95rem;
+    margin-bottom: 10px;
+    padding: 10px 14px;
+    background: #f8fafc;
+    border-radius: 8px;
+    border-left: 3px solid #3b82f6;
+    transition: all 0.2s ease;
+  }
+
+  .checkout-confirmation .order-info-row:hover {
+    background: #eff6ff;
+    transform: translateX(4px);
   }
 
   .checkout-confirmation .order-info-row span {
-    color: #757575;
+    color: #64748b;
+    font-weight: 500;
   }
 
   .checkout-confirmation .order-info-row strong {
-    font-weight: 600;
+    font-weight: 700;
+    color: #0f172a;
   }
 
-  /* Items list */
+  /* Enhanced item cards */
   .checkout-confirmation .order-item {
-    border-radius: 10px;
-    border: 1px solid #ececec;
-    padding: 10px 12px;
-    background: #fafafa;
-    transition: box-shadow 0.15s ease, transform 0.15s ease;
+    border-radius: 14px;
+    border: 2px solid #f1f5f9;
+    padding: 16px;
+    background: linear-gradient(135deg, #ffffff 0%, #f8fafc 100%);
+    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    position: relative;
+    overflow: hidden;
+  }
+
+  .checkout-confirmation .order-item::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 4px;
+    height: 100%;
+    background: linear-gradient(180deg, #3b82f6 0%, #8b5cf6 100%);
+    transform: scaleY(0);
+    transition: transform 0.3s ease;
+  }
+
+  .checkout-confirmation .order-item:hover::before {
+    transform: scaleY(1);
   }
 
   .checkout-confirmation .order-item+.order-item {
-    margin-top: 10px;
+    margin-top: 12px;
   }
 
   .checkout-confirmation .order-item:hover {
-    box-shadow: 0 4px 10px rgba(0, 0, 0, 0.04);
-    transform: translateY(-1px);
+    border-color: #3b82f6;
+    box-shadow:
+      0 8px 24px rgba(59, 130, 246, 0.12),
+      0 0 0 1px rgba(59, 130, 246, 0.1);
+    transform: translateY(-2px);
   }
 
-  /* Thumbnail */
+  /* Enhanced thumbnail */
   .checkout-confirmation .item-thumb {
-    width: 70px;
-    height: 70px;
-    border-radius: 10px;
+    width: 80px;
+    height: 80px;
+    border-radius: 12px;
     overflow: hidden;
-    background: #f0f0f0;
+    background: linear-gradient(135deg, #f1f5f9 0%, #e2e8f0 100%);
     flex-shrink: 0;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
+    position: relative;
+  }
+
+  .checkout-confirmation .item-thumb::after {
+    content: '';
+    position: absolute;
+    inset: 0;
+    border: 1px solid rgba(255, 255, 255, 0.5);
+    border-radius: 12px;
+    pointer-events: none;
   }
 
   .checkout-confirmation .item-thumb img {
     width: 100%;
     height: 100%;
     object-fit: cover;
+    transition: transform 0.3s ease;
+  }
+
+  .checkout-confirmation .order-item:hover .item-thumb img {
+    transform: scale(1.05);
   }
 
   /* Item text */
   .checkout-confirmation .order-item h6 {
-    font-size: 0.97rem;
-    margin-bottom: 3px;
+    font-size: 1.05rem;
+    font-weight: 600;
+    margin-bottom: 4px;
+    color: #0f172a;
   }
 
   .checkout-confirmation .order-item .text-muted {
-    font-size: 0.8rem;
+    font-size: 0.85rem;
+    color: #64748b;
   }
 
   .checkout-confirmation .order-item .fw-semibold {
-    font-size: 0.95rem;
+    font-size: 1rem;
+    font-weight: 700;
+    color: #3b82f6;
   }
 
-  /* Price details */
+  /* Enhanced price details */
   .checkout-confirmation .price-summary-row {
     display: flex;
     justify-content: space-between;
-    font-size: 0.9rem;
-    margin-bottom: 4px;
+    font-size: 0.95rem;
+    margin-bottom: 8px;
+    padding: 8px 0;
+    border-bottom: 1px dashed #e2e8f0;
   }
 
   .checkout-confirmation .price-summary-row span {
-    color: #555;
+    color: #64748b;
+    font-weight: 500;
   }
 
   .checkout-confirmation .price-summary-row strong {
-    font-weight: 600;
+    font-weight: 700;
+    color: #0f172a;
   }
 
   .checkout-confirmation .price-summary-row.text-success span,
   .checkout-confirmation .price-summary-row.text-success strong {
-    color: #1a7a36 !important;
+    color: #10b981 !important;
   }
 
-  /* Grand Total highlight */
+  /* Grand Total with gradient */
   .checkout-confirmation .total-row {
     display: flex;
     justify-content: space-between;
     align-items: center;
-    margin-top: 10px;
-    padding-top: 10px;
-    border-top: 1px dashed #dddddd;
+    margin-top: 16px;
+    padding: 16px 20px;
+    background: linear-gradient(135deg, #eff6ff 0%, #dbeafe 100%);
+    border-radius: 12px;
+    border: 2px solid #3b82f6;
   }
 
   .checkout-confirmation .total-row span {
-    font-size: 0.98rem;
+    font-size: 1.1rem;
+    font-weight: 700;
+    color: #1e40af;
   }
 
   .checkout-confirmation .total-row .price {
-    font-size: 1.15rem;
-    font-weight: 700;
-    color: #e65100;
+    font-size: 1.5rem;
+    font-weight: 800;
+    background: linear-gradient(135deg, #3b82f6 0%, #8b5cf6 100%);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
   }
 
-  /* Address block */
+  /* Address block enhancement */
+  .checkout-confirmation .order-address {
+    background: #f8fafc;
+    padding: 16px 20px;
+    border-radius: 12px;
+    border-left: 4px solid #10b981;
+  }
+
   .checkout-confirmation .order-address p {
-    font-size: 0.9rem;
-    line-height: 1.5;
+    font-size: 0.95rem;
+    line-height: 1.7;
+    color: #475569;
   }
 
-  /* Buttons */
+  .checkout-confirmation .order-address strong {
+    color: #0f172a;
+    font-weight: 700;
+  }
+
+  /* Enhanced Download Button with Loading State */
   .checkout-confirmation #downloadInvoice {
-    font-weight: 600;
-    border-radius: 999px;
+    font-weight: 700;
+    border-radius: 12px;
+    padding: 14px 24px;
+    font-size: 1rem;
+    background: linear-gradient(135deg, #3b82f6 0%, #2563eb 100%);
+    border: none;
+    color: #ffffff;
+    box-shadow:
+      0 4px 12px rgba(59, 130, 246, 0.4),
+      0 0 0 1px rgba(59, 130, 246, 0.1);
+    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    position: relative;
+    overflow: hidden;
   }
 
+  .checkout-confirmation #downloadInvoice::before {
+    content: '';
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    width: 0;
+    height: 0;
+    border-radius: 50%;
+    background: rgba(255, 255, 255, 0.3);
+    transform: translate(-50%, -50%);
+    transition: width 0.6s, height 0.6s;
+  }
+
+  .checkout-confirmation #downloadInvoice:hover::before {
+    width: 300px;
+    height: 300px;
+  }
+
+  .checkout-confirmation #downloadInvoice:hover {
+    transform: translateY(-2px);
+    box-shadow:
+      0 8px 20px rgba(59, 130, 246, 0.5),
+      0 0 0 1px rgba(59, 130, 246, 0.2);
+  }
+
+  .checkout-confirmation #downloadInvoice:active {
+    transform: translateY(0);
+  }
+
+  /* Loading state for download button */
+  .checkout-confirmation #downloadInvoice.loading {
+    pointer-events: none;
+    opacity: 0.8;
+  }
+
+  .checkout-confirmation #downloadInvoice .btn-text {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    position: relative;
+    z-index: 1;
+  }
+
+  .checkout-confirmation #downloadInvoice .spinner {
+    display: none;
+    width: 18px;
+    height: 18px;
+    border: 2.5px solid rgba(255, 255, 255, 0.3);
+    border-top-color: #ffffff;
+    border-radius: 50%;
+    animation: spin 0.8s linear infinite;
+  }
+
+  .checkout-confirmation #downloadInvoice.loading .spinner {
+    display: inline-block;
+  }
+
+  .checkout-confirmation #downloadInvoice.loading .default-icon {
+    display: none;
+  }
+
+  @keyframes spin {
+    to {
+      transform: rotate(360deg);
+    }
+  }
+
+  /* View Orders button */
   .checkout-confirmation a.btn {
-    border-radius: 999px;
+    border-radius: 12px;
+    font-weight: 600;
+    padding: 14px 24px;
+    border: 2px solid #e2e8f0;
+    color: #475569;
+    transition: all 0.3s ease;
   }
 
-  /* Responsive tweak */
-  @media (max-width: 576px) {
-    .checkout-confirmation .order-card {
-      padding: 20px 16px;
-    }
-
-    .checkout-confirmation .order-item {
-      flex-direction: column;
-    }
-
-    .checkout-confirmation .order-item .text-end {
-      margin-top: 6px;
-      text-align: left !important;
-    }
+  .checkout-confirmation a.btn:hover {
+    border-color: #3b82f6;
+    color: #3b82f6;
+    background: #eff6ff;
+    transform: translateY(-2px);
+    box-shadow: 0 4px 12px rgba(59, 130, 246, 0.15);
   }
 
-
-  /* ===============================
-   Slide-in Toast Message (Clean UI)
-================================*/
-
+  /* Enhanced Toast Message */
   .mobile-alert {
     position: fixed;
     left: 50%;
     bottom: 40px;
     transform: translateX(-50%) translateY(150%);
-    background: #111;
+    background: linear-gradient(135deg, #1e293b 0%, #0f172a 100%);
     color: #fff;
-    padding: 12px 20px;
-    border-radius: 14px;
+    padding: 14px 24px;
+    border-radius: 16px;
     font-size: 15px;
+    font-weight: 600;
     display: flex;
     align-items: center;
-    gap: 10px;
+    gap: 12px;
     max-width: 90%;
     width: max-content;
-
     opacity: 0;
     pointer-events: none;
     transition: all 0.4s cubic-bezier(0.16, 1, 0.3, 1);
-
-    box-shadow: 0 8px 26px rgba(0, 0, 0, 0.25);
+    box-shadow:
+      0 12px 40px rgba(0, 0, 0, 0.4),
+      0 0 0 1px rgba(255, 255, 255, 0.1);
     z-index: 9999;
     white-space: normal;
     word-break: break-word;
+    backdrop-filter: blur(12px);
   }
 
-  /* Toast visible */
   .mobile-alert.show {
     opacity: 1;
     transform: translateX(-50%) translateY(0);
     pointer-events: auto;
   }
 
-  /* Desktop version (toast appears at top) */
   @media (min-width: 768px) {
     .mobile-alert {
-      top: 20px;
+      top: 24px;
       bottom: auto;
       transform: translateX(-50%) translateY(-140%);
     }
@@ -250,29 +456,89 @@
     }
   }
 
-  /* Colors */
+  /* Toast colors */
   .message-green {
-    color: #00ff7f;
+    color: #6ee7b7;
+    text-shadow: 0 0 20px rgba(110, 231, 183, 0.5);
   }
 
   .message-red {
-    color: #ff4d4d;
+    color: #fca5a5;
+    text-shadow: 0 0 20px rgba(252, 165, 165, 0.5);
   }
 
   .message-yellow {
-    color: #ffcc00;
+    color: #fde047;
+    text-shadow: 0 0 20px rgba(253, 224, 71, 0.5);
   }
 
-  /* Icons */
   .success-icon,
   .error-icon,
   .yellow-icon {
-    font-size: 18px;
+    font-size: 20px;
+    filter: drop-shadow(0 0 8px currentColor);
+  }
+
+  /* Responsive tweaks */
+  @media (max-width: 576px) {
+    .checkout-confirmation .order-card {
+      padding: 24px 20px;
+      border-radius: 16px;
+    }
+
+    .checkout-confirmation h2 {
+      font-size: 1.6rem;
+    }
+
+    .checkout-confirmation .success-icon {
+      width: 64px;
+      height: 64px;
+      font-size: 1.8rem;
+    }
+
+    .checkout-confirmation .order-item {
+      flex-direction: column;
+    }
+
+    .checkout-confirmation .order-item .text-end {
+      margin-top: 8px;
+      text-align: left !important;
+    }
+
+    .checkout-confirmation .item-thumb {
+      width: 100%;
+      height: 180px;
+      margin-bottom: 12px;
+    }
+
+    .checkout-confirmation .total-row {
+      flex-direction: column;
+      gap: 8px;
+      text-align: center;
+    }
+  }
+
+  /* Smooth page entrance animation */
+  .checkout-confirmation .order-card {
+    animation: slideUp 0.6s cubic-bezier(0.16, 1, 0.3, 1);
+  }
+
+  @keyframes slideUp {
+    from {
+      opacity: 0;
+      transform: translateY(30px);
+    }
+
+    to {
+      opacity: 1;
+      transform: translateY(0);
+    }
   }
 </style>
 
 <!-- Slide-in Toast MSG -->
 <div id="mobileAlert" class="mobile-alert"></div>
+
 <div class="container py-5 checkout-confirmation">
   <div class="row justify-content-center">
     <div class="col-lg-8 col-xl-7">
@@ -293,32 +559,31 @@
           <div class="alert alert-warning mt-3 d-inline-block text-start" role="alert">
             <strong>Important:</strong>
             Orders containing <b>cars</b> are <b>not eligible for return</b>.
-            Please review the product details carefully before proceeding.
+            <!-- Please review the product details carefully before proceeding. -->
           </div>
         </div>
-
 
         <hr>
 
         <!-- Basic Order Info -->
         <div class="order-info mb-4">
-          <div class="d-flex justify-content-between mb-2">
-            <span class="text-muted small">Order ID</span>
+          <div class="order-info-row">
+            <span>Order ID</span>
             <strong>#{{order.orderId}}</strong>
           </div>
 
-          <div class="d-flex justify-content-between mb-2">
-            <span class="text-muted small">Date</span>
+          <div class="order-info-row">
+            <span>Date</span>
             <strong>{{formattedDate order.createdAt}}</strong>
           </div>
 
-          <div class="d-flex justify-content-between mb-2">
-            <span class="text-muted small">Payment Method</span>
+          <div class="order-info-row">
+            <span>Payment Method</span>
             <strong class="text-capitalize">{{order.paymentMethod}}</strong>
           </div>
 
-          <div class="d-flex justify-content-between mb-3">
-            <span class="text-muted small">Total Items</span>
+          <div class="order-info-row">
+            <span>Total Items</span>
             <strong>{{order.items.length}}</strong>
           </div>
         </div>
@@ -353,14 +618,12 @@
 
                   {{#if variantId}}
                   <p class="text-muted small mb-1">
-                    Color:
-                    {{variantId.color}}
+                    Color: {{variantId.color}}
                   </p>
                   {{/if}}
                   {{#if accessoryId}}
                   <p class="text-muted small mb-1">
-                    Material:
-                    {{accessoryId.material}}
+                    Material: {{accessoryId.material}}
                   </p>
                   {{/if}}
 
@@ -377,7 +640,6 @@
                     {{#if accessoryId}}
                     ₹ {{formatPrice totalItemAmount}} (With Tax)
                     {{/if}}
-
                   </p>
                 </div>
               </div>
@@ -390,19 +652,19 @@
         <div class="price-summary mb-4">
           <h5 class="fw-semibold mb-3">Price Details</h5>
 
-          <div class="d-flex justify-content-between mb-2">
+          <div class="price-summary-row">
             <span>Subtotal</span>
             <strong>₹ {{formatPrice order.subtotal}}</strong>
           </div>
 
           {{#if order.discount}}
-          <div class="d-flex justify-content-between mb-2 text-success">
+          <div class="price-summary-row text-success">
             <span>Discount</span>
             <strong>- ₹ {{formatPrice order.discount}}</strong>
           </div>
           {{/if}}
 
-          <div class="d-flex justify-content-between mb-2">
+          <div class="price-summary-row">
             <span>Tax</span>
             {{#if order.taxAmount}}
             <strong>₹ {{formatPrice order.taxAmount}}</strong>
@@ -411,25 +673,24 @@
             {{/if}}
           </div>
 
-
-          <div class="d-flex justify-content-between mb-2">
+          <div class="price-summary-row">
             <span>Delivery Charges</span>
             <strong>Free</strong>
           </div>
 
           {{#if order.advanceAmount}}
-          <div class="d-flex justify-content-between mb-2">
+          <div class="price-summary-row">
             <span>Advance Paid (COD)</span>
             <strong>₹ {{formatPrice order.advanceAmount}}</strong>
           </div>
 
-          <div class="d-flex justify-content-between mb-3">
+          <div class="price-summary-row">
             <span>Amount Due on Delivery</span>
             <strong>₹ {{formatPrice order.remainingAmount}}</strong>
           </div>
           {{/if}}
 
-          <div class="d-flex justify-content-between total-row pt-3 border-top mt-2">
+          <div class="total-row">
             <span class="fw-bold">Grand Total</span>
             <strong class="price">₹ {{formatPrice order.totalAmount}}</strong>
           </div>
@@ -438,10 +699,10 @@
         <hr>
 
         <!-- Address -->
-        <div class="mb-4">
+        <div class="order-address mb-4">
           <h5 class="fw-semibold mb-2">Delivery Address</h5>
 
-          <p class="text-muted small mb-0">
+          <p class="small mb-0">
             <strong>{{order.address.name}}</strong><br />
             Phone: {{order.address.phone}}<br />
             Email: {{order.address.email}}<br />
@@ -456,11 +717,15 @@
         <!-- Buttons -->
         <div class="text-center">
           <button id="downloadInvoice" data-orderid="{{order._id}}" data-orderedid="{{order.orderId}}"
-            data-customername="{{order.address.name}}" class="btn btn-primary w-100 py-2 mb-2">
-            Download Invoice
+            data-customername="{{order.address.name}}" class="btn btn-primary w-100 py-2 mb-3">
+            <span class="btn-text">
+              <i class="bi bi-download default-icon"></i>
+              <span class="spinner"></span>
+              <span class="button-label">Download Invoice</span>
+            </span>
           </button>
           <a href="/account/orders" class="btn btn-outline-primary w-100 py-2">
-            View Orders
+            View All Orders
           </a>
         </div>
       </div>
@@ -468,9 +733,6 @@
     </div>
   </div>
 </div>
-
-
-
 
 <script>
   document.addEventListener("DOMContentLoaded", () => {
@@ -486,7 +748,6 @@
       }
 
       alertBox.classList.add("show");
-
       setTimeout(() => alertBox.classList.remove("show"), 3000);
     }
 
@@ -494,11 +755,17 @@
     const orderId = downloadInvoice.dataset.orderid;
     const orderedId = downloadInvoice.dataset.orderedid;
     const customerName = downloadInvoice.dataset.customername;
-    console.log("ORDER ID", orderId)
-    console.log("orderedId", orderedId)
-    console.log("customerName", customerName)
+    const buttonLabel = downloadInvoice.querySelector('.button-label');
+
+    console.log("ORDER ID", orderId);
+    console.log("orderedId", orderedId);
+    console.log("customerName", customerName);
 
     downloadInvoice.addEventListener("click", async () => {
+      // Add loading state
+      downloadInvoice.classList.add('loading');
+      buttonLabel.textContent = 'Downloading...';
+
       try {
         const response = await axios.get(
           `/cart/checkout-success/download-invoice/${orderId}`,
@@ -525,11 +792,25 @@
         a.remove();
         window.URL.revokeObjectURL(downloadUrl);
 
+        // Success state
+        buttonLabel.textContent = 'Downloaded!';
         showMobileAlert("Invoice downloaded successfully", "success");
+
+        // Reset button after 2 seconds
+        setTimeout(() => {
+          downloadInvoice.classList.remove('loading');
+          buttonLabel.textContent = 'Download Invoice';
+        }, 2000);
+
       } catch (error) {
         const msg = error.response?.data?.alert || "INTERNAL SERVER ERROR";
         showMobileAlert(msg, "error");
+
+        // Reset button on error
+        downloadInvoice.classList.remove('loading');
+        buttonLabel.textContent = 'Download Invoice';
       }
     });
   });
 </script>
+<!-- </document_content> -->

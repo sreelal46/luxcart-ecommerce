@@ -7,50 +7,109 @@ const Category = require("../../models/admin/categoryModel");
 
 const loadOrderManagement = async (req, res, next) => {
   try {
-    const {
+    let {
       search = "",
-      status = "",
-      dateFrom = "",
-      dateTo = "",
-      ajax = "",
+      page = 1,
+      limit = 10,
+      ajax,
+      paymentMethod,
+      paymentStatus,
+      itemStatus,
+      dateFrom,
+      dateTo,
+      minAmount,
+      maxAmount,
     } = req.query;
 
+    // Convert to numbers
+    const pageNum = Number(page);
+    const limitNum = Number(limit);
+    const skip = (pageNum - 1) * limitNum;
+
+    // Build query
     let query = {};
 
-    // Search filter
+    // Search filter - FIXED to handle order ID properly
     if (search.trim() !== "") {
       query.$or = [
-        { orderId: { $regex: search, $options: "i" } },
-        { "address.name": { $regex: search, $options: "i" } },
+        { orderId: { $regex: search.trim(), $options: "i" } },
+        { "address.name": { $regex: search.trim(), $options: "i" } },
       ];
     }
 
-    //Status filter
-    if (status) {
-      query.orderStatus = status;
+    // Payment Method filter
+    if (paymentMethod) {
+      query.paymentMethod = paymentMethod;
     }
 
-    //Date range filter
+    // Payment Status filter
+    if (paymentStatus) {
+      query.paymentStatus = paymentStatus;
+    }
+
+    // Item Status filter - searches within items array
+    if (itemStatus) {
+      query["items.fulfillmentStatus.status"] = itemStatus;
+    }
+
+    // Date range filter
     if (dateFrom || dateTo) {
       query.createdAt = {};
-      if (dateFrom) query.createdAt.$gte = new Date(dateFrom);
-      if (dateTo) query.createdAt.$lte = new Date(dateTo);
+      if (dateFrom) {
+        query.createdAt.$gte = new Date(dateFrom);
+      }
+      if (dateTo) {
+        // Set to end of day
+        const endDate = new Date(dateTo);
+        endDate.setHours(23, 59, 59, 999);
+        query.createdAt.$lte = endDate;
+      }
     }
 
+    // Amount range filter
+    if (minAmount || maxAmount) {
+      query.totalAmount = {};
+      if (minAmount) {
+        query.totalAmount.$gte = Number(minAmount);
+      }
+      if (maxAmount) {
+        query.totalAmount.$lte = Number(maxAmount);
+      }
+    }
+
+    // Get total count for pagination
+    const totalCount = await Order.countDocuments(query);
+    const totalPages = Math.ceil(totalCount / limitNum);
+
+    // Fetch orders with pagination
     const orders = await Order.find(query)
       .sort({ createdAt: -1 })
+      .skip(skip)
+      .limit(limitNum)
       .populate("items.carId")
       .populate("items.accessoryId")
       .populate("items.variantId")
       .lean();
 
-    // If Axios → return JSON (no render)
-    if (ajax === "1") {
-      return res.json({ success: true, orders });
+    // AJAX response (for search/pagination/filters)
+    if (ajax) {
+      return res.status(200).json({
+        success: true,
+        orders,
+        pagination: {
+          totalPages,
+          currentPage: pageNum,
+          totalCount,
+        },
+      });
     }
 
-    //Normal page load → render
-    res.render("admin/orders/ordersManagement", { orders });
+    // Initial page load
+    res.render("admin/orders/ordersManagement", {
+      orders,
+      currentPage: pageNum,
+      totalPages,
+    });
   } catch (error) {
     console.log("Error loading orders:", error);
     next(error);

@@ -252,28 +252,91 @@
 
     </div>
   </div>
+  <!-- RELATED CARS -->
+  {{#if relatedCars.length}}
+  <div class="related-cars-section mt-5 mb-5">
+    <h4 class="fw-bold mb-4">Related Cars</h4>
+    <div class="row g-4">
+      {{#each relatedCars}}
+      <div class="col-md-6 col-lg-3">
+        <div class="card car-card ">
+          <div class="car-image-wrapper position-relative">
+            <img
+              src="{{#if variantIds.[0].image_url.[0]}}{{variantIds.[0].image_url.[0]}}{{else}}/images/default-car.jpg{{/if}}"
+              alt="{{name}}" class="car-image" />
+            {{#unless variantIds.[0].stock}}
+            <span class="badge stock-badge out-of-stock position-absolute top-0 end-0 m-3">Out of Stock</span>
+            {{else}}
+            {{#if (lte variantIds.[0].stock 4)}}
+            <span class="badge stock-badge low-stock position-absolute top-0 end-0 m-3">Only {{variantIds.[0].stock}}
+              Left!</span>
+            {{/if}}
+            {{/unless}}
+          </div>
 
-  <!-- Sticky Bottom Buttons (mobile only) -->
-  {{!-- Sticky Bottom Buttons (mobile only) --}}
+          <div class="card-body p-4">
+            <h6 class="brand-name mb-2">{{brand_id.name}}</h6>
+            <h5 class="car-name">{{name}}</h5>
+            <div class="d-flex justify-content-between align-items-center mt-3">
+              <span class="price-tag">₹{{formatPrice variantIds.[0].price}}</span>
+              <span class="year-badge">{{year}}</span>
+            </div>
+          </div>
+
+          <div class="card-footer bg-white text-center border-0 p-3">
+            <a href="/cars-collection/view-car-product/{{_id}}" class="btn view-details-btn w-100">View Details</a>
+          </div>
+
+        </div>
+      </div>
+      {{/each}}
+    </div>
+  </div>
+  {{/if}}
+  <!-- Sticky Bottom Buttons -->
   <div class="mobile-bottom-bar d-lg-none">
 
     {{#if singleCar.isListed}}
+    {{#if singleCar.variantIds.length}}
+    {{#unless singleCar.variantIds.[0].stock}}
+    <a style="text-decoration: none;" id="addToCartDesk" data-carid="{{singleCar._id}}"
+      data-variantId="{{selectedVariantId}}"
+      class="p-3 rounded-3 border border-danger bg-light text-danger mt-2 d-flex align-items-center">
+      <i class="bi bi-exclamation-octagon-fill fs-5 me-2"></i>
+      <span class="fw-semibold">Out of Stock</span>
+    </a>
+    {{else}}
+    {{#if inCart}}
+    <a class="btn btn-cart" id="addToCartDesk" data-carid="{{singleCar._id}}" data-variantId="{{selectedVariantId}}"
+      href="/cart">
+      <i class="bi bi-cart"></i> Go to Cart
+    </a>
+    {{else}}
     <div class="action-buttons d-flex gap-2" id="buyProductMob">
-      <a class="btn btn-buy flex-fill" data-accessoryId="{{singleCar._id}}"
+      <!-- <a class="btn btn-buy flex-fill" data-accessoryId="{{singleCar._id}}"
         data-variantId="{{getFirstVariantId singleCar}}">
         <i class="bi bi-lightning-charge me-1"></i> Buy Now
-      </a>
+      </a> -->
       <a class="btn btn-cart flex-fill" id="addToCartMob" data-accessoryId="{{singleCar._id}}"
         data-variantId="{{getFirstVariantId singleCar}}">
         <i class="bi bi-cart me-1"></i> Add to Cart
       </a>
     </div>
+    {{/if}}
+    {{/unless}}
     {{else}}
-    <div class="unavailable-bar d-flex align-items-center justify-content-center">
-      <i class="bi bi-exclamation-octagon-fill fs-6 me-2"></i>
-      <span class="fw-semibold small">This model is currently unavailable</span>
+    <div class="p-3 rounded-3 border border-danger bg-light text-danger mt-2 d-flex align-items-center">
+      <i class="bi bi-exclamation-octagon-fill fs-5 me-2"></i>
+      <span class="fw-semibold">This model is currently unavailable</span>
     </div>
     {{/if}}
+    {{else}}
+    <div class="p-3 rounded-3 border border-danger bg-light text-danger mt-2 d-flex align-items-center">
+      <i class="bi bi-exclamation-octagon-fill fs-5 me-2"></i>
+      <span class="fw-semibold">This model is currently unavailable</span>
+    </div>
+    {{/if}}
+
 
   </div>
 

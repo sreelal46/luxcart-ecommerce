@@ -14,10 +14,10 @@ const loadAccountPage = async (req, res, next) => {
     //finding user
     const userId = req.session.user._id;
     const user = await User.findById(userId).lean();
-
-    res
-      .status(OK)
-      .render("user/account/welcome", { layout: "userAccountLayout", user });
+    res.status(OK).render("user/account/welcome", {
+      layout: "userAccountLayout",
+      user,
+    });
   } catch (error) {
     console.log("Error from account wellcom page", error);
     next(error);
@@ -79,6 +79,14 @@ const loadAddressPage = async (req, res, next) => {
 
 //load add address page
 const loadAddAddressPage = (req, res) => {
+  const { from, cartId } = req.query;
+  if (from === "checkout")
+    return res.status(OK).render("user/account/addAddress", {
+      layout: "checkoutAddressLayout",
+      from,
+      cartId,
+    });
+
   res
     .status(OK)
     .render("user/account/addAddress", { layout: "userAccountLayout" });
@@ -184,7 +192,7 @@ const loadCartPage = async (req, res, next) => {
 
         // Per user usage limit
         const userUsageCount = cleanUsedBy.filter(
-          (id) => id.toString() === userId.toString()
+          (id) => id.toString() === userId.toString(),
         ).length;
 
         if (userUsageCount >= coupon.usagePerUser) return false;
@@ -287,6 +295,7 @@ const loadCheckoutStep1 = async (req, res, next) => {
       address,
       cart,
       taxRate,
+      cartId,
     });
   } catch (error) {
     console.log("Error from load checkout page");
@@ -340,7 +349,7 @@ const loadCheckoutStep4 = async (req, res, next) => {
     const orderId = req.params.orderId;
     if (!orderId) return res.status(FORBIDDEN).redirect("/cart");
     const populatedOrder = await Order.findById(orderId).populate(
-      "items.carId items.accessoryId items.variantId"
+      "items.carId items.accessoryId items.variantId",
     );
 
     res.render("user/checkout/checkout_Step_4_Confirmation", {

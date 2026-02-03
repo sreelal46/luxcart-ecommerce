@@ -6,18 +6,39 @@ window.renderAccessories = function (accessories) {
       .replace(/\B(?=(\d{3})+(?!\d))/g, ",")
       .toLocaleString("en-IN");
   };
+
+  const getStockBadge = (stock) => {
+    if (stock === 0 || stock === null || stock === undefined) {
+      return `<span class="badge stock-badge out-of-stock position-absolute top-0 end-0 m-3">Out of Stock</span>`;
+    }
+    if (stock <= 4) {
+      return `<span class="badge stock-badge low-stock position-absolute top-0 end-0 m-3">Only ${stock} Left!</span>`;
+    }
+    return "";
+  };
+
   const container = document.getElementById("car-list");
 
   container.innerHTML = "";
 
   if (!accessories.length) {
     container.innerHTML = `
-      <div class="col-12 text-center py-5 no-products">
-        <img src="images/9264822.jpg" alt="No Products" width="350" class="mb-3 no-products-img">
-        <h4 class="fw-semibold no-products-title">No Accessories Found</h4>
-        <p class="text-muted no-products-text">Try adjusting filters or search.</p>
-      </div>
-    `;
+  <div class="col-12 text-center py-5 no-products">
+    <img 
+      src="images/empty-result.jpg" 
+      alt="No Products Found" 
+      width="300" 
+      class="mb-4 no-products-img opacity-75">
+    <h4 class="fw-semibold mb-2 no-products-title">No Products Found</h4>
+    <p class="text-muted mb-3 no-products-text">
+      We couldn't find any products matching your criteria.
+    </p>
+    <p class="text-muted small">Try adjusting your filters or search term.</p>
+    <button class="btn btn-outline-dark mt-3" onclick="window.location.href='/'">
+      Browse All Products
+    </button>
+  </div>
+`;
 
     gsap.from(".no-products", {
       opacity: 0,
@@ -49,14 +70,9 @@ window.renderAccessories = function (accessories) {
     card.innerHTML = `
       <div class="card car-card h-100 d-flex flex-column">
         <div class="car-image-wrapper position-relative">
-          <img src="${item?.images?.[0] || "/images/default-car.jpg"}" alt="${
-      item.name
-    }" class="car-image"/>
-          ${
-            item?.category_id?.name
-              ? `<span class="badge category-badge position-absolute top-0 start-0 m-3 text-capitalize">${item.category_id.name}</span>`
-              : ""
-          }
+          <img src="${item?.images?.[0] || "/images/default-car.jpg"}" alt="${item.name}" class="car-image"/>
+
+          ${getStockBadge(item.stock)}
         </div>
         <div class="card-body p-4 flex-grow-1">
           <h6 class="brand-name mb-2">${item?.brand_id?.name || ""}</h6>
@@ -67,9 +83,7 @@ window.renderAccessories = function (accessories) {
           </div>
         </div>
         <div class="card-footer bg-white text-center border-0 p-3">
-          <a href="/all-accessories/view-accessory-product/${
-            item._id
-          }" class="btn view-details-btn w-100">View Details</a>
+          <a href="/all-accessories/view-accessory-product/${item._id}" class="btn view-details-btn w-100">View Details</a>
         </div>
       </div>
     `;

@@ -1,0 +1,92 @@
+body {
+  background: #f8f9fa;
+}
+
+.section {
+  display: none;
+}
+
+.section.active {
+  display: block;
+}
+
+.payment-card {
+  border: 1px solid #e5e7eb;
+  border-radius: 8px;
+  padding: 16px;
+  cursor: pointer;
+  transition: all 0.3s ease;
+}
+
+.payment-card:hover {
+  border-color: #000;
+  background: #f9fafb;
+  transform: translateY(-2px);
+  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+}
+
+.payment-card.selected {
+  border-color: #000;
+  background: #f9fafb;
+  border-width: 2px;
+}
+
+.spinner-border-sm {
+  width: 1rem;
+  height: 1rem;
+  border-width: 0.2em;
+}
+/* ===============================
+   WALLET EMPTY STATE
+   ===============================*/
+.empty-transactions {
+  text-align: center;
+  padding: 56px 20px;
+}
+
+.empty-transactions__icon {
+  width: 80px;
+  height: 80px;
+  margin: 0 auto 20px;
+  border-radius: 50%;
+  background: var(--soft);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: var(--muted);
+}
+
+.empty-transactions h6 {
+  font-size: 18px;
+  font-weight: 600;
+  color: var(--accent);
+  margin: 0 0 8px;
+}
+
+.empty-transactions p {
+  font-size: 14px;
+  color: var(--muted);
+  line-height: 1.5;
+  max-width: 280px;
+  margin: 0 auto;
+}
+
+@media (max-width: 575px) {
+  .empty-transactions {
+    padding: 40px 16px;
+  }
+
+  .empty-transactions__icon {
+    width: 68px;
+    height: 68px;
+  }
+
+  .empty-transactions__icon svg {
+    width: 36px;
+    height: 36px;
+  }
+
+  .empty-transactions h6 {
+    font-size: 16px;
+  }
+}

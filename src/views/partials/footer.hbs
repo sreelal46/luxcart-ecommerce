@@ -35,16 +35,28 @@
           <li><a href="#">Privacy Policy</a></li>
         </ul>
       </div>
-
+      {{#if footer}}
       <div class="col-12 col-md-3 mb-3">
         <h6 class="fw-bold mb-2">Contact</h6>
         <ul class="list-unstyled small mb-0">
-          <li>123 Luxury Lane</li>
-          <li>Beverly Hills, CA 90210</li>
-          <li>+1 (800) TIMELESS</li>
-          <li>info@luxcartauto.com</li>
+          <li>{{footer.address.street}}</li>
+          <li>{{footer.address.city}}</li>
+          <li>{{footer.phone}}</li>
+          <li>{{footer.email}}</li>
         </ul>
       </div>
+      {{else}}
+      <div class="col-12 col-md-3 mb-3">
+        <h6 class="fw-bold mb-2">Contact</h6>
+        <ul class="list-unstyled small mb-0">
+          <li>--------------</li>
+          <li>--------------</li>
+          <li>--------------</li>
+          <li>--------------</li>
+        </ul>
+      </div>
+      {{/if}}
+
     </div>
 
     <!-- Divider and copyright -->

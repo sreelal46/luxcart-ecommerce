@@ -94,6 +94,7 @@ const addAddress = async (req, res, next) => {
       state,
       zip,
     } = req.body;
+    const { from, cartId } = req.query;
 
     await Address.create({
       userId,
@@ -109,7 +110,14 @@ const addAddress = async (req, res, next) => {
       pinCode: zip,
     });
 
-    res.status(OK).json({ success: true, redirect: "/account/addresses" });
+    res
+      .status(OK)
+      .json({
+        success: true,
+        redirect: from
+          ? `/cart/checkout-step-1/${cartId}`
+          : "/account/addresses",
+      });
   } catch (error) {
     console.log("Error from add address", error);
     next(error);

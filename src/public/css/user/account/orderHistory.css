@@ -1,0 +1,416 @@
+/* =========================
+     ORDER HISTORY CARD
+  ========================= */
+.order-card-front {
+  margin-bottom: 18px;
+  background: #fff;
+  border-radius: 18px;
+  padding: 22px 26px;
+  box-shadow: 0 10px 28px rgba(0, 0, 0, 0.08);
+  transition:
+    transform 0.2s ease,
+    box-shadow 0.2s ease;
+}
+
+.order-card-front:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 12px 32px rgba(0, 0, 0, 0.12);
+}
+
+/* =========================
+     GRID LAYOUT
+  ========================= */
+.order-row-header {
+  display: grid;
+  grid-template-columns: 140px 1.2fr 1fr 1fr 140px;
+  align-items: center;
+  gap: 24px;
+}
+
+/* =========================
+     IMAGE STACK
+  ========================= */
+.order-image-stack {
+  position: relative;
+  width: 110px;
+  height: 90px;
+  flex-shrink: 0;
+}
+
+.order-image-stack img {
+  position: absolute;
+  width: 90px;
+  height: 90px;
+  object-fit: cover;
+  border-radius: 14px;
+  background: #fff;
+  border: 1px solid #e6e6e6;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
+}
+
+/* FRONT IMAGE */
+.order-image-stack img:nth-child(1) {
+  z-index: 3;
+  top: 0;
+  left: 0;
+}
+
+/* BACK IMAGE (small visible part) */
+.order-image-stack img:nth-child(2) {
+  z-index: 1;
+  top: 10px;
+  left: 18px;
+  opacity: 0.95;
+}
+
+/* HIDE EXTRA IMAGES */
+.order-image-stack img:nth-child(n + 3) {
+  display: none;
+}
+
+/* =========================
+     TEXT STYLES
+  ========================= */
+.label {
+  font-size: 12px;
+  color: #8b8f97;
+  margin-bottom: 4px;
+  font-weight: 500;
+}
+
+.value {
+  font-size: 15px;
+  font-weight: 600;
+  color: #111;
+  word-break: break-word;
+}
+
+.order-total {
+  text-align: right;
+}
+
+.order-action {
+  text-align: right;
+}
+
+.order-action .btn {
+  padding: 8px 16px;
+  border-radius: 10px;
+  font-size: 14px;
+  text-decoration: none;
+  display: inline-block;
+  transition: all 0.2s ease;
+}
+
+.btn-outline-dark {
+  border: 1px solid #111;
+  color: #111;
+  background: transparent;
+}
+
+.btn-outline-dark:hover {
+  background: #111;
+  color: #fff;
+}
+
+/* =========================
+   RESPONSIVE BREAKPOINTS
+  ========================= */
+
+/* Tablet - 768px to 991px */
+@media (max-width: 991px) {
+  .order-card-front {
+    padding: 18px 20px;
+  }
+
+  .order-row-header {
+    grid-template-columns: 120px 1fr 1fr 120px;
+    gap: 16px;
+  }
+
+  .order-image-stack {
+    width: 100px;
+    height: 80px;
+  }
+
+  .order-image-stack img {
+    width: 80px;
+    height: 80px;
+  }
+
+  .order-image-stack img:nth-child(2) {
+    top: 8px;
+    left: 16px;
+  }
+
+  .label {
+    font-size: 11px;
+  }
+
+  .value {
+    font-size: 14px;
+  }
+
+  .order-action .btn {
+    font-size: 13px;
+    padding: 7px 14px;
+  }
+}
+
+/* Mobile - Below 768px */
+@media (max-width: 767px) {
+  .order-card-front {
+    padding: 16px;
+    border-radius: 14px;
+    margin-bottom: 14px;
+  }
+
+  /* Change to single column layout */
+  .order-row-header {
+    grid-template-columns: 1fr;
+    gap: 16px;
+  }
+
+  /* Image stack - center aligned at top */
+  .order-image-stack {
+    width: 120px;
+    height: 100px;
+    margin: 0 auto;
+    justify-self: center;
+  }
+
+  .order-image-stack img {
+    width: 100px;
+    height: 100px;
+  }
+
+  .order-image-stack img:nth-child(2) {
+    top: 12px;
+    left: 20px;
+  }
+
+  /* Info sections - create 2-column grid for better space usage */
+  .order-row-header > div:not(.order-image-stack):not(.order-action) {
+    display: grid;
+    grid-template-columns: auto 1fr;
+    gap: 12px;
+    align-items: center;
+  }
+
+  .order-row-header > div:not(.order-image-stack):not(.order-action) .label {
+    margin-bottom: 0;
+  }
+
+  /* Left align all text on mobile */
+  .order-total {
+    text-align: left;
+  }
+
+  .order-action {
+    text-align: center;
+  }
+
+  /* Full width button on mobile */
+  .order-action .btn {
+    width: 100%;
+    text-align: center;
+    padding: 10px 16px;
+    font-size: 14px;
+  }
+
+  .label {
+    font-size: 12px;
+  }
+
+  .value {
+    font-size: 14px;
+  }
+}
+
+/* Small mobile - Below 576px */
+@media (max-width: 575px) {
+  .order-card-front {
+    padding: 14px;
+    border-radius: 12px;
+  }
+
+  .order-row-header {
+    gap: 12px;
+  }
+
+  .order-image-stack {
+    width: 100px;
+    height: 85px;
+  }
+
+  .order-image-stack img {
+    width: 85px;
+    height: 85px;
+    border-radius: 12px;
+  }
+
+  .order-image-stack img:nth-child(2) {
+    top: 10px;
+    left: 15px;
+  }
+
+  /* Stack label and value vertically on very small screens */
+  .order-row-header > div:not(.order-image-stack):not(.order-action) {
+    grid-template-columns: 1fr;
+    gap: 4px;
+  }
+
+  .label {
+    font-size: 11px;
+  }
+
+  .value {
+    font-size: 13px;
+  }
+
+  .order-action .btn {
+    padding: 9px 14px;
+    font-size: 13px;
+  }
+}
+
+/* Extra small mobile - Below 380px */
+@media (max-width: 380px) {
+  .order-card-front {
+    padding: 12px;
+  }
+
+  .order-image-stack {
+    width: 85px;
+    height: 75px;
+  }
+
+  .order-image-stack img {
+    width: 75px;
+    height: 75px;
+  }
+
+  .order-image-stack img:nth-child(2) {
+    top: 8px;
+    left: 12px;
+  }
+
+  .label {
+    font-size: 10px;
+  }
+
+  .value {
+    font-size: 12px;
+  }
+
+  .order-action .btn {
+    font-size: 12px;
+    padding: 8px 12px;
+  }
+}
+
+/* Section title styles */
+#orders h5 {
+  font-size: 1.25rem;
+  font-weight: 600;
+  color: #111;
+  margin-bottom: 1rem;
+}
+
+@media (max-width: 767px) {
+  #orders h5 {
+    font-size: 1.1rem;
+  }
+}
+
+@media (max-width: 575px) {
+  #orders h5 {
+    font-size: 1rem;
+  }
+}
+
+/* Empty state (if needed) */
+.empty-orders {
+  text-align: center;
+  padding: 40px 20px;
+  color: #8b8f97;
+}
+
+.empty-orders h6 {
+  font-size: 18px;
+  margin-bottom: 8px;
+  color: #111;
+}
+
+.empty-orders p {
+  font-size: 14px;
+  margin-bottom: 20px;
+}
+
+@media (max-width: 575px) {
+  .empty-orders {
+    padding: 30px 15px;
+  }
+
+  .empty-orders h6 {
+    font-size: 16px;
+  }
+
+  .empty-orders p {
+    font-size: 13px;
+  }
+}
+/* ===============================
+   ORDERS EMPTY STATE
+   ===============================*/
+.empty-orders {
+  text-align: center;
+  padding: 56px 20px;
+}
+
+.empty-orders__icon {
+  width: 80px;
+  height: 80px;
+  margin: 0 auto 20px;
+  border-radius: 50%;
+  background: var(--soft);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: var(--muted);
+}
+
+.empty-orders h6 {
+  font-size: 18px;
+  font-weight: 600;
+  color: var(--accent);
+  margin: 0 0 8px;
+}
+
+.empty-orders p {
+  font-size: 14px;
+  color: var(--muted);
+  line-height: 1.5;
+  max-width: 280px;
+  margin: 0 auto 22px;
+}
+
+@media (max-width: 575px) {
+  .empty-orders {
+    padding: 40px 16px;
+  }
+
+  .empty-orders__icon {
+    width: 68px;
+    height: 68px;
+  }
+
+  .empty-orders__icon svg {
+    width: 36px;
+    height: 36px;
+  }
+
+  .empty-orders h6 {
+    font-size: 16px;
+  }
+}

@@ -1,6 +1,10 @@
 <link rel="stylesheet" href="/css/user/account/addAddress.css">
 
 <form id="addressForm" class="row g-3 main-card mt-4" novalidate>
+  {{#if from}}
+  <input id="from" value="{{from}}" type="hidden">
+  <input id="cartId" value="{{cartId}}" type="hidden">
+  {{/if}}
   <div class="col-md-6">
     <label class="form-label">Full Name<span style="color: red;">*</span></label>
     <input id="fullName" class="form-control" placeholder="Enter your full name">

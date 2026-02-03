@@ -1,105 +1,150 @@
-<!-- <link rel="stylesheet" href="/css/user/partials/navbar.css"> -->
-<style>
-  /* Dropdown hover black */
-  .dropdown-menu .dropdown-item:hover {
-    background-color: rgb(160, 160, 160);
-    /* change hover bg to black */
-    color: rgb(0, 0, 0);
-    /* optional: text stays white */
-  }
-
-  .dropdown-menu .dropdown-item {
-    transition: background-color 0.2s ease;
-  }
-</style>
+<link rel="stylesheet" href="/css/user/partials/navbar.css">
 
 <header>
   <nav class="navbar navbar-expand-lg navbar-dark fixed-top py-1"
     style="background: rgba(0,0,0,0.2); backdrop-filter: blur(10px);">
     <div class="container-fluid">
+
       <!-- Brand -->
       <a class="navbar-brand fw-medium fs-3 text-white" href="#home">LuxCart</a>
 
-      <!-- Toggler -->
-      <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#mainNavbar"
-        aria-controls="mainNavbar" aria-expanded="false" aria-label="Toggle navigation">
-        <span class="navbar-toggler-icon"></span>
-      </button>
+      <!-- Mobile top bar: Cart + Hamburger (hidden on desktop) -->
+      <div class="mobile-top-bar">
+        {{#if user}}
+        <a href="/cart" class="cart-btn position-relative ">
+          <i class="bi bi-cart3"></i>
+          {{#if cartItemsLength}}
+          <span class="cart-badge">
+            {{cartItemsLength}}
+          </span>
+          {{/if}}
+        </a>
 
-      <!-- Nav Links -->
+        <!-- Hamburger -->
+        <button class="custom-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#mainNavbar"
+          aria-controls="mainNavbar" aria-expanded="false" aria-label="Toggle navigation">
+          <span></span>
+          <span></span>
+          <span></span>
+        </button>
+        {{else}}
+        <a href="/login" class="btn btn-outline-light btn-md border border-0">Login</a>
+        <a href="/signup" class="btn btn-outline-light btn-md border border-0">Sign Up</a>
+        {{/if}}
+      </div>
+
+      <!-- Collapsible Nav Links -->
       <div class="collapse navbar-collapse" id="mainNavbar">
         <ul class="navbar-nav mx-auto mb-2 mb-lg-0 fs-5">
-          <li class="nav-item"><a class="nav-link text-white px-3" href="/">Home</a></li>
-          <li class="nav-item"><a class="nav-link text-white px-3" href="/cars-collection">Cars</a></li>
-          <li class="nav-item"><a class="nav-link text-white px-3" href="/all-accessories">Accessories</a></li>
-          <li class="nav-item"><a class="nav-link text-white px-3" href="/contact">Contact</a></li>
-          <li class="nav-item"><a class="nav-link text-white px-3" href="/about">About Us</a></li>
+          <li class="nav-item">
+            <a class="nav-link text-white px-3" href="/">
+              <i class="bi bi-house nav-icon"></i>Home
+            </a>
+          </li>
+          <li class="nav-item">
+            <a class="nav-link text-white px-3" href="/cars-collection">
+              <i class="bi bi-car-front nav-icon"></i>Cars
+            </a>
+          </li>
+          <li class="nav-item">
+            <a class="nav-link text-white px-3" href="/all-accessories">
+              <i class="bi bi-gem nav-icon"></i>Accessories
+            </a>
+          </li>
+          <li class="nav-item">
+            <a class="nav-link text-white px-3" href="/contact">
+              <i class="bi bi-envelope nav-icon"></i>Contact
+            </a>
+          </li>
+          <li class="nav-item">
+            <a class="nav-link text-white px-3" href="/about">
+              <i class="bi bi-info-circle nav-icon"></i>About Us
+            </a>
+          </li>
 
           {{#if user}}
-          <!-- Mobile-only links for logged-in users -->
-          <li class="nav-item d-lg-none"><a class="nav-link text-white px-3" href="/account">Account</a></li>
-          <li class="nav-item d-lg-none"><a class="nav-link text-white px-3" href="/account/wishlist">Wishlist</a></li>
-          <li class="nav-item d-lg-none"><a class="nav-link text-danger px-3" href="/logout">Logout</a></li>
-          {{else}}
-          <!-- Mobile-only links for not logged-in users -->
-          <!-- <li class="nav-item d-lg-none"><a class="nav-link text-white px-3" href="/login">Login</a></li> -->
-          <!-- <li class="nav-item d-lg-none"><a class="nav-link text-white px-3" href="/signup">Sign Up</a></li> -->
+          <!-- Divider — mobile only -->
+          <li class="nav-item d-lg-none">
+            <hr class="border-secondary my-1 mx-3">
+          </li>
+          <!-- Account links — mobile only, with icons -->
+          <li class="nav-item d-lg-none">
+            <a class="nav-link text-white px-3" href="/account">
+              <i class="bi bi-person-circle nav-icon"></i>Account
+            </a>
+          </li>
+          <li class="nav-item d-lg-none">
+            <a class="nav-link text-white px-3" href="/account/wishlist">
+              <i class="bi bi-heart nav-icon"></i>Wishlist
+            </a>
+          </li>
+          <li class="nav-item d-lg-none">
+            <a class="nav-link text-danger px-3" href="/logout">
+              <i class="bi bi-box-arrow-right nav-icon"></i>Logout
+            </a>
+          </li>
           {{/if}}
         </ul>
-
-        <!-- Desktop Buttons / Icons -->
-        <div class="d-flex gap-3 align-items-center">
-          {{#if user}}
-          <!-- Logged in: Cart + Profile Dropdown -->
-          <a href="/cart" class="btn btn-outline-light border border-0 btn-md">
-            <i class="bi bi-cart fs-5"></i>
-          </a>
-
-          <div class="dropdown">
-            <button class="btn btn-outline-light btn-md border border-0 dropdown-toggle d-flex align-items-center"
-              type="button" id="profileDropdown" data-bs-toggle="dropdown" aria-expanded="false">
-              <i class="bi bi-person fs-5"></i>
-            </button>
-            <ul class="dropdown-menu dropdown-menu-end p-2" aria-labelledby="profileDropdown"
-              style="backdrop-filter: blur(10px); background: rgba(0,0,0,0.3);">
-              <li class="px-3 py-2 text-white">
-                <strong>{{user.name}}</strong><br>
-                <small>{{user.email}}</small>
-              </li>
-              <li>
-                <hr class="dropdown-divider">
-              </li>
-              <li><a class="dropdown-item d-flex align-items-center text-white" href="/account">
-                  <i class="bi bi-person-circle me-2"></i> Account</a></li>
-              <li><a class="dropdown-item d-flex align-items-center text-white" href="/account/wishlist">
-                  <i class="bi bi-heart me-2"></i> Wishlist</a></li>
-              <li><a class="dropdown-item d-flex align-items-center text-danger" href="/logout">
-                  <i class="bi bi-box-arrow-right me-2"></i> Logout</a></li>
-            </ul>
-          </div>
-          {{else}}
-          <!-- Not logged in: show on desktop -->
-          <a href="/login" class="btn btn-outline-light btn-md border border-0">Login</a>
-          <a href="/signup" class="btn btn-outline-light btn-md border border-0">Sign Up</a>
-          {{/if}}
-        </div>
       </div>
+
+      <!-- Desktop-only: Cart + Profile Dropdown -->
+      <div class="desktop-actions gap-3 align-items-center">
+        {{#if user}}
+        <a href="/cart" class="cart-btn position-relative">
+          <i class="bi bi-cart3"></i>
+
+          {{#if cartItemsLength}}
+          <span class="cart-badge">
+            {{cartItemsLength}}
+          </span>
+          {{/if}}
+        </a>
+        <div class="dropdown">
+          <button class="btn btn-outline-light btn-md border border-0 dropdown-toggle d-flex align-items-center"
+            type="button" id="profileDropdown" data-bs-toggle="dropdown" aria-expanded="false">
+            <i class="bi bi-person fs-5"></i>
+          </button>
+          <ul class="dropdown-menu dropdown-menu-end p-2" aria-labelledby="profileDropdown"
+            style="backdrop-filter: blur(10px); background: rgba(0,0,0,0.5); margin-top: 15px;">
+            <li class="px-3 py-2 text-white">
+              <strong>{{user.name}}</strong><br>
+              <small>{{user.email}}</small>
+            </li>
+            <li>
+              <hr class="dropdown-divider">
+            </li>
+            <li><a class="dropdown-item d-flex align-items-center text-white" href="/account">
+                <i class="bi bi-person-circle me-2"></i> Account</a></li>
+            <li><a class="dropdown-item d-flex align-items-center text-white" href="/account/wishlist">
+                <i class="bi bi-heart me-2"></i> Wishlist</a></li>
+            <li><a class="dropdown-item d-flex align-items-center text-danger" href="/logout">
+                <i class="bi bi-box-arrow-right me-2"></i> Logout</a></li>
+          </ul>
+        </div>
+        {{else}}
+        <a href="/login" class="btn btn-outline-light btn-md border border-0">Login</a>
+        <a href="/signup" class="btn btn-outline-light btn-md border border-0">Sign Up</a>
+        {{/if}}
+      </div>
+
     </div>
   </nav>
 </header>
-<script>
-  document.addEventListener("click", function (event) {
-    const navbar = document.querySelector(".navbar-collapse");
-    const toggler = document.querySelector(".navbar-toggler");
 
-    // Check if click is outside the navbar and toggler
+<script>
+  const navbar = document.querySelector("#mainNavbar");
+  const toggler = document.querySelector(".custom-toggler");
+
+  navbar.addEventListener("shown.bs.collapse", () => toggler.classList.add("is-open"));
+  navbar.addEventListener("hidden.bs.collapse", () => toggler.classList.remove("is-open"));
+
+  document.addEventListener("click", function (event) {
     if (
       navbar.classList.contains("show") &&
       !navbar.contains(event.target) &&
       !toggler.contains(event.target)
     ) {
-      const bsCollapse = bootstrap.Collapse.getInstance(navbar);
-      bsCollapse.hide(); // Close the collapse
+      bootstrap.Collapse.getInstance(navbar).hide();
     }
   });
 </script>

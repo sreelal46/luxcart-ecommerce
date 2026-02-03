@@ -21,6 +21,9 @@ document.addEventListener("DOMContentLoaded", () => {
     }, 2000);
   }
 
+  // Make showMobileAlert globally accessible
+  window.showMobileAlert = showMobileAlert;
+
   // ---------- REMOVE CART ITEM ----------
   function attachRemoveHandler(btn) {
     btn.addEventListener("click", async (e) => {
@@ -74,7 +77,7 @@ document.addEventListener("DOMContentLoaded", () => {
 
       const itemId = plusBtn.dataset.itemid;
       const qtyEl = document.querySelector(
-        `.qty-value[data-itemid="${itemId}"]`
+        `.qty-value[data-itemid="${itemId}"]`,
       );
       if (!qtyEl) return;
 
@@ -130,7 +133,7 @@ document.addEventListener("DOMContentLoaded", () => {
 
       const itemId = minusBtn.dataset.itemid;
       const qtyEl = document.querySelector(
-        `.qty-value[data-itemid="${itemId}"]`
+        `.qty-value[data-itemid="${itemId}"]`,
       );
       if (!qtyEl) return;
 
@@ -239,26 +242,35 @@ async function applyCoupon(couponCode, couponId) {
     showAlert(error.response?.data?.alert || "Something went wrong", "error");
   }
 }
+
 // ========================================
 // REMOVE COUPON (AXIOS)
 // ========================================
-const removeCouponBtn = document.getElementById("removeCouponBtn");
-removeCouponBtn.addEventListener("click", async () => {
-  try {
-    const res = await axios.patch(`/cart/remove-coupon`);
+document.addEventListener("DOMContentLoaded", () => {
+  const removeCouponBtn = document.getElementById("removeCouponBtn");
 
-    if (res.data.success) {
-      showAlert(`Coupon Removed successfully!`, "success");
-      document.getElementById("couponModal").classList.remove("show");
-      setTimeout(() => location.reload(), 600);
-    } else {
-      showAlert(res.data.message || "Failed to Removed coupon", "error");
-      document.getElementById("couponModal").classList.remove("show");
-    }
-  } catch (error) {
-    console.error("Coupon error:", error);
-    showAlert(error.response?.data?.alert || "Something went wrong", "error");
-    document.getElementById("couponModal").classList.remove("show");
+  if (removeCouponBtn) {
+    removeCouponBtn.addEventListener("click", async () => {
+      try {
+        const res = await axios.patch(`/cart/remove-coupon`);
+
+        if (res.data.success) {
+          showAlert(`Coupon Removed successfully!`, "success");
+          document.getElementById("couponModal").classList.remove("show");
+          setTimeout(() => location.reload(), 600);
+        } else {
+          showAlert(res.data.message || "Failed to Removed coupon", "error");
+          document.getElementById("couponModal").classList.remove("show");
+        }
+      } catch (error) {
+        console.error("Coupon error:", error);
+        showAlert(
+          error.response?.data?.alert || "Something went wrong",
+          "error",
+        );
+        document.getElementById("couponModal").classList.remove("show");
+      }
+    });
   }
 });
 
@@ -297,9 +309,26 @@ function showAlert(message, type = "success") {
 // MOBILE PLACE ORDER BUTTON
 // ========================================
 
-document
-  .querySelector(".place-order-btn")
-  ?.addEventListener("click", function () {
-    const cartId = "{{cart._id}}"; // This will be replaced by Handlebars
-    window.location.href = `/cart/checkout-step-1/${cartId}`;
-  });
+document.addEventListener("DOMContentLoaded", () => {
+  const placeOrderBtn = document.querySelector(".place-order-btn");
+
+  if (placeOrderBtn) {
+    placeOrderBtn.addEventListener("click", function (e) {
+      e.preventDefault();
+      e.stopPropagation();
+
+      // Get cart ID from the checkout link in desktop view
+      const checkoutLink = document.querySelector(
+        'a[href^="/cart/checkout-step-1/"]',
+      );
+
+      if (checkoutLink) {
+        const href = checkoutLink.getAttribute("href");
+        window.location.href = href;
+      } else {
+        // Fallback: show error
+        showAlert("Unable to proceed. Please try again.", "error");
+      }
+    });
+  }
+});

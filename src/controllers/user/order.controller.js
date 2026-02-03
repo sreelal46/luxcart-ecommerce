@@ -40,7 +40,8 @@ const createOrder = async (req, res, next) => {
        BASIC SETUP
     =============================== */
     const userId = req.session.user._id;
-    const paymentMethod = req.session.paymentMethod || req.body.paymentMethod;
+    // CRITICAL FIX: Check req.body.paymentMethod FIRST, then session
+    const paymentMethod = req.body.paymentMethod || req.session.paymentMethod;
     const addressId = req.session.addressId;
 
     const cart = await Cart.findOne({ userId }).populate(
@@ -156,12 +157,12 @@ const createOrder = async (req, res, next) => {
       }
 
       // Determine the amount to be paid
-      let amountToPay;
-      if (cart.totalAdvanceAmount && cart.totalAdvanceAmount > 0) {
-        amountToPay = cart.totalAdvanceAmount; // Advance payment
-      } else {
-        amountToPay = cart.totalAfterAll; // Full payment
-      }
+      let amountToPay = cart.totalAfterAll;
+      // if (cart.totalAdvanceAmount && cart.totalAdvanceAmount > 0) {
+      //   amountToPay = cart.totalAdvanceAmount; // Advance payment
+      // } else {
+      //   amountToPay = cart.totalAfterAll; // Full payment
+      // }
 
       // Check if wallet has sufficient balance
       if (wallet.balance < amountToPay) {

@@ -18,7 +18,6 @@
 .profile-module .crop-viewport {
   width: 320px;
   height: 320px;
-  /* square crop area */
   border-radius: 16px;
   overflow: hidden;
   position: relative;
@@ -38,7 +37,6 @@
   will-change: transform;
   touch-action: none;
   max-width: none;
-  /* we control size via transform */
 }
 
 /* control rows */
@@ -91,8 +89,15 @@
   --shadow: 0 8px 24px rgba(15, 23, 36, 0.06);
   --success: #16a34a;
   --danger: #ef4444;
-  font-family: Inter, ui-sans-serif, system-ui, -apple-system, "Segoe UI",
-    Roboto, "Helvetica Neue", Arial;
+  font-family:
+    Inter,
+    ui-sans-serif,
+    system-ui,
+    -apple-system,
+    "Segoe UI",
+    Roboto,
+    "Helvetica Neue",
+    Arial;
 }
 
 /* Page container (scoped) */
@@ -174,7 +179,6 @@
   font-size: 13px;
   cursor: pointer;
   display: none;
-  /* shown only in edit mode by your script */
   transition: transform 0.12s ease;
 }
 
@@ -263,7 +267,9 @@
   border: 1px solid transparent;
   background: transparent;
   color: var(--accent);
-  transition: transform 0.08s ease, box-shadow 0.08s ease;
+  transition:
+    transform 0.08s ease,
+    box-shadow 0.08s ease;
 }
 
 .profile-module .btn:active {
@@ -371,48 +377,259 @@
   justify-content: flex-end;
 }
 
-/* small responsive tweaks */
-@media (max-width: 820px) {
+/* ===========================
+   RESPONSIVE BREAKPOINTS
+   =========================== */
+
+/* Tablet - 768px to 991px */
+@media (max-width: 991px) {
+  .profile-module .container {
+    padding: 16px;
+    margin: 20px auto;
+  }
+
+  .profile-module .main-card {
+    padding: 16px;
+  }
+
+  .profile-module .profile-grid {
+    grid-template-columns: 140px 1fr;
+    gap: 16px;
+  }
+
+  .profile-module .profile-preview {
+    width: 130px;
+    height: 130px;
+  }
+}
+
+/* Mobile - Below 768px */
+@media (max-width: 767px) {
+  .profile-module .container {
+    padding: 12px;
+    margin: 16px auto;
+  }
+
+  .profile-module .main-card {
+    padding: 14px;
+    margin-bottom: 14px;
+    border-radius: 10px;
+  }
+
+  .profile-module .main-card h5 {
+    font-size: 0.95rem;
+  }
+
+  /* Stack avatar on top on mobile */
   .profile-module .profile-grid {
     grid-template-columns: 1fr;
+    gap: 20px;
     align-items: center;
+  }
+
+  .profile-module .profile-column-avatar {
+    width: 100%;
+    justify-content: center;
+  }
+
+  .profile-module .profile-preview {
+    width: 120px;
+    height: 120px;
+    border-radius: 12px;
+  }
+
+  /* Full width labels and inputs */
+  .profile-module .profile-row {
+    flex-direction: column;
+    align-items: stretch;
+    gap: 6px;
+    margin-bottom: 14px;
   }
 
   .profile-module .field-label {
     width: 100%;
+    font-size: 13px;
   }
 
-  .profile-module .profile-row {
+  .profile-module .field-display,
+  .profile-module .form-control {
+    width: 100%;
+    flex: 1 1 auto;
+  }
+
+  /* Full width buttons on mobile */
+  .profile-module .profile-actions {
     flex-direction: column;
-    align-items: stretch;
+    gap: 8px;
   }
 
-  .profile-module .right-col {
-    justify-content: flex-start;
-    min-width: 0;
+  .profile-module .profile-actions .btn {
+    width: 100%;
+    justify-content: center;
   }
 
+  /* Address cards stack vertically */
   .profile-module .address-card {
     flex-direction: column;
     align-items: flex-start;
+    gap: 12px;
+    padding: 12px;
+  }
+
+  .profile-module .address-left h6 {
+    font-size: 13px;
+    flex-wrap: wrap;
+  }
+
+  .profile-module .address-lines {
+    font-size: 12px;
+  }
+
+  .profile-module .right-col {
+    width: 100%;
+    justify-content: flex-start;
+    min-width: 0;
   }
 
   .profile-module .address-actions {
     width: 100%;
     justify-content: flex-start;
+    flex-direction: column;
+  }
+
+  .profile-module .address-actions .btn {
+    width: 100%;
+    justify-content: center;
+  }
+
+  /* Modal adjustments for mobile */
+  .profile-module .modal-box {
+    width: 90%;
+    max-width: 400px;
+    padding: 18px;
+  }
+
+  .profile-module .modal-box h3 {
+    font-size: 1.1rem;
+  }
+
+  .profile-module .modal-box p {
+    font-size: 14px;
   }
 }
 
-/* subtle helper states (scoped) */
-.profile-module .profile-preview:hover {
-  filter: brightness(0.99);
-  transform: translateY(-1px);
-  transition: transform 0.12s ease;
+/* Small mobile - Below 576px */
+@media (max-width: 575px) {
+  .profile-module .container {
+    padding: 8px;
+    margin: 12px auto;
+  }
+
+  .profile-module .main-card {
+    padding: 12px;
+    margin-bottom: 12px;
+  }
+
+  .profile-module .main-card h5 {
+    font-size: 0.9rem;
+  }
+
+  .profile-module .profile-preview {
+    width: 100px;
+    height: 100px;
+  }
+
+  .profile-module .field-label {
+    font-size: 12px;
+  }
+
+  .profile-module .field-display,
+  .profile-module .form-control {
+    font-size: 13px;
+    padding: 9px 10px;
+  }
+
+  .profile-module .btn {
+    font-size: 12px;
+    padding: 8px 12px;
+  }
+
+  .profile-module .btn-small {
+    font-size: 11px;
+    padding: 5px 8px;
+  }
+
+  .profile-module .address-card {
+    padding: 10px;
+  }
+
+  .profile-module .address-left h6 {
+    font-size: 12px;
+  }
+
+  .profile-module .address-lines {
+    font-size: 11px;
+  }
+
+  .profile-module .default-badge {
+    font-size: 10px;
+    padding: 3px 6px;
+  }
+
+  /* Custom Swal responsive */
+  .custom-swal-box {
+    width: 90%;
+    max-width: 300px;
+    padding: 18px 20px;
+  }
+
+  .custom-swal-box h3 {
+    font-size: 1rem;
+  }
+
+  .custom-swal-box p {
+    font-size: 13px;
+  }
 }
 
-.profile-module .address-card:hover {
-  transform: translateY(-2px);
-  transition: transform 0.12s ease;
+/* Hover effects (desktop only) */
+@media (min-width: 768px) {
+  .profile-module .profile-preview:hover {
+    filter: brightness(0.99);
+    transform: translateY(-1px);
+    transition: transform 0.12s ease;
+  }
+
+  .profile-module .address-card:hover {
+    transform: translateY(-2px);
+    transition: transform 0.12s ease;
+  }
+}
+
+/* Button hover states */
+#editProfileBtn:hover {
+  background: #0f1724;
+  color: #fff;
+}
+
+.address-set-default-btn:hover {
+  background: #198754;
+  color: #fff;
+}
+
+.address-edit-btn:hover {
+  background: #0f1724;
+  color: #fff;
+}
+
+.add-address:hover {
+  background: #0f1724;
+  color: #fff;
+}
+
+.address-delete-btn:hover {
+  background: #dc2626;
+  color: #fff;
 }
 
 /* small utility (scoped) */
@@ -422,6 +639,18 @@
 
 .profile-module .mt-3 {
   margin-top: 12px;
+}
+
+.profile-module .mt-4 {
+  margin-top: 16px;
+}
+
+.profile-module .text-center {
+  text-align: center;
+}
+
+.profile-module .p-4 {
+  padding: 16px;
 }
 
 .profile-module .modal-backdrop {
@@ -439,6 +668,7 @@
   padding: 20px;
   border-radius: 12px;
   width: 450px;
+  max-width: 90%;
   box-shadow: 0 8px 24px rgba(0, 0, 0, 0.15);
   animation: modalPop 0.25s ease;
 }
@@ -448,7 +678,6 @@
     transform: scale(0.92);
     opacity: 0;
   }
-
   to {
     transform: scale(1);
     opacity: 1;
@@ -461,31 +690,9 @@
   color: #fff;
 }
 
-#editProfileBtn:hover {
-  background: #0f1724;
-  color: #fff;
-}
-.address-set-default-btn:hover {
-  background: #198754;
-  color: #fff;
-}
-
-.address-edit-btn:hover {
-  background: #0f1724;
-  color: #fff;
-}
-.add-address:hover {
-  background: #0f1724;
-  color: #fff;
-}
-.address-delete-btn:hover {
-  background: #dc2626;
-  color: #fff;
-}
-
 /* =======================
-        CUSTOM SWAL POPUP
-    ======================== */
+   CUSTOM SWAL POPUP
+   ======================== */
 .custom-swal-backdrop {
   position: fixed;
   inset: 0;
@@ -502,11 +709,11 @@
 }
 
 .custom-swal-box {
-  width: 820px;
   background: #fff;
   padding: 24px 30px;
   border-radius: 12px;
   width: 330px;
+  max-width: 90%;
   text-align: center;
   box-shadow: 0 8px 25px rgba(0, 0, 0, 0.25);
   animation: popIn 0.25s ease-out;
@@ -514,6 +721,16 @@
 
 .custom-swal-box.error {
   border-top: 6px solid #e74c3c;
+}
+
+.custom-swal-box h3 {
+  margin: 0 0 8px 0;
+  font-size: 1.2rem;
+}
+
+.custom-swal-box p {
+  margin: 0 0 16px 0;
+  font-size: 14px;
 }
 
 .error-btn {
@@ -525,8 +742,88 @@
   border-radius: 6px;
   font-size: 14px;
   cursor: pointer;
+  transition: background 0.2s ease;
 }
 
 .error-btn:hover {
   background: #c0392b;
+}
+
+@keyframes popIn {
+  from {
+    transform: scale(0.9);
+    opacity: 0;
+  }
+  to {
+    transform: scale(1);
+    opacity: 1;
+  }
+}
+/* ===============================
+   ADDRESS EMPTY STATE
+   ===============================*/
+.btn-dark {
+  background: var(--accent);
+  color: #fff;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.15);
+}
+
+.btn-dark:hover {
+  background: #000;
+  color: #fff;
+  transform: translateY(-1px);
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2);
+}
+.empty-address {
+  text-align: center;
+  padding: 56px 20px;
+}
+
+.empty-address__icon {
+  width: 80px;
+  height: 80px;
+  margin: 0 auto 20px;
+  border-radius: 50%;
+  background: var(--soft); /* #f1f2f3 — already in your vars */
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: var(--muted); /* #9aa0a6 */
+}
+
+.empty-address h6 {
+  font-size: 18px;
+  font-weight: 600;
+  color: var(--accent); /* #111 */
+  margin: 0 0 8px;
+}
+
+.empty-address p {
+  font-size: 14px;
+  color: var(--muted);
+  margin: 0 0 22px;
+  max-width: 280px;
+  margin-left: auto;
+  margin-right: auto;
+  line-height: 1.5;
+}
+
+@media (max-width: 575px) {
+  .empty-address {
+    padding: 40px 16px;
+  }
+
+  .empty-address__icon {
+    width: 68px;
+    height: 68px;
+  }
+
+  .empty-address__icon svg {
+    width: 36px;
+    height: 36px;
+  }
+
+  .empty-address h6 {
+    font-size: 16px;
+  }
 }

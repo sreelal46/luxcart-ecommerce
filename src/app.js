@@ -15,6 +15,7 @@ const {
   errorHandling500,
   errorHandling404,
 } = require("./middlewares/errors/errorHandling");
+const { locals } = require("./middlewares/ui/locals");
 
 // PORT
 const PORT = parseInt(process.env.PORT) || 8080;
@@ -32,7 +33,7 @@ app.use("/invoices", express.static(path.join(__dirname, "public/invoices")));
 // Bootstrap Icons
 app.use(
   "/bootstrap-icons",
-  express.static(path.join(__dirname, "../node_modules/bootstrap-icons/font"))
+  express.static(path.join(__dirname, "../node_modules/bootstrap-icons/font")),
 );
 
 // Middleware
@@ -58,11 +59,7 @@ app.use(passport.session());
 connectDB();
 
 //all views
-app.use((req, res, next) => {
-  res.locals.admin = req.session.admin || null;
-  res.locals.user = req.session.user || null;
-  next();
-});
+app.use(locals);
 
 // Routes
 app.use("/auth", googleAuthRoutes);

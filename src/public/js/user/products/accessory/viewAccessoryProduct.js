@@ -17,7 +17,7 @@ function toggleAccordion(header) {
     gsap.fromTo(
       content,
       { height: 0, opacity: 0 },
-      { height: "auto", opacity: 1, duration: 0.4, ease: "power2.out" }
+      { height: "auto", opacity: 1, duration: 0.4, ease: "power2.out" },
     );
   } else {
     gsap.to(content, {
@@ -28,6 +28,7 @@ function toggleAccordion(header) {
     });
   }
 }
+
 //notification
 function showMobileAlert(message, notification) {
   const alertBox = document.getElementById("mobileAlert");
@@ -150,7 +151,7 @@ document.addEventListener("DOMContentLoaded", () => {
       gsap.fromTo(
         desc,
         { y: 10, opacity: 0.8 },
-        { y: 0, opacity: 1, duration: 0.4, ease: "power2.out" }
+        { y: 0, opacity: 1, duration: 0.4, ease: "power2.out" },
       );
       btn.textContent = "Read Less";
     } else {
@@ -163,7 +164,7 @@ document.addEventListener("DOMContentLoaded", () => {
       gsap.fromTo(
         desc,
         { y: 0, opacity: 1 },
-        { y: -10, opacity: 0.8, duration: 0.4, ease: "power2.in" }
+        { y: -10, opacity: 0.8, duration: 0.4, ease: "power2.in" },
       );
       btn.textContent = "Read More";
     }
@@ -178,29 +179,27 @@ document.addEventListener("DOMContentLoaded", () => {
   const addToCartMob = document.getElementById("addToCartMob");
   const buyProductMob = document.getElementById("buyProductMob");
 
-  function showMobileAlert(message, notification) {
-    const alertBox = document.getElementById("mobileAlert");
-    if (notification === "success") {
-      alertBox.innerHTML = `<i class="bi bi-check-circle-fill success-icon"></i><span class="message-green">${message}</span>`;
-      alertBox.classList.add("show");
-    } else if (notification === "error") {
-      alertBox.innerHTML = `<i class="bi bi-x-circle-fill error-icon"></i><span class="message-red">${message}</span>`;
-      alertBox.classList.add("show");
-    } else if (notification === "warning") {
-      alertBox.innerHTML = `<i class="bi bi-exclamation-triangle-fill yellow-icon"></i><span class="message-yellow">${message}</span>`;
-      alertBox.classList.add("show");
-    }
+  // Read product ID
+  const productId =
+    addToCartDesk?.dataset.accessoryid || addToCartMob?.dataset.accessoryid;
 
-    setTimeout(() => {
-      alertBox.classList.remove("show");
-    }, 3000);
-  }
-
-  // Read product
-  const productId = addToCartDesk.dataset.accessoryid;
-  //add to cart axios call function
+  // Add to cart axios call function
   function addToCartAxios(element, productType, productId) {
-    element.addEventListener("click", async () => {
+    if (!element) return; // Safety check
+
+    // Remove any existing click listeners to prevent duplicates
+    const newElement = element.cloneNode(true);
+    element.parentNode.replaceChild(newElement, element);
+
+    newElement.addEventListener("click", async (e) => {
+      // If it's a "Go to Cart" link, let it navigate normally
+      if (newElement.getAttribute("href") === "/cart") {
+        return;
+      }
+
+      // Prevent default for "Add to Cart" action
+      e.preventDefault();
+
       try {
         const res = await axios.post("/cart/add", {
           productType,
@@ -209,11 +208,22 @@ document.addEventListener("DOMContentLoaded", () => {
 
         if (res.data.success) {
           showMobileAlert("Product added to cart!", "success");
-          // Change text
-          element.innerHTML = `<i class="bi bi-cart"></i> Go to Cart`;
-          element.href = "/cart";
+
+          // Update both desktop and mobile buttons to "Go to Cart"
+          const cartBtnDesk = document.getElementById("addToCartDesk");
+          const cartBtnMob = document.getElementById("addToCartMob");
+
+          if (cartBtnDesk) {
+            cartBtnDesk.innerHTML = `<i class="bi bi-cart"></i> Go to Cart`;
+            cartBtnDesk.href = "/cart";
+          }
+
+          if (cartBtnMob) {
+            cartBtnMob.innerHTML = `<i class="bi bi-cart me-1"></i> Go to Cart`;
+            cartBtnMob.href = "/cart";
+          }
         } else {
-          const msg = res.data.alert || "Somthing went worng";
+          const msg = res.data.alert || "Something went wrong";
           showMobileAlert(msg, "error");
         }
       } catch (error) {
@@ -222,14 +232,25 @@ document.addEventListener("DOMContentLoaded", () => {
         showMobileAlert(msg, "error");
       }
     });
+
+    return newElement;
   }
 
-  addToCartAxios(addToCartDesk, "accessory", productId);
-  addToCartAxios(addToCartMob, "accessory", productId);
+  // Initialize add to cart for both desktop and mobile
+  if (addToCartDesk) {
+    addToCartAxios(addToCartDesk, "accessory", productId);
+  }
 
+  if (addToCartMob) {
+    addToCartAxios(addToCartMob, "accessory", productId);
+  }
+
+  // Direct buy function
   function directBuyAxios(element, productType, productId) {
+    if (!element) return; // Safety check
+
     element.addEventListener("click", async () => {
-      console.log("bue item clicked");
+      console.log("buy item clicked");
       try {
         const res = await axios.post("/cart/add", {
           productType,
@@ -240,7 +261,7 @@ document.addEventListener("DOMContentLoaded", () => {
         if (res.data.success) {
           window.location.href = res.data.redirect;
         } else {
-          const msg = res.data.alert || "Somthing went worng";
+          const msg = res.data.alert || "Something went wrong";
           showMobileAlert(msg, "error");
         }
       } catch (error) {
@@ -251,20 +272,26 @@ document.addEventListener("DOMContentLoaded", () => {
     });
   }
 
-  directBuyAxios(buyProductDesk, "accessory", productId);
+  if (buyProductDesk) {
+    directBuyAxios(buyProductDesk, "accessory", productId);
+  }
 });
 
 document.addEventListener("DOMContentLoaded", () => {
   const btn = document.getElementById("wishlistBtn");
   const heart = document.getElementById("heartIcon");
+
+  if (!btn || !heart) return; // Safety check
+
   const productId = btn.dataset.accessoryid;
+
   btn.addEventListener("click", async (e) => {
     e.stopPropagation();
     e.preventDefault();
     const isFilled = heart.classList.contains("bi-heart-fill");
 
     try {
-      console.log("button cliced", productId);
+      console.log("button clicked", productId);
       const res = await axios.post(`/account/wishlist/add/${productId}`, {
         variantId: null,
         productType: "accessory",

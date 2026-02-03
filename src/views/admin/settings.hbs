@@ -1,15 +1,200 @@
-<div class="container py-4">
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/cropperjs/1.6.1/cropper.min.css">
+<link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+<link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.0/font/bootstrap-icons.css" rel="stylesheet">
+
+<style>
+  body {
+    background-color: #fff;
+    min-height: 100vh;
+    font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+    color: #5a5a5a;
+  }
+
+  .list-group-item {
+    border: none;
+    border-radius: 12px !important;
+    padding: 1rem 1.5rem;
+    transition: all 0.3s ease;
+    margin-bottom: 0.5rem;
+    background: #f8f9fa;
+    color: #5a5a5a;
+  }
+
+  .list-group-item:hover {
+    background: #e9ecef;
+    transform: translateX(5px);
+  }
+
+  .list-group-item.active {
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    color: white;
+    box-shadow: 0 8px 16px rgba(102, 126, 234, 0.4);
+    transform: translateX(5px);
+  }
+
+  .card-img-top,
+  video {
+    object-fit: cover;
+    height: 220px;
+    border-radius: 12px 12px 0 0;
+  }
+
+  .cropper-container {
+    max-height: 500px;
+    min-height: 400px;
+  }
+
+  #cropperImage {
+    max-height: 500px;
+    display: block;
+  }
+
+  .modal-body {
+    min-height: 450px;
+  }
+
+  .cropper-wrapper {
+    width: 100%;
+    height: 500px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background: #f8f9fa;
+    border-radius: 12px;
+  }
+
+  .badge {
+    font-size: 0.75rem;
+    padding: 0.5rem 1rem;
+    border-radius: 20px;
+  }
+
+  .profile-preview,
+  .logo-preview {
+    max-width: 200px;
+    max-height: 200px;
+    object-fit: cover;
+    border-radius: 50%;
+    border: 5px solid #667eea;
+    box-shadow: 0 10px 30px rgba(102, 126, 234, 0.3);
+  }
+
+  .card {
+    border: none !important;
+    box-shadow: 0 10px 40px rgba(0, 0, 0, 0.1);
+    backdrop-filter: blur(10px);
+    background: rgba(255, 255, 255, 0.95) !important;
+  }
+
+  .sidebar-card {
+    background: #fff !important;
+    border: 1px solid #e9ecef !important;
+  }
+
+  .form-control,
+  .form-select {
+    border: 2px solid #e9ecef;
+    transition: all 0.3s ease;
+  }
+
+  .form-control:focus,
+  .form-select:focus {
+    border-color: #667eea;
+    box-shadow: 0 0 0 0.2rem rgba(102, 126, 234, 0.15);
+  }
+
+  .btn-primary {
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    border: none;
+    box-shadow: 0 4px 15px rgba(102, 126, 234, 0.4);
+    transition: all 0.3s ease;
+  }
+
+  .btn-primary:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 6px 20px rgba(102, 126, 234, 0.6);
+  }
+
+  .section-header {
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+  }
+
+  .banner-card {
+    transition: transform 0.3s ease;
+  }
+
+  .banner-card:hover {
+    transform: translateY(-5px);
+  }
+
+  .list-group {
+    gap: 0;
+  }
+
+  .modal-content {
+    border-radius: 20px !important;
+    overflow: hidden;
+  }
+
+  .modal-header {
+    border-bottom: none;
+    padding: 1.5rem 2rem;
+  }
+
+  .modal-footer {
+    border-top: none;
+    padding: 1.5rem 2rem;
+  }
+
+  .img-thumbnail {
+    border: 3px solid #667eea;
+  }
+
+  .branding-card-wrapper {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 1.5rem;
+  }
+
+  @media (max-width: 768px) {
+    .branding-card-wrapper {
+      grid-template-columns: 1fr;
+    }
+  }
+
+  .upload-zone {
+    border: 2px dashed #667eea;
+    border-radius: 12px;
+    padding: 2rem;
+    text-align: center;
+    transition: all 0.3s ease;
+    background: rgba(102, 126, 234, 0.05);
+  }
+
+  .upload-zone:hover {
+    background: rgba(102, 126, 234, 0.1);
+    border-color: #764ba2;
+  }
+</style>
+
+<div class="container py-5">
   <div class="row g-4">
     <!-- Sidebar -->
-    <div class="col-md-3">
-      <div class="card shadow-sm border-0 rounded-4">
-        <div class="card-body p-0">
+    <div class="col-lg-3">
+      <div class="card sidebar-card shadow-lg rounded-4 sticky-top" style="top: 2rem;">
+        <div class="card-body p-3">
           <ul class="list-group list-group-flush">
             <li class="list-group-item active fw-semibold" id="general-tab" style="cursor:pointer">
-              <i class="bi bi-gear-fill me-2"></i> General
+              <i class="bi bi-gear-fill me-2"></i> General Settings
+            </li>
+            <li class="list-group-item fw-semibold" id="branding-tab" style="cursor:pointer">
+              <i class="bi bi-palette me-2"></i> Branding & Assets
             </li>
             <li class="list-group-item fw-semibold" id="banner-tab" style="cursor:pointer">
-              <i class="bi bi-image me-2"></i> Banner
+              <i class="bi bi-image me-2"></i> Banner Gallery
             </li>
           </ul>
         </div>
@@ -17,78 +202,213 @@
     </div>
 
     <!-- Content -->
-    <div class="col-md-9">
+    <div class="col-lg-9">
       <!-- General Settings -->
-      <div id="general-section" class="card shadow-sm border-0 rounded-4">
-        <div class="card-body p-4">
-          <h4 class="fw-bold mb-4 text-dark">
-            <i class="bi bi-gear-wide-connected me-2 text-primary"></i> Site Information
-          </h4>
-          <form>
-            <div class="mb-3">
-              <label class="form-label fw-semibold">Website Name</label>
-              <input type="text" class="form-control rounded-3" value="LuxCart">
+      <div id="general-section">
+        <div class="card shadow-lg border-0 rounded-4 mb-4">
+          <div class="card-body p-5">
+            <div class="d-flex align-items-center mb-4">
+              <div class="bg-gradient p-3 me-3">
+                <i class="bi bi-gear-wide-connected text-primary fs-2"></i>
+              </div>
+              <div>
+                <h3 class="fw-bold mb-1 section-header">Site Information</h3>
+                <p class="text-muted mb-0">Manage your website's basic details</p>
+              </div>
             </div>
-            <div class="mb-3">
-              <label class="form-label fw-semibold">Email</label>
-              <input type="email" class="form-control rounded-3" value="admin@luxcart.com">
-            </div>
-            <div class="mb-3">
-              <label class="form-label fw-semibold">Address</label>
-              <textarea class="form-control rounded-3" rows="2">123, MG Road, Kochi, Kerala - 682001</textarea>
-            </div>
-            <div class="mb-3">
-              <label class="form-label fw-semibold">Phone Number</label>
-              <input type="text" class="form-control rounded-3" value="+91 9876543210">
-            </div>
-            <div class="mb-3">
-              <label class="form-label fw-semibold">Support Email</label>
-              <input type="email" class="form-control rounded-3" value="support@luxcart.com">
-            </div>
-            <div class="d-flex justify-content-end">
-              <button type="submit" class="btn btn-primary rounded-pill px-4">
-                <i class="bi bi-save me-2"></i>Save Changes
+
+            <form id="generalSettingsForm">
+              <div class="row g-4">
+                <div class="col-md-6">
+                  <label class="form-label fw-semibold text-dark">
+                    <i class="bi bi-globe me-2 text-primary"></i>Website Name
+                  </label>
+                  <input type="text" name="websiteName" class="form-control rounded-3" value="{{admin.name}}" required>
+                </div>
+                <div class="col-md-6">
+                  <label class="form-label fw-semibold text-dark">
+                    <i class="bi bi-envelope me-2 text-primary"></i>Email
+                  </label>
+                  <input type="email" name="email" class="form-control rounded-3" value="{{admin.email}}" required>
+                </div>
+                <div class="col-md-6">
+                  <label class="form-label fw-semibold text-dark">
+                    <i class="bi bi-telephone me-2 text-primary"></i>Phone Number
+                  </label>
+                  <input type="text" name="phone" class="form-control rounded-3" value="{{admin.phone}}">
+                </div>
+                <div class="col-md-6">
+                  <label class="form-label fw-semibold text-dark">
+                    <i class="bi bi-headset me-2 text-primary"></i>Support Email
+                  </label>
+                  <input type="email" name="supportEmail" class="form-control rounded-3" value="{{admin.supportEmail}}">
+                </div>
+              </div>
+
+              <hr class="my-5">
+
+              <div class="d-flex align-items-center mb-4">
+                <div class="p-2 me-3">
+                  <i class="bi bi-geo-alt-fill text-success fs-2"></i>
+                </div>
+                <h5 class="fw-bold mb-0">Address Information</h5>
+              </div>
+
+              <div class="row g-4">
+                <div class="col-12">
+                  <label class="form-label fw-semibold text-dark">Street Address</label>
+                  <input type="text" name="street" class="form-control rounded-3" value="{{admin.address.street}}">
+                </div>
+                <div class="col-md-6">
+                  <label class="form-label fw-semibold text-dark">City</label>
+                  <input type="text" name="city" class="form-control rounded-3" value="{{admin.address.city}}">
+                </div>
+                <div class="col-md-6">
+                  <label class="form-label fw-semibold text-dark">State / Province</label>
+                  <input type="text" name="state" class="form-control rounded-3" value="{{admin.address.state}}">
+                </div>
+                <div class="col-md-6">
+                  <label class="form-label fw-semibold text-dark">Postal Code</label>
+                  <input type="text" name="postalCode" class="form-control rounded-3"
+                    value="{{admin.address.postalCode}}">
+                </div>
+                <div class="col-md-6">
+                  <label class="form-label fw-semibold text-dark">Country</label>
+                  <input type="text" name="country" class="form-control rounded-3" value="{{admin.address.country}}">
+                </div>
+              </div>
+
+              <div class="d-flex justify-content-end mt-5">
+                <button type="submit" class="btn btn-primary rounded-pill px-5 py-2">
+                  <i class="bi bi-check-circle me-2"></i>Save All Changes
+                </button>
+              </div>
+            </form>
+          </div>
+        </div>
+      </div>
+
+      <!-- Branding Section -->
+      <div id="branding-section" class="d-none">
+        <div class="mb-4">
+          <h3 class="fw-bold section-header mb-2">Branding & Visual Identity</h3>
+          <p class="text-muted">Upload and manage your brand assets</p>
+        </div>
+
+        <div class="branding-card-wrapper">
+          <!-- Profile Image Card -->
+          <div class="card shadow-lg border-0 rounded-4">
+            <div class="card-body p-4">
+              <div class="text-center mb-4">
+                <div class="bg-primary bg-gradient rounded-circle p-3 d-inline-flex mb-3">
+                  <i class="bi bi-person-circle text-white fs-3"></i>
+                </div>
+                <h5 class="fw-bold">Profile Image</h5>
+                <p class="text-muted small">Your personal avatar</p>
+              </div>
+
+              <div class="upload-zone mb-4">
+                {{#if admin.profileImage}}
+                <img src="{{admin.profileImage}}" alt="Profile" class="profile-preview mb-3" id="currentProfileImage">
+                {{else}}
+                <img src="/images/default-profile.png" alt="Profile" class="profile-preview mb-3"
+                  id="currentProfileImage">
+                {{/if}}
+              </div>
+
+              <input type="file" id="profileImageInput" accept="image/*" class="form-control rounded-3 mb-3">
+              <button type="button" class="btn btn-primary rounded-pill px-4 w-100" id="uploadProfileBtn">
+                <i class="bi bi-cloud-upload me-2"></i>Upload Profile Image
               </button>
             </div>
-          </form>
+          </div>
+
+          <!-- Logo Card -->
+          <div class="card shadow-lg border-0 rounded-4">
+            <div class="card-body p-4">
+              <div class="text-center mb-4">
+                <div class="bg-success bg-gradient rounded-circle p-3 d-inline-flex mb-3">
+                  <i class="bi bi-image text-white fs-3"></i>
+                </div>
+                <h5 class="fw-bold">Website Logo</h5>
+                <p class="text-muted small">Your brand identity</p>
+              </div>
+
+              <div class="upload-zone mb-4">
+                {{#if admin.websiteLogo}}
+                <img src="{{admin.websiteLogo}}" alt="Logo" class="logo-preview mb-3" id="currentLogoImage">
+                {{else}}
+                <img src="/images/default-logo.png" alt="Logo" class="logo-preview mb-3" id="currentLogoImage">
+                {{/if}}
+              </div>
+
+              <input type="file" id="logoImageInput" accept="image/*" class="form-control rounded-3 mb-3">
+              <button type="button" class="btn btn-primary rounded-pill px-4 w-100" id="uploadLogoBtn">
+                <i class="bi bi-cloud-upload me-2"></i>Upload Website Logo
+              </button>
+            </div>
+          </div>
         </div>
       </div>
 
       <!-- Banner Management -->
       <div id="banner-section" class="d-none">
-        <div class="d-flex justify-content-between align-items-center mb-4">
-          <h4 class="fw-bold text-dark mb-0">
-            <i class="bi bi-images me-2 text-primary"></i>Banner Management
-          </h4>
-          <button class="btn btn-primary rounded-pill px-3" data-bs-toggle="modal" data-bs-target="#addBannerModal">
-            <i class="bi bi-plus-lg me-1"></i> Add Banner
-          </button>
+        <div class="card shadow-lg border-0 rounded-4 mb-4">
+          <div class="card-body p-4">
+            <div class="d-flex justify-content-between align-items-center">
+              <div>
+                <h3 class="fw-bold section-header mb-2">Banner Gallery</h3>
+                <p class="text-muted mb-0">Manage your promotional banners</p>
+              </div>
+              <button class="btn btn-primary rounded-pill px-4" data-bs-toggle="modal" data-bs-target="#addBannerModal">
+                <i class="bi bi-plus-circle me-2"></i>Add New Banner
+              </button>
+            </div>
+          </div>
         </div>
 
-        <div class="row g-3">
-          <!-- Banner Card Example -->
-          <div class="col-md-6 col-lg-4 d-flex">
-            <div class="card shadow-sm border-0 rounded-4 overflow-hidden d-flex flex-column w-100">
-              <!-- Media -->
-              <img src="https://via.placeholder.com/400x180" class="card-img-top" alt="Banner">
-              <!-- Card Body -->
-              <div class="card-body d-flex flex-column flex-grow-1">
-                <h5 class="card-title">Diwali Offer 2025</h5>
-                <p class="card-text mb-1"><strong>Type:</strong> Image</p>
-                <p class="card-text mb-1"><strong>Valid:</strong> 10 Oct - 30 Oct 2025</p>
-                <p class="card-text mb-2"><strong>Expires In:</strong> 11 days</p>
-                <div class="mt-auto d-flex justify-content-between">
-                  <button class="btn btn-outline-info btn-sm rounded-pill" data-bs-toggle="modal"
-                    data-bs-target="#viewBannerModal1">
-                    <i class="bi bi-eye me-1"></i>View
-                  </button>
-                  <div>
-                    <button class="btn btn-outline-primary btn-sm rounded-pill me-1" data-bs-toggle="modal"
-                      data-bs-target="#editBannerModal1">
-                      <i class="bi bi-pencil-square me-1"></i>Edit
+        <div class="row g-4" id="bannerContainer">
+          {{#if admin.bannerMedia}}
+          {{#each admin.bannerMedia}}
+          <div class="col-md-6 col-xl-4 banner-card" data-banner-id="{{this._id}}">
+            <div class="card shadow-lg border-0 rounded-4 overflow-hidden h-100">
+              {{#if (eq this.type 'image')}}
+              <img src="{{this.url}}" class="card-img-top" alt="Banner">
+              {{else}}
+              <video src="{{this.url}}" class="card-img-top" controls></video>
+              {{/if}}
+              <div class="card-body d-flex flex-column">
+                <h5 class="card-title fw-bold mb-2">{{this.caption}}</h5>
+                <div class="d-flex gap-2 mb-3">
+                  <span class="badge bg-info">{{this.type}}</span>
+                  {{#if this.isDefault}}
+                  <span class="badge bg-success">
+                    <i class="bi bi-star-fill me-1"></i>Default
+                  </span>
+                  {{/if}}
+                </div>
+
+                <div class="mt-auto">
+                  <div class="d-flex gap-2 mb-2">
+                    <button class="btn btn-outline-info btn-sm rounded-pill flex-fill view-banner-btn"
+                      data-url="{{this.url}}" data-type="{{this.type}}">
+                      <i class="bi bi-eye me-1"></i>View
                     </button>
-                    <button class="btn btn-outline-danger btn-sm rounded-pill" data-bs-toggle="modal"
-                      data-bs-target="#deleteBannerModal1">
+                    {{#unless this.isDefault}}
+                    <button class="btn btn-outline-success btn-sm rounded-pill set-default-btn"
+                      data-banner-id="{{this._id}}" title="Set as default">
+                      <i class="bi bi-star"></i>
+                    </button>
+                    {{/unless}}
+                  </div>
+                  <div class="d-flex gap-2">
+                    <button class="btn btn-outline-primary btn-sm rounded-pill flex-fill edit-banner-btn"
+                      data-banner-id="{{this._id}}" data-caption="{{this.caption}}" data-type="{{this.type}}"
+                      data-is-default="{{this.isDefault}}">
+                      <i class="bi bi-pencil me-1"></i>Edit
+                    </button>
+                    <button class="btn btn-outline-danger btn-sm rounded-pill flex-fill delete-banner-btn"
+                      data-banner-id="{{this._id}}">
                       <i class="bi bi-trash3 me-1"></i>Delete
                     </button>
                   </div>
@@ -96,55 +416,87 @@
               </div>
             </div>
           </div>
-
-          <!-- Repeat cards as needed for other banners -->
-
+          {{/each}}
+          {{else}}
+          <div class="col-12">
+            <div class="card shadow-lg border-0 rounded-4">
+              <div class="card-body text-center py-5">
+                <i class="bi bi-images text-muted" style="font-size: 4rem;"></i>
+                <h5 class="text-muted mt-3">No banners yet</h5>
+                <p class="text-muted">Click "Add New Banner" to create your first banner</p>
+              </div>
+            </div>
+          </div>
+          {{/if}}
         </div>
       </div>
     </div>
   </div>
 </div>
 
-<!-- Add Banner Modal -->
+<!-- All Modals remain exactly the same -->
+<div class="modal fade" id="cropperModal" tabindex="-1" aria-hidden="true" data-bs-backdrop="static">
+  <div class="modal-dialog modal-dialog-centered modal-xl">
+    <div class="modal-content border-0 rounded-4 shadow-lg">
+      <div class="modal-header bg-primary text-white">
+        <h5 class="modal-title"><i class="bi bi-crop me-2"></i>Crop Image</h5>
+        <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" id="closeCropperModal"></button>
+      </div>
+      <div class="modal-body p-4">
+        <div class="cropper-wrapper">
+          <img id="cropperImage" style="max-width: 100%; display: block;">
+        </div>
+      </div>
+      <div class="modal-footer border-0">
+        <button type="button" class="btn btn-secondary rounded-pill" data-bs-dismiss="modal">Cancel</button>
+        <button type="button" class="btn btn-primary rounded-pill" id="cropImageBtn">
+          <i class="bi bi-check-lg me-1"></i>Crop & Upload
+        </button>
+      </div>
+    </div>
+  </div>
+</div>
+
 <div class="modal fade" id="addBannerModal" tabindex="-1" aria-hidden="true">
   <div class="modal-dialog modal-dialog-centered modal-lg">
     <div class="modal-content border-0 rounded-4 shadow-lg">
-      <div class="modal-header bg-primary text-white rounded-top-4">
+      <div class="modal-header bg-primary text-white">
         <h5 class="modal-title"><i class="bi bi-plus-lg me-2"></i>Add New Banner</h5>
         <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
       </div>
       <div class="modal-body">
-        <form>
+        <form id="addBannerForm">
           <div class="row g-3">
             <div class="col-md-6">
               <label class="form-label fw-semibold">Banner Title</label>
-              <input type="text" class="form-control rounded-3" placeholder="Enter banner title">
+              <input type="text" name="title" class="form-control rounded-3" placeholder="Enter banner title" required>
             </div>
             <div class="col-md-6">
               <label class="form-label fw-semibold">Type</label>
-              <select class="form-select rounded-3">
-                <option selected>Image</option>
-                <option>Video</option>
+              <select name="type" class="form-select rounded-3" id="bannerTypeSelect" required>
+                <option value="image">Image</option>
+                <option value="video">Video</option>
               </select>
-            </div>
-            <div class="col-md-6">
-              <label class="form-label fw-semibold">Valid From</label>
-              <input type="date" class="form-control rounded-3">
-            </div>
-            <div class="col-md-6">
-              <label class="form-label fw-semibold">Valid To</label>
-              <input type="date" class="form-control rounded-3">
             </div>
             <div class="col-12">
               <label class="form-label fw-semibold">Upload File</label>
-              <input type="file" class="form-control rounded-3">
+              <input type="file" name="bannerFile" id="bannerFileInput" class="form-control rounded-3" required>
+            </div>
+            <div class="col-12">
+              <div class="form-check">
+                <input class="form-check-input" type="checkbox" name="isDefault" id="isDefaultBanner" value="true">
+                <label class="form-check-label" for="isDefaultBanner">
+                  Set as default banner (displayed on user side)
+                </label>
+              </div>
             </div>
           </div>
           <div class="d-flex justify-content-end mt-4">
             <button type="button" class="btn btn-secondary rounded-pill px-4 me-2"
               data-bs-dismiss="modal">Cancel</button>
-            <button type="submit" class="btn btn-primary rounded-pill px-4"><i class="bi bi-save2 me-1"></i>Save
-              Banner</button>
+            <button type="submit" class="btn btn-primary rounded-pill px-4">
+              <i class="bi bi-save2 me-1"></i>Save Banner
+            </button>
           </div>
         </form>
       </div>
@@ -152,21 +504,14 @@
   </div>
 </div>
 
-<!-- View Banner Modal -->
-<div class="modal fade" id="viewBannerModal1" tabindex="-1" aria-hidden="true">
+<div class="modal fade" id="viewBannerModal" tabindex="-1" aria-hidden="true">
   <div class="modal-dialog modal-dialog-centered modal-lg">
     <div class="modal-content border-0 rounded-4 shadow-lg">
-      <div class="modal-header bg-info text-white rounded-top-4">
+      <div class="modal-header bg-info text-white">
         <h5 class="modal-title"><i class="bi bi-eye me-2"></i>View Banner</h5>
         <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
       </div>
-      <div class="modal-body text-center">
-        <img src="https://via.placeholder.com/600x300" class="img-fluid rounded mb-3" alt="Banner">
-        <h5>Diwali Offer 2025</h5>
-        <p><strong>Type:</strong> Image</p>
-        <p><strong>Valid:</strong> 10 Oct - 30 Oct 2025</p>
-        <p><strong>Expires In:</strong> 11 days</p>
-      </div>
+      <div class="modal-body text-center" id="viewBannerContent"></div>
       <div class="modal-footer border-0">
         <button type="button" class="btn btn-secondary rounded-pill" data-bs-dismiss="modal">Close</button>
       </div>
@@ -174,46 +519,47 @@
   </div>
 </div>
 
-<!-- Edit Banner Modal -->
-<div class="modal fade" id="editBannerModal1" tabindex="-1" aria-hidden="true">
+<div class="modal fade" id="editBannerModal" tabindex="-1" aria-hidden="true">
   <div class="modal-dialog modal-dialog-centered modal-lg">
     <div class="modal-content border-0 rounded-4 shadow-lg">
-      <div class="modal-header bg-primary text-white rounded-top-4">
+      <div class="modal-header bg-primary text-white">
         <h5 class="modal-title"><i class="bi bi-pencil-square me-2"></i>Edit Banner</h5>
         <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
       </div>
       <div class="modal-body">
-        <form>
+        <form id="editBannerForm">
+          <input type="hidden" name="bannerId" id="editBannerId">
           <div class="row g-3">
             <div class="col-md-6">
               <label class="form-label fw-semibold">Banner Title</label>
-              <input type="text" class="form-control rounded-3" value="Diwali Offer 2025">
+              <input type="text" name="title" id="editBannerTitle" class="form-control rounded-3" required>
             </div>
             <div class="col-md-6">
               <label class="form-label fw-semibold">Type</label>
-              <select class="form-select rounded-3">
-                <option selected>Image</option>
-                <option>Video</option>
+              <select name="type" id="editBannerType" class="form-select rounded-3" required>
+                <option value="image">Image</option>
+                <option value="video">Video</option>
               </select>
             </div>
-            <div class="col-md-6">
-              <label class="form-label fw-semibold">Valid From</label>
-              <input type="date" class="form-control rounded-3" value="2025-10-10">
-            </div>
-            <div class="col-md-6">
-              <label class="form-label fw-semibold">Valid To</label>
-              <input type="date" class="form-control rounded-3" value="2025-10-30">
+            <div class="col-12">
+              <label class="form-label fw-semibold">Upload New File (Optional)</label>
+              <input type="file" name="bannerFile" id="editBannerFileInput" class="form-control rounded-3">
             </div>
             <div class="col-12">
-              <label class="form-label fw-semibold">Upload File</label>
-              <input type="file" class="form-control rounded-3">
+              <div class="form-check">
+                <input class="form-check-input" type="checkbox" name="isDefault" id="editIsDefaultBanner" value="true">
+                <label class="form-check-label" for="editIsDefaultBanner">
+                  Set as default banner (displayed on user side)
+                </label>
+              </div>
             </div>
           </div>
           <div class="d-flex justify-content-end mt-4">
             <button type="button" class="btn btn-secondary rounded-pill px-4 me-2"
               data-bs-dismiss="modal">Cancel</button>
-            <button type="submit" class="btn btn-primary rounded-pill px-4"><i class="bi bi-save2 me-1"></i>Save
-              Changes</button>
+            <button type="submit" class="btn btn-primary rounded-pill px-4">
+              <i class="bi bi-save2 me-1"></i>Save Changes
+            </button>
           </div>
         </form>
       </div>
@@ -221,8 +567,7 @@
   </div>
 </div>
 
-<!-- Delete Banner Modal -->
-<div class="modal fade" id="deleteBannerModal1" tabindex="-1" aria-hidden="true">
+<div class="modal fade" id="deleteBannerModal" tabindex="-1" aria-hidden="true">
   <div class="modal-dialog modal-dialog-centered">
     <div class="modal-content border-0 shadow-lg rounded-4">
       <div class="modal-header bg-danger text-white">
@@ -234,71 +579,12 @@
       </div>
       <div class="modal-footer border-0">
         <button type="button" class="btn btn-secondary rounded-pill" data-bs-dismiss="modal">Cancel</button>
-        <button type="button" class="btn btn-danger rounded-pill">Yes, Delete</button>
+        <button type="button" class="btn btn-danger rounded-pill" id="confirmDeleteBtn">Yes, Delete</button>
       </div>
     </div>
   </div>
 </div>
 
-<style>
-  body {
-    background-color: #f8f9fa;
-  }
-
-  .list-group-item {
-    border: none;
-    border-radius: 0;
-    padding: 1rem 1.2rem;
-    transition: background-color 0.3s, color 0.3s;
-  }
-
-  .list-group-item:hover {
-    background-color: #f1f3f5;
-  }
-
-  .list-group-item.active {
-    background-color: #0d6efd;
-    color: white;
-  }
-
-  .card-img-top,
-  video {
-    object-fit: cover;
-    height: 180px;
-  }
-
-  .card {
-    display: flex;
-    flex-direction: column;
-  }
-
-  .card-body {
-    display: flex;
-    flex-direction: column;
-    flex-grow: 1;
-  }
-
-  .mt-auto {
-    margin-top: auto;
-  }
-
-  .btn-sm {
-    min-width: 60px;
-  }
-</style>
-
-<script>
-  document.getElementById("general-tab").addEventListener("click", function () {
-    document.getElementById("general-section").classList.remove("d-none");
-    document.getElementById("banner-section").classList.add("d-none");
-    this.classList.add("active");
-    document.getElementById("banner-tab").classList.remove("active");
-  });
-
-  document.getElementById("banner-tab").addEventListener("click", function () {
-    document.getElementById("general-section").classList.add("d-none");
-    document.getElementById("banner-section").classList.remove("d-none");
-    this.classList.add("active");
-    document.getElementById("general-tab").classList.remove("active");
-  });
-</script>
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/cropperjs/1.6.1/cropper.min.js"></script>
+<script src="/js/admin/settings.js"></script>

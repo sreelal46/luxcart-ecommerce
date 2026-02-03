@@ -17,10 +17,28 @@ const Car = require("../../models/admin/productCarModal");
 const Accessory = require("../../models/admin/productAccessoryModal");
 const Cart = require("../../models/user/CartModel");
 const carVariantModel = require("../../models/admin/carVariantModel");
+const Admin = require("../../models/admin/adminModel");
 
 //loading login page
 const loadLandingPage = async (req, res, next) => {
   try {
+    // Find the first admin (assuming single admin system)
+    const admin = await Admin.findOne();
+
+    if (!admin || !admin.bannerMedia || admin.bannerMedia.length === 0) {
+      return null;
+    }
+
+    // Find the banner and address
+    const defaultBanner = admin.bannerMedia.find(
+      (banner) => banner.isDefault === true,
+    );
+    res.locals.footer = {
+      address: admin.address,
+      email: admin.email,
+      phone: admin.phone,
+    };
+    req.session.save();
     const brands = await Brand.find({ isListed: true }).lean();
     const types = await Type.find({ isListed: true }).lean();
     const accessories = await Accessory.find({ isListed: true })
@@ -28,7 +46,12 @@ const loadLandingPage = async (req, res, next) => {
       .populate("product_type_id")
       .limit(4)
       .lean();
-    res.status(OK).render("user/landingPage", { brands, types, accessories });
+    res.status(OK).render("user/landingPage", {
+      brands,
+      types,
+      accessories,
+      defaultBanner: defaultBanner || admin.bannerMedia[0],
+    });
   } catch (error) {
     console.error("Error from loading page", error);
     next(error);
@@ -37,15 +60,36 @@ const loadLandingPage = async (req, res, next) => {
 
 const loadHomePage = async (req, res, next) => {
   try {
+    // Find the first admin (assuming single admin system)
+    const admin = await Admin.findOne();
+
+    if (!admin || !admin.bannerMedia || admin.bannerMedia.length === 0) {
+      return null;
+    }
+
+    // Find the banner and address
+    const defaultBanner = admin.bannerMedia.find(
+      (banner) => banner.isDefault === true,
+    );
+    res.locals.footer = {
+      address: admin.address,
+      email: admin.email,
+      phone: admin.phone,
+    };
+    req.session.save();
     const brands = await Brand.find({ isListed: true }).lean();
     const types = await Type.find({ isListed: true }).lean();
     const accessories = await Accessory.find({ isListed: true })
       .sort({ createdAt: -1 })
-      .populate("product_type_id", "name")
+      .populate("product_type_id")
       .limit(4)
       .lean();
-
-    res.status(OK).render("user/landingPage", { brands, types, accessories });
+    res.status(OK).render("user/landingPage", {
+      brands,
+      types,
+      accessories,
+      defaultBanner: defaultBanner || admin.bannerMedia[0],
+    });
   } catch (error) {
     console.error("Error from loading page", error);
     next(error);
@@ -139,7 +183,7 @@ const loadCarCollection = async (req, res, next) => {
         .populate("brand_id", "name")
         .populate("category_id", "name")
         .populate("product_type_id", "name")
-        .populate("variantIds", "image_url")
+        .populate("variantIds", "image_url stock")
         .lean(),
       Car.countDocuments(filter),
     ]);
@@ -190,7 +234,7 @@ const loadSingleCarProduct = async (req, res, next) => {
       .populate("product_type_id", "name")
       .populate(
         "variantIds",
-        "image_url stock color price offerPrices appliedOffer"
+        "image_url stock color price offerPrices appliedOffer",
       )
       .lean();
     // Active variant
@@ -216,14 +260,34 @@ const loadSingleCarProduct = async (req, res, next) => {
       inCart = !!isIn;
     }
 
-    // Related cars
-    const relatedCars = await Car.find({
-      brand_id: singleCar.brand_id._id,
+    // Priority: brand first, then category to fill remaining slots
+    const brandCars = await Car.find({
       _id: { $ne: singleCar._id },
+      brand_id: singleCar.brand_id._id,
     })
       .limit(4)
-      .populate("brand_id product_type_id variantIds")
+      .populate("brand_id", "name")
+      .populate("category_id", "name")
+      .populate("variantIds", "image_url stock color price")
       .lean();
+
+    let relatedCars = brandCars;
+
+    if (brandCars.length < 4) {
+      const brandCarIds = brandCars.map((c) => c._id);
+
+      const categoryCars = await Car.find({
+        _id: { $ne: singleCar._id, $nin: brandCarIds },
+        category_id: singleCar.category_id._id,
+      })
+        .limit(4 - brandCars.length)
+        .populate("brand_id", "name")
+        .populate("category_id", "name")
+        .populate("variantIds", "image_url stock color price")
+        .lean();
+
+      relatedCars = [...brandCars, ...categoryCars];
+    }
 
     // If frontend requested JSON
     if (req.xhr || req.headers.accept.indexOf("application/json") > -1) {
@@ -363,18 +427,49 @@ const loadSingleAccessories = async (req, res, next) => {
 
     if (cart && cart.items.length > 0) {
       const accessoryItems = cart.items.filter(
-        (item) => item.accessoryId != null
+        (item) => item.accessoryId != null,
       );
 
       const inCartAccessoryIds = accessoryItems.map((item) =>
-        String(item.accessoryId)
+        String(item.accessoryId),
       );
 
       inCart = inCartAccessoryIds.includes(String(productId));
     }
+
+    // Related accessories — brand first, category fills remaining
+    const brandAccessories = await Accessory.find({
+      _id: { $ne: accessory._id },
+      brand_id: accessory.brand_id._id,
+    })
+      .limit(4)
+      .populate("brand_id", "name")
+      .populate("category_id", "name")
+      .populate("product_type_id", "name")
+      .lean();
+
+    let relatedAccessories = brandAccessories;
+
+    if (brandAccessories.length < 4) {
+      const brandIds = brandAccessories.map((a) => a._id);
+
+      const categoryAccessories = await Accessory.find({
+        _id: { $ne: accessory._id, $nin: brandIds },
+        category_id: accessory.category_id._id,
+      })
+        .limit(4 - brandAccessories.length)
+        .populate("brand_id", "name")
+        .populate("category_id", "name")
+        .populate("product_type_id", "name")
+        .lean();
+
+      relatedAccessories = [...brandAccessories, ...categoryAccessories];
+    }
+
     res.status(OK).render("user/products/accessory/viewAccessorProduct", {
       accessory,
       inCart,
+      relatedAccessories,
     });
   } catch (error) {
     console.log("Error from loadSingleAccessories", error);

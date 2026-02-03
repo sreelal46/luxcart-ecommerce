@@ -76,11 +76,12 @@ const createUser = async (req, res, next) => {
         newUser.referredBy = referrer._id;
       }
     }
-    if (!referrer) {
-      return res
-        .status(NOT_FOUND)
-        .json({ success: false, alert: "Invalid Referral Code" });
-    }
+    // console.log(req.body);
+    // if (!referrer) {
+    //   return res
+    //     .status(NOT_FOUND)
+    //     .json({ success: false, alert: "Invalid Referral Code" });
+    // }
     // 6. Save user
     await newUser.save();
 
@@ -122,7 +123,7 @@ const verifyUser = async (req, res, next) => {
     //checking user is blocked
     if (user.isBlocked)
       return res
-        .status(404)
+        .status(NOT_FOUND)
         .json({ success: false, alert: "Your account has been Blocked." });
 
     if (user.authProvider === "google")
@@ -137,7 +138,6 @@ const verifyUser = async (req, res, next) => {
       return res
         .status(UNAUTHORIZED)
         .json({ success: false, alert: "Invalid email or password" });
-
     req.session.user = {
       _id: user._id,
       name: user.name,
@@ -194,7 +194,7 @@ const sendOTP = async (req, res, next) => {
     await emailSending(
       email,
       user.id,
-      verification ? verification : "ForgotPassword"
+      verification ? verification : "ForgotPassword",
     );
 
     //OTP reciver userID and veryfication type
@@ -205,10 +205,10 @@ const sendOTP = async (req, res, next) => {
 
     if (verification)
       return req.session.save(() =>
-        res.status(CREATED).json({ success: true })
+        res.status(CREATED).json({ success: true }),
       );
     req.session.save(() =>
-      res.status(CREATED).json({ success: true, redirect: "/verify-otp" })
+      res.status(CREATED).json({ success: true, redirect: "/verify-otp" }),
     );
   } catch (error) {
     console.error("Error from changin email/forgot password email otp", error);
@@ -245,7 +245,6 @@ const verifyOTP = async (req, res, next) => {
 
     //compairing hashed otp
     const verifyOTP = await bcrypt.compare(otp, findUserOTP.otp);
-    console.log("OTP verification is:", verifyOTP);
 
     //verifyOTP if not true
     if (!verifyOTP)
@@ -270,7 +269,7 @@ const verifyOTP = async (req, res, next) => {
       };
 
       return req.session.save(() =>
-        res.status(CREATED).json({ success: true, redirect: "/homepage" })
+        res.status(CREATED).json({ success: true, redirect: "/homepage" }),
       );
     }
 
@@ -322,7 +321,7 @@ const forgotPassword = async (req, res, next) => {
     //updating new password
     await User.updateOne(
       { _id: user.id },
-      { $set: { password: NewHashPassword } }
+      { $set: { password: NewHashPassword } },
     );
 
     //saving success message
@@ -332,7 +331,7 @@ const forgotPassword = async (req, res, next) => {
       res.status(OK).json({
         success: true,
         redirect: "/login",
-      })
+      }),
     );
   } catch (error) {
     console.error("Error from forgotPassword", error);

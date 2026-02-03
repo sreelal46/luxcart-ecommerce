@@ -1,0 +1,217 @@
+.referral-code-box {
+  background: #f8f9fa;
+  border-radius: 8px;
+  padding: 12px;
+  font-weight: 600;
+  letter-spacing: 1px;
+  min-width: 0; /* prevents flex overflow */
+  word-break: break-all;
+}
+
+.copy-btn {
+  flex-shrink: 0;
+  width: 44px;
+  height: 44px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 0 !important;
+  border-radius: 10px;
+}
+
+.referral-stats-box {
+  border: 1px solid #dee2e6;
+  border-radius: 10px;
+  padding: 12px 16px;
+  width: 100%;
+  max-width: 200px;
+}
+
+.status-badge {
+  font-size: 12px;
+  padding: 6px 10px;
+  border-radius: 20px;
+  white-space: nowrap;
+}
+
+/* ===============================
+   Slide-in Toast MSG
+=============================== */
+
+.mobile-alert {
+  position: fixed;
+  bottom: 20px;
+  left: 50%;
+  transform: translateX(-50%) translateY(100px);
+  background: #111;
+  color: #fff;
+  padding: 12px 20px;
+  border-radius: 14px;
+  font-size: 14px;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  opacity: 0;
+  pointer-events: none;
+  transition: all 0.35s ease;
+  box-shadow: 0 6px 22px rgba(0, 0, 0, 0.25);
+  z-index: 9999;
+  /* Prevent toast itself from overflowing on narrow screens */
+  max-width: calc(100vw - 40px);
+  left: 50%;
+}
+
+.mobile-alert.show {
+  opacity: 1;
+  transform: translateX(-50%) translateY(0);
+}
+
+button {
+  padding: 10px 20px;
+  background: #000;
+  color: #fff;
+  border: none;
+  border-radius: 10px;
+  cursor: pointer;
+  font-size: 16px;
+}
+
+@media (min-width: 768px) {
+  .mobile-alert {
+    top: 20px;
+    bottom: auto;
+    transform: translateX(-50%) translateY(-100px);
+  }
+
+  .mobile-alert.show {
+    transform: translateX(-50%) translateY(0);
+  }
+
+  .referral-stats-box {
+    width: 25%;
+  }
+}
+
+.message-green {
+  color: #00ff7f;
+}
+.message-red {
+  color: #ff4d4d;
+}
+.message-yellow {
+  color: #ffcc00;
+}
+
+.success-icon,
+.error-icon {
+  font-size: 16px;
+  margin-right: 6px;
+  vertical-align: middle;
+}
+
+.success-icon {
+  color: #00ff7f;
+}
+.error-icon {
+  color: #dc3545;
+}
+.yellow-icon {
+  color: #ffcc00;
+}
+/* ===============================
+   REFERRALS EMPTY STATE
+   ===============================*/
+.empty-referrals {
+  text-align: center;
+  padding: 56px 20px;
+}
+
+.empty-referrals__icon {
+  width: 80px;
+  height: 80px;
+  margin: 0 auto 20px;
+  border-radius: 50%;
+  background: var(--soft);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: var(--muted);
+}
+
+.empty-referrals h6 {
+  font-size: 18px;
+  font-weight: 600;
+  color: var(--accent);
+  margin: 0 0 8px;
+}
+
+.empty-referrals p {
+  font-size: 14px;
+  color: var(--muted);
+  line-height: 1.5;
+  max-width: 300px;
+  margin: 0 auto 24px;
+}
+
+/* Referral code box */
+.referral-code-box {
+  display: inline-flex;
+  flex-direction: column;
+  align-items: center;
+  background: var(--soft);
+  border: 1px solid #e5e5e5;
+  border-radius: 12px;
+  padding: 16px 24px;
+  gap: 8px;
+  margin-top: 4px;
+}
+
+.referral-code-label {
+  font-size: 12px;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.07em;
+  color: var(--muted);
+}
+
+.referral-code-row {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.referral-code-value {
+  font-size: 20px;
+  font-weight: 700;
+  color: var(--accent);
+  letter-spacing: 0.12em;
+  font-variant-numeric: tabular-nums;
+}
+
+@media (max-width: 575px) {
+  .empty-referrals {
+    padding: 40px 16px;
+  }
+
+  .empty-referrals__icon {
+    width: 68px;
+    height: 68px;
+  }
+
+  .empty-referrals__icon svg {
+    width: 36px;
+    height: 36px;
+  }
+
+  .empty-referrals h6 {
+    font-size: 16px;
+  }
+
+  .referral-code-box {
+    padding: 14px 20px;
+  }
+
+  .referral-code-value {
+    font-size: 18px;
+  }
+}

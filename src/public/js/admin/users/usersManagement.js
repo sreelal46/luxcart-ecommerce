@@ -1,277 +1,293 @@
+let currentPage = 1;
+let totalPagesGlobal = 1;
+
 function initTooltips() {
   document.querySelectorAll('[data-bs-toggle="tooltip"]').forEach((el) => {
-    new bootstrap.Tooltip(el, {
-      placement: "top",
-      delay: { show: 100, hide: 80 },
-    });
+    new bootstrap.Tooltip(el);
   });
 }
 
 document.addEventListener("DOMContentLoaded", initTooltips);
 
-// Search functionality
-document
-  .getElementById("searchUserInput")
-  .addEventListener("keyup", function () {
-    const searchText = this.value.toLowerCase();
-    const rows = document.querySelectorAll("#usersTableBody tr");
-    rows.forEach((row) => {
-      const rowText = row.innerText.toLowerCase();
-      row.style.display = rowText.includes(searchText) ? "" : "none";
-    });
-  });
+/* FETCH USERS */
+async function fetchUsers(page = 1) {
+  currentPage = page;
 
-// Populate Block/Unblock modal
-const blockUserModal = document.getElementById("blockUserModal");
-let currentAction = "";
-let currentUser = "";
-let currentUserId;
+  const search = document.getElementById("searchUserInput").value;
+  const formData = new FormData(document.getElementById("filterUserForm"));
+  const filters = Object.fromEntries(formData.entries());
 
-blockUserModal.addEventListener("show.bs.modal", function (event) {
-  const button = event.relatedTarget;
-  currentAction = button.getAttribute("data-action"); // block or unblock
-  currentUser = button.getAttribute("data-user");
-  currentUserId = button.getAttribute("data-id");
-
-  document.getElementById("blockUserName").textContent = currentUser;
-  document.getElementById("blockActionText").textContent = currentAction;
-});
-
-document
-  .getElementById("confirmBlockUser")
-  .addEventListener("click", async function () {
-    try {
-      // API request
-      const res = await axios.patch(
-        `/admin/users-management/block-unblock-user/${currentUserId}`
-      );
-
-      if (res.data.success) {
-        await Swal.fire({
-          title: `User ${
-            res.data.status === "Block" ? "Blocked" : "Unblocked"
-          }!`,
-          text: `${currentUser} has been successfully ${
-            res.data.status === "Block" ? "blocked" : "unblocked"
-          }.`,
-          icon: "success",
-          timer: 1800,
-          showConfirmButton: false,
-        });
-
-        // Reload the page to reflect changes
-        window.location.reload();
-      }
-    } catch (error) {
-      console.error("Error blocking/unblocking user:", error);
-
-      Swal.fire({
-        title: "Error!",
-        text: "Something went wrong while updating the user status.",
-        icon: "error",
-        confirmButtonColor: "#ef4444",
-      });
-    }
-
-    // Close modal after action
-    const modal = bootstrap.Modal.getInstance(blockUserModal);
-    modal.hide();
-  });
-
-document.addEventListener("DOMContentLoaded", () => {
-  // ---------- STATE ----------
-  const state = {
-    page: 1,
-    limit: 12,
-    search: "",
+  const params = {
+    search: search,
+    page: page,
+    limit: 10,
+    ajax: true,
+    ...filters,
   };
 
-  // ---------- DEBOUNCE ----------
-  function debounce(fn, delay = 450) {
-    let t;
-    return (...args) => {
-      clearTimeout(t);
-      t = setTimeout(() => fn(...args), delay);
-    };
+  // Remove empty filters
+  Object.keys(params).forEach((key) => {
+    if (!params[key]) delete params[key];
+  });
+
+  try {
+    const res = await axios.get("/admin/users-management", { params });
+    renderUsers(res.data.users);
+    renderPagination(res.data.pagination);
+    updateStats(res.data.stats);
+  } catch (error) {
+    console.error("Error fetching users:", error);
+  }
+}
+
+/* SEARCH */
+let searchTimeout;
+document.getElementById("searchUserInput").addEventListener("input", () => {
+  clearTimeout(searchTimeout);
+  searchTimeout = setTimeout(() => {
+    fetchUsers(1);
+  }, 300);
+});
+
+/* FILTER */
+document.getElementById("applyFilter").addEventListener("click", () => {
+  fetchUsers(1);
+  const modalElement = document.getElementById("filterUserModal");
+  const modal = bootstrap.Modal.getInstance(modalElement);
+  if (modal) {
+    modal.hide();
+  }
+});
+
+/* CLEAR FILTER */
+document.getElementById("clearFilter").addEventListener("click", () => {
+  document.getElementById("filterUserForm").reset();
+  fetchUsers(1);
+  const modalElement = document.getElementById("filterUserModal");
+  const modal = bootstrap.Modal.getInstance(modalElement);
+  if (modal) {
+    modal.hide();
+  }
+});
+
+/* UPDATE STATS */
+function updateStats(stats) {
+  if (stats) {
+    document.getElementById("totalUsers").textContent = stats.totalUsers || 0;
+    document.getElementById("activeUsers").textContent = stats.activeUsers || 0;
+    document.getElementById("blockedUsers").textContent =
+      stats.blockedUsers || 0;
+  }
+}
+
+/* RENDER USERS */
+function renderUsers(users = []) {
+  const tbody = document.getElementById("usersTableBody");
+  tbody.innerHTML = "";
+
+  if (!Array.isArray(users) || users.length === 0) {
+    tbody.innerHTML = `
+        <tr>
+          <td colspan="7" class="text-center text-muted py-4">No users found</td>
+        </tr>`;
+    return;
   }
 
-  // ---------- RENDER ROWS ----------
-  function renderUsers(users, baseIndex) {
-    const tbody = document.getElementById("usersTableBody");
-    tbody.innerHTML = "";
+  users.forEach((user, index) => {
+    const serialNumber = (currentPage - 1) * 10 + index + 1;
+    const statusBadge = user.isBlocked
+      ? '<span class="badge bg-danger-subtle text-danger fw-semibold">Blocked</span>'
+      : '<span class="badge bg-success-subtle text-success fw-semibold">Active</span>';
 
-    users.forEach((u, i) => {
-      const idx = baseIndex + i + 1;
-      const isBlocked = !!u.isBlocked;
-      const statusBadge = isBlocked
-        ? `<span class="badge bg-danger">Blocked</span>`
-        : `<span class="badge bg-success">Active</span>`;
+    const actionBtn = user.isBlocked
+      ? `<button class="btn btn-sm btn-outline-success" data-bs-toggle="modal" data-bs-target="#blockUserModal" 
+            data-id="${user._id}" data-user="${user.name}" data-action="unblock">
+            <i class="bi bi-unlock"></i>
+          </button>`
+      : `<button class="btn btn-sm btn-outline-warning" data-bs-toggle="modal" data-bs-target="#blockUserModal" 
+            data-id="${user._id}" data-user="${user.name}" data-action="block">
+            <i class="bi bi-lock"></i>
+          </button>`;
 
-      const btnLabel = isBlocked ? "Unblock" : "Block";
-      const btnAction = isBlocked ? "unblock" : "block";
+    tbody.innerHTML += `
+        <tr>
+          <td class="fw-semibold text-muted">${serialNumber}</td>
+          <td>
+            <div class="d-flex align-items-center gap-3">
+              <img src="${user.profileImage_url}" class="rounded-circle user-avatar" alt="profile">
+              <div>
+                <div class="fw-semibold text-dark">${user.name}</div>
+                <div class="small text-muted">${user.email}</div>
+              </div>
+            </div>
+          </td>
+          <td class="text-muted">${user.phoneNumber || "-"}</td>
+          <td>${statusBadge}</td>
+          <td><span class="badge bg-primary-subtle text-primary">${user.orderCount || 0}</span></td>
+          <td class="fw-semibold text-success">₹${user.walletBalance || 0}</td>
+          <td class="text-center">
+            <div class="d-flex justify-content-center align-items-center gap-2">
+              <div data-bs-toggle="tooltip" title="View user">
+                <a href="/admin/users-management/user-details/${user._id}" class="btn btn-sm btn-outline-primary">
+                  <i class="bi bi-eye"></i>
+                </a>
+              </div>
+              <div data-bs-toggle="tooltip" title="${user.isBlocked ? "Unblock" : "Block"} user">
+                ${actionBtn}
+              </div>
+            </div>
+          </td>
+        </tr>`;
+  });
+  initTooltips();
+}
 
-      tbody.insertAdjacentHTML(
-        "beforeend",
-        `
-      <tr>
-        <td>${idx}</td>
-        <td class="d-flex align-items-center">
-          <img src="${
-            u.avatarUrl || "/images/user-avatar.jpg"
-          }" class="rounded-circle me-2" alt="profile" style="width:36px;height:36px;object-fit:cover;">
-          <div class="text-start">
-            <div class="fw-bold">${u.name || "-"}</div>
-            <small class="text-muted">${u.email || "-"}</small>
-          </div>
-        </td>
-        <td>${statusBadge}</td>
-        <td>${u.orderCount ?? 0}</td>
-        <td>
-          <a href="/admin/users-management/user-details/${
-            u._id
-          }" style="text-decoration: none;">
-            <button class="btn btn-sm btn-info rounded-pill me-1"><i class="bi bi-eye-fill"></i> View</button>
-          </a>
-          <button class="btn btn-sm btn-warning rounded-pill"
-                  data-bs-toggle="modal"
-                  data-bs-target="#blockUserModal"
-                  data-id="${u._id}"
-                  data-user="${(u.name || "").replace(/"/g, "&quot;")}"
-                  data-action="${btnAction}">${btnLabel}</button>
-        </td>
-      </tr>
-    `
-      );
-    });
+/* PAGINATION */
+function renderPagination({ totalPages, currentPage: current }) {
+  totalPagesGlobal = totalPages;
+  currentPage = current;
+
+  const container = document.getElementById("pagination");
+  if (!container) return;
+
+  container.innerHTML = "";
+  if (totalPages <= 1) return;
+
+  // Previous button
+  const prevBtn = document.createElement("button");
+  prevBtn.className = "page-btn";
+  prevBtn.textContent = "Prev";
+  prevBtn.disabled = current === 1;
+  prevBtn.onclick = () => {
+    if (current > 1) fetchUsers(current - 1);
+  };
+  container.appendChild(prevBtn);
+
+  // Page number buttons
+  const maxVisiblePages = 5;
+  let startPage = Math.max(1, current - Math.floor(maxVisiblePages / 2));
+  let endPage = Math.min(totalPages, startPage + maxVisiblePages - 1);
+
+  if (endPage - startPage < maxVisiblePages - 1) {
+    startPage = Math.max(1, endPage - maxVisiblePages + 1);
   }
 
-  // ---------- RENDER PAGINATION ----------
-  function renderUsersPagination(totalPages, current) {
-    const el = document.getElementById("usersPagination");
-    el.innerHTML = "";
+  // First page + ellipsis
+  if (startPage > 1) {
+    const firstBtn = document.createElement("button");
+    firstBtn.className = "page-btn";
+    firstBtn.textContent = "1";
+    firstBtn.onclick = () => fetchUsers(1);
+    container.appendChild(firstBtn);
 
-    const s = state.search.replace(/'/g, "\\'");
+    if (startPage > 2) {
+      const ellipsis = document.createElement("span");
+      ellipsis.textContent = "...";
+      ellipsis.style.padding = "0 8px";
+      container.appendChild(ellipsis);
+    }
+  }
 
-    el.insertAdjacentHTML(
-      "beforeend",
-      `
-    <li class="page-item ${current === 1 ? "disabled" : ""}">
-      <a class="page-link" style="cursor:pointer" onclick="loadUsers(${
-        current - 1
-      }, '${s}')">Prev</a>
-    </li>
-  `
-    );
+  // Page numbers
+  for (let i = startPage; i <= endPage; i++) {
+    const pageBtn = document.createElement("button");
+    pageBtn.className = `page-btn ${i === current ? "active" : ""}`;
+    pageBtn.textContent = i;
+    pageBtn.onclick = () => fetchUsers(i);
+    container.appendChild(pageBtn);
+  }
 
-    for (let i = 1; i <= totalPages; i++) {
-      el.insertAdjacentHTML(
-        "beforeend",
-        `
-      <li class="page-item ${i === current ? "active" : ""}">
-        <a class="page-link" style="cursor:pointer" onclick="loadUsers(${i}, '${s}')">${i}</a>
-      </li>
-    `
-      );
+  // Ellipsis + last page
+  if (endPage < totalPages) {
+    if (endPage < totalPages - 1) {
+      const ellipsis = document.createElement("span");
+      ellipsis.textContent = "...";
+      ellipsis.style.padding = "0 8px";
+      container.appendChild(ellipsis);
     }
 
-    el.insertAdjacentHTML(
-      "beforeend",
-      `
-    <li class="page-item ${current === totalPages ? "disabled" : ""}">
-      <a class="page-link" style="cursor:pointer" onclick="loadUsers(${
-        current + 1
-      }, '${s}')">Next</a>
-    </li>
-  `
-    );
+    const lastBtn = document.createElement("button");
+    lastBtn.className = "page-btn";
+    lastBtn.textContent = totalPages;
+    lastBtn.onclick = () => fetchUsers(totalPages);
+    container.appendChild(lastBtn);
   }
 
-  // ---------- LOAD USERS (Axios) ----------
-  async function loadUsers(page = 1, search = state.search) {
-    const res = await axios.get("/admin/users-management", {
-      params: { page, limit: state.limit, search },
-    });
+  // Next button
+  const nextBtn = document.createElement("button");
+  nextBtn.className = "page-btn";
+  nextBtn.textContent = "Next";
+  nextBtn.disabled = current === totalPages;
+  nextBtn.onclick = () => {
+    if (current < totalPages) fetchUsers(current + 1);
+  };
+  container.appendChild(nextBtn);
+}
 
-    if (!res.data || !res.data.success) return;
+// Initialize pagination on page load
+document.addEventListener("DOMContentLoaded", function () {
+  try {
+    const initialDataScript = document.getElementById("initialData");
+    if (initialDataScript) {
+      const initialData = JSON.parse(initialDataScript.textContent);
 
-    const { users, totalPages, currentPage, limit } = res.data;
+      currentPage = initialData.currentPage || 1;
+      totalPagesGlobal = initialData.totalPages || 1;
 
-    state.page = currentPage;
-    state.search = search;
-    state.limit = limit;
+      if (initialData.totalPages > 1) {
+        renderPagination({
+          totalPages: initialData.totalPages,
+          currentPage: initialData.currentPage,
+        });
+      }
 
-    const baseIndex = (currentPage - 1) * limit;
-
-    renderUsers(users, baseIndex);
-    renderUsersPagination(totalPages, currentPage);
+      console.log("Pagination initialized:", initialData);
+    }
+  } catch (error) {
+    console.error("Error initializing pagination:", error);
   }
 
-  // ---------- SEARCH (debounced) ----------
-  document.getElementById("searchUserInput").addEventListener(
-    "input",
-    debounce((e) => {
-      const v = e.target.value.trim();
-      loadUsers(1, v);
-    }, 500)
-  );
-
-  // ---------- MODAL: Populate + Confirm ----------
+  /* BLOCK/UNBLOCK USER */
   const blockUserModal = document.getElementById("blockUserModal");
-  let currentAction = "";
-  let currentUser = "";
-  let currentUserId = "";
+  let selectedUserId = null;
+  let selectedAction = null;
 
   blockUserModal.addEventListener("show.bs.modal", function (event) {
     const button = event.relatedTarget;
-    currentAction = button.getAttribute("data-action"); // "block" | "unblock"
-    currentUser = button.getAttribute("data-user") || "";
-    currentUserId = button.getAttribute("data-id");
+    selectedUserId = button.getAttribute("data-id");
+    selectedAction = button.getAttribute("data-action");
+    const userName = button.getAttribute("data-user");
 
-    const actionText = currentAction; // keep lower
-    document.getElementById("blockActionText").textContent = actionText;
-    document.getElementById("blockActionText2").textContent = actionText;
-    document.getElementById("blockUserName").textContent = currentUser;
+    // Update modal text
+    document.getElementById("blockActionText").textContent = selectedAction;
+    document.getElementById("blockActionText2").textContent = selectedAction;
+    document.getElementById("blockUserName").textContent = userName;
   });
 
   document
     .getElementById("confirmBlockUser")
     .addEventListener("click", async function () {
-      try {
-        const res = await axios.patch(
-          `/admin/users-management/block-unblock-user/${currentUserId}`
-        );
-        if (res.data && res.data.success) {
-          await Swal.fire({
-            title: `User ${
-              res.data.status === "Block" ? "Blocked" : "Unblocked"
-            }!`,
-            text: `${currentUser} has been successfully ${
-              res.data.status === "Block" ? "blocked" : "unblocked"
-            }.`,
-            icon: "success",
-            timer: 1600,
-            showConfirmButton: false,
-          });
+      if (!selectedUserId) return;
 
-          // Refresh current page with current search (no full reload)
-          await loadUsers(state.page, state.search);
-        } else {
-          throw new Error("Unexpected response");
+      try {
+        const response = await axios.patch(
+          `/admin/users-management/block-unblock-user/${selectedUserId}`,
+        );
+
+        if (response.data.success) {
+          // Close modal
+          const modal = bootstrap.Modal.getInstance(blockUserModal);
+          modal.hide();
+
+          // Refresh users list
+          fetchUsers(currentPage);
+
+          // Optional: Show success message
+          console.log(`User ${selectedAction}ed successfully`);
         }
-      } catch (err) {
-        console.error(err);
-        Swal.fire({
-          title: "Error!",
-          text: "Something went wrong while updating the user status.",
-          icon: "error",
-          confirmButtonColor: "#ef4444",
-        });
-      } finally {
-        const modal = bootstrap.Modal.getInstance(blockUserModal);
-        modal && modal.hide();
+      } catch (error) {
+        console.error(`Error ${selectedAction}ing user:`, error);
+        alert(`Failed to ${selectedAction} user. Please try again.`);
       }
     });
-
-  // ---------- INITIAL LOAD ----------
-  loadUsers();
 });

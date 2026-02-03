@@ -1,0 +1,141 @@
+.admin-orders-table {
+  background: #fff;
+  border-radius: 12px;
+  overflow: hidden;
+}
+
+/* Product column handling */
+.admin-orders-table .product-col {
+  max-width: 360px;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+/* Status badges */
+.status-badge {
+  padding: 6px 12px;
+  font-size: 0.75rem;
+  text-transform: capitalize;
+}
+
+.status-badge.placed {
+  background-color: #198754;
+}
+
+.status-badge.cancelled {
+  background-color: #dc3545;
+}
+
+.status-badge.shipped {
+  background-color: #0d6efd;
+}
+
+.status-badge.delivered {
+  background-color: #20c997;
+}
+
+/* Table spacing */
+.admin-orders-table th,
+.admin-orders-table td {
+  vertical-align: middle;
+}
+
+/* Hover effect */
+.admin-orders-table tbody tr:hover {
+  background-color: #f8f9fa;
+}
+
+.btn-cancel {
+  background-color: #fff;
+  border: 2px solid #dc3545;
+  color: #dc3545;
+}
+
+.btn-cancel:hover {
+  background-color: #dc3545;
+  color: #fff;
+}
+
+.btn-return {
+  background-color: #fff;
+  border: 2px solid #0d6efd;
+  color: #0d6efd;
+}
+
+.btn-return:hover {
+  background-color: #0d6efd;
+  color: #fff;
+}
+
+.admin-table tbody tr {
+  height: 84px;
+}
+
+.admin-table th,
+.admin-table td {
+  padding: 16px 18px;
+  vertical-align: middle;
+}
+
+.admin-table .badge {
+  padding: 6px 12px;
+  font-size: 12px;
+  font-weight: 600;
+}
+
+.tooltip-inner {
+  background-color: #000;
+  color: #fff;
+  padding: 6px 12px;
+  border-radius: 8px;
+  font-weight: 500;
+  box-shadow: 0 6px 16px rgba(0, 0, 0, 0.25);
+}
+
+.tooltip.bs-tooltip-top .tooltip-arrow::before {
+  border-top-color: #000;
+}
+
+/* Pagination Styles */
+.pagination-container {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  gap: 8px;
+  margin-top: 2rem;
+  margin-bottom: 2rem;
+}
+
+.pagination-container .page-btn {
+  min-width: 40px;
+  height: 40px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border: 1px solid #dee2e6;
+  background: white;
+  color: #495057;
+  font-weight: 500;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  border-radius: 4px;
+  padding: 0 12px;
+}
+
+.pagination-container .page-btn:hover:not(:disabled) {
+  background: #f8f9fa;
+  border-color: #0d6efd;
+  color: #0d6efd;
+}
+
+.pagination-container .page-btn.active {
+  background: #0d6efd;
+  color: white;
+  border-color: #0d6efd;
+}
+
+.pagination-container .page-btn:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}

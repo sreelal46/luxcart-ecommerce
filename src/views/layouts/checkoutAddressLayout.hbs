@@ -1,0 +1,36 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+  <link
+    href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;600&family=Playfair+Display:wght@400;700&display=swap"
+    rel="stylesheet">
+  <script src="/common/axios.min.js" defer></script>
+
+  <link rel="stylesheet" href="/common/bootstrap.min.css">
+  <link rel="stylesheet" href="/bootstrap-icons/bootstrap-icons.css">
+
+  <title>{{title}}</title>
+</head>
+
+<body>
+  {{> navbar}}
+  <main class="container-lg mt-4 mb-5">
+    <div class="row justify-content-center">
+      <div class="col-lg-8">
+        {{{body}}}
+      </div>
+    </div>
+  </main>
+  {{> footer}}
+
+  <script src="https://cdn.jsdelivr.net/npm/gsap@3.13.0/dist/gsap.min.js" defer></script>
+  <script src="https://cdn.jsdelivr.net/npm/gsap@3.13.0/dist/ScrollTrigger.min.js" defer></script>
+  <script src="/common/bootstrap.bundle.min.js" defer></script>
+  <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+</body>
+
+</html>

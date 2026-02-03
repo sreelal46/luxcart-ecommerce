@@ -1,5 +1,6 @@
 const express = require("express");
 const passport = require("passport");
+const Cart = require("../models/user/CartModel");
 const router = express.Router();
 
 // Step Google login
@@ -8,12 +9,12 @@ router.get(
   passport.authenticate("google", {
     scope: ["profile", "email"],
     prompt: "select_account",
-  })
+  }),
 );
 
 // Step Google callback (custom callback used here)
 router.get("/google/callback", (req, res, next) => {
-  passport.authenticate("google", (err, user, info) => {
+  passport.authenticate("google", async (err, user, info) => {
     if (err) {
       console.error("Google Auth Error:", err);
       return res.render("user/login", { alert: "Something went wrong!" });
@@ -28,18 +29,17 @@ router.get("/google/callback", (req, res, next) => {
     // }
     if (!user) {
       const message = encodeURIComponent(
-        info?.message || "Login failed. Please try again."
+        info?.message || "Login failed. Please try again.",
       );
       return res.redirect(`/login?alert=${message}`);
     }
 
     if (user.isBlocked) {
       const message = encodeURIComponent(
-        info?.message || "Your Google account has been Blocked."
+        info?.message || "Your Google account has been Blocked.",
       );
       return res.redirect(`/login?alert=${message}`);
     }
-
     // Success create session
     req.session.user = {
       _id: user._id,
