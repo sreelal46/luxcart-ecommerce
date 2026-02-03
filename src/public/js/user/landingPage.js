@@ -39,7 +39,7 @@ document.addEventListener("DOMContentLoaded", () => {
       y: 40,
       opacity: 0,
     },
-    "-=0.8" // overlap
+    "-=0.8", // overlap
   );
 
   // Hero Button
@@ -51,7 +51,7 @@ document.addEventListener("DOMContentLoaded", () => {
       opacity: 0,
       scale: 1,
     },
-    "-=0.6"
+    "-=0.6",
   );
 
   // Extra hero fade-in for full section
@@ -76,7 +76,7 @@ document.addEventListener("DOMContentLoaded", () => {
       y: 0,
       duration: 2,
       ease: "power3.out",
-    }
+    },
   );
 
   gsap.from(".brand-logo", {
@@ -85,7 +85,7 @@ document.addEventListener("DOMContentLoaded", () => {
       start: "top 70%",
     },
     opacity: 1,
-    scale: 0.8,
+    // scale: 0.8,
     stagger: 0.1,
     duration: 3,
     ease: "back.out(1.7)",

@@ -77,11 +77,12 @@ const createUser = async (req, res, next) => {
         newUser.referredBy = referrer._id;
       }
     }
-    if (!referrer) {
-      return res
-        .status(NOT_FOUND)
-        .json({ success: false, alert: "Invalid Referral Code" });
-    }
+    // console.log(req.body);
+    // if (!referrer) {
+    //   return res
+    //     .status(NOT_FOUND)
+    //     .json({ success: false, alert: "Invalid Referral Code" });
+    // }
     // 6. Save user
     await newUser.save();
 
