@@ -23,12 +23,22 @@ window.renderAccessories = function (accessories) {
 
   if (!accessories.length) {
     container.innerHTML = `
-      <div class="col-12 text-center py-5 no-products">
-        <img src="images/9264822.jpg" alt="No Products" width="350" class="mb-3 no-products-img">
-        <h4 class="fw-semibold no-products-title">No Accessories Found</h4>
-        <p class="text-muted no-products-text">Try adjusting filters or search.</p>
-      </div>
-    `;
+  <div class="col-12 text-center py-5 no-products">
+    <img 
+      src="images/empty-result.jpg" 
+      alt="No Products Found" 
+      width="300" 
+      class="mb-4 no-products-img opacity-75">
+    <h4 class="fw-semibold mb-2 no-products-title">No Products Found</h4>
+    <p class="text-muted mb-3 no-products-text">
+      We couldn't find any products matching your criteria.
+    </p>
+    <p class="text-muted small">Try adjusting your filters or search term.</p>
+    <button class="btn btn-outline-dark mt-3" onclick="window.location.href='/'">
+      Browse All Products
+    </button>
+  </div>
+`;
 
     gsap.from(".no-products", {
       opacity: 0,

@@ -3,17 +3,24 @@
 
 <!-- Hero Section -->
 <section class="hero-section position-relative text-center text-white">
+  <!-- Fallback Image (shows if video fails or not supported) -->
+  <div class="hero-fallback w-100 h-100"
+    style="background: url('https://images.unsplash.com/photo-1613921568536-555645be4032?q=80&w=1122&auto=format&fit=crop&ixlib=rb-4.1.0&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D') center/cover no-repeat; position: absolute; top: 0; left: 0;">
+  </div>
+
   <!-- Video Background -->
-  <video autoplay muted loop playsinline class="hero-video w-100 h-100" style="object-fit: cover;">
+  <video id="heroVideo" muted loop playsinline class="hero-video w-100 h-100"
+    style="object-fit: cover; opacity: 0; transition: opacity 0.5s ease-in-out; position: relative; z-index: 1;"
+    poster="https://images.unsplash.com/photo-1613921568536-555645be4032?q=80&w=1122&auto=format&fit=crop&ixlib=rb-4.1.0&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D"
+    oncanplaythrough="this.style.opacity='1'; this.play();" onerror="this.style.display='none';">
     <source src="{{defaultBanner.url}}" type="video/mp4">
-    Your browser does not support the video tag.
   </video>
 
-  <!-- Overlay (Optional for better text visibility) -->
-  <div class="position-absolute top-0 start-0 w-100 h-100" style="background: rgba(0,0,0,0.5);"></div>
+  <!-- Overlay -->
+  <div class="position-absolute top-0 start-0 w-100 h-100" style="background: rgba(0,0,0,0.5); z-index: 2;"></div>
 
   <!-- Hero Section Text -->
-  <div class="hero-content position-absolute text-center">
+  <div class="hero-content position-absolute text-center" style="z-index: 3;">
     <h1 class="hero-title display-3 fw-bold text-white hero-text">Automotive</h1>
     <p class="hero-subtitle lead text-white hero-text">
       Experience the epitome of luxury and performance with our curated collection of exceptional automobiles.
