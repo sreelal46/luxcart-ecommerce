@@ -1,5 +1,6 @@
 const User = require("../../models/user/UserModel");
 const { OK, UNAUTHORIZED, FORBIDDEN } = require("../../constant/statusCode");
+const Cart = require("../../models/user/CartModel");
 
 const checkSession = async (req, res, next) => {
   try {
@@ -30,12 +31,14 @@ const checkSession = async (req, res, next) => {
         res.status(OK).redirect("/login");
       });
     }
+    const cart = await Cart.findOne({ userId: user._id });
     req.session.user = {
       _id: user._id,
       name: user.name,
       email: user.email,
       profileImage_url: user.profileImage_url,
       authProvider: user.authProvider,
+      cartItemsLength: cart ? cart.items.length : 0,
     };
     req.user = user;
 

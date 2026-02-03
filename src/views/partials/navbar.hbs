@@ -1,100 +1,4 @@
-<!-- <link rel="stylesheet" href="/css/user/partials/navbar.css"> -->
-<style>
-  /* Dropdown hover */
-  .dropdown-menu .dropdown-item:hover {
-    background-color: rgb(160, 160, 160);
-    color: rgb(0, 0, 0);
-  }
-
-  .dropdown-menu .dropdown-item {
-    transition: background-color 0.2s ease;
-  }
-
-  /* Custom Toggler */
-  .custom-toggler {
-    background: none;
-    border: none;
-    cursor: pointer;
-    display: flex;
-    flex-direction: column;
-    justify-content: space-between;
-    width: 28px;
-    height: 20px;
-    padding: 0;
-  }
-
-  /* Mobile top bar: cart + hamburger pushed to the right */
-  .mobile-top-bar {
-    display: flex;
-    align-items: center;
-    gap: 12px;
-    margin-left: auto;
-  }
-
-  .mobile-top-bar .mobile-cart {
-    color: #fff;
-    padding: 4px 6px;
-  }
-
-  @media (min-width: 992px) {
-    .mobile-top-bar {
-      display: none;
-    }
-  }
-
-  .custom-toggler span {
-    display: block;
-    height: 2.5px;
-    width: 100%;
-    background-color: #fff;
-    border-radius: 2px;
-    transition: all 0.3s ease;
-  }
-
-  /* Toggler → X when open */
-  .custom-toggler.is-open span:nth-child(1) {
-    transform: translateY(8.75px) rotate(45deg);
-  }
-
-  .custom-toggler.is-open span:nth-child(2) {
-    opacity: 0;
-  }
-
-  .custom-toggler.is-open span:nth-child(3) {
-    transform: translateY(-8.75px) rotate(-45deg);
-  }
-
-
-  /* Desktop-only actions */
-  .desktop-actions {
-    display: none;
-  }
-
-  @media (min-width: 992px) {
-    .desktop-actions {
-      display: flex;
-    }
-  }
-
-  /* Nav-link icons — mobile only */
-  .nav-link .nav-icon {
-    display: none;
-  }
-
-  @media (max-width: 991px) {
-    .nav-link .nav-icon {
-      display: inline-block;
-      width: 18px;
-      text-align: center;
-      margin-right: 10px;
-    }
-
-    .navbar-nav .nav-link {
-      padding: 10px 16px;
-      font-size: 1.1rem;
-    }
-  }
-</style>
+<link rel="stylesheet" href="/css/user/partials/navbar.css">
 
 <header>
   <nav class="navbar navbar-expand-lg navbar-dark fixed-top py-1"
@@ -107,9 +11,15 @@
       <!-- Mobile top bar: Cart + Hamburger (hidden on desktop) -->
       <div class="mobile-top-bar">
         {{#if user}}
-        <a href="/cart" class="btn btn-outline-light border border-0 btn-sm mobile-cart">
-          <i class="bi bi-cart fs-3"></i>
+        <a href="/cart" class="cart-btn position-relative ">
+          <i class="bi bi-cart3"></i>
+          {{#if user.cartItemsLength}}
+          <span class="cart-badge">
+            {{user.cartItemsLength}}
+          </span>
+          {{/if}}
         </a>
+
         <!-- Hamburger -->
         <button class="custom-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#mainNavbar"
           aria-controls="mainNavbar" aria-expanded="false" aria-label="Toggle navigation">
@@ -180,8 +90,14 @@
       <!-- Desktop-only: Cart + Profile Dropdown -->
       <div class="desktop-actions gap-3 align-items-center">
         {{#if user}}
-        <a href="/cart" class="btn btn-outline-light border border-0 btn-md">
-          <i class="bi bi-cart fs-5"></i>
+        <a href="/cart" class="cart-btn position-relative">
+          <i class="bi bi-cart3"></i>
+
+          {{#if user.cartItemsLength}}
+          <span class="cart-badge">
+            {{user.cartItemsLength}}
+          </span>
+          {{/if}}
         </a>
         <div class="dropdown">
           <button class="btn btn-outline-light btn-md border border-0 dropdown-toggle d-flex align-items-center"
