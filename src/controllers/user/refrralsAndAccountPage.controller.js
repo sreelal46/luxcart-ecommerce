@@ -4,48 +4,22 @@ const Referral = require("../../models/user/referral.Model");
 const User = require("../../models/user/UserModel");
 const Wishlist = require("../../models/user/wishlistModel");
 
-const loadWishlistPage = async (req, res, next) => {
+//load account page
+const loadAccountPage = async (req, res, next) => {
   try {
+    //finding user
     const userId = req.session.user._id;
-    const wishlist = await Wishlist.findOne({ userId })
-      .populate("items.carId")
-      .populate("items.variantId")
-      .populate("items.accessoryId");
-
-    res.status(OK).render("user/account/wishlist", {
+    const user = await User.findById(userId).lean();
+    res.status(OK).render("user/account/welcome", {
       layout: "userAccountLayout",
-      wishlist,
+      user,
     });
   } catch (error) {
-    console.log("Error from loading wishlist page", error);
+    console.log("Error from account wellcom page", error);
     next(error);
   }
 };
-const loadOrderDetailPage = async (req, res, next) => {
-  try {
-    const orderId = req.params.orderId;
-    // const orderItemId = req.params.orderItemId;
-    const order = await Order.findById(orderId)
-      .populate("items.carId")
-      .populate("items.variantId")
-      .populate("items.accessoryId")
-      .lean();
-    if (!order) return res.status(NOT_FOUND).redirect("/account/orders");
 
-    // const orderItem = order.items.find(
-    //   (item) => item._id.toString() === orderItemId
-    // );
-
-    res.status(OK).render("user/account/orderDetail", {
-      layout: "userAccountLayout",
-      order,
-      // orderItem,
-    });
-  } catch (error) {
-    console.log("Error from loading order detail page", error);
-    next(error);
-  }
-};
 const loadReferralsPage = async (req, res, next) => {
   try {
     const userId = req.session.user._id;
@@ -80,7 +54,6 @@ const loadReferralsPage = async (req, res, next) => {
 };
 
 module.exports = {
-  loadWishlistPage,
-  loadOrderDetailPage,
+  loadAccountPage,
   loadReferralsPage,
 };
