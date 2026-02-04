@@ -95,8 +95,36 @@ const loadHomePage = async (req, res, next) => {
     next(error);
   }
 };
+const loadContactPage = async (req, res, next) => {
+  try {
+    // Find the first admin (assuming single admin system)
+    const admin = await Admin.findOne();
+
+    if (!admin || !admin.bannerMedia || admin.bannerMedia.length === 0) {
+      return null;
+    }
+    res.status(OK).render("user/contactUs", {
+      // adminAddress,
+    });
+  } catch (error) {
+    console.error("Error from loadContactPage", error);
+    next(error);
+  }
+};
+const loadAboutUsPage = async (req, res, next) => {
+  try {
+    res.status(OK).render("user/aboutUs", {
+      // adminAddress,
+    });
+  } catch (error) {
+    console.error("Error from loadAboutUsPage", error);
+    next(error);
+  }
+};
 
 module.exports = {
   loadLandingPage,
   loadHomePage,
+  loadContactPage,
+  loadAboutUsPage,
 };

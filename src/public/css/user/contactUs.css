@@ -1,0 +1,59 @@
+body {
+  background-color: #f8f9fa;
+}
+
+/* Cards */
+.contact-card {
+  border: none;
+  border-radius: 12px;
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.05);
+}
+
+/* Left icons */
+.icon-box {
+  width: 38px;
+  height: 38px;
+  background: #f1f3f5;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 18px;
+}
+
+/* Social icons */
+.social-icons a {
+  width: 36px;
+  height: 36px;
+  border-radius: 50%;
+  background: #f1f3f5;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  color: #000;
+  margin-right: 8px;
+  text-decoration: none;
+}
+
+.social-icons a:hover {
+  background: #e2e6ea;
+}
+
+/* Map */
+.map-box {
+  height: 450px;
+  background: #e9ecef;
+  border-radius: 12px;
+  overflow: hidden;
+}
+
+.map-box iframe {
+  width: 100%;
+  height: 100%;
+  border: 0;
+}
+
+/* Button loader fix */
+button .spinner-border {
+  vertical-align: middle;
+}

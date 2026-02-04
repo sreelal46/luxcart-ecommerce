@@ -13,6 +13,8 @@ const {
 const {
   loadLandingPage,
   loadHomePage,
+  loadContactPage,
+  loadAboutUsPage,
 } = require("../controllers/user/homePage.controller");
 
 const {
@@ -56,6 +58,8 @@ const {
 // ====================== HOME & AUTH ROUTES ======================
 route.get("/", loadLandingPage);
 route.get("/homepage", checkSession, loadHomePage);
+route.get("/contact", checkSession, loadContactPage);
+route.get("/about", checkSession, loadAboutUsPage);
 route.get("/logout", logoutPage);
 
 // login
