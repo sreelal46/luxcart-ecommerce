@@ -141,22 +141,25 @@ function updateCartButton(inCart, stock) {
       cartBtnDesk.setAttribute("data-variantId", currentVariant);
     }
 
-    // Mobile button
+    // Mobile button - FIXED: Use consistent attribute names
     if (addToCartMob) {
       addToCartMob.classList.remove("d-none");
       if (inCart) {
         addToCartMob.className = "btn btn-cart flex-fill";
         addToCartMob.innerHTML = `<i class="bi bi-cart me-1"></i> Go to Cart`;
         addToCartMob.setAttribute("href", "/cart");
-        addToCartMob.removeAttribute("data-accessoryId");
+        addToCartMob.removeAttribute("data-carid");
         addToCartMob.removeAttribute("data-variantId");
       } else {
         addToCartMob.className = "btn btn-cart flex-fill";
         addToCartMob.innerHTML = `<i class="bi bi-cart me-1"></i> Add to Cart`;
         addToCartMob.removeAttribute("href");
-        addToCartMob.setAttribute("data-accessoryId", singleCarId);
+        addToCartMob.setAttribute("data-carid", singleCarId);
         addToCartMob.setAttribute("data-variantId", currentVariant);
       }
+
+      // Re-initialize mobile button event listener
+      reinitializeMobileButton();
     }
 
     // Show mobile action buttons container
@@ -337,92 +340,116 @@ document.addEventListener("DOMContentLoaded", () => {
   }
 });
 
-document.addEventListener("DOMContentLoaded", () => {
-  const addToCartDesk = document.getElementById("addToCartDesk");
-  const buyProductDesk = document.getElementById("buyProductDesk");
-  const addToCartMob = document.getElementById("addToCartMob");
-  const buyProductMob = document.getElementById("buyProductMob");
+// -----------------------------------------------------------
+// ADD TO CART FUNCTIONALITY
+// -----------------------------------------------------------
+function showMobileAlert(message, notification) {
+  const alertBox = document.getElementById("mobileAlert");
+  if (notification === "success") {
+    alertBox.innerHTML = `<i class="bi bi-check-circle-fill success-icon"></i><span class="message-green">${message}</span>`;
+    alertBox.classList.add("show");
+  } else if (notification === "error") {
+    alertBox.innerHTML = `<i class="bi bi-x-circle-fill error-icon"></i><span class="message-red">${message}</span>`;
+    alertBox.classList.add("show");
+  } else if (notification === "warning") {
+    alertBox.innerHTML = `<i class="bi bi-exclamation-triangle-fill yellow-icon"></i><span class="message-yellow">${message}</span>`;
+    alertBox.classList.add("show");
+  }
 
-  function showMobileAlert(message, notification) {
-    const alertBox = document.getElementById("mobileAlert");
-    if (notification === "success") {
-      alertBox.innerHTML = `<i class="bi bi-check-circle-fill success-icon"></i><span class="message-green">${message}</span>`;
-      alertBox.classList.add("show");
-    } else if (notification === "error") {
-      alertBox.innerHTML = `<i class="bi bi-x-circle-fill error-icon"></i><span class="message-red">${message}</span>`;
-      alertBox.classList.add("show");
-    } else if (notification === "warning") {
-      alertBox.innerHTML = `<i class="bi bi-exclamation-triangle-fill yellow-icon"></i><span class="message-yellow">${message}</span>`;
-      alertBox.classList.add("show");
+  setTimeout(() => {
+    alertBox.classList.remove("show");
+  }, 3000);
+}
+
+//add to cart axios call function
+function addToCartAxios(element, productType, productId, variantId) {
+  if (!element) return; // Safety check
+
+  // Remove any existing click listeners to prevent duplicates
+  const newElement = element.cloneNode(true);
+  element.parentNode.replaceChild(newElement, element);
+
+  newElement.addEventListener("click", async (e) => {
+    // If it's a "Go to Cart" link, let it navigate normally
+    if (newElement.getAttribute("href") === "/cart") {
+      return;
     }
 
-    setTimeout(() => {
-      alertBox.classList.remove("show");
-    }, 3000);
-  }
+    // Prevent default for "Add to Cart" action
+    e.preventDefault();
 
-  // Read product & variant ID from button
-  const productId = addToCartDesk.dataset.carid;
-  const variantId = addToCartDesk.dataset.variantid;
+    try {
+      const res = await axios.post("/cart/add", {
+        productType,
+        productId,
+        variantId: changingVariantId || variantId,
+      });
 
-  //add to cart axios call function
-  function addToCartAxios(element, productType, productId, variantId) {
-    if (!element) return; // Safety check
+      if (res.data.success) {
+        showMobileAlert("Product added to cart!", "success");
 
-    // Remove any existing click listeners to prevent duplicates
-    const newElement = element.cloneNode(true);
-    element.parentNode.replaceChild(newElement, element);
+        // Update both desktop and mobile buttons to "Go to Cart"
+        const cartBtnDesk = document.getElementById("addToCartDesk");
+        const cartBtnMob = document.getElementById("addToCartMob");
 
-    newElement.addEventListener("click", async (e) => {
-      // If it's a "Go to Cart" link, let it navigate normally
-      if (newElement.getAttribute("href") === "/cart") {
-        return;
-      }
-
-      // Prevent default for "Add to Cart" action
-      e.preventDefault();
-
-      try {
-        const res = await axios.post("/cart/add", {
-          productType,
-          productId,
-          variantId: changingVariantId || variantId,
-        });
-
-        if (res.data.success) {
-          showMobileAlert("Product added to cart!", "success");
-
-          // Update both desktop and mobile buttons to "Go to Cart"
-          const cartBtnDesk = document.getElementById("addToCartDesk");
-          const cartBtnMob = document.getElementById("addToCartMob");
-
-          if (cartBtnDesk) {
-            cartBtnDesk.innerHTML = `<i class="bi bi-cart"></i> Go to Cart`;
-            cartBtnDesk.href = "/cart";
-          }
-
-          if (cartBtnMob) {
-            cartBtnMob.innerHTML = `<i class="bi bi-cart me-1"></i> Go to Cart`;
-            cartBtnMob.href = "/cart";
-          }
-        } else {
-          const msg = res.data.alert || "Something went wrong";
-          showMobileAlert(msg, "error");
+        if (cartBtnDesk) {
+          cartBtnDesk.innerHTML = `<i class="bi bi-cart"></i> Go to Cart`;
+          cartBtnDesk.href = "/cart";
         }
-      } catch (error) {
-        console.log("Error from add to cart FRONTEND", error);
-        const msg = error.response?.data.alert || "INTERNAL SERVER ERROR";
+
+        if (cartBtnMob) {
+          cartBtnMob.innerHTML = `<i class="bi bi-cart me-1"></i> Go to Cart`;
+          cartBtnMob.href = "/cart";
+        }
+      } else {
+        const msg = res.data.alert || "Something went wrong";
         showMobileAlert(msg, "error");
       }
-    });
-  }
+    } catch (error) {
+      console.log("Error from add to cart FRONTEND", error);
+      const msg = error.response?.data.alert || "INTERNAL SERVER ERROR";
+      showMobileAlert(msg, "error");
+    }
+  });
 
-  addToCartAxios(addToCartDesk, "car", productId, variantId);
+  return newElement;
+}
 
+// Function to reinitialize mobile button after variant change
+function reinitializeMobileButton() {
+  const addToCartMob = document.getElementById("addToCartMob");
   if (addToCartMob) {
-    addToCartAxios(addToCartMob, "car", productId, variantId);
+    const currentProductId = addToCartMob.getAttribute("data-carid");
+    const currentVariantId = addToCartMob.getAttribute("data-variantId");
+
+    if (currentProductId && currentVariantId) {
+      addToCartAxios(addToCartMob, "car", currentProductId, currentVariantId);
+    }
+  }
+}
+
+document.addEventListener("DOMContentLoaded", () => {
+  const addToCartDesk = document.getElementById("addToCartDesk");
+  const addToCartMob = document.getElementById("addToCartMob");
+
+  // Read product & variant ID from buttons
+  let deskProductId = addToCartDesk?.dataset.carid;
+  let deskVariantId = addToCartDesk?.dataset.variantid;
+
+  let mobProductId = addToCartMob?.dataset.carid;
+  let mobVariantId = addToCartMob?.dataset.variantid;
+
+  // Initialize desktop button
+  if (addToCartDesk && deskProductId && deskVariantId) {
+    addToCartAxios(addToCartDesk, "car", deskProductId, deskVariantId);
   }
 
+  // Initialize mobile button
+  if (addToCartMob && mobProductId && mobVariantId) {
+    addToCartAxios(addToCartMob, "car", mobProductId, mobVariantId);
+  }
+
+  // Wishlist functionality
   const btn = document.getElementById("wishlistBtn");
   const heart = document.getElementById("heartIcon");
 
@@ -434,7 +461,7 @@ document.addEventListener("DOMContentLoaded", () => {
         const res = await axios.post(
           `/account/wishlist/add/${singleCarId ? singleCarId : productId}`,
           {
-            variantId: changingVariantId || variantId,
+            variantId: changingVariantId || defaultVariantId,
             productType: "car",
           },
         );
