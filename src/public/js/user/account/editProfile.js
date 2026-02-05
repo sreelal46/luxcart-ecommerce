@@ -30,8 +30,126 @@
     if (next && next.classList.contains("field-error")) next.remove();
   }
 
+  /* =============================================================================
+   EMAIL OTP VERIFICATION MODULE - INTEGRATION GUIDE
+   =============================================================================
+   
+   This module works with your HTML form to verify email changes via OTP.
+   
+   HTML STRUCTURE (What you have):
+   --------------------------------
+   <div class="form-group">
+     <label for="emailInput">Email<span style="color: red;">*</span></label>
+     <input id="emailInput" name="email" type="email" required 
+            value="{{user.email}}" 
+            data-original-email="{{user.email}}" 
+            autocomplete="email">
+     <input type="hidden" id="userId" value="{{user._id}}">
+     <input type="hidden" name="email_verified" id="emailVerifiedInput" value="true">
+   </div>
+   
+   REQUIRED MODAL HTML:
+   --------------------
+   You also need this modal structure somewhere in your HTML:
+   
+   <div id="otpModal" class="modal">
+     <div class="modal-content">
+       <span id="otpClose" class="close">&times;</span>
+       <h2>Verify Email Change</h2>
+       <p>We've sent a verification code to: <strong id="otpTargetEmail"></strong></p>
+       <div id="otpInputs" class="otp-inputs"></div>
+       <p id="otpMessage" class="message"></p>
+       <div class="modal-actions">
+         <button id="verifyOtpBtn" type="button">Verify</button>
+         <button id="cancelOtpBtn" type="button">Cancel</button>
+       </div>
+       <div class="resend-section">
+         <button id="resendBtn" type="button">Resend Code</button>
+         <span id="resendTimer"></span>
+       </div>
+     </div>
+   </div>
+   
+   HOW IT WORKS:
+   -------------
+   1. User types a new email in #emailInput
+   2. On blur, the module:
+      - Validates email format
+      - Checks if email is already taken (POST /check-email with axios)
+      - If available, opens modal and sends OTP to ORIGINAL email
+   
+   3. Modal displays the NEW email (targetEmail) but sends OTP to OLD email
+   
+   4. User enters 6-digit OTP code
+   
+   5. On verify, sends to backend:
+      POST /verify-otp
+      {
+        email: "old@email.com",      // Original email
+        targetEmail: "new@email.com", // New email to change to
+        code: "123456"
+      }
+   
+   6. If successful:
+      - Sets emailVerifiedInput.value = "true"
+      - Closes modal
+      - Form can now be submitted
+   
+   BACKEND ENDPOINTS REQUIRED:
+   ---------------------------
+   1. POST /check-email
+      Request:  { email: "new@email.com" }
+      Response: { exists: true/false }
+   
+   2. POST /send-otp
+      Request:  { email: "old@email.com", targetEmail: "new@email.com", verification: "emailChanging" }
+      Response: { success: true/false, message: "..." }
+   
+   3. POST /verify-otp
+      Request:  { email: "old@email.com", targetEmail: "new@email.com", code: "123456" }
+      Response: { ok: true/false, success: true/false, message: "..." }
+   
+   FORM SUBMISSION:
+   ----------------
+   When the form is submitted, it will include:
+   - email: "new@email.com" (the new email value)
+   - email_verified: "true" (hidden field, set by OTP verification)
+   - userId: "{{user._id}}" (for backend to know which user)
+   
+   Your backend should check that email_verified === "true" before updating.
+   
+   DEPENDENCIES:
+   -------------
+   - axios library (must be loaded before this script)
+   - Helper functions: el(), showFieldError(), removeFieldError()
+   
+============================================================================= */
+
+  // Helper function (if not already defined elsewhere)
+  function el(id) {
+    return document.getElementById(id);
+  }
+
+  // Helper for showing field errors (example implementation)
+  function showFieldError(input, message) {
+    removeFieldError(input);
+    const error = document.createElement("span");
+    error.className = "field-error";
+    error.style.color = "#b00020";
+    error.style.fontSize = "0.875rem";
+    error.textContent = message;
+    input.parentNode.appendChild(error);
+    input.style.borderColor = "#b00020";
+  }
+
+  function removeFieldError(input) {
+    const error = input.parentNode.querySelector(".field-error");
+    if (error) error.remove();
+    input.style.borderColor = "";
+  }
+
   // -----------------------
-  // EMAIL OTP MODULE (original email receives OTP)
+  // EMAIL OTP MODULE
   // -----------------------
   (function EmailOtpModule() {
     const emailInput = el("emailInput");
@@ -55,7 +173,7 @@
     const RESEND_COOLDOWN = 60;
     let resendTimer = 0;
 
-    // local field-error helpers (uses shared helpers)
+    // local field-error helpers
     function showEmailError(msg) {
       showFieldError(emailInput, msg);
     }
@@ -215,38 +333,28 @@
       updateResendUI();
     }
 
-    // --- check if email is taken on server (new email) ---
+    // --- Check if email exists using axios ---
     async function checkEmailExists(email) {
-      if (!email) return true; // treat as taken if empty
+      if (!email) return true;
       if (typeof axios === "undefined") {
-        // fallback to fetch if axios not present
-        try {
-          const res = await fetch("/check-email", {
-            method: "POST",
-            headers: { "Content-Type": "application/json" },
-            credentials: "include",
-            body: JSON.stringify({ email }),
-          });
-          const data = await res.json();
-          return !!data.exists;
-        } catch (e) {
-          console.error("checkEmailExists(fetch) failed:", e);
-          return true;
-        }
+        console.error("axios is required but not available");
+        showEmailError("Required library missing. Please refresh the page.");
+        return true;
       }
       try {
         const res = await axios.post(
           "/check-email",
           { email },
-          { withCredentials: true }
+          { withCredentials: true },
         );
         return !!res.data?.exists;
       } catch (err) {
         console.error("checkEmailExists:", err);
-        return true; // fail-safe: treat as taken
+        return true;
       }
     }
 
+    // --- Send OTP to original email ---
     async function sendOtpRequest(targetEmail, origEmail) {
       if (!origEmail) {
         showMessage("Original email missing.", false);
@@ -261,10 +369,10 @@
         const res = await axios.post(
           "/send-otp",
           { email: origEmail, targetEmail, verification: "emailChanging" },
-          { withCredentials: true }
+          { withCredentials: true },
         );
         if (res.data && res.data.success) {
-          showMessage("Verification code sent to original email.", true);
+          showMessage("Verification code sent to new email.", true);
           return true;
         }
         showMessage(res.data?.message || "Failed to send OTP.", false);
@@ -273,12 +381,13 @@
         console.error("sendOtpRequest:", err);
         showMessage(
           err?.response?.data?.message || "Failed to send OTP.",
-          false
+          false,
         );
         return false;
       }
     }
 
+    // --- Verify OTP code ---
     async function verifyOtpRequest(targetEmail, origEmail, code) {
       if (!origEmail || !code) {
         showMessage("Missing original email or code.", false);
@@ -293,7 +402,7 @@
         const res = await axios.post(
           "/verify-otp",
           { email: origEmail, targetEmail, code },
-          { withCredentials: true }
+          { withCredentials: true },
         );
         if (res.data && (res.data.ok || res.data.success)) {
           showMessage("Email verified successfully.", true);
@@ -303,29 +412,30 @@
         }
         showMessage(
           res.data?.message || res.data?.alert || "Invalid code.",
-          false
+          false,
         );
         return false;
       } catch (err) {
         console.error("verifyOtpRequest:", err);
         showMessage(
           err?.response?.data?.message || "OTP verification failed.",
-          false
+          false,
         );
         return false;
       }
     }
 
-    // Modal control
+    // --- Modal control ---
     function openModalForEmail(newEmail) {
       if (!otpModal || !otpTargetEmail) return;
       const origEmail = (emailInput.dataset.originalEmail || "").trim();
-      otpTargetEmail.textContent = origEmail || "";
+      // Show the NEW target email in the modal
+      otpTargetEmail.textContent = newEmail || "";
       buildOtpInputs();
       showMessage("");
       emailVerifiedInput.value = "false";
       otpModal.classList.add("show");
-      // send OTP to ORIGINAL email (backend does the routing)
+      // Send OTP to original email
       sendOtpRequest(newEmail, origEmail).then((ok) => {
         if (ok) startResendCooldown();
       });
@@ -338,7 +448,7 @@
       clearOtpInputs();
     }
 
-    // Event wiring
+    // --- Event listeners ---
     if (verifyBtn) {
       verifyBtn.addEventListener("click", async () => {
         const code = getEnteredOtp();
@@ -385,8 +495,7 @@
         if (cancelBtn) cancelBtn.click();
       });
 
-    // Disable backdrop-click closing: remove any listener that closes modal on backdrop
-    // (Do nothing here — modal should only close via cancel/close buttons or Escape)
+    // Escape key closes modal
     document.addEventListener("keydown", (e) => {
       if (
         e.key === "Escape" &&
@@ -397,7 +506,7 @@
         cancelBtn.click();
     });
 
-    // email blur: check availability first, then open modal (if available)
+    // Email input blur event: validate and trigger OTP
     if (emailInput) {
       emailInput.addEventListener("blur", async () => {
         const newEmail = (emailInput.value || "").trim();
@@ -405,7 +514,7 @@
 
         clearEmailError();
 
-        // unchanged
+        // If unchanged, mark as verified
         if (!newEmail || newEmail === orig) {
           emailVerifiedInput.value = "true";
           return;
@@ -413,25 +522,26 @@
 
         emailVerifiedInput.value = "false";
 
-        // basic email validation
+        // Basic email validation
         const re = /^[^\s@]+@[^\s@]+\.[^\s@]{2,}$/;
         if (!re.test(newEmail)) {
           showEmailError("Enter a valid email address.");
           return;
         }
 
-        // CHECK WITH SERVER first
+        // Check if email is already taken
         const taken = await checkEmailExists(newEmail);
         if (taken) {
           showEmailError("This email is already registered.");
           emailVerifiedInput.value = "false";
-          return; // don't open modal
+          return;
         }
 
-        // available → open modal and send OTP to original email
+        // Email is available → open modal
         openModalForEmail(newEmail);
       });
 
+      // Email input event: mark as unverified if changed
       emailInput.addEventListener("input", () => {
         const orig = (emailInput.dataset.originalEmail || "").trim();
         if ((emailInput.value || "").trim() === orig)
@@ -440,11 +550,11 @@
       });
     }
 
-    // startup
+    // Initialize
     buildOtpInputs();
     if (emailVerifiedInput) emailVerifiedInput.value = "true";
 
-    // expose API
+    // Expose API for external use
     window.__emailVerification = {
       openModal: () => {
         if (emailInput) openModalForEmail(emailInput.value || "");
@@ -511,10 +621,11 @@
     // -------------------------------
     function validateName() {
       const v = (nameInput.value || "").trim();
-      if (!v) return showError(nameInput, "Name is required."), false;
+      if (!v) return (showError(nameInput, "Name is required."), false);
       if (v.length < 2)
         return (
-          showError(nameInput, "Name must be at least 2 characters."), false
+          showError(nameInput, "Name must be at least 2 characters."),
+          false
         );
       removeError(nameInput);
       return true;
@@ -522,17 +633,18 @@
 
     function validateEmail() {
       const v = (emailInput.value || "").trim();
-      if (!v) return showError(emailInput, "Email is required."), false;
+      if (!v) return (showError(emailInput, "Email is required."), false);
       const re = /^[^\s@]+@[^\s@]+\.[^\s@]{2,}$/;
       if (!re.test(v))
-        return showError(emailInput, "Enter a valid email address."), false;
+        return (showError(emailInput, "Enter a valid email address."), false);
       removeError(emailInput);
       return true;
     }
 
     function validatePhone() {
       const v = (phoneInput.value || "").trim();
-      if (!v) return showError(phoneInput, "Phone number is required."), false;
+      if (!v)
+        return (showError(phoneInput, "Phone number is required."), false);
       if (!/^[6-9]\d{9}$/.test(v))
         return (
           showError(phoneInput, "Enter valid 10-digit Indian mobile number."),
@@ -555,17 +667,20 @@
       }
       const d = new Date(v);
       if (Number.isNaN(d.getTime()))
-        return showError(dobInput, "Enter a valid date."), false;
+        return (showError(dobInput, "Enter a valid date."), false);
       const today = new Date();
       if (d > today)
-        return showError(dobInput, "DOB can't be in the future."), false;
+        return (showError(dobInput, "DOB can't be in the future."), false);
 
       const age = today.getFullYear() - d.getFullYear();
       const m = today.getMonth() - d.getMonth();
       const exactAge =
         age - (m < 0 || (m === 0 && today.getDate() < d.getDate()) ? 1 : 0);
       if (exactAge < 18)
-        return showError(dobInput, "You must be at least 18 years old."), false;
+        return (
+          showError(dobInput, "You must be at least 18 years old."),
+          false
+        );
       removeError(dobInput);
       return true;
     }
@@ -727,7 +842,7 @@
           cropper.destroy();
         },
         "image/jpeg",
-        0.9
+        0.9,
       );
     });
   }
@@ -826,7 +941,7 @@
           formData,
           {
             headers: { "Content-Type": "multipart/form-data" },
-          }
+          },
         );
 
         if (res.data && res.data.success) {

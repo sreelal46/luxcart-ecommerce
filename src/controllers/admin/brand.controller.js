@@ -5,6 +5,8 @@ const {
   INTERNAL_SERVER_ERROR,
 } = require("../../constant/statusCode");
 const Brand = require("../../models/admin/brandModal");
+const Accessory = require("../../models/admin/productAccessoryModal");
+const Car = require("../../models/admin/productCarModal");
 //loading brands
 const loadBrands = async (req, res, next) => {
   try {
@@ -129,7 +131,20 @@ const softDeleteBrand = async (req, res, next) => {
     //update data
     if (brand.isListed) {
       await Brand.updateOne({ _id: brandId }, { $set: { isListed: false } });
+      await Car.updateMany(
+        { brand_id: brandId },
+        { $set: { isListed: false } },
+      );
+      await Accessory.updateMany(
+        { brand_id: brandId },
+        { $set: { isListed: false } },
+      );
     } else {
+      await Car.updateMany({ brand_id: brandId }, { $set: { isListed: true } });
+      await Accessory.updateMany(
+        { brand_id: brandId },
+        { $set: { isListed: true } },
+      );
       await Brand.updateOne({ _id: brandId }, { $set: { isListed: true } });
     }
 

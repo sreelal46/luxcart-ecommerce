@@ -10,6 +10,8 @@ const {
   recalculateAccessoryPrices,
   recalculateCarVariantPrices,
 } = require("../../cron/offersCron");
+const Accessory = require("../../models/admin/productAccessoryModal");
+const Car = require("../../models/admin/productCarModal");
 
 //Loading category
 const loadCategory = async (req, res, next) => {
@@ -165,8 +167,18 @@ const softDeleteCategory = async (req, res, next) => {
         .status(NOT_FOUND)
         .json({ success: true, alet: "Somthing Wrong" });
     if (category.isListed) {
+      await Car.updateMany({ category_id: id }, { $set: { isListed: false } });
+      await Accessory.updateMany(
+        { category_id: id },
+        { $set: { isListed: false } },
+      );
       await Category.updateOne({ _id: id }, { $set: { isListed: false } });
     } else {
+      await Car.updateMany({ category_id: id }, { $set: { isListed: true } });
+      await Accessory.updateMany(
+        { category_id: id },
+        { $set: { isListed: true } },
+      );
       await Category.updateOne({ _id: id }, { $set: { isListed: true } });
     }
 

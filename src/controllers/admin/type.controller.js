@@ -1,4 +1,6 @@
 const { OK, CONFLICT, NOT_FOUND } = require("../../constant/statusCode");
+const Accessory = require("../../models/admin/productAccessoryModal");
+const Car = require("../../models/admin/productCarModal");
 const Type = require("../../models/admin/typeModal");
 
 //load Type page
@@ -114,8 +116,24 @@ const softDeleteType = async (req, res, next) => {
 
     //updating type
     if (types.isListed) {
+      await Car.updateMany(
+        { product_type_id: typeId },
+        { $set: { isListed: false } },
+      );
+      await Accessory.updateMany(
+        { product_type_id: typeId },
+        { $set: { isListed: false } },
+      );
       await Type.updateOne({ _id: typeId }, { $set: { isListed: false } });
     } else {
+      await Car.updateMany(
+        { product_type_id: typeId },
+        { $set: { isListed: true } },
+      );
+      await Accessory.updateMany(
+        { product_type_id: typeId },
+        { $set: { isListed: true } },
+      );
       await Type.updateOne({ _id: typeId }, { $set: { isListed: true } });
     }
     res.status(OK).json({ success: true, alert: "success" });

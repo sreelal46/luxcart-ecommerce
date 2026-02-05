@@ -28,6 +28,7 @@ const sendOTP = async (req, res, next) => {
   try {
     //finding user
     const email = req.body.email;
+    const targetEmail = req.body?.targetEmail;
     const verification = req.body.verification;
     const user = await User.findOne({ email });
 
@@ -43,10 +44,9 @@ const sendOTP = async (req, res, next) => {
         alert:
           "This email is registered with Google. Please use 'Continue with Google'.",
       });
-
     //send OTP to user
     await emailSending(
-      email,
+      verification === "emailChanging" ? targetEmail : email,
       user.id,
       verification ? verification : "ForgotPassword",
     );

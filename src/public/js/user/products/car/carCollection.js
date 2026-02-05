@@ -35,7 +35,7 @@ document.addEventListener("DOMContentLoaded", () => {
   const clearBtn = document.getElementById("clearFiltersBtn");
   clearBtn.addEventListener("click", () => {
     const checkboxes = mobileFilterPanel.querySelectorAll(
-      'input[type="checkbox"]'
+      'input[type="checkbox"]',
     );
     checkboxes.forEach((cb) => (cb.checked = false));
 
@@ -76,7 +76,7 @@ document.addEventListener("DOMContentLoaded", () => {
 
     //check box filter
     const checkBoxes = document.querySelectorAll(
-      'input[type="checkbox"]:checked'
+      'input[type="checkbox"]:checked',
     );
     const filter = {};
 
@@ -165,13 +165,13 @@ document.addEventListener("DOMContentLoaded", () => {
   const saveDebouns = debounce(() => applyFilters(searchInput), 500);
   const saveDebounsMobile = debounce(
     () => applyFilters(searchInputMobile),
-    500
+    500,
   );
   searchInput.addEventListener("input", saveDebouns);
   searchInputMobile.addEventListener("input", saveDebounsMobile);
   saveBtnDesk.addEventListener("click", () => applyFilters(searchInput));
   saveBtnMob.addEventListener("click", () => {
-    closePanel(), applyFilters(searchInputMobile);
+    (closePanel(), applyFilters(searchInputMobile));
   });
 
   applyFilters(searchInput, 1);

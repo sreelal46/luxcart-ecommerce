@@ -58,7 +58,7 @@ document.addEventListener("DOMContentLoaded", () => {
         "Do you want to edit your Profile.",
         () => {
           window.location.href = `/account/profile/edit-profile/${userId}`;
-        }
+        },
       );
     });
   });
@@ -72,23 +72,23 @@ document.addEventListener("DOMContentLoaded", () => {
         async () => {
           try {
             const res = await axios.delete(
-              `/account/addresses/delete-address/${btn.dataset.addressId}`
+              `/account/addresses/delete-address/${btn.dataset.addressId}`,
             );
             if (res.data.success) {
               window.location.reload();
             } else {
               CustomSwal.error(
                 "Save Failed",
-                res.data.alert || "Server error occurred."
+                res.data.alert || "Server error occurred.",
               );
             }
           } catch (error) {
             CustomSwal.error(
               "Save Failed",
-              error.response?.data.alert || "Server error occurred."
+              error.response?.data.alert || "Server error occurred.",
             );
           }
-        }
+        },
       );
     });
   });
@@ -109,23 +109,23 @@ document.addEventListener("DOMContentLoaded", () => {
         async () => {
           try {
             const res = await axios.patch(
-              `/account/addresses/set-default-address/${btn.dataset.addressId}`
+              `/account/addresses/set-default-address/${btn.dataset.addressId}`,
             );
             if (res.data.success) {
               window.location.reload();
             } else {
               CustomSwal.error(
                 "Save Failed",
-                res.data.alert || "Server error occurred."
+                res.data.alert || "Server error occurred.",
               );
             }
           } catch (error) {
             CustomSwal.error(
               "Save Failed",
-              error.response?.data.alert || "Server error occurred."
+              error.response?.data.alert || "Server error occurred.",
             );
           }
-        }
+        },
       );
     });
   });
