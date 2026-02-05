@@ -332,3 +332,39 @@ document.addEventListener("DOMContentLoaded", () => {
     });
   }
 });
+document
+  .getElementById("proceedCheckoutBtn")
+  .addEventListener("click", async () => {
+    const cartId = document.getElementById("proceedCheckoutBtn").dataset.cartid;
+
+    try {
+      const res = await axios.get(
+        `/cart/checkout-step-1/availability/${cartId}`,
+      );
+
+      // If backend allows checkout
+      if (res.data.success) {
+        window.location.href = `/cart/checkout-step-1/${cartId}`;
+      } else {
+        showErrorModal(
+          "Checkout Blocked",
+          res.data.message || "Unable to proceed to checkout.",
+        );
+      }
+    } catch (error) {
+      showErrorModal(
+        "Something went wrong",
+        error.response?.data?.message || "Please try again later.",
+      );
+    }
+  });
+
+function closeErrorModal() {
+  document.getElementById("errorModal").classList.remove("show");
+}
+
+function showErrorModal(title, message) {
+  document.getElementById("errorTitle").textContent = title;
+  document.getElementById("errorMessage").textContent = message;
+  document.getElementById("errorModal").classList.add("show");
+}

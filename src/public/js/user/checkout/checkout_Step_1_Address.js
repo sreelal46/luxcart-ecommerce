@@ -31,15 +31,47 @@
   }
 
   /* --- Continue click --- */
-  continueBtn.addEventListener("click", () => {
+  function showErrorModal(title, message) {
+    document.getElementById("errorTitle").textContent = title;
+    document.getElementById("errorMessage").textContent = message;
+    document.getElementById("errorModal").classList.add("show");
+  }
+  continueBtn.addEventListener("click", async () => {
     const checked = document.querySelector(
       "input[name='selectedAddress']:checked",
     );
+
+    //Address not selected
     if (!checked) {
       openModal();
       return;
     }
-    window.location.href = `/cart/checkout-step-2/${checked.value}`;
+
+    const cartId = continueBtn.dataset.cartid;
+    const addressId = checked.value;
+
+    try {
+      //Availability check
+      const res = await axios.get(
+        `/cart/checkout-step-2/availability/${cartId}`,
+      );
+
+      if (res.data.success) {
+        //Redirect only if available
+        window.location.href = `/cart/checkout-step-2/${addressId}`;
+      } else {
+        showErrorModal(
+          "Something went wrong",
+          res.data.message ||
+            "Some items are unavailable. Please update your cart.",
+        );
+      }
+    } catch (error) {
+      showErrorModal(
+        "Something went wrong",
+        error.response?.data?.message || "Please try again later.",
+      );
+    }
   });
 
   /* --- close triggers --- */
@@ -59,3 +91,6 @@
       "/account/addresses/add-address?from=checkout&cartId={{cartId}}";
   });
 })();
+function closeErrorModal() {
+  document.getElementById("errorModal").classList.remove("show");
+}

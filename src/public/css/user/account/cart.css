@@ -1,6 +1,22 @@
 /* ================================
    CART PAGE STYLES
 ================================ */
+:root {
+  --accent: #f37021;
+  --accent-light: rgba(243, 112, 33, 0.12);
+  --black: #0f1724;
+  --muted: #8b8b8b;
+  --card-bg: #fff;
+  --page-bg: #f4f5f7;
+  --border: #e5e5e5;
+  --text: #333;
+  --success-bg: #eafaf0;
+  --success-txt: #1b8a4e;
+  --font-head: "Sora", sans-serif;
+  --font-body: "DM Sans", sans-serif;
+  --radius: 12px;
+  --shadow: 0 6px 24px rgba(15, 23, 36, 0.07);
+}
 .container {
   margin-top: 100px;
 }
@@ -550,4 +566,242 @@
 
 .accessory-note > div {
   display: block;
+}
+/* ========== MODAL — all classes prefixed co- so checkout.css can't clash ========== */
+.co-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background: rgba(15, 23, 36, 0.45);
+  backdrop-filter: blur(3px);
+  -webkit-backdrop-filter: blur(3px);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 99999;
+  visibility: hidden;
+  opacity: 0;
+  transition:
+    opacity 0.3s ease,
+    visibility 0.3s ease;
+}
+
+.co-overlay.show {
+  visibility: visible;
+  opacity: 1;
+}
+
+.co-modal {
+  background: #fff;
+  border-radius: 16px;
+  padding: 36px 32px 30px;
+  width: 90%;
+  max-width: 420px;
+  text-align: center;
+  box-shadow: 0 20px 60px rgba(15, 23, 36, 0.18);
+  position: relative;
+  z-index: 100000;
+  opacity: 0;
+  transform: translateY(20px) scale(0.95);
+  transition:
+    transform 0.3s cubic-bezier(0.34, 1.56, 0.64, 1),
+    opacity 0.3s ease;
+}
+
+.co-overlay.show .co-modal {
+  opacity: 1;
+  transform: translateY(0) scale(1);
+}
+
+.co-modal-close {
+  position: absolute;
+  top: 14px;
+  right: 18px;
+  background: none;
+  border: none;
+  font-size: 24px;
+  color: #8b8b8b;
+  cursor: pointer;
+  line-height: 1;
+  z-index: 100001;
+  transition: color 0.15s;
+}
+
+.co-modal-close:hover {
+  color: var(--black);
+}
+
+.co-modal-icon {
+  width: 64px;
+  height: 64px;
+  border-radius: 50%;
+  background: #fff3ec;
+  border: 3px solid var(--accent);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin: 0 auto 18px;
+}
+
+.co-modal-icon svg {
+  width: 30px;
+  height: 30px;
+}
+
+.co-modal h3 {
+  font-family: var(--font-head);
+  font-size: 19px;
+  color: var(--black);
+  margin-bottom: 8px;
+}
+
+.co-modal p {
+  font-size: 14px;
+  color: #666;
+  line-height: 1.55;
+  max-width: 310px;
+  margin: 0 auto 24px;
+}
+
+.co-modal-actions {
+  display: flex;
+  gap: 10px;
+  justify-content: center;
+}
+
+.co-btn {
+  padding: 11px 22px;
+  border-radius: 8px;
+  font-size: 14px;
+  font-weight: 600;
+  font-family: var(--font-body);
+  border: none;
+  cursor: pointer;
+  transition:
+    background 0.2s,
+    transform 0.1s,
+    box-shadow 0.2s;
+}
+
+.co-btn:active {
+  transform: scale(0.96);
+}
+
+.co-btn-primary {
+  background: var(--accent);
+  color: #fff;
+  box-shadow: 0 3px 10px rgba(243, 112, 33, 0.3);
+}
+
+.co-btn-primary:hover {
+  background: #e06518;
+  box-shadow: 0 4px 14px rgba(243, 112, 33, 0.35);
+}
+
+.co-btn-ghost {
+  background: transparent;
+  color: var(--black);
+  border: 2px solid var(--border);
+}
+
+.co-btn-ghost:hover {
+  border-color: var(--black);
+  background: #f9f9f9;
+}
+.co-modal {
+  background: #fff;
+  border-radius: 16px;
+  padding: 36px 28px 30px;
+  width: 90%;
+  max-width: 420px;
+  text-align: center;
+  box-shadow: 0 20px 60px rgba(15, 23, 36, 0.18);
+  position: relative;
+  z-index: 100000;
+  opacity: 0;
+  transform: translateY(20px) scale(0.95);
+  transition:
+    transform 0.3s cubic-bezier(0.34, 1.56, 0.64, 1),
+    opacity 0.3s ease;
+}
+
+.co-overlay.show .co-modal {
+  opacity: 1;
+  transform: translateY(0) scale(1);
+}
+
+/* icon circle */
+.co-icon-wrap {
+  width: 68px;
+  height: 68px;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin: 0 auto 18px;
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.12);
+}
+
+.co-icon-wrap .co-icon {
+  font-size: 28px;
+  color: #fff;
+  font-weight: 700;
+  line-height: 1;
+}
+
+/* success green */
+.co-icon-wrap.success {
+  background: linear-gradient(135deg, #34c759, #1b8a4e);
+}
+
+/* error red */
+.co-icon-wrap.error {
+  background: linear-gradient(135deg, #ff3b30, #d42b22);
+}
+
+/* warning amber */
+.co-icon-wrap.warning {
+  background: linear-gradient(135deg, #ffc107, #fd7e14);
+}
+
+/* wallet purple */
+.co-icon-wrap.wallet {
+  background: linear-gradient(135deg, #667eea, #764ba2);
+}
+
+.co-modal h5 {
+  font-family: var(--font-head);
+  font-size: 18px;
+  font-weight: 700;
+  margin-bottom: 8px;
+}
+
+.co-modal h5.success {
+  color: var(--success-txt);
+}
+
+.co-modal h5.error {
+  color: #dc3545;
+}
+
+.co-modal h5.warning {
+  color: #fd7e14;
+}
+
+.co-modal h5.wallet {
+  color: #667eea;
+}
+
+.co-modal .co-message {
+  font-size: 14px;
+  color: #666;
+  line-height: 1.6;
+  max-width: 320px;
+  margin: 0 auto 22px;
+}
+
+.co-modal .co-message p {
+  margin: 0 0 10px;
 }

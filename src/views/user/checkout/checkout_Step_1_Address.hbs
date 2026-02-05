@@ -3,7 +3,103 @@
   href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700&family=Sora:wght@400;500;600;700&display=swap"
   rel="stylesheet" />
 
+<style>
+  .co-modal {
+    background: #fff;
+    border-radius: 16px;
+    padding: 36px 28px 30px;
+    width: 90%;
+    max-width: 420px;
+    text-align: center;
+    box-shadow: 0 20px 60px rgba(15, 23, 36, 0.18);
+    position: relative;
+    z-index: 100000;
+    opacity: 0;
+    transform: translateY(20px) scale(0.95);
+    transition:
+      transform 0.3s cubic-bezier(0.34, 1.56, 0.64, 1),
+      opacity 0.3s ease;
+  }
 
+  .co-overlay.show .co-modal {
+    opacity: 1;
+    transform: translateY(0) scale(1);
+  }
+
+  /* icon circle */
+  .co-icon-wrap {
+    width: 68px;
+    height: 68px;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    margin: 0 auto 18px;
+    box-shadow: 0 8px 24px rgba(0, 0, 0, 0.12);
+  }
+
+  .co-icon-wrap .co-icon {
+    font-size: 28px;
+    color: #fff;
+    font-weight: 700;
+    line-height: 1;
+  }
+
+  /* success green */
+  .co-icon-wrap.success {
+    background: linear-gradient(135deg, #34c759, #1b8a4e);
+  }
+
+  /* error red */
+  .co-icon-wrap.error {
+    background: linear-gradient(135deg, #ff3b30, #d42b22);
+  }
+
+  /* warning amber */
+  .co-icon-wrap.warning {
+    background: linear-gradient(135deg, #ffc107, #fd7e14);
+  }
+
+  /* wallet purple */
+  .co-icon-wrap.wallet {
+    background: linear-gradient(135deg, #667eea, #764ba2);
+  }
+
+  .co-modal h5 {
+    font-family: var(--font-head);
+    font-size: 18px;
+    font-weight: 700;
+    margin-bottom: 8px;
+  }
+
+  .co-modal h5.success {
+    color: var(--success-txt);
+  }
+
+  .co-modal h5.error {
+    color: #dc3545;
+  }
+
+  .co-modal h5.warning {
+    color: #fd7e14;
+  }
+
+  .co-modal h5.wallet {
+    color: #667eea;
+  }
+
+  .co-modal .co-message {
+    font-size: 14px;
+    color: #666;
+    line-height: 1.6;
+    max-width: 320px;
+    margin: 0 auto 22px;
+  }
+
+  .co-modal .co-message p {
+    margin: 0 0 10px;
+  }
+</style>
 <!-- ===== PAGE ===== -->
 <div class="wrap-container">
 
@@ -110,7 +206,7 @@
         </div>
         {{/if}}
 
-        <button class="btn-continue" id="continueBtn">Continue</button>
+        <button class="btn-continue" data-cartId="{{cart._id}}" id="continueBtn">Continue</button>
       </div>
     </div>
 
@@ -139,6 +235,14 @@
     </div>
   </div>
 </div>
-
+<!-- ===== ERROR MODAL ===== -->
+<div class="co-overlay" id="errorModal">
+  <div class="co-modal">
+    <div class="co-icon-wrap error"><span class="co-icon">✕</span></div>
+    <h5 class="error" id="errorTitle">Payment Failed</h5>
+    <p class="co-message" id="errorMessage">Something went wrong. Please try again.</p>
+    <button class="co-btn co-btn-error co-btn-single" onclick="closeErrorModal()">Try Again</button>
+  </div>
+</div>
 <!-- ===== SCRIPT ===== -->
 <script src="/js/user/checkout/checkout_Step_1_Address.js"></script>

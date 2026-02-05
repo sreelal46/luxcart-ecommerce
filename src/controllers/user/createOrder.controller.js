@@ -1,6 +1,7 @@
 const { OK, BAD_REQUEST } = require("../../constant/statusCode");
 const CarVariant = require("../../models/admin/carVariantModel");
 const Accessory = require("../../models/admin/productAccessoryModal");
+const Car = require("../../models/admin/productCarModal");
 const Address = require("../../models/user/addressModel");
 const Cart = require("../../models/user/CartModel");
 const Order = require("../../models/user/OrderModel");
@@ -207,6 +208,34 @@ const createOrder = async (req, res, next) => {
           return res.status(400).json({
             success: false,
             message: "Not enough stock for car",
+          });
+        }
+      }
+    }
+    /* ===============================
+       UNLISTED PRODUCT
+    =============================== */
+    for (const item of cart.items) {
+      if (item.accessoryId) {
+        const accessory = await Accessory.findById(item.accessoryId);
+        if (!accessory) throw new Error("Accessory not found");
+
+        if (!accessory.isListed) {
+          return res.status(400).json({
+            success: false,
+            message: `Oops! "${accessory.name}" is currently unavailable. Please remove it from your cart to continue checkout.`,
+          });
+        }
+      }
+
+      if (item.carId) {
+        const car = await Car.findById(item.carId);
+        if (!car) throw new Error("car not found");
+
+        if (!car.isListed) {
+          return res.status(400).json({
+            success: false,
+            message: `Oops! "${car.name}" is currently unavailable. Please remove it from your cart to continue checkout.`,
           });
         }
       }

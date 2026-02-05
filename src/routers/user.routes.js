@@ -131,8 +131,20 @@ const {
   payment,
   fullPayment,
 } = require("../controllers/user/payment.controller");
-
+const {
+  checkAvailability,
+} = require("../controllers/user/checkoutPage.controller");
+route.get(
+  "/cart/checkout-step-1/availability/:cartId",
+  checkSession,
+  checkAvailability,
+);
 route.get("/cart/checkout-step-1/:cartId", checkSession, loadCheckoutStep1);
+route.get(
+  "/cart/checkout-step-2/availability/:cartId",
+  checkSession,
+  checkAvailability,
+);
 route.get("/cart/checkout-step-2/:addressId", checkSession, loadCheckoutStep2);
 route.get(
   "/cart/checkout/wallet-balence/:cartTotal/:walletPaymentMethod",
