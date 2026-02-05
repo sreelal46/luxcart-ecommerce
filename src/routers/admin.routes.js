@@ -17,13 +17,6 @@ const {
 
 // ====================== PAGE LOAD CONTROLLERS ======================
 const {
-  adminLoadLoginPage,
-  loadChangePassword,
-  loadEmailVerify,
-  loadOTPVerify,
-  loadBrands,
-  loadCategory,
-  loadType,
   loadProduct,
   loadCarProduct,
   loadViewCar,
@@ -31,20 +24,22 @@ const {
   loadAddAccessories,
   loadViewAccessories,
   loadEditAccessories,
-} = require("../controllers/admin/pageLoad.controller");
+} = require("../controllers/admin/productsPage.controller");
 
 const {
   loadOrderManagement,
   loadOneOrder,
   loadStockPage,
-  loadReturnReq,
-  loadCancelReq,
   loadNotification,
   readNotifiction,
-} = require("../controllers/admin/pageLoadTwo.controller");
+} = require("../controllers/admin/pageLoad.controller");
 
 // ====================== AUTH CONTROLLERS ======================
 const {
+  adminLoadLoginPage,
+  loadEmailVerify,
+  loadOTPVerify,
+  loadChangePassword,
   verifyadmin,
   emailVerification,
   OTPVerification,
@@ -87,6 +82,7 @@ route.get("/dashboard", checkSession, loadDashboard);
 
 // ====================== BRAND ======================
 const {
+  loadBrands,
   addBrand,
   editBrand,
   softDeleteBrand,
@@ -113,6 +109,7 @@ route.patch(
 
 // ====================== CATEGORY ======================
 const {
+  loadCategory,
   addCategory,
   editCategory,
   softDeleteCategory,
@@ -141,6 +138,7 @@ route.patch(
 );
 // ====================== TYPE ======================
 const {
+  loadType,
   addType,
   editType,
   softDeleteType,
@@ -244,6 +242,7 @@ route.patch(
 
 // ====================== ORDER ======================
 const {
+  loadReturnReq,
   returnApprove,
   returnReject,
 } = require("../controllers/admin/order.return.controller");
@@ -252,6 +251,7 @@ const {
   updateSingleItemStatus,
 } = require("../controllers/admin/order.status.controller");
 const {
+  loadCancelReq,
   cancelApprove,
   cancelReject,
 } = require("../controllers/admin/order.cancel.controller");

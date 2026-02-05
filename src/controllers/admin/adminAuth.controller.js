@@ -10,6 +10,27 @@ const {
 } = require("../../constant/statusCode");
 const emailSending = require("../../services/sendEmail");
 
+//loading admin loaging page
+const adminLoadLoginPage = (req, res) => {
+  res.status(OK).render("admin/auth/login");
+};
+
+//loading forgot password page
+const loadEmailVerify = (req, res) => {
+  res.status(OK).render("admin/auth/verify-email");
+};
+
+//loading OTP page
+const loadOTPVerify = (req, res) => {
+  console.log("OTP Verify Page Route Hit");
+  res.status(OK).render("admin/auth/verify-otp");
+};
+
+//loading password changing page
+const loadChangePassword = (req, res) => {
+  res.status(OK).render("admin/auth/change-password");
+};
+
 // Verify admin login orijinal
 const verifyadmin = async (req, res, next) => {
   try {
@@ -191,6 +212,10 @@ const PasswordChanging = async (req, res, next) => {
 };
 
 module.exports = {
+  adminLoadLoginPage,
+  loadEmailVerify,
+  loadOTPVerify,
+  loadChangePassword,
   verifyadmin,
   emailVerification,
   OTPVerification,

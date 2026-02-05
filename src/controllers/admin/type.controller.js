@@ -1,6 +1,44 @@
 const { OK, CONFLICT, NOT_FOUND } = require("../../constant/statusCode");
 const Type = require("../../models/admin/typeModal");
 
+//load Type page
+const loadType = async (req, res, next) => {
+  try {
+    let { search, page, limit } = req.query;
+
+    page = parseInt(page) || 1;
+    limit = parseInt(limit) || 12;
+    const skip = (page - 1) * limit;
+
+    const filter = {};
+    if (search && search !== "undefined" && search.trim() !== "") {
+      const regex = new RegExp(search.split("").join("[^a-zA-Z0-9]*"), "i");
+      filter.$or = [{ name: regex }];
+    }
+
+    const [typess, totalType] = await Promise.all([
+      Type.find(filter).sort({ createdAt: -1 }).skip(skip).limit(limit).lean(),
+      Type.countDocuments(filter),
+    ]);
+
+    if (req.xhr || req.headers.accept.indexOf("application/json") > -1) {
+      return res.json({
+        success: true,
+        result: typess,
+        totalPages: Math.ceil(totalType / limit),
+        currentPage: page,
+      });
+    }
+
+    //fetch all data
+    const types = await Type.find({}).sort({ createdAt: -1 }).lean();
+    res.status(OK).render("admin/typeManagement", { types });
+  } catch (error) {
+    console.log(error);
+    next(error);
+  }
+};
+
 const addType = async (req, res, next) => {
   try {
     //colleting data
@@ -87,4 +125,4 @@ const softDeleteType = async (req, res, next) => {
   }
 };
 
-module.exports = { addType, editType, softDeleteType };
+module.exports = { loadType, addType, editType, softDeleteType };
