@@ -10,6 +10,27 @@ const {
 } = require("../../constant/statusCode");
 const emailSending = require("../../services/sendEmail");
 
+//loading admin loaging page
+const adminLoadLoginPage = (req, res) => {
+  res.status(OK).render("admin/auth/login");
+};
+
+//loading forgot password page
+const loadEmailVerify = (req, res) => {
+  res.status(OK).render("admin/auth/verify-email");
+};
+
+//loading OTP page
+const loadOTPVerify = (req, res) => {
+  console.log("OTP Verify Page Route Hit");
+  res.status(OK).render("admin/auth/verify-otp");
+};
+
+//loading password changing page
+const loadChangePassword = (req, res) => {
+  res.status(OK).render("admin/auth/change-password");
+};
+
 // Verify admin login orijinal
 const verifyadmin = async (req, res, next) => {
   try {
@@ -31,13 +52,14 @@ const verifyadmin = async (req, res, next) => {
       _id: admin._id,
       name: admin.name,
       email: admin.email,
+      profileImage: admin.profileImage,
     };
     req.session.save(() =>
       res.status(OK).json({
         success: true,
         message: "Login Successfull",
         redirect: "/admin/dashboard",
-      })
+      }),
     );
   } catch (error) {
     console.log("Error from admin verifyadmin", error);
@@ -170,7 +192,7 @@ const PasswordChanging = async (req, res, next) => {
     //updating admin password
     await Admin.updateOne(
       { _id: admin._id },
-      { $set: { password: hashNewPassword } }
+      { $set: { password: hashNewPassword } },
     );
 
     //saving success message
@@ -181,7 +203,7 @@ const PasswordChanging = async (req, res, next) => {
         success: true,
         alert: "Password changed",
         redirect: "/admin/login",
-      })
+      }),
     );
   } catch (error) {
     console.error("Error from password chnaging admin", error);
@@ -190,6 +212,10 @@ const PasswordChanging = async (req, res, next) => {
 };
 
 module.exports = {
+  adminLoadLoginPage,
+  loadEmailVerify,
+  loadOTPVerify,
+  loadChangePassword,
   verifyadmin,
   emailVerification,
   OTPVerification,

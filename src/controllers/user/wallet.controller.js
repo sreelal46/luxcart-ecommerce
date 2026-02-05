@@ -2,6 +2,7 @@ const { OK } = require("../../constant/statusCode");
 const Wallet = require("../../models/user/walletsModel");
 const stripe = require("stripe")(process.env.STRIPE_SECRET_KEY);
 
+//load wallet page
 const loadwalletPage = async (req, res, next) => {
   try {
     const userId = req.session.user._id;

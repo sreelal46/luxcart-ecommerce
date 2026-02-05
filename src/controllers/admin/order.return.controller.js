@@ -12,6 +12,42 @@ const mongoose = require("mongoose");
 const Wallet = require("../../models/user/walletsModel");
 const updateWallet = require("../helper/wallectBalanceCalculater");
 
+const loadReturnReq = async (req, res, next) => {
+  try {
+    const returnedItems = await Order.aggregate([
+      { $unwind: "$items" },
+
+      { $match: { "items.return.requested": true } },
+
+      {
+        $lookup: {
+          from: "users",
+          localField: "userId",
+          foreignField: "_id",
+          as: "user",
+        },
+      },
+      { $unwind: "$user" },
+
+      {
+        $project: {
+          orderId: 1,
+          createdAt: 1,
+          items: 1,
+          "user.name": 1,
+        },
+      },
+      { $sort: { "items.return.requestedAt": -1 } },
+    ]);
+    res.render("admin/orders/returnRequestManagement", {
+      returnedItems,
+    });
+  } catch (error) {
+    console.log("Error from load return request", error);
+    next(error);
+  }
+};
+
 const returnApprove = async (req, res, next) => {
   try {
     const { orderId, itemId } = req.params;
@@ -307,6 +343,7 @@ const returnReject = async (req, res, next) => {
 };
 
 module.exports = {
+  loadReturnReq,
   returnApprove,
   returnReject,
 };

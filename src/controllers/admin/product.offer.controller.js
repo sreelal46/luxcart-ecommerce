@@ -58,14 +58,14 @@ const addProductOffer = async (req, res, next) => {
     if (productType === "accessory") {
       await Accessory.updateOne(
         { _id: productId },
-        { $set: { productOffer: offerPayload } }
+        { $set: { productOffer: offerPayload } },
       );
     }
 
     if (productType === "car") {
       await CarVariant.updateMany(
         { product_id: productId },
-        { $set: { productOffer: offerPayload } }
+        { $set: { productOffer: offerPayload } },
       );
     }
 
@@ -90,14 +90,14 @@ const removeProductOffer = async (req, res, next) => {
     const { productId } = req.params;
     const { productType } = req.body;
 
-    // ✅ Validate productType
+    // Validate productType
     if (!["accessory", "car"].includes(productType)) {
       return res
         .status(BAD_REQUEST)
         .json({ success: false, alert: "Invalid product type" });
     }
 
-    // ✅ Check if product exists before removing
+    //Check if product exists before removing
     if (productType === "accessory") {
       const accessory = await Accessory.findById(productId);
       if (!accessory) {
@@ -108,7 +108,7 @@ const removeProductOffer = async (req, res, next) => {
 
       await Accessory.updateOne(
         { _id: productId },
-        { $unset: { productOffer: "" } }
+        { $unset: { productOffer: "" } },
       );
     } else if (productType === "car") {
       const variants = await CarVariant.find({ product_id: productId });
@@ -120,7 +120,7 @@ const removeProductOffer = async (req, res, next) => {
 
       await CarVariant.updateMany(
         { product_id: productId },
-        { $unset: { productOffer: "" } }
+        { $unset: { productOffer: "" } },
       );
     }
 

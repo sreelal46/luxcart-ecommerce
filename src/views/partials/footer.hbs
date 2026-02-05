@@ -1,69 +1,3 @@
-<footer class="lux-footer bg-light">
-  <div class="container text-center">
-    <!-- Brand & tagline -->
-    <h5 class="fw-bold mb-1">LuxCart</h5>
-    <p class="text-muted small mb-3">
-      Luxury automotive experiences for the discerning enthusiast.
-    </p>
-
-    <!-- Social icons -->
-    <div class="d-flex justify-content-center gap-3 mb-4">
-      <a href="#"><i class="bi bi-facebook fs-5 text-dark"></i></a>
-      <a href="#"><i class="bi bi-instagram fs-5 text-dark"></i></a>
-      <a href="#"><i class="bi bi-twitter-x fs-5 text-dark"></i></a>
-      <a href="#"><i class="bi bi-youtube fs-5 text-dark"></i></a>
-    </div>
-
-    <!-- Footer links -->
-    <div class="row justify-content-center text-start text-md-center">
-      <div class="col-6 col-md-3 mb-3">
-        <h6 class="fw-bold mb-2">Quick Links</h6>
-        <ul class="list-unstyled small mb-0">
-          <li><a href="#">Home</a></li>
-          <li><a href="#">Cars</a></li>
-          <li><a href="#">Accessories</a></li>
-          <li><a href="#">Contact</a></li>
-        </ul>
-      </div>
-
-      <div class="col-6 col-md-3 mb-3">
-        <h6 class="fw-bold mb-2">Support</h6>
-        <ul class="list-unstyled small mb-0">
-          <li><a href="#">FAQ</a></li>
-          <li><a href="#">Shipping</a></li>
-          <li><a href="#">Warranty</a></li>
-          <li><a href="#">Privacy Policy</a></li>
-        </ul>
-      </div>
-      {{#if footer}}
-      <div class="col-12 col-md-3 mb-3">
-        <h6 class="fw-bold mb-2">Contact</h6>
-        <ul class="list-unstyled small mb-0">
-          <li>{{footer.address.street}}</li>
-          <li>{{footer.address.city}}</li>
-          <li>{{footer.phone}}</li>
-          <li>{{footer.email}}</li>
-        </ul>
-      </div>
-      {{else}}
-      <div class="col-12 col-md-3 mb-3">
-        <h6 class="fw-bold mb-2">Contact</h6>
-        <ul class="list-unstyled small mb-0">
-          <li>--------------</li>
-          <li>--------------</li>
-          <li>--------------</li>
-          <li>--------------</li>
-        </ul>
-      </div>
-      {{/if}}
-
-    </div>
-
-    <!-- Divider and copyright -->
-    <hr class="mt-3 mb-2">
-    <p class="small text-muted mb-0">&copy; 2025 LuxCart. All rights reserved.</p>
-  </div>
-</footer>
 <style>
   .lux-footer {
     font-family: "Montserrat", sans-serif;
@@ -103,3 +37,70 @@
     opacity: 0.15;
   }
 </style>
+
+<footer class="lux-footer bg-light">
+  <div class="container text-center">
+    <!-- Brand & tagline -->
+    <h5 class="fw-bold mb-1">LuxCart</h5>
+    <p class="text-muted small mb-3">
+      Luxury automotive experiences for the discerning enthusiast.
+    </p>
+
+    <!-- Social icons -->
+    <div class="d-flex justify-content-center gap-3 mb-4">
+      <a href="#"><i class="bi bi-facebook fs-5 text-dark"></i></a>
+      <a href="#"><i class="bi bi-instagram fs-5 text-dark"></i></a>
+      <a href="#"><i class="bi bi-twitter-x fs-5 text-dark"></i></a>
+      <a href="#"><i class="bi bi-youtube fs-5 text-dark"></i></a>
+    </div>
+
+    <!-- Footer links -->
+    <div class="row justify-content-center text-start text-md-center">
+      <div class="col-6 col-md-3 mb-3">
+        <h6 class="fw-bold mb-2">Quick Links</h6>
+        <ul class="list-unstyled small mb-0">
+          <li><a href="/">Home</a></li>
+          <li><a href="/cars-collection">Cars</a></li>
+          <li><a href="/all-accessories">Accessories</a></li>
+          <li><a href="/contact">Contact</a></li>
+        </ul>
+      </div>
+
+      <div class="col-6 col-md-3 mb-3">
+        <h6 class="fw-bold mb-2">Support</h6>
+        <ul class="list-unstyled small mb-0">
+          <li><a href="/faq">FAQ</a></li>
+          <li><a href="/shipping">Shipping</a></li>
+          <li><a href="/warranty">Warranty</a></li>
+          <li><a href="/privacy-policy">Privacy Policy</a></li>
+        </ul>
+      </div>
+      {{#if footer}}
+      <div class="col-12 col-md-3 mb-3">
+        <h6 class="fw-bold mb-2">Contact</h6>
+        <ul class="list-unstyled small mb-0">
+          <li>{{footer.address.street}}</li>
+          <li>{{footer.address.city}}</li>
+          <li>{{footer.phone}}</li>
+          <li>{{footer.email}}</li>
+        </ul>
+      </div>
+      {{else}}
+      <div class="col-12 col-md-3 mb-3">
+        <h6 class="fw-bold mb-2">Contact</h6>
+        <ul class="list-unstyled small mb-0">
+          <li>--------------</li>
+          <li>--------------</li>
+          <li>--------------</li>
+          <li>--------------</li>
+        </ul>
+      </div>
+      {{/if}}
+
+    </div>
+
+    <!-- Divider and copyright -->
+    <hr class="mt-3 mb-2">
+    <p class="small text-muted mb-0">&copy; 2025 LuxCart. All rights reserved.</p>
+  </div>
+</footer>

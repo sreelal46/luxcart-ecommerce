@@ -5,7 +5,44 @@ const {
   INTERNAL_SERVER_ERROR,
 } = require("../../constant/statusCode");
 const Brand = require("../../models/admin/brandModal");
+//loading brands
+const loadBrands = async (req, res, next) => {
+  try {
+    //fetch data
+    let { search, page, limit } = req.query;
 
+    page = parseInt(page) || 1;
+    limit = parseInt(limit) || 12;
+    const skip = (page - 1) * limit;
+
+    const filter = {};
+    if (search && search !== "undefined" && search.trim() !== "") {
+      const regex = new RegExp(search.split("").join("[^a-zA-Z0-9]*"), "i");
+      filter.$or = [{ name: regex }];
+    }
+
+    const [brand, totalBrand] = await Promise.all([
+      Brand.find(filter).sort({ createdAt: -1 }).skip(skip).limit(limit).lean(),
+      Brand.countDocuments(filter),
+    ]);
+
+    if (req.xhr || req.headers.accept.indexOf("application/json") > -1) {
+      return res.json({
+        success: true,
+        result: brand,
+        totalPages: Math.ceil(totalBrand / limit),
+        currentPage: page,
+      });
+    }
+
+    const brands = await Brand.find({}).sort({ createdAt: -1 }).lean();
+    res.render("admin/brand/brandManagement", { brands });
+  } catch (err) {
+    console.error(err);
+    res.render("admin/brandManagement", { brands: [] });
+    next(err);
+  }
+};
 //adding new brand
 const addBrand = async (req, res) => {
   try {
@@ -103,4 +140,4 @@ const softDeleteBrand = async (req, res, next) => {
   }
 };
 
-module.exports = { addBrand, editBrand, softDeleteBrand };
+module.exports = { loadBrands, addBrand, editBrand, softDeleteBrand };
