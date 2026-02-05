@@ -15,6 +15,10 @@ const {
   loadHomePage,
   loadContactPage,
   loadAboutUsPage,
+  loadPrivacyPolicyPage,
+  loadShippingPage,
+  loadWarrantyPage,
+  loadFAQPage,
 } = require("../controllers/user/homePage.controller");
 
 const {
@@ -60,6 +64,10 @@ route.get("/", loadLandingPage);
 route.get("/homepage", checkSession, loadHomePage);
 route.get("/contact", checkSession, loadContactPage);
 route.get("/about", checkSession, loadAboutUsPage);
+route.get("/privacy-policy", checkSession, loadPrivacyPolicyPage);
+route.get("/shipping", checkSession, loadShippingPage);
+route.get("/warranty", checkSession, loadWarrantyPage);
+route.get("/faq", checkSession, loadFAQPage);
 route.get("/logout", logoutPage);
 
 // login

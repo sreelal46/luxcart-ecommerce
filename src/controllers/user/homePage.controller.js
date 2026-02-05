@@ -33,12 +33,6 @@ const loadLandingPage = async (req, res, next) => {
     const defaultBanner = admin.bannerMedia.find(
       (banner) => banner.isDefault === true,
     );
-    res.locals.footer = {
-      address: admin.address,
-      email: admin.email,
-      phone: admin.phone,
-    };
-    req.session.save();
     const brands = await Brand.find({ isListed: true }).lean();
     const types = await Type.find({ isListed: true }).lean();
     const accessories = await Accessory.find({ isListed: true })
@@ -71,12 +65,6 @@ const loadHomePage = async (req, res, next) => {
     const defaultBanner = admin.bannerMedia.find(
       (banner) => banner.isDefault === true,
     );
-    res.locals.footer = {
-      address: admin.address,
-      email: admin.email,
-      phone: admin.phone,
-    };
-    req.session.save();
     const brands = await Brand.find({ isListed: true }).lean();
     const types = await Type.find({ isListed: true }).lean();
     const accessories = await Accessory.find({ isListed: true })
@@ -103,9 +91,7 @@ const loadContactPage = async (req, res, next) => {
     if (!admin || !admin.bannerMedia || admin.bannerMedia.length === 0) {
       return null;
     }
-    res.status(OK).render("user/contactUs", {
-      // adminAddress,
-    });
+    res.status(OK).render("user/company/contactUs", {});
   } catch (error) {
     console.error("Error from loadContactPage", error);
     next(error);
@@ -113,11 +99,41 @@ const loadContactPage = async (req, res, next) => {
 };
 const loadAboutUsPage = async (req, res, next) => {
   try {
-    res.status(OK).render("user/aboutUs", {
-      // adminAddress,
-    });
+    res.status(OK).render("user/company/aboutUs", {});
   } catch (error) {
     console.error("Error from loadAboutUsPage", error);
+    next(error);
+  }
+};
+const loadFAQPage = async (req, res, next) => {
+  try {
+    res.status(OK).render("user/company/faq");
+  } catch (error) {
+    console.error("Error from loadFAQPage", error);
+    next(error);
+  }
+};
+const loadWarrantyPage = async (req, res, next) => {
+  try {
+    res.status(OK).render("user/company/warranty", {});
+  } catch (error) {
+    console.error("Error from loadWarrantyPage", error);
+    next(error);
+  }
+};
+const loadShippingPage = async (req, res, next) => {
+  try {
+    res.status(OK).render("user/company/shipping", {});
+  } catch (error) {
+    console.error("Error from loadShippingPage", error);
+    next(error);
+  }
+};
+const loadPrivacyPolicyPage = async (req, res, next) => {
+  try {
+    res.status(OK).render("user/company/privacyPolicy", {});
+  } catch (error) {
+    console.error("Error from loadPrivacyPolicyPage", error);
     next(error);
   }
 };
@@ -127,4 +143,8 @@ module.exports = {
   loadHomePage,
   loadContactPage,
   loadAboutUsPage,
+  loadPrivacyPolicyPage,
+  loadShippingPage,
+  loadWarrantyPage,
+  loadFAQPage,
 };

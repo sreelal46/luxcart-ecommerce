@@ -31,13 +31,14 @@ const verifyadmin = async (req, res, next) => {
       _id: admin._id,
       name: admin.name,
       email: admin.email,
+      profileImage: admin.profileImage,
     };
     req.session.save(() =>
       res.status(OK).json({
         success: true,
         message: "Login Successfull",
         redirect: "/admin/dashboard",
-      })
+      }),
     );
   } catch (error) {
     console.log("Error from admin verifyadmin", error);
@@ -170,7 +171,7 @@ const PasswordChanging = async (req, res, next) => {
     //updating admin password
     await Admin.updateOne(
       { _id: admin._id },
-      { $set: { password: hashNewPassword } }
+      { $set: { password: hashNewPassword } },
     );
 
     //saving success message
@@ -181,7 +182,7 @@ const PasswordChanging = async (req, res, next) => {
         success: true,
         alert: "Password changed",
         redirect: "/admin/login",
-      })
+      }),
     );
   } catch (error) {
     console.error("Error from password chnaging admin", error);
