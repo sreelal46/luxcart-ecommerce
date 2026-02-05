@@ -19,6 +19,7 @@ const {
   loadShippingPage,
   loadWarrantyPage,
   loadFAQPage,
+  sendMessage,
 } = require("../controllers/user/homePage.controller");
 
 const {
@@ -63,6 +64,7 @@ const {
 route.get("/", loadLandingPage);
 route.get("/homepage", checkSession, loadHomePage);
 route.get("/contact", checkSession, loadContactPage);
+route.post("/contact/send-message", checkSession, sendMessage);
 route.get("/about", checkSession, loadAboutUsPage);
 route.get("/privacy-policy", checkSession, loadPrivacyPolicyPage);
 route.get("/shipping", checkSession, loadShippingPage);

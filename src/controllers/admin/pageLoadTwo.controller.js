@@ -4,6 +4,7 @@ const Car = require("../../models/admin/productCarModal");
 const Order = require("../../models/user/OrderModel");
 const Brand = require("../../models/admin/brandModal");
 const Category = require("../../models/admin/categoryModel");
+const ContactMessage = require("../../models/admin/contactModal");
 
 const loadOrderManagement = async (req, res, next) => {
   try {
@@ -324,11 +325,46 @@ const loadCancelReq = async (req, res, next) => {
     next(error);
   }
 };
+const loadNotification = async (req, res, next) => {
+  try {
+    const notifications = await ContactMessage.find()
+      .sort({ createdAt: -1 })
+      .lean();
 
+    const unreadCount = notifications.filter((n) => !n.isRead).length;
+
+    res.status(OK).render("admin/notification", {
+      admin: req.admin,
+      notifications,
+      unreadCount,
+    });
+  } catch (error) {
+    console.log("error form load notication");
+  }
+};
+
+const readNotifiction = async (req, res) => {
+  try {
+    await ContactMessage.findByIdAndUpdate(req.params.id, { isRead: true });
+
+    return res.status(200).json({
+      success: true,
+      message: "Notification marked as read",
+    });
+  } catch (error) {
+    console.error(error);
+    return res.status(500).json({
+      success: false,
+      alert: "Server error while marking notification as read",
+    });
+  }
+};
 module.exports = {
   loadOrderManagement,
   loadOneOrder,
   loadStockPage,
   loadReturnReq,
   loadCancelReq,
+  loadNotification,
+  readNotifiction,
 };

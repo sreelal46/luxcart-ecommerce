@@ -39,6 +39,8 @@ const {
   loadStockPage,
   loadReturnReq,
   loadCancelReq,
+  loadNotification,
+  readNotifiction,
 } = require("../controllers/admin/pageLoadTwo.controller");
 
 // ====================== AUTH CONTROLLERS ======================
@@ -64,7 +66,9 @@ route.get("/logout", checkSession, (req, res) => {
     res.redirect("/admin/login");
   });
 });
-
+route.get("/notifications", checkSession, loadNotification);
+// Mark as read
+route.patch("/notifications/read/:id", checkSession, readNotifiction);
 // forgot password
 route.get("/verify-email-page", loadEmailVerify);
 route.post("/verify-email", emailVerification);

@@ -45,17 +45,19 @@ function validateAllFields() {
   });
   return isValid;
 }
+function showErrorModal(message) {
+  const errorText = document.getElementById("errorModalText");
+  errorText.textContent = message;
 
+  const errorModal = new bootstrap.Modal(document.getElementById("errorModal"));
+  errorModal.show();
+}
 form.addEventListener("submit", async (e) => {
   e.preventDefault();
 
-  // Validate all fields before submission
   if (!validateAllFields()) {
-    // Focus on first invalid field
     const firstInvalid = form.querySelector(".is-invalid");
-    if (firstInvalid) {
-      firstInvalid.focus();
-    }
+    if (firstInvalid) firstInvalid.focus();
     return;
   }
 
@@ -71,23 +73,26 @@ form.addEventListener("submit", async (e) => {
   };
 
   try {
-    const res = await axios.post("/api/contact", formData);
+    const res = await axios.post("/contact/send-message", formData);
 
     if (res.data.success) {
       form.reset();
 
-      // Remove validation classes after reset
       formFields.forEach((field) => {
         field.classList.remove("is-valid", "is-invalid");
       });
 
-      const modal = new bootstrap.Modal(
+      const successModal = new bootstrap.Modal(
         document.getElementById("successModal"),
       );
-      modal.show();
+      successModal.show();
+    } else {
+      showErrorModal(res.data.message || "Unable to send message.");
     }
   } catch (error) {
-    alert("Something went wrong. Please try again.");
+    showErrorModal(
+      error.response?.data?.message || "Server error. Please try again later.",
+    );
   } finally {
     btnText.classList.remove("d-none");
     btnLoader.classList.add("d-none");

@@ -9,15 +9,11 @@ const {
   INTERNAL_SERVER_ERROR,
   REDIRECT,
 } = require("../../constant/statusCode");
-const { filterAndSearchProductUser } = require("../helper/filter");
 const Brand = require("../../models/admin/brandModal");
-const Category = require("../../models/admin/categoryModel");
 const Type = require("../../models/admin/typeModal");
-const Car = require("../../models/admin/productCarModal");
 const Accessory = require("../../models/admin/productAccessoryModal");
-const Cart = require("../../models/user/CartModel");
-const carVariantModel = require("../../models/admin/carVariantModel");
 const Admin = require("../../models/admin/adminModel");
+const ContactMessage = require("../../models/admin/contactModal");
 
 //loading login page
 const loadLandingPage = async (req, res, next) => {
@@ -137,7 +133,17 @@ const loadPrivacyPolicyPage = async (req, res, next) => {
     next(error);
   }
 };
-
+const sendMessage = async (req, res, next) => {
+  try {
+    console.log(req.body);
+    const { name, email, phone, subject, message } = req.body;
+    await ContactMessage.create({ name, email, phone, subject, message });
+    res.status(OK).json({ success: true });
+  } catch (error) {
+    console.log("error form send message", error);
+    next(error);
+  }
+};
 module.exports = {
   loadLandingPage,
   loadHomePage,
@@ -147,4 +153,5 @@ module.exports = {
   loadShippingPage,
   loadWarrantyPage,
   loadFAQPage,
+  sendMessage,
 };

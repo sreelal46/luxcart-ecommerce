@@ -1,0 +1,82 @@
+<link rel="stylesheet" href="/css/admin/notification.css">
+
+<div class="container py-4">
+  <!-- Page Header -->
+  <div class="d-flex justify-content-between align-items-center mb-4">
+    <div>
+      <h4 class="fw-bold mb-0">Notifications</h4>
+      <small class="text-muted">
+        You have {{unreadCount}} unread notifications
+      </small>
+    </div>
+  </div>
+
+  <!-- Notification List -->
+  <div class="card shadow-sm border-0 rounded-4">
+    <div class="list-group list-group-flush">
+
+      {{#if notifications.length}}
+      {{#each notifications}}
+      <div
+        class="list-group-item notification-item d-flex justify-content-between align-items-start {{#unless isRead}}unread{{/unless}}">
+
+        <div class="me-3">
+          <i class="bi bi-envelope-fill text-primary fs-5"></i>
+        </div>
+
+        <div class="flex-grow-1">
+          <div class="d-flex justify-content-between">
+            <h6 class="fw-semibold mb-1">
+              {{subject}}
+              {{#unless isRead}}
+              <span class="badge bg-primary ms-2">New</span>
+              {{/unless}}
+            </h6>
+
+            <small class="text-muted">
+              {{formattedDate createdAt}}
+            </small>
+          </div>
+
+          <p class="mb-1 text-muted">
+            {{message}}
+          </p>
+
+          <div class="d-flex align-items-center gap-2">
+            <span class="badge bg-secondary">{{priority}}</span>
+
+            {{#unless isRead}}
+            <button class="btn btn-sm btn-outline-primary mark-read-btn" data-id="{{_id}}">
+              Mark as read
+            </button>
+            {{/unless}}
+          </div>
+        </div>
+      </div>
+      {{/each}}
+      {{else}}
+      <div class="text-center py-5 text-muted">
+        <i class="bi bi-bell-slash fs-1 mb-3"></i>
+        <p class="mb-0">No notifications found</p>
+      </div>
+      {{/if}}
+
+    </div>
+  </div>
+
+</div>
+<!-- NOTIFICATION ERROR MODAL -->
+<div class="modal fade" id="notificationErrorModal" tabindex="-1">
+  <div class="modal-dialog modal-dialog-centered">
+    <div class="modal-content text-center p-4">
+      <i class="bi bi-exclamation-triangle-fill text-danger fs-1 mb-3"></i>
+      <h5 class="fw-semibold">Action Failed</h5>
+      <p class="text-muted" id="notificationErrorText">
+        Something went wrong.
+      </p>
+      <button class="btn btn-dark" data-bs-dismiss="modal">OK</button>
+    </div>
+  </div>
+</div>
+
+<script src="/js/admin/notifications.js"></script>
