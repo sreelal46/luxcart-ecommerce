@@ -11,6 +11,51 @@ const {
   recalculateCarVariantPrices,
 } = require("../../cron/offersCron");
 
+//Loading category
+const loadCategory = async (req, res, next) => {
+  try {
+    let { search, page, limit } = req.query;
+
+    page = parseInt(page) || 1;
+    limit = parseInt(limit) || 12;
+    const skip = (page - 1) * limit;
+
+    const filter = {};
+    if (search && search !== "undefined" && search.trim() !== "") {
+      const regex = new RegExp(search.split("").join("[^a-zA-Z0-9]*"), "i");
+      filter.$or = [{ name: regex }];
+    }
+
+    const [category, totalCategory] = await Promise.all([
+      Category.find(filter)
+        .sort({ createdAt: -1 })
+        .skip(skip)
+        .limit(limit)
+        .lean(),
+      Category.countDocuments(filter),
+    ]);
+
+    if (req.xhr || req.headers.accept.indexOf("application/json") > -1) {
+      return res.json({
+        success: true,
+        result: category,
+        totalPages: Math.ceil(totalCategory / limit),
+        currentPage: page,
+      });
+    }
+
+    const categories = await Category.find({})
+      .sort({
+        createdAt: -1,
+      })
+      .lean();
+    // console.log(categories);
+    res.status(OK).render("admin/categoryManagement", { categories });
+  } catch (error) {
+    console.log(error);
+    next(error);
+  }
+};
 const addCategory = async (req, res, next) => {
   try {
     const name = req.body.name?.trim();
@@ -183,7 +228,7 @@ const addOfferToCategory = async (req, res, next) => {
           },
         },
       },
-      { new: true }
+      { new: true },
     );
 
     if (!category) {
@@ -202,7 +247,7 @@ const addOfferToCategory = async (req, res, next) => {
       alert: isActive
         ? "Category offer applied successfully!"
         : `Category offer scheduled. Will activate automatically on ${new Date(
-            validFrom
+            validFrom,
           ).toLocaleDateString()}.`,
     });
   } catch (err) {
@@ -218,7 +263,7 @@ const removeOfferToCategory = async (req, res, next) => {
     const category = await Category.findByIdAndUpdate(
       categoryId,
       { $unset: { offer: "" } },
-      { new: true }
+      { new: true },
     );
 
     if (!category) {
@@ -240,42 +285,8 @@ const removeOfferToCategory = async (req, res, next) => {
   }
 };
 
-const removeProductOffer = async (req, res, next) => {
-  try {
-    const { productId } = req.params;
-    const { productType } = req.body;
-
-    /* ========== REMOVE OFFER ========== */
-    if (productType === "accessory") {
-      await Accessory.updateOne(
-        { _id: productId },
-        { $unset: { productOffer: "" } }
-      );
-    } else if (productType === "car") {
-      await CarVariant.updateMany(
-        { product_id: productId },
-        { $unset: { productOffer: "" } }
-      );
-    }
-
-    // ✅ FIX: Immediately recalculate prices for affected products
-    const now = new Date();
-    if (productType === "accessory") {
-      await recalculateAccessoryPrices();
-    } else if (productType === "car") {
-      await recalculateCarVariantPrices();
-    }
-
-    res.status(OK).json({
-      success: true,
-      alert: "Product offer removed successfully!",
-    });
-  } catch (err) {
-    next(err);
-  }
-};
-
 module.exports = {
+  loadCategory,
   addCategory,
   editCategory,
   softDeleteCategory,

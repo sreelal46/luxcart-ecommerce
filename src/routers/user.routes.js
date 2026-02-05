@@ -2,131 +2,160 @@ const express = require("express");
 const route = express.Router();
 const upload = require("../config/multer");
 
-const {
-  loadLandingPage,
-  loadHomePage,
-  loadLoginPage,
-  loadSignUpPage,
-  loadSend_OTP_Page,
-  loadVerify_OTP_Page,
-  loadEmailPage,
-  loadForgotPassPage,
-  loadCarCollection,
-  loadSingleCarProduct,
-  loadAllAccessories,
-  loadSingleAccessories,
-} = require("../controllers/user/pageLoadController");
-
-const {
-  loadAccountPage,
-  loadProfilePage,
-  loadEditProfilePage,
-  loadAddressPage,
-  loadAddAddressPage,
-  loadEditAddressPage,
-  loadChangePassword,
-  loadOrderPage,
-  loadCartPage,
-  loadCheckoutStep1,
-  loadCheckoutStep2,
-  loadCheckoutStep3,
-  loadCheckoutStep4,
-} = require("../controllers/user/pageLoadTwo.controller");
-
-const {
-  loadWishlistPage,
-  loadOrderDetailPage,
-  loadReferralsPage,
-} = require("../controllers/user/pageLoadThree.controller");
-
-const {
-  editEmail,
-  editProfile,
-  addAddress,
-  editAddress,
-  deleteAddress,
-  setDeafaultAddress,
-  changePassword,
-  addToCart,
-  deleteFromCart,
-  changeQuantity,
-  downloadInvoice,
-} = require("../controllers/user/account.controller");
-
-const {
-  cancelOrder,
-  returnOrder,
-  addToWishlist,
-  deleteFromWishlist,
-} = require("../controllers/user/accountTwo.Countroller");
-
-const {
-  createUser,
-  verifyUser,
-  logoutPage,
-  sendOTP,
-  verifyOTP,
-  forgotPassword,
-  resendOTP,
-} = require("../controllers/user/users.Auth.Controller");
-
+// ====================== AUTH MIDDLEWARE ======================
 const {
   isLogin,
   checkSession,
   isPasswordChange,
 } = require("../middlewares/user/userAuth");
 
-//User Auth
+// ====================== PAGE LOAD CONTROLLERS ======================
+const {
+  loadLandingPage,
+  loadHomePage,
+  loadContactPage,
+  loadAboutUsPage,
+  loadPrivacyPolicyPage,
+  loadShippingPage,
+  loadWarrantyPage,
+  loadFAQPage,
+  sendMessage,
+} = require("../controllers/user/homePage.controller");
+
+const {
+  loadCarCollection,
+  loadSingleCarProduct,
+  loadAllAccessories,
+  loadSingleAccessories,
+} = require("../controllers/user/productsPage.controller");
+
+const {
+  loadCheckoutStep1,
+  loadCheckoutStep2,
+  loadCheckoutStep4,
+} = require("../controllers/user/checkoutPage.controller");
+
+const {
+  loadAccountPage,
+  loadReferralsPage,
+} = require("../controllers/user/refrralsAndAccountPage.controller");
+
+// ====================== AUTH CONTROLLERS ======================
+const {
+  loadLoginPage,
+  loadSignUpPage,
+  loadEmailPage,
+  loadForgotPassPage,
+  createUser,
+  verifyUser,
+  logoutPage,
+  forgotPassword,
+} = require("../controllers/user/users.Auth.Controller");
+
+const {
+  loadSend_OTP_Page,
+  loadVerify_OTP_Page,
+  sendOTP,
+  verifyOTP,
+  resendOTP,
+} = require("../controllers/user/otp.controller");
+
+// ====================== HOME & AUTH ROUTES ======================
 route.get("/", loadLandingPage);
 route.get("/homepage", checkSession, loadHomePage);
+route.get("/contact", checkSession, loadContactPage);
+route.post("/contact/send-message", checkSession, sendMessage);
+route.get("/about", checkSession, loadAboutUsPage);
+route.get("/privacy-policy", checkSession, loadPrivacyPolicyPage);
+route.get("/shipping", checkSession, loadShippingPage);
+route.get("/warranty", checkSession, loadWarrantyPage);
+route.get("/faq", checkSession, loadFAQPage);
 route.get("/logout", logoutPage);
 
-//User login page loading and user verification
+// login
 route.get("/login", isLogin, loadLoginPage);
 route.post("/login", verifyUser);
 
-//load signup page and creating users
+// signup
 route.get("/signup", isLogin, loadSignUpPage);
 route.post("/signup", createUser);
 
-//loading OTP page for user verifiation
+// OTP verification
 route.get("/send-otp", isLogin, isPasswordChange, loadSend_OTP_Page);
-//sending otp for forgot password
 route.post("/send-otp", sendOTP);
 
-//forgot password email page loading and load OTP verifying page
-route.get("/forgot-password-email-verification", isLogin, loadEmailPage);
-route.get("/forgot-password-otp", loadVerify_OTP_Page);
-
-//load forgot password page and change the password
-route.get("/forgot-password", isPasswordChange, loadForgotPassPage);
-route.post("/forgot-password", forgotPassword);
-
-//loading OTP entering page and verifying OTP
 route.get("/verify-otp", isPasswordChange, loadVerify_OTP_Page);
 route.post("/verify-otp", verifyOTP);
 
-//resend OTP for user verification and forgot password
 route.get("/resend-otp", resendOTP);
 
-//car colletions
-route.get("/cars-collection", checkSession, loadCarCollection);
-route.get(
-  "/cars-collection/view-car-product/:carId",
-  checkSession,
-  loadSingleCarProduct,
-);
+// forgot password
+route.get("/forgot-password-email-verification", isLogin, loadEmailPage);
+route.get("/forgot-password-otp", loadVerify_OTP_Page);
+route.get("/forgot-password", isPasswordChange, loadForgotPassPage);
+route.post("/forgot-password", forgotPassword);
 
-//view all accessories
-route.get("/all-accessories", checkSession, loadAllAccessories);
-route.get(
-  "/all-accessories/view-accessory-product/:id",
-  checkSession,
-  loadSingleAccessories,
-);
+// ====================== PRODUCTS ======================
+// cars collection
+route.get("/cars-collection", loadCarCollection);
+route.get("/cars-collection/view-car-product/:carId", loadSingleCarProduct);
 
-//view account profile details
+// accessories
+route.get("/all-accessories", loadAllAccessories);
+route.get("/all-accessories/view-accessory-product/:id", loadSingleAccessories);
+
+// ====================== CART ======================
+const {
+  loadCartPage,
+  addToCart,
+  deleteFromCart,
+  changeQuantity,
+  applyCoupon,
+  removeCoupon,
+} = require("../controllers/user/cart.controller");
+
+route.get("/cart", checkSession, loadCartPage);
+route.post("/cart/add", checkSession, addToCart);
+route.delete("/cart/remove-product/:itemId", checkSession, deleteFromCart);
+route.put("/cart/change-quantity/:itemId", checkSession, changeQuantity);
+route.patch("/cart/add-coupon/:couponId", checkSession, applyCoupon);
+route.patch("/cart/remove-coupon", checkSession, removeCoupon);
+
+// ====================== CHECKOUT ======================
+const {
+  checkWalletBalance,
+  createOrder,
+} = require("../controllers/user/createOrder.controller");
+
+const {
+  payment,
+  fullPayment,
+} = require("../controllers/user/payment.controller");
+
+route.get("/cart/checkout-step-1/:cartId", checkSession, loadCheckoutStep1);
+route.get("/cart/checkout-step-2/:addressId", checkSession, loadCheckoutStep2);
+route.get(
+  "/cart/checkout/wallet-balence/:cartTotal/:walletPaymentMethod",
+  checkSession,
+  checkWalletBalance,
+);
+route.post("/cart/create-payment/:paymentMethod", checkSession, payment);
+route.post("/cart/checkout/create-order/:cartId", checkSession, createOrder);
+route.get("/cart/checkout-step-4/:orderId", checkSession, loadCheckoutStep4);
+
+// ====================== ACCOUNT ======================
 route.get("/account", checkSession, loadAccountPage);
+
+// profile
+const {
+  loadProfilePage,
+  loadEditProfilePage,
+  loadChangePassword,
+  editEmail,
+  editProfile,
+  changePassword,
+} = require("../controllers/user/profile.controller");
+
 route.get("/account/profile", checkSession, loadProfilePage);
 route.get(
   "/account/profile/edit-profile/:userId",
@@ -140,7 +169,17 @@ route.post(
   upload.any(),
   editProfile,
 );
-//order details
+route.get("/account/change-password", checkSession, loadChangePassword);
+route.post("/account/change-password/:userId", checkSession, changePassword);
+
+// orders
+const {
+  loadOrderPage,
+  loadOrderDetailPage,
+  cancelOrder,
+  returnOrder,
+} = require("../controllers/user/order.controller");
+
 route.get("/account/orders", checkSession, loadOrderPage);
 route.get(
   "/account/orders/order-details/:orderId",
@@ -157,7 +196,22 @@ route.post(
   checkSession,
   returnOrder,
 );
-//wishlist
+
+// full payment
+route.patch("/order/full-payment/:paymentMethod", checkSession, payment);
+route.patch(
+  "/order/full-payment/change-status/:orderId",
+  checkSession,
+  fullPayment,
+);
+
+// wishlist
+const {
+  loadWishlistPage,
+  addToWishlist,
+  deleteFromWishlist,
+} = require("../controllers/user/wishlist.controller");
+
 route.get("/account/wishlist", checkSession, loadWishlistPage);
 route.post("/account/wishlist/add/:productId", checkSession, addToWishlist);
 route.delete(
@@ -166,7 +220,17 @@ route.delete(
   deleteFromWishlist,
 );
 
-//view account address details
+// addresses
+const {
+  loadAddressPage,
+  loadAddAddressPage,
+  loadEditAddressPage,
+  addAddress,
+  editAddress,
+  deleteAddress,
+  setDeafaultAddress,
+} = require("../controllers/user/address.controller");
+
 route.get("/account/addresses", checkSession, loadAddressPage);
 route.get("/account/addresses/add-address", checkSession, loadAddAddressPage);
 route.post("/account/addresses/add-address/:userId", checkSession, addAddress);
@@ -190,64 +254,24 @@ route.delete(
   checkSession,
   deleteAddress,
 );
-route.get("/account/change-password", checkSession, loadChangePassword);
-route.post("/account/change-password/:userId", checkSession, changePassword);
 
-//referrals
+// referrals
 route.get("/account/referrals", checkSession, loadReferralsPage);
-//wallet
+
+// wallet
 const {
   loadwalletPage,
   addMoneyToWallet,
   verifyWalletPayment,
 } = require("../controllers/user/wallet.controller");
-// Load wallet page
+
 route.get("/account/wallet", checkSession, loadwalletPage);
-// Create payment intent for adding money
 route.post("/account/wallet/add-money", checkSession, addMoneyToWallet);
-// Verify payment and update balance
 route.post("/account/wallet/verify-payment", checkSession, verifyWalletPayment);
 
-//cart management
-const {
-  applyCoupon,
-  removeCoupon,
-} = require("../controllers/user/cart.controller");
-route.get("/cart", checkSession, loadCartPage);
-route.post("/cart/add", checkSession, addToCart);
-route.delete("/cart/remove-product/:itemId", checkSession, deleteFromCart);
-route.put("/cart/change-quantity/:itemId", checkSession, changeQuantity);
-route.patch("/cart/add-coupon/:couponId", checkSession, applyCoupon);
-route.patch("/cart/remove-coupon", checkSession, removeCoupon);
+// ====================== INVOICE ======================
+const { downloadInvoice } = require("../controllers/user/invoice.controller");
 
-// checkout management
-const {
-  checkWalletBalance,
-  createOrder,
-} = require("../controllers/user/order.controller");
-route.get("/cart/checkout-step-1/:cartId", checkSession, loadCheckoutStep1);
-route.get("/cart/checkout-step-2/:addressId", checkSession, loadCheckoutStep2);
-const {
-  payment,
-  fullPayment,
-} = require("../controllers/user/payment.countroller");
-route.get(
-  "/cart/checkout/wallet-balence/:cartTotal/:walletPaymentMethod",
-  checkSession,
-  checkWalletBalance,
-);
-route.post("/cart/create-payment/:paymentMethod", checkSession, payment);
-route.post("/cart/checkout/create-order/:cartId", checkSession, createOrder);
-route.get("/cart/checkout-step-4/:orderId", checkSession, loadCheckoutStep4);
-//full payment
-route.patch("/order/full-payment/:paymentMethod", checkSession, payment);
-route.patch(
-  "/order/full-payment/change-status/:orderId",
-  checkSession,
-  fullPayment,
-);
-
-//download invoice
 route.get(
   "/cart/checkout-success/download-invoice/:orderId",
   checkSession,

@@ -5,13 +5,48 @@ const {
   CONFLICT,
   INTERNAL_SERVER_ERROR,
 } = require("../../constant/statusCode");
-const carVariant = require("../../models/admin/carVariantModel");
+const CarVariant = require("../../models/admin/carVariantModel");
 const Accessory = require("../../models/admin/productAccessoryModal");
 const updateWallet = require("../helper/wallectBalanceCalculater");
 const Wallet = require("../../models/user/walletsModel");
 const mongoose = require("mongoose");
 const Order = require("../../models/user/OrderModel");
 
+const loadCancelReq = async (req, res, next) => {
+  try {
+    const cancelledItems = await Order.aggregate([
+      { $unwind: "$items" },
+
+      { $match: { "items.cancel.requested": true } },
+
+      {
+        $lookup: {
+          from: "users",
+          localField: "userId",
+          foreignField: "_id",
+          as: "user",
+        },
+      },
+      { $unwind: "$user" },
+
+      {
+        $project: {
+          orderId: 1,
+          createdAt: 1,
+          items: 1,
+          "user.name": 1,
+        },
+      },
+      { $sort: { "items.cancel.requestedAt": -1 } },
+    ]);
+    res.render("admin/orders/cancelRequestManagement", {
+      cancelledItems,
+    });
+  } catch (error) {
+    console.log("Error from load cancel request", error);
+    next(error);
+  }
+};
 const cancelApprove = async (req, res, next) => {
   try {
     const { orderId, itemId } = req.params;
@@ -245,7 +280,6 @@ const cancelApprove = async (req, res, next) => {
     });
   }
 };
-
 const cancelReject = async (req, res, next) => {
   try {
     const { orderId, itemId } = req.params;
@@ -277,4 +311,4 @@ const cancelReject = async (req, res, next) => {
   }
 };
 
-module.exports = { cancelApprove, cancelReject };
+module.exports = { loadCancelReq, cancelApprove, cancelReject };

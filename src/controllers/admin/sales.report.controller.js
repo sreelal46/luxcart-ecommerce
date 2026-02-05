@@ -15,7 +15,7 @@ const loadSalesReportPage = async (req, res, next) => {
       ajax,
     } = req.query;
 
-    // 🔢 Convert to numbers
+    // Convert to numbers
     const pageNum = Number(page);
     const limitNum = Number(limit);
     const skip = (pageNum - 1) * limitNum;
@@ -47,7 +47,7 @@ const loadSalesReportPage = async (req, res, next) => {
       });
     });
 
-    /* 🔍 SEARCH */
+    /* SEARCH */
     if (search) {
       const regex = new RegExp(search, "i");
       sales = sales.filter(
@@ -58,7 +58,7 @@ const loadSalesReportPage = async (req, res, next) => {
       );
     }
 
-    /* 🎯 FILTERS */
+    /* FILTERS */
     if (category) {
       sales = sales.filter((s) => s.category === category);
     }
@@ -79,7 +79,7 @@ const loadSalesReportPage = async (req, res, next) => {
       sales = sales.filter((s) => s.total <= Number(maxTotal));
     }
 
-    /* 📊 TOTALS */
+    /*TOTALS */
     let totalRevenue = 0;
     let totalItemsSold = 0;
 
@@ -90,12 +90,12 @@ const loadSalesReportPage = async (req, res, next) => {
 
     const netSales = totalRevenue;
 
-    /* 📄 PAGINATION */
+    /* PAGINATION */
     const totalCount = sales.length;
     const totalPages = Math.ceil(totalCount / limitNum);
     const paginatedSales = sales.slice(skip, skip + limitNum);
 
-    /* 🔁 AJAX RESPONSE */
+    /* AJAX RESPONSE */
     if (ajax) {
       return res.status(200).json({
         sales: paginatedSales,
@@ -111,7 +111,7 @@ const loadSalesReportPage = async (req, res, next) => {
       });
     }
 
-    /* 🖥️ FIRST PAGE LOAD */
+    /* FIRST PAGE LOAD */
     res.render("admin/salesReport", {
       sales: paginatedSales,
       totalRevenue,

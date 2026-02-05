@@ -9,7 +9,6 @@ const {
   INTERNAL_SERVER_ERROR,
   REDIRECT,
 } = require("../../constant/statusCode");
-const { filterAndSearchProductUser } = require("../helper/filter");
 const Brand = require("../../models/admin/brandModal");
 const Category = require("../../models/admin/categoryModel");
 const Type = require("../../models/admin/typeModal");
@@ -17,109 +16,8 @@ const Car = require("../../models/admin/productCarModal");
 const Accessory = require("../../models/admin/productAccessoryModal");
 const Cart = require("../../models/user/CartModel");
 const carVariantModel = require("../../models/admin/carVariantModel");
-const Admin = require("../../models/admin/adminModel");
 
-//loading login page
-const loadLandingPage = async (req, res, next) => {
-  try {
-    // Find the first admin (assuming single admin system)
-    const admin = await Admin.findOne();
-
-    if (!admin || !admin.bannerMedia || admin.bannerMedia.length === 0) {
-      return null;
-    }
-
-    // Find the banner and address
-    const defaultBanner = admin.bannerMedia.find(
-      (banner) => banner.isDefault === true,
-    );
-    res.locals.footer = {
-      address: admin.address,
-      email: admin.email,
-      phone: admin.phone,
-    };
-    req.session.save();
-    const brands = await Brand.find({ isListed: true }).lean();
-    const types = await Type.find({ isListed: true }).lean();
-    const accessories = await Accessory.find({ isListed: true })
-      .sort({ createdAt: -1 })
-      .populate("product_type_id")
-      .limit(4)
-      .lean();
-    res.status(OK).render("user/landingPage", {
-      brands,
-      types,
-      accessories,
-      defaultBanner: defaultBanner || admin.bannerMedia[0],
-    });
-  } catch (error) {
-    console.error("Error from loading page", error);
-    next(error);
-  }
-};
-
-const loadHomePage = async (req, res, next) => {
-  try {
-    // Find the first admin (assuming single admin system)
-    const admin = await Admin.findOne();
-
-    if (!admin || !admin.bannerMedia || admin.bannerMedia.length === 0) {
-      return null;
-    }
-
-    // Find the banner and address
-    const defaultBanner = admin.bannerMedia.find(
-      (banner) => banner.isDefault === true,
-    );
-    res.locals.footer = {
-      address: admin.address,
-      email: admin.email,
-      phone: admin.phone,
-    };
-    req.session.save();
-    const brands = await Brand.find({ isListed: true }).lean();
-    const types = await Type.find({ isListed: true }).lean();
-    const accessories = await Accessory.find({ isListed: true })
-      .sort({ createdAt: -1 })
-      .populate("product_type_id")
-      .limit(4)
-      .lean();
-    res.status(OK).render("user/landingPage", {
-      brands,
-      types,
-      accessories,
-      defaultBanner: defaultBanner || admin.bannerMedia[0],
-    });
-  } catch (error) {
-    console.error("Error from loading page", error);
-    next(error);
-  }
-};
-
-const loadLoginPage = (req, res) => {
-  res.status(OK).render("user/auth/login");
-};
-
-const loadEmailPage = (req, res) => {
-  res.status(OK).render("user/auth/verify-email");
-};
-
-const loadForgotPassPage = (req, res) => {
-  res.status(OK).render("user/auth/change-password");
-};
-
-const loadSignUpPage = (req, res) => {
-  res.status(OK).render("user/auth/signUp");
-};
-
-const loadSend_OTP_Page = (req, res) => {
-  res.status(OK).render("user/auth/verify-email");
-};
-
-const loadVerify_OTP_Page = (req, res) => {
-  res.status(OK).render("user/auth/verify-otp");
-};
-
+//load all cars
 const loadCarCollection = async (req, res, next) => {
   try {
     let {
@@ -218,11 +116,11 @@ const loadCarCollection = async (req, res, next) => {
     next(error);
   }
 };
-
+//load all single cars
 const loadSingleCarProduct = async (req, res, next) => {
   try {
     // Get data
-    const userId = req.session.user._id;
+    const userId = req.session?.user?._id;
     const carId = req.params.carId;
     let selectedVariantId = req.query.variantId;
     const cart = await Cart.findOne({ userId });
@@ -314,7 +212,7 @@ const loadSingleCarProduct = async (req, res, next) => {
     next(error);
   }
 };
-
+//load all Accessories
 const loadAllAccessories = async (req, res, next) => {
   try {
     let {
@@ -411,10 +309,10 @@ const loadAllAccessories = async (req, res, next) => {
     next(error);
   }
 };
-
+//load all single Accessories
 const loadSingleAccessories = async (req, res, next) => {
   try {
-    const userId = req.session.user._id;
+    const userId = req.session?.user?._id;
     const productId = req.params.id;
     const cart = await Cart.findOne({ userId });
 
@@ -478,14 +376,6 @@ const loadSingleAccessories = async (req, res, next) => {
 };
 
 module.exports = {
-  loadLandingPage,
-  loadHomePage,
-  loadLoginPage,
-  loadEmailPage,
-  loadSignUpPage,
-  loadSend_OTP_Page,
-  loadVerify_OTP_Page,
-  loadForgotPassPage,
   loadCarCollection,
   loadSingleCarProduct,
   loadAllAccessories,

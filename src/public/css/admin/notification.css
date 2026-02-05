@@ -1,0 +1,23 @@
+.notification-item {
+  transition:
+    background-color 0.25s ease,
+    transform 0.15s ease;
+}
+
+.notification-item:hover {
+  background-color: rgba(51, 90, 163, 0.05);
+  transform: translateY(-2px);
+}
+
+.notification-item.unread {
+  background-color: rgba(51, 90, 163, 0.08);
+}
+
+.notification-item.unread:hover {
+  background-color: rgba(51, 90, 163, 0.12);
+}
+
+.mark-read-btn {
+  font-size: 0.75rem;
+  padding: 3px 8px;
+}
