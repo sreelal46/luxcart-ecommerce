@@ -81,7 +81,7 @@ const loadCarCollection = async (req, res, next) => {
         .populate("brand_id", "name")
         .populate("category_id", "name")
         .populate("product_type_id", "name")
-        .populate("variantIds", "image_url stock")
+        .populate("variantIds", "image_url stock offerPrices appliedOffer")
         .lean(),
       Car.countDocuments(filter),
     ]);

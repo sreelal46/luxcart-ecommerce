@@ -124,15 +124,52 @@
       <a href="/all-accessories/view-accessory-product/{{this._id}}" class="col-12 col-sm-6 col-md-4 col-lg-3"
         style="text-decoration: none;">
 
-        <div class="accessory-card card border-0 shadow-sm h-100">
-          <img src="{{this.images.[0]}}" class="card-img-top" alt="Carbon Fibre steering wheel">
+        <div class="accessory-card card border-0 shadow-sm h-100 position-relative">
+
+          {{!-- OFFER BADGE --}}
+          {{#if this.appliedOffer}}
+          <span class="badge bg-success position-absolute top-0 start-0 m-2">
+            {{#if (eq this.appliedOffer.discountType "Percentage")}}
+            {{this.appliedOffer.discountValue}}% OFF
+            {{else}}
+            ₹{{this.appliedOffer.discountValue}} OFF
+            {{/if}}
+          </span>
+          {{/if}}
+
+          {{!-- OUT OF STOCK BADGE --}}
+          {{#if (eq this.stock 0)}}
+          <span class="badge bg-danger position-absolute top-0 end-0 m-2">
+            Out of Stock
+          </span>
+          {{/if}}
+
+          <img src="{{this.images.[0]}}" class="card-img-top {{#if (eq this.stock 0)}}opacity-50{{/if}}"
+            alt="{{this.name}}">
+
           <div class="card-body text-center">
             <h6 class="fw-bold">{{this.name}}</h6>
             <p class="text-muted small">{{this.product_type_id.name}}</p>
-            <p class="fw-bold text-dark mb-0">₹ {{formatPrice this.price}}</p>
-          </div>
-        </div>
 
+            {{!-- PRICE SECTION --}}
+            {{#if this.appliedOffer}}
+            <p class="mb-0">
+              <span class="text-muted text-decoration-line-through small">
+                ₹ {{formatPrice this.price}}
+              </span>
+            </p>
+            <p class="fw-bold text-success mb-0">
+              ₹ {{formatPrice this.offerPrices.finalPrice}}
+            </p>
+            {{else}}
+            <p class="fw-bold text-dark mb-0">
+              ₹ {{formatPrice this.price}}
+            </p>
+            {{/if}}
+
+          </div>
+
+        </div>
       </a>
       {{/each}}
     </div>
