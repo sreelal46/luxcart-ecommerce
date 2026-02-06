@@ -7,7 +7,49 @@ const {
 } = require("../../constant/statusCode");
 const Order = require("../../models/user/OrderModel");
 const Referral = require("../../models/user/referral.Model");
-const mongoose = require("mongoose");
+/* ===============================================
+   STATUS PROGRESSION RULES
+   =============================================== */
+const STATUS_HIERARCHY = {
+  placed: 0,
+  confirmed: 1,
+  shipped: 2,
+  out_for_delivery: 3,
+  delivered: 4,
+  cancelled: -1, // Can happen at any time before delivery
+  returned: -1, // Can happen after delivery
+};
+
+const STATUS_TIME_MAP = {
+  placed: "placedAt",
+  confirmed: "confirmedAt",
+  shipped: "shippedAt",
+  out_for_delivery: "out_for_deliveryAt",
+  delivered: "deliveredAt",
+};
+
+/* ===============================================
+   VALIDATE STATUS TRANSITION
+   =============================================== */
+const canTransitionStatus = (currentStatus, newStatus) => {
+  const currentLevel = STATUS_HIERARCHY[currentStatus];
+  const newLevel = STATUS_HIERARCHY[newStatus];
+
+  // Special cases: cancelled and returned
+  if (newStatus === "cancelled") {
+    // Can only cancel if not delivered
+    return currentStatus !== "delivered";
+  }
+
+  if (newStatus === "returned") {
+    // Can only return if delivered
+    return currentStatus === "delivered";
+  }
+
+  // Normal progression: can only move forward
+  return newLevel > currentLevel;
+};
+
 /* ===============================================
    UPDATE ALL ORDER ITEMS STATUS
    =============================================== */
@@ -15,14 +57,6 @@ const updateOrderStatus = async (req, res, next) => {
   try {
     const { orderId } = req.params;
     const { status } = req.body;
-
-    const STATUS_TIME_MAP = {
-      placed: "placedAt",
-      confirmed: "confirmedAt",
-      shipped: "shippedAt",
-      out_for_delivery: "out_for_deliveryAt",
-      delivered: "deliveredAt",
-    };
 
     const ALLOWED_STATUSES = Object.keys(STATUS_TIME_MAP).concat([
       "cancelled",
@@ -40,6 +74,24 @@ const updateOrderStatus = async (req, res, next) => {
       return res
         .status(NOT_FOUND)
         .json({ success: false, alert: "Order not found" });
+    }
+
+    // Check if any active item can transition to new status
+    const hasInvalidTransition = order.items.some((item) => {
+      // Skip cancelled or returned items
+      if (item.cancel?.approvedAt || item.return?.approvedAt) {
+        return false;
+      }
+
+      const currentStatus = item.fulfillmentStatus.status;
+      return !canTransitionStatus(currentStatus, status);
+    });
+
+    if (hasInvalidTransition) {
+      return res.status(BAD_REQUEST).json({
+        success: false,
+        alert: `Cannot move backward in status progression. Current status must be before '${status}' in the fulfillment flow.`,
+      });
     }
 
     const now = new Date();
@@ -121,6 +173,7 @@ const updateOrderStatus = async (req, res, next) => {
     res.status(OK).json({
       success: true,
       message: "Order status updated successfully",
+      data: order,
     });
   } catch (error) {
     console.error("Error from update order status", error);
@@ -135,14 +188,6 @@ const updateSingleItemStatus = async (req, res, next) => {
   try {
     const { orderId, itemId } = req.params;
     const { status } = req.body;
-
-    const STATUS_TIME_MAP = {
-      placed: "placedAt",
-      confirmed: "confirmedAt",
-      shipped: "shippedAt",
-      out_for_delivery: "out_for_deliveryAt",
-      delivered: "deliveredAt",
-    };
 
     const ALLOWED_STATUSES = Object.keys(STATUS_TIME_MAP).concat([
       "cancelled",
@@ -182,6 +227,15 @@ const updateSingleItemStatus = async (req, res, next) => {
       return res.status(BAD_REQUEST).json({
         success: false,
         alert: "Cannot update status of cancelled or returned items",
+      });
+    }
+
+    // Validate status transition
+    const currentStatus = item.fulfillmentStatus.status;
+    if (!canTransitionStatus(currentStatus, status)) {
+      return res.status(BAD_REQUEST).json({
+        success: false,
+        alert: `Cannot change status from '${currentStatus}' to '${status}'. Status can only move forward in the fulfillment flow.`,
       });
     }
 
@@ -252,6 +306,7 @@ const updateSingleItemStatus = async (req, res, next) => {
     res.status(OK).json({
       success: true,
       message: "Item status updated successfully",
+      data: order,
     });
   } catch (error) {
     console.error("Error updating item status", error);
@@ -259,6 +314,99 @@ const updateSingleItemStatus = async (req, res, next) => {
   }
 };
 
+/* ===============================================
+   GET ORDER STATUS FLOW (HELPER FOR FRONTEND)
+   =============================================== */
+const getOrderStatusFlow = async (req, res, next) => {
+  try {
+    const { orderId, itemId } = req.params;
+
+    const order = await Order.findById(orderId);
+    if (!order) {
+      return res
+        .status(NOT_FOUND)
+        .json({ success: false, alert: "Order not found" });
+    }
+
+    let currentStatus;
+    let availableStatuses = [];
+
+    if (itemId) {
+      // Get status for specific item
+      const item = order.items.find((i) => i._id.toString() === itemId);
+      if (!item) {
+        return res
+          .status(NOT_FOUND)
+          .json({ success: false, alert: "Item not found" });
+      }
+
+      currentStatus = item.fulfillmentStatus.status;
+
+      // Check if item is cancelled or returned
+      if (item.cancel?.approvedAt) {
+        availableStatuses = [];
+      } else if (item.return?.approvedAt) {
+        availableStatuses = [];
+      } else {
+        // Get available next statuses
+        availableStatuses = Object.keys(STATUS_HIERARCHY).filter((status) =>
+          canTransitionStatus(currentStatus, status),
+        );
+      }
+    } else {
+      // Get status for all items (find the earliest status)
+      const activeItems = order.items.filter(
+        (item) => !item.cancel?.approvedAt && !item.return?.approvedAt,
+      );
+
+      if (activeItems.length === 0) {
+        return res.status(OK).json({
+          success: true,
+          data: {
+            currentStatus: "No active items",
+            availableStatuses: [],
+          },
+        });
+      }
+
+      // Find the minimum status level among active items
+      const minStatusLevel = Math.min(
+        ...activeItems.map(
+          (item) => STATUS_HIERARCHY[item.fulfillmentStatus.status],
+        ),
+      );
+
+      currentStatus = Object.keys(STATUS_HIERARCHY).find(
+        (key) => STATUS_HIERARCHY[key] === minStatusLevel,
+      );
+
+      // Get available next statuses that ALL items can transition to
+      availableStatuses = Object.keys(STATUS_HIERARCHY).filter((status) =>
+        activeItems.every((item) =>
+          canTransitionStatus(item.fulfillmentStatus.status, status),
+        ),
+      );
+    }
+
+    res.status(OK).json({
+      success: true,
+      data: {
+        currentStatus,
+        availableStatuses,
+        statusFlow: [
+          "placed",
+          "confirmed",
+          "shipped",
+          "out_for_delivery",
+          "delivered",
+        ],
+      },
+    });
+  } catch (error) {
+    console.error("Error getting order status flow", error);
+    next(error);
+  }
+};
 /* ===============================================
    REFERRAL BONUS HELPER FUNCTION
    =============================================== */
