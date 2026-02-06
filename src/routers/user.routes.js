@@ -63,13 +63,13 @@ const {
 // ====================== HOME & AUTH ROUTES ======================
 route.get("/", loadLandingPage);
 route.get("/homepage", checkSession, loadHomePage);
-route.get("/contact", checkSession, loadContactPage);
-route.post("/contact/send-message", checkSession, sendMessage);
-route.get("/about", checkSession, loadAboutUsPage);
-route.get("/privacy-policy", checkSession, loadPrivacyPolicyPage);
-route.get("/shipping", checkSession, loadShippingPage);
-route.get("/warranty", checkSession, loadWarrantyPage);
-route.get("/faq", checkSession, loadFAQPage);
+route.get("/contact", loadContactPage);
+route.post("/contact/send-message", sendMessage);
+route.get("/about", loadAboutUsPage);
+route.get("/privacy-policy", loadPrivacyPolicyPage);
+route.get("/shipping", loadShippingPage);
+route.get("/warranty", loadWarrantyPage);
+route.get("/faq", loadFAQPage);
 route.get("/logout", logoutPage);
 
 // login
@@ -174,7 +174,7 @@ route.get(
   checkSession,
   loadEditProfilePage,
 );
-route.post("/check-email", editEmail);
+route.post("/check-email", checkSession, editEmail);
 route.post(
   "/account/profile/edit-profile/:userId",
   checkSession,

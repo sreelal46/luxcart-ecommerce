@@ -179,7 +179,7 @@
    ===============================*/
 .mobile-alert {
   position: fixed;
-  bottom: 75px;
+  top: 75px;
   left: 0;
   right: 0;
   margin: 0 auto;
@@ -196,7 +196,7 @@
 
   opacity: 0;
   pointer-events: none;
-  transform: translateY(120%);
+  transform: translateY(-120%);
   transition: all 0.35s ease;
 
   box-shadow: 0 6px 22px rgba(0, 0, 0, 0.25);
@@ -218,7 +218,7 @@
 }
 
 .message-red {
-  color: #ff4d4d;
+  color: #ffffff;
 }
 
 .message-yellow {

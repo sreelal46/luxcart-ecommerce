@@ -426,7 +426,7 @@ body {
 
 .mobile-alert {
   position: fixed;
-  bottom: 75px;
+  top: 75px;
   left: 0;
   right: 0;
   margin: 0 auto;
@@ -443,7 +443,7 @@ body {
 
   opacity: 0;
   pointer-events: none;
-  transform: translateY(120%);
+  transform: translateY(-120%);
   transition: all 0.35s ease;
 
   box-shadow: 0 6px 22px rgba(0, 0, 0, 0.25);
@@ -476,7 +476,7 @@ body {
   color: #00ff7f;
 }
 .message-red {
-  color: #ff4d4d;
+  color: #f8f8f8;
 }
 .message-yellow {
   color: #ffcc00;

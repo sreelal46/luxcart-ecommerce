@@ -7,6 +7,7 @@ const {
 } = require("../../constant/statusCode");
 const Order = require("../../models/user/OrderModel");
 const Referral = require("../../models/user/referral.Model");
+const { updateWallet } = require("../helper/wallectBalanceCalculater");
 /* ===============================================
    STATUS PROGRESSION RULES
    =============================================== */

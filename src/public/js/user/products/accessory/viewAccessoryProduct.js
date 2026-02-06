@@ -227,9 +227,17 @@ document.addEventListener("DOMContentLoaded", () => {
           showMobileAlert(msg, "error");
         }
       } catch (error) {
-        console.log("Error from add to cart FRONTEND", error);
-        const msg = error.response?.data.alert || "INTERNAL SERVER ERROR";
-        showMobileAlert(msg, "error");
+        const data = error.response?.data;
+
+        if (error.response?.status === 401 && data?.redirect) {
+          showMobileAlert(data.alert, "error");
+          setTimeout(() => {
+            window.location.href = data.redirect;
+          }, 1000);
+          return;
+        }
+
+        showMobileAlert("INTERNAL SERVER ERROR", "error");
       }
     });
 
@@ -243,37 +251,6 @@ document.addEventListener("DOMContentLoaded", () => {
 
   if (addToCartMob) {
     addToCartAxios(addToCartMob, "accessory", productId);
-  }
-
-  // Direct buy function
-  function directBuyAxios(element, productType, productId) {
-    if (!element) return; // Safety check
-
-    element.addEventListener("click", async () => {
-      console.log("buy item clicked");
-      try {
-        const res = await axios.post("/cart/add", {
-          productType,
-          productId,
-          directBuy: true,
-        });
-
-        if (res.data.success) {
-          window.location.href = res.data.redirect;
-        } else {
-          const msg = res.data.alert || "Something went wrong";
-          showMobileAlert(msg, "error");
-        }
-      } catch (error) {
-        console.log("Error from add to cart FRONTEND", error);
-        const msg = error.response?.data.alert || "INTERNAL SERVER ERROR";
-        showMobileAlert(msg, "error");
-      }
-    });
-  }
-
-  if (buyProductDesk) {
-    directBuyAxios(buyProductDesk, "accessory", productId);
   }
 });
 
@@ -316,8 +293,17 @@ document.addEventListener("DOMContentLoaded", () => {
       }
     } catch (err) {
       console.error("Error from add to wishlist:", err);
-      const msg = err.response?.data.alert || "INTERNAL SERVER ERROR";
+
+      const data = err.response?.data;
+      const msg = data?.alert || "INTERNAL SERVER ERROR";
+
       showMobileAlert(msg, "error");
+
+      if (err.response?.status === 401 && data?.redirect) {
+        setTimeout(() => {
+          window.location.href = data.redirect;
+        }, 1000);
+      }
     }
   });
 });

@@ -309,25 +309,42 @@ function showAlert(message, type = "success") {
 // MOBILE PLACE ORDER BUTTON
 // ========================================
 
+// MOBILE PLACE ORDER BUTTON
 document.addEventListener("DOMContentLoaded", () => {
   const placeOrderBtn = document.querySelector(".place-order-btn");
 
   if (placeOrderBtn) {
-    placeOrderBtn.addEventListener("click", function (e) {
+    placeOrderBtn.addEventListener("click", async function (e) {
       e.preventDefault();
       e.stopPropagation();
 
-      // Get cart ID from the checkout link in desktop view
-      const checkoutLink = document.querySelector(
-        'a[href^="/cart/checkout-step-1/"]',
-      );
+      // Get cart ID from the mobile bottom bar or any element with cart data
+      const cartId =
+        document.getElementById("proceedCheckoutBtn")?.dataset.cartid;
 
-      if (checkoutLink) {
-        const href = checkoutLink.getAttribute("href");
-        window.location.href = href;
-      } else {
-        // Fallback: show error
-        showAlert("Unable to proceed. Please try again.", "error");
+      if (!cartId) {
+        showAlert("Unable to proceed. Cart ID not found.", "error");
+        return;
+      }
+
+      try {
+        const res = await axios.get(
+          `/cart/checkout-step-1/availability/${cartId}`,
+        );
+
+        if (res.data.success) {
+          window.location.href = `/cart/checkout-step-1/${cartId}`;
+        } else {
+          showErrorModal(
+            "Checkout Blocked",
+            res.data.message || "Unable to proceed to checkout.",
+          );
+        }
+      } catch (error) {
+        showErrorModal(
+          "Something went wrong",
+          error.response?.data?.message || "Please try again later.",
+        );
       }
     });
   }

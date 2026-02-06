@@ -405,10 +405,19 @@ function addToCartAxios(element, productType, productId, variantId) {
         const msg = res.data.alert || "Something went wrong";
         showMobileAlert(msg, "error");
       }
-    } catch (error) {
-      console.log("Error from add to cart FRONTEND", error);
-      const msg = error.response?.data.alert || "INTERNAL SERVER ERROR";
+    } catch (err) {
+      console.error("Error from add to wishlist:", err);
+
+      const data = err.response?.data;
+      const msg = data?.alert || "INTERNAL SERVER ERROR";
+
       showMobileAlert(msg, "error");
+
+      if (err.response?.status === 401 && data?.redirect) {
+        setTimeout(() => {
+          window.location.href = data.redirect;
+        }, 1000);
+      }
     }
   });
 
@@ -485,8 +494,17 @@ document.addEventListener("DOMContentLoaded", () => {
         }
       } catch (err) {
         console.error("Error from add to wishlist:", err);
-        const msg = err.response?.data.alert || "INTERNAL SERVER ERROR";
+
+        const data = err.response?.data;
+        const msg = data?.alert || "INTERNAL SERVER ERROR";
+
         showMobileAlert(msg, "error");
+
+        if (err.response?.status === 401 && data?.redirect) {
+          setTimeout(() => {
+            window.location.href = data.redirect;
+          }, 1000);
+        }
       }
     });
   }
