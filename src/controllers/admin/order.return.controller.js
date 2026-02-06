@@ -117,18 +117,32 @@ const returnApprove = async (req, res, next) => {
     }
 
     /* =============================
-       CALCULATIONS - FIXED TO USE ITEM TOTAL
+       CALCULATIONS WITH ITEM-LEVEL COUPON
     ============================= */
-    const itemTaxAmount = item.accessoryTax || 0;
+
+    // Get item pricing details
     const itemPrice = item.offerPrice || item.price || 0;
-    const itemTotalAmount = item.totalItemAmount || 0;
+    const itemQuantity = item.quantity || 1;
+    const itemTaxAmount = item.accessoryTax || 0;
+    const itemCouponDiscount = item.itemCouponDiscount || 0;
 
-    // CRITICAL FIX: Calculate new totals by subtracting from current order total
-    const newTotalAmount = Math.max(0, order.totalAmount - itemTotalAmount);
+    // Calculate item's line total (price after offers, before coupon)
+    const itemLineTotal = roundMoney(itemPrice * itemQuantity);
 
-    // Also update subtotal and tax for consistency
-    const newSubTotal = Math.max(0, order.subtotal - itemPrice);
+    // Calculate item's total after coupon (this is what should be refunded)
+    const itemPriceAfterCoupon = item.priceAfterCoupon || itemLineTotal;
+
+    // Total amount for this item including tax
+    const itemTotalAmount = roundMoney(itemPriceAfterCoupon + itemTaxAmount);
+
+    // Calculate new order totals by subtracting this item
+    const newSubTotal = Math.max(0, order.subtotal - itemLineTotal);
     const newTaxAmount = Math.max(0, order.taxAmount - itemTaxAmount);
+    const newCouponDiscount = Math.max(
+      0,
+      (order.couponDiscount || 0) - itemCouponDiscount,
+    );
+    const newTotalAmount = Math.max(0, order.totalAmount - itemTotalAmount);
 
     /* =============================
        REFUND CALCULATION
@@ -139,19 +153,23 @@ const returnApprove = async (req, res, next) => {
     let newPaidAmount = currentPaidAmount;
     let newPaymentStatus = order.paymentStatus;
 
-    // Determine if payment was made online (Stripe)
+    // Determine if payment was made online (Stripe/Wallet)
     const canRefund =
-      order.stripePaymentIntentId || order.paymentMethod === "STRIPE";
+      order.stripePaymentIntentId ||
+      order.paymentMethod === "STRIPE" ||
+      order.paymentMethod === "WALLET";
 
-    // For returns, we ALWAYS refund if customer paid
-    if (currentPaidAmount > 0 && canRefund) {
-      // Customer paid for this item - Issue refund
-      refundAmount = Math.min(itemTotalAmount, currentPaidAmount);
-      newPaidAmount = currentPaidAmount - refundAmount;
-    } else if (currentPaidAmount > 0 && !canRefund) {
-      // COD order that was marked as paid - still refund to wallet
-      refundAmount = itemTotalAmount;
-      newPaidAmount = currentPaidAmount - refundAmount;
+    // For returns, we ALWAYS refund the actual amount paid (after coupon)
+    if (currentPaidAmount > 0) {
+      if (canRefund) {
+        // Refund the actual charged amount (after coupon + tax)
+        refundAmount = Math.min(itemTotalAmount, currentPaidAmount);
+        newPaidAmount = Math.max(0, currentPaidAmount - refundAmount);
+      } else {
+        // COD order that was marked as paid - still refund to wallet
+        refundAmount = itemTotalAmount;
+        newPaidAmount = Math.max(0, currentPaidAmount - refundAmount);
+      }
     }
 
     // Calculate new remaining amount
@@ -187,6 +205,7 @@ const returnApprove = async (req, res, next) => {
     // Update order-level fields
     order.subtotal = newSubTotal;
     order.taxAmount = newTaxAmount;
+    order.couponDiscount = newCouponDiscount;
     order.totalAmount = newTotalAmount;
     order.remainingAmount = newRemainingAmount;
     order.paymentStatus = newPaymentStatus;
@@ -198,7 +217,7 @@ const returnApprove = async (req, res, next) => {
         amount: refundAmount,
         status: "refunded",
         paymentMethod: order.paymentMethod,
-        type: "refund", // Requires schema update to include "refund"
+        type: "refund",
         paidAt: new Date(),
       });
 
@@ -218,7 +237,7 @@ const returnApprove = async (req, res, next) => {
     const quantity = item.quantity;
 
     if (variantId) {
-      await carVariant.findByIdAndUpdate(variantId, {
+      await CarVariant.findByIdAndUpdate(variantId, {
         $inc: { stock: quantity },
       });
     }
@@ -237,13 +256,21 @@ const returnApprove = async (req, res, next) => {
         `Crediting wallet: ₹${refundAmount} for user ${order.userId}`,
       );
 
-      await updateWallet({
-        userId: order.userId,
-        amount: refundAmount,
-        type: "refund",
-        flow: "credit",
-        message: `Return refund for order ${order.orderId} - Item: ${item.productName}`,
-      });
+      const wallet = await Wallet.findOne({ userId: order.userId });
+
+      if (wallet) {
+        wallet.balance += refundAmount;
+
+        wallet.transactionHistory.push({
+          amount: refundAmount,
+          type: "refund",
+          flow: "credit",
+          message: `Return refund for order ${order.orderId} - ${item.productName} (₹${itemPriceAfterCoupon.toFixed(2)} + ₹${itemTaxAmount.toFixed(2)} tax)`,
+          date: new Date(),
+        });
+
+        await wallet.save();
+      }
     }
 
     /* =============================
@@ -275,6 +302,7 @@ const returnApprove = async (req, res, next) => {
             totalAmount: finalTotalAmount,
             subtotal: 0,
             taxAmount: 0,
+            couponDiscount: 0,
           },
         },
       );
@@ -285,7 +313,7 @@ const returnApprove = async (req, res, next) => {
     ============================= */
     let refundNote = "";
     if (refundAmount > 0) {
-      refundNote = `Refund of ₹${refundAmount.toFixed(2)} issued to wallet`;
+      refundNote = `Refund of ₹${refundAmount.toFixed(2)} issued to wallet (includes coupon discount of ₹${itemCouponDiscount.toFixed(2)})`;
     } else if (currentPaidAmount === 0) {
       refundNote = "No refund - Payment was not made";
     } else {
@@ -295,6 +323,14 @@ const returnApprove = async (req, res, next) => {
     res.json({
       success: true,
       message: "Return approved successfully",
+      refundNote: refundNote,
+      details: {
+        itemPrice: itemPrice,
+        itemCouponDiscount: itemCouponDiscount,
+        itemPriceAfterCoupon: itemPriceAfterCoupon,
+        itemTax: itemTaxAmount,
+        totalRefund: refundAmount,
+      },
     });
   } catch (err) {
     console.error("Return approve error:", err);
@@ -309,6 +345,9 @@ const returnApprove = async (req, res, next) => {
     }
   }
 };
+
+/* ================= HELPER FUNCTION ================= */
+const roundMoney = (value) => Math.round(value * 100) / 100;
 
 const returnReject = async (req, res, next) => {
   try {

@@ -311,6 +311,18 @@
             <span>₹ {{formatPrice this.offerPrice}}</span>
           </div>
           {{/if}}
+          {{#if this.itemCouponDiscount}}
+          <div class="price-row offer">
+            <span>Unit Coupon Discount</span>
+            <span>₹ {{formatPrice this.itemCouponDiscount}}</span>
+          </div>
+          {{/if}}
+          {{#if this.priceAfterCoupon}}
+          <div class="price-row offer">
+            <span>Unit Price After Coupon</span>
+            <span>₹ {{formatPrice this.priceAfterCoupon}}</span>
+          </div>
+          {{/if}}
 
           {{#if this.advanceAmount}}
           <div class="price-row advance">
@@ -318,28 +330,16 @@
             <span>₹ {{formatPrice this.advanceAmount}}</span>
           </div>
           {{/if}}
+          {{#if this.accessoryTax}}
           <div class="price-row">
             <span>Tax</span>
             <span>₹ {{formatPrice this.accessoryTax}}</span>
           </div>
+          {{/if}}
           <div class="price-row">
-            <span>Total Per item</span>
+            <span>Total</span>
             <span>₹ {{formatPrice this.totalItemAmount}}</span>
           </div>
-
-          {{#if this.offerPrice}}
-          <div class="price-row offer">
-            <span>Offer Price</span>
-            <span>₹ {{formatPrice this.offerPrice}}</span>
-          </div>
-          {{/if}}
-
-          {{#if this.advanceAmount}}
-          <div class="price-row advance">
-            <span>Advance Paid</span>
-            <span>₹ {{formatPrice this.advanceAmount}}</span>
-          </div>
-          {{/if}}
 
           {{#if this.cancel.approvedAt}}
           <div class="price-row refund">

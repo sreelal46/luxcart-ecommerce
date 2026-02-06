@@ -46,7 +46,6 @@ const loadOrderDetailPage = async (req, res, next) => {
     // const orderItem = order.items.find(
     //   (item) => item._id.toString() === orderItemId
     // );
-
     res.status(OK).render("user/account/orderDetail", {
       layout: "userAccountLayout",
       order,

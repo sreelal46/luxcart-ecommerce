@@ -26,6 +26,11 @@ const orderItemSchema = new Schema(
     accessoryTax: { type: Number, default: null },
     quantity: { type: Number, required: true, min: 1 },
     advanceAmount: { type: Number, default: null },
+
+    // NEW: Item-level coupon discount fields
+    itemCouponDiscount: { type: Number, default: 0 },
+    priceAfterCoupon: { type: Number, default: 0 },
+
     totalItemAmount: { type: Number, required: true },
 
     /* DELIVERY / FULFILLMENT STATUS (ADMIN CONTROLS THIS) */
@@ -165,7 +170,14 @@ const orderSchema = new Schema(
 
     paymentStatus: {
       type: String,
-      enum: ["Pending", "Paid", "Partially Paid", "Failed", "Refunded"],
+      enum: [
+        "Pending",
+        "Paid",
+        "Partially Paid",
+        "Failed",
+        "Refunded",
+        "Cancelled",
+      ],
       default: "Pending",
     },
 
@@ -187,6 +199,8 @@ const orderSchema = new Schema(
     subtotal: { type: Number, required: true },
     taxAmount: { type: Number, default: 0 },
     discount: { type: Number, default: 0 },
+
+    // Coupon details
     appliedCoupon: {
       couponId: { type: Schema.Types.ObjectId, ref: "Coupon", default: null },
       code: { type: String, default: null },
@@ -194,6 +208,7 @@ const orderSchema = new Schema(
       discountValue: { type: Number, default: null },
       couponDiscount: { type: Number, default: 0 },
     },
+
     shippingCharges: { type: Number, default: 0 },
     totalAmount: { type: Number, required: true },
 

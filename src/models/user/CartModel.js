@@ -38,6 +38,12 @@ const cartItemSchema = new Schema(
     offerPrice: { type: Number, default: null },
     lineTotal: { type: Number, default: 0 },
 
+    // NEW: Item-level coupon discount
+    itemCouponDiscount: { type: Number, default: 0 },
+
+    // NEW: Price after coupon applied (lineTotal - itemCouponDiscount)
+    priceAfterCoupon: { type: Number, default: 0 },
+
     appliedOffer: {
       source: { type: String, default: null },
       discountType: { type: String, default: null },
@@ -93,6 +99,56 @@ const cartSchema = new Schema(
   },
   { timestamps: true },
 );
+
+/* ================= DISTRIBUTE COUPON TO ITEMS ================= */
+cartSchema.methods.distributeCouponToItems = function (totalCouponDiscount) {
+  if (totalCouponDiscount <= 0 || this.items.length === 0) {
+    // Clear item-level coupon discounts
+    this.items.forEach((item) => {
+      item.itemCouponDiscount = 0;
+      item.priceAfterCoupon = item.lineTotal;
+    });
+    return;
+  }
+
+  // Calculate total of all line totals (after offers, before coupon)
+  const totalLineTotal = this.items.reduce(
+    (sum, item) => sum + item.lineTotal,
+    0,
+  );
+
+  if (totalLineTotal <= 0) {
+    this.items.forEach((item) => {
+      item.itemCouponDiscount = 0;
+      item.priceAfterCoupon = item.lineTotal;
+    });
+    return;
+  }
+
+  let distributedTotal = 0;
+
+  // Distribute coupon proportionally to each item
+  this.items.forEach((item, index) => {
+    if (index === this.items.length - 1) {
+      // Last item gets the remainder to avoid rounding errors
+      item.itemCouponDiscount = roundMoney(
+        totalCouponDiscount - distributedTotal,
+      );
+    } else {
+      // Calculate proportional discount
+      const itemProportion = item.lineTotal / totalLineTotal;
+      item.itemCouponDiscount = roundMoney(
+        totalCouponDiscount * itemProportion,
+      );
+      distributedTotal += item.itemCouponDiscount;
+    }
+
+    // Calculate price after coupon
+    item.priceAfterCoupon = roundMoney(
+      item.lineTotal - item.itemCouponDiscount,
+    );
+  });
+};
 
 /* ================= APPLY COUPON METHOD ================= */
 cartSchema.methods.applyCoupon = async function (couponId) {
@@ -167,6 +223,9 @@ cartSchema.methods.applyCoupon = async function (couponId) {
       couponDiscount: roundMoney(couponDiscount),
     };
 
+    // NEW: Distribute coupon discount to items
+    this.distributeCouponToItems(couponDiscount);
+
     // Calculate final total: totalOfferAmount - couponDiscount + tax
     const totalAfterCoupon = roundMoney(this.totalOfferAmount - couponDiscount);
     this.totalAfterAll = roundMoney(totalAfterCoupon + this.accessoryTax);
@@ -219,6 +278,9 @@ cartSchema.methods.removeCoupon = async function (userId, couponId) {
       discountValue: null,
       couponDiscount: 0,
     };
+
+    // NEW: Clear item-level coupon discounts
+    this.distributeCouponToItems(0);
 
     // Recalculate total without coupon: totalOfferAmount + tax
     this.totalAfterAll = roundMoney(this.totalOfferAmount + this.accessoryTax);
@@ -432,11 +494,6 @@ cartSchema.pre("save", async function (next) {
     // Store this in totalOfferAmount field
     this.totalOfferAmount = totalAfterOffers;
 
-    // Calculate tax on accessories (after offers applied)
-    this.accessoryTax = roundMoney(
-      accessoryTotalWithDiscount * (taxRate / 100),
-    );
-
     /* ========== VALIDATE APPLIED COUPON ========== */
     if (this.appliedCoupon?.couponId) {
       let isCouponValid = false;
@@ -473,6 +530,9 @@ cartSchema.pre("save", async function (next) {
             // Update coupon discount with recalculated value
             this.appliedCoupon.couponDiscount =
               roundMoney(recalculatedDiscount);
+
+            // NEW: Redistribute coupon to items
+            this.distributeCouponToItems(recalculatedDiscount);
           }
         }
       }
@@ -486,8 +546,27 @@ cartSchema.pre("save", async function (next) {
           discountValue: null,
           couponDiscount: 0,
         };
+        // Clear item-level coupon discounts
+        this.distributeCouponToItems(0);
+      }
+    } else {
+      // No coupon applied - clear item-level discounts
+      this.distributeCouponToItems(0);
+    }
+
+    /* ========== CALCULATE TAX AFTER COUPON ========== */
+    // Tax should be calculated on the price AFTER coupon discount
+    let totalAccessoryTax = 0;
+
+    for (const item of this.items) {
+      if (item.accessoryId) {
+        // Calculate tax on priceAfterCoupon
+        const itemTax = roundMoney(item.priceAfterCoupon * (taxRate / 100));
+        totalAccessoryTax += itemTax;
       }
     }
+
+    this.accessoryTax = roundMoney(totalAccessoryTax);
 
     /* ========== CALCULATE FINAL TOTAL AND DISCOUNTS ========== */
 
@@ -498,13 +577,13 @@ cartSchema.pre("save", async function (next) {
       // Add coupon discount to total discount
       totalDiscount += this.appliedCoupon.couponDiscount;
 
-      // With coupon: totalAfterOffers - couponDiscount + tax
+      // With coupon: totalAfterOffers - couponDiscount + tax (calculated after coupon)
       const totalAfterCoupon = roundMoney(
         totalAfterOffers - this.appliedCoupon.couponDiscount,
       );
       this.totalAfterAll = roundMoney(totalAfterCoupon + this.accessoryTax);
     } else {
-      // Without coupon: totalAfterOffers + tax
+      // Without coupon: totalAfterOffers + tax (calculated on full amount)
       this.totalAfterAll = roundMoney(totalAfterOffers + this.accessoryTax);
     }
 

@@ -159,11 +159,6 @@ const createOrder = async (req, res, next) => {
 
       // Determine the amount to be paid
       let amountToPay = cart.totalAfterAll;
-      // if (cart.totalAdvanceAmount && cart.totalAdvanceAmount > 0) {
-      //   amountToPay = cart.totalAdvanceAmount; // Advance payment
-      // } else {
-      //   amountToPay = cart.totalAfterAll; // Full payment
-      // }
 
       // Check if wallet has sufficient balance
       if (wallet.balance < amountToPay) {
@@ -212,6 +207,7 @@ const createOrder = async (req, res, next) => {
         }
       }
     }
+
     /* ===============================
        UNLISTED PRODUCT
     =============================== */
@@ -263,15 +259,27 @@ const createOrder = async (req, res, next) => {
     };
 
     /* ===============================
-       ORDER ITEMS SNAPSHOT
+       ORDER ITEMS SNAPSHOT WITH COUPON DISTRIBUTION
     =============================== */
-    const orderItems = cart.items.map((item) => {
-      const baseAmount = item.offerPrice
-        ? item.offerPrice * item.quantity
-        : item.price * item.quantity;
+    const taxRate = parseInt(process.env.ACCESSORY_TAX_RATE) || 0;
+    const roundMoney = (value) => Math.round(value * 100) / 100;
 
-      const taxAmount = item.accessoryId ? baseAmount * (taxRate / 100) : 0;
-      const finalAmount = baseAmount + taxAmount;
+    const orderItems = cart.items.map((item) => {
+      // Calculate base price (after offers)
+      const effectivePrice = item.offerPrice || item.price;
+      const lineTotal = roundMoney(effectivePrice * item.quantity);
+
+      // Get item-level coupon discount from cart
+      const itemCouponDiscount = item.itemCouponDiscount || 0;
+      const priceAfterCoupon = item.priceAfterCoupon || lineTotal;
+
+      // Calculate tax on the price after coupon
+      const taxAmount = item.accessoryId
+        ? roundMoney(priceAfterCoupon * (taxRate / 100))
+        : 0;
+
+      // Total item amount = priceAfterCoupon + tax
+      const totalItemAmount = roundMoney(priceAfterCoupon + taxAmount);
 
       return {
         carId: item.carId || null,
@@ -283,8 +291,13 @@ const createOrder = async (req, res, next) => {
         quantity: item.quantity,
         price: item.price,
         offerPrice: item.offerPrice || null,
-        accessoryTax: item.accessoryId ? taxAmount : null,
-        totalItemAmount: item.accessoryId ? finalAmount : item.price,
+
+        // NEW: Item-level coupon fields
+        itemCouponDiscount: itemCouponDiscount,
+        priceAfterCoupon: priceAfterCoupon,
+
+        accessoryTax: taxAmount,
+        totalItemAmount: totalItemAmount,
       };
     });
 
@@ -336,7 +349,9 @@ const createOrder = async (req, res, next) => {
       items: orderItems,
       address,
       paymentMethod,
-      subtotal: cart.totalAmount,
+
+      // Use totalOfferAmount (before coupon) as subtotal
+      subtotal: cart.totalOfferAmount || cart.totalAmount,
       taxAmount: cart.accessoryTax,
       discount: cart.discountedPrice,
       totalAmount: cart.totalAfterAll,
@@ -437,11 +452,20 @@ const createOrder = async (req, res, next) => {
     =============================== */
     cart.items = [];
     cart.totalAmount = 0;
+    cart.carTotal = 0;
+    cart.accessoryTotal = 0;
+    cart.totalOfferAmount = 0;
     cart.accessoryTax = 0;
     cart.discountedPrice = 0;
     cart.totalAfterAll = 0;
     cart.totalAdvanceAmount = 0;
-    cart.appliedCoupon = undefined;
+    cart.appliedCoupon = {
+      couponId: null,
+      code: null,
+      discountType: null,
+      discountValue: null,
+      couponDiscount: 0,
+    };
 
     await cart.save();
 
@@ -506,4 +530,5 @@ const createOrder = async (req, res, next) => {
     next(error);
   }
 };
+
 module.exports = { createOrder, checkWalletBalance };
