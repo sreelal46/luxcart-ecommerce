@@ -77,9 +77,21 @@ route.post("/change-password", PasswordChanging);
 route.get("/resend-otp", resendOTP);
 
 // ====================== DASHBOARD ======================
-const { loadDashboard } = require("../controllers/admin/dashboard.controller");
+const {
+  loadDashboard,
+  getChartData,
+  getTopProducts,
+  getTopCategories,
+  getTopBrands,
+  generateLedger,
+} = require("../controllers/admin/dashboard.controller");
 route.get("/dashboard", checkSession, loadDashboard);
-
+// Analytics endpoints
+route.get("/dashboard/chart-data", checkSession, getChartData);
+route.get("/dashboard/top-products", checkSession, getTopProducts);
+route.get("/dashboard/top-categories", checkSession, getTopCategories);
+route.get("/dashboard/top-brands", checkSession, getTopBrands);
+route.get("/dashboard/ledger", checkSession, generateLedger);
 // ====================== BRAND ======================
 const {
   loadBrands,
