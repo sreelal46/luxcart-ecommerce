@@ -356,9 +356,15 @@ route.patch(
 const {
   loadSalesReportPage,
 } = require("../controllers/admin/sales.report.controller");
-const { generateSalesReportPDF } = require("../services/salesReportGenerator");
+const {
+  generateSalesReportPDF,
+} = require("../services/salesReportGeneratorPDF");
+const {
+  generateSalesReportXLSX,
+} = require("../services/salesReportGeneratorXLSX");
 route.get("/sales-report", checkSession, loadSalesReportPage);
 route.get("/sales-report/pdf", checkSession, generateSalesReportPDF);
+route.get("/sales-report/excel", checkSession, generateSalesReportXLSX);
 route.get("/wallet", checkSession, (req, res) => {
   res.render("admin/walletView");
 });
