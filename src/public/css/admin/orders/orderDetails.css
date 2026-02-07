@@ -1,0 +1,227 @@
+body {
+  background: #f8f9fa;
+}
+
+/* Order Status Badges */
+.badge-status {
+  padding: 6px 12px;
+  font-size: 12px;
+  font-weight: 600;
+  border-radius: 999px;
+  text-transform: capitalize;
+  letter-spacing: 0.3px;
+}
+
+/* Individual statuses */
+.badge-placed {
+  background-color: #fff3cd;
+  color: #856404;
+  border: 1px solid #ffeeba;
+}
+
+.badge-confirmed {
+  background-color: #e6f4ea;
+  color: #137333;
+  border: 1px solid #cce8d5;
+}
+
+.badge-shipped {
+  background-color: #e8f0fe;
+  color: #1a73e8;
+  border: 1px solid #d2e3fc;
+}
+
+.badge-out-for-delivery {
+  background-color: #ede7f6;
+  color: #5e35b1;
+  border: 1px solid #d1c4e9;
+}
+
+.badge-delivered {
+  background-color: #e6f4ea;
+  color: #0f5132;
+  border: 1px solid #badbcc;
+}
+
+.badge-cancelled {
+  background-color: #fdecea;
+  color: #b02a37;
+  border: 1px solid #f5c2c7;
+}
+
+.badge-returned {
+  background-color: #fff0f6;
+  color: #a61e4d;
+  border: 1px solid #fcc2d7;
+}
+
+.card {
+  border-radius: 14px;
+}
+
+/* STATUS COLORS */
+.status-badge.pending {
+  background: #ffc107;
+}
+
+.status-badge.confirmed {
+  background: #0d6efd;
+}
+
+.status-badge.shipped {
+  background: #6f42c1;
+}
+
+.status-badge.out_for_delivery {
+  background: #20c997;
+}
+
+.status-badge.delivered {
+  background: #198754;
+}
+
+.status-badge.cancelled {
+  background: #dc3545;
+}
+
+.item-status.pending {
+  background: #ffe69c;
+}
+
+.item-status.confirmed {
+  background: #cfe2ff;
+}
+
+.item-status.shipped {
+  background: #e2d9f3;
+}
+
+.item-status.delivered {
+  background: #d1e7dd;
+}
+
+.item-status.cancelled {
+  background: #f8d7da;
+}
+
+.badge {
+  text-transform: capitalize;
+  padding: 6px 12px;
+  border-radius: 10px;
+}
+
+/* ORDER ITEM */
+.order-item {
+  border: 1px solid #e9ecef;
+  border-radius: 12px;
+  padding: 12px;
+  margin-bottom: 12px;
+  background: #fff;
+}
+
+.order-item img {
+  width: 64px;
+  height: 64px;
+  object-fit: cover;
+  border-radius: 10px;
+  border: 1px solid #eee;
+}
+
+/* SUMMARY */
+.order-summary .total {
+  font-size: 20px;
+  font-weight: 700;
+  color: #0d6efd;
+}
+
+/* ===============================
+   Slide-in Toast MSG
+=============================== */
+
+.mobile-alert {
+  position: fixed;
+  bottom: 20px;
+  left: 50%;
+  transform: translateX(-50%) translateY(100px);
+  background: #111;
+  color: #fff;
+  padding: 12px 20px;
+  border-radius: 14px;
+  font-size: 14px;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  opacity: 0;
+  pointer-events: none;
+  transition: all 0.35s ease;
+  box-shadow: 0 6px 22px rgba(0, 0, 0, 0.25);
+  z-index: 9999;
+}
+
+.mobile-alert.show {
+  opacity: 1;
+  transform: translateX(-50%) translateY(0);
+}
+
+button {
+  padding: 10px 20px;
+  background: #000;
+  color: #fff;
+  border: none;
+  border-radius: 10px;
+  cursor: pointer;
+  font-size: 16px;
+}
+
+@media (min-width: 768px) {
+  .mobile-alert {
+    top: 20px;
+    bottom: auto;
+    transform: translateX(-50%) translateY(-100px);
+  }
+
+  .mobile-alert.show {
+    transform: translateX(-50%) translateY(0);
+  }
+}
+
+.message-green {
+  color: #00ff7f;
+}
+
+.message-red {
+  color: #ff4d4d;
+}
+
+.message-yellow {
+  color: #ffcc00;
+}
+
+.success-icon,
+.error-icon {
+  font-size: 16px;
+  /* same size */
+  margin-right: 6px;
+  /* space */
+  vertical-align: middle;
+}
+
+.success-icon {
+  color: #00ff7f;
+  /* green */
+}
+
+.error-icon {
+  color: #dc3545;
+  /* red */
+}
+
+.yellow-icon {
+  color: #ffcc00;
+  /* red */
+}
+
+.status-action {
+  min-width: 150px;
+  flex-shrink: 0;
+}
